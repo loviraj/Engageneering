@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ARIA Agent Architecture — Engageneering™</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'EB Garamond',Georgia,serif;background:#030810;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.arch{background:#060c1a;border-radius:16px;padding:2.4rem 2rem 2.6rem;display:flex;flex-direction:column;gap:1.8rem;max-width:900px;width:100%;border:1px solid #1e3a6a}
+.arch-title{text-align:center;font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:5px;color:#c8922a;text-transform:uppercase;margin-bottom:.2rem}
+.arch-sub{text-align:center;font-size:9px;letter-spacing:2px;color:#4a6a8a;text-transform:uppercase}
+.layer-label{font-size:8.5px;letter-spacing:3px;text-transform:uppercase;color:#4a6a8a;margin-bottom:.7rem;padding-left:2px;display:flex;align-items:center;gap:.8rem}
+.layer-label::after{content:'';flex:1;height:1px;background:#1e3a6a}
+
+/* ARIA */
+.aria-card{background:#0f1e36;border:1.5px solid #c8922a;border-radius:10px;padding:1.1rem 1.5rem;display:flex;align-items:center;gap:1.4rem}
+.aria-name{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;letter-spacing:2px;color:#f0c040;margin-bottom:4px}
+.aria-tag{font-size:11px;color:#8a9ab8;letter-spacing:.3px;line-height:1.6}
+
+/* Connector */
+.conn{display:flex;align-items:center;justify-content:center;gap:0;height:22px}
+.conn-line{flex:1;height:1px;background:#1e3a6a}
+.conn-dot{width:6px;height:6px;border-radius:50%;background:#c8922a;flex-shrink:0}
+.conn-label{font-size:9px;color:#c8922a;letter-spacing:1px;margin:0 8px;white-space:nowrap}
+
+/* Agent grids */
+.agents-row{display:grid;gap:.9rem}
+.cols3{grid-template-columns:1fr 1fr 1fr}
+.cols2{grid-template-columns:1fr 1fr}
+
+.agent{border-radius:8px;padding:.95rem 1.1rem;border:1px solid;position:relative}
+.agent-id{font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px}
+.agent-name{font-size:13px;font-weight:700;letter-spacing:.5px;margin-bottom:5px;font-family:'Cormorant Garamond',serif}
+.agent-desc{font-size:11.5px;line-height:1.6;opacity:.9}
+.agent-trigger{font-size:9px;letter-spacing:1px;border-radius:20px;padding:2px 9px;display:inline-block;margin-top:.5rem;border:1px solid}
+
+.ag-intake{background:#080f1e;border-color:#1e3a6a}
+.ag-intake .agent-id{color:#378add}
+.ag-intake .agent-name{color:#85b7eb}
+.ag-intake .agent-desc{color:#6a8ab0}
+.ag-intake .agent-trigger{color:#0c447c;background:#e6f1fb;border-color:#85b7eb}
+
+.ag-answer{background:#060f12;border-color:#0f4a3a}
+.ag-answer .agent-id{color:#1d9e75}
+.ag-answer .agent-name{color:#5dcaa5}
+.ag-answer .agent-desc{color:#4a8a72}
+.ag-answer .agent-trigger{color:#085041;background:#e1f5ee;border-color:#5dcaa5}
+
+.ag-growth{background:#0c0818;border-color:#2a1e5a}
+.ag-growth .agent-id{color:#7f77dd}
+.ag-growth .agent-name{color:#afa9ec}
+.ag-growth .agent-desc{color:#6a628a}
+.ag-growth .agent-trigger{color:#3c3489;background:#eeedfe;border-color:#afa9ec}
+
+/* Flow */
+.flow-wrap{background:#080f1c;border-radius:8px;padding:1rem 1.3rem;border:1px solid #1e3a6a}
+.flow-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:#4a6a8a;margin-bottom:.7rem}
+.flow-steps{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}
+.flow-step{font-size:10px;color:#8a9ab8;background:#0f1e36;border:1px solid #1e3a6a;border-radius:20px;padding:3px 11px;white-space:nowrap}
+.flow-arr{color:#c8922a;font-size:12px;flex-shrink:0}
+
+.footer-note{text-align:center;font-size:9px;letter-spacing:2px;color:#2a4060;text-transform:uppercase;margin-top:.4rem}
+</style>
+</head>
+<body>
+<div class="arch">
+  <div>
+    <div class="arch-title">Engageneering™ — ARIA Agentic Architecture</div>
+    <div class="arch-sub" style="margin-top:.3rem">Zero human intervention · 7 specialist agents · 1 orchestrator · Full audit trail</div>
+  </div>
+
+  <!-- ARIA -->
+  <div>
+    <div class="layer-label">Orchestration layer</div>
+    <div class="aria-card">
+      <div style="flex-shrink:0">
+        <svg width="52" height="58" viewBox="0 0 52 60">
+          <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
+          <polygon points="26,2 50,15 26,30" fill="#f5d060" opacity=".92"/>
+          <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/>
+          <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/>
+          <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".95"/>
+          <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/>
+          <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/>
+          <circle cx="26" cy="30" r="5.5" fill="#f5d060"/>
+          <circle cx="26" cy="30" r="3" fill="#0b1624"/>
+          <circle cx="26" cy="30" r="1.4" fill="#f5d060"/>
+        </svg>
+      </div>
+      <div>
+        <div class="aria-name">ARIA — Autonomous Routing &amp; Intelligence Arbiter</div>
+        <div class="aria-tag">Master orchestrator · Receives every platform event · Routes to specialist agents · Aggregates outputs · Resolves conflicts · Maintains full user state · Zero human intervention required</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><div class="conn-line"></div><div class="conn-dot"></div><div class="conn-label">routes to</div><div class="conn-dot"></div><div class="conn-line"></div></div>
+
+  <!-- INTAKE -->
+  <div>
+    <div class="layer-label">Intake agents — trigger on submission</div>
+    <div class="agents-row cols3">
+      <div class="agent ag-intake">
+        <div class="agent-id">Agent 01</div>
+        <div class="agent-name">Gatekeeper</div>
+        <div class="agent-desc">Screens every question the moment it is submitted. Filters harmful, obnoxious, and bad-faith content. Returns approve / revise / reject + reason code. Zero human review needed.</div>
+        <div class="agent-trigger">On: question submitted</div>
+      </div>
+      <div class="agent ag-intake">
+        <div class="agent-id">Agent 02</div>
+        <div class="agent-name">Question Rater</div>
+        <div class="agent-desc">Scores approved questions on clarity, depth, originality, and engagement potential. Assigns Quality Score 0–100. Low scores return with specific improvement prompts before publishing.</div>
+        <div class="agent-trigger">On: question approved</div>
+      </div>
+      <div class="agent ag-intake">
+        <div class="agent-id">Agent 03</div>
+        <div class="agent-name">Smart Matcher</div>
+        <div class="agent-desc">Reads the question. Scans community expertise, past answer ratings, and subject tags. Sends personalised invitations to the top 5 best-fit answerers only. Never cold-blasts everyone.</div>
+        <div class="agent-trigger">On: question published</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><div class="conn-line"></div><div class="conn-dot"></div><div class="conn-label" style="color:#1d9e75">answers arrive</div><div class="conn-dot" style="background:#1d9e75"></div><div class="conn-line"></div></div>
+
+  <!-- ANSWER -->
+  <div>
+    <div class="layer-label">Answer agents — run in parallel on every response</div>
+    <div class="agents-row cols2">
+      <div class="agent ag-answer">
+        <div class="agent-id">Agent 04</div>
+        <div class="agent-name">Answer Evaluator</div>
+        <div class="agent-desc">Scores on six axes: accuracy, engagement quality, analogy use, depth, originality, and practical applicability. Produces composite Engagement Score 0–100. Determines ranking and reward eligibility.</div>
+        <div class="agent-trigger">On: answer submitted</div>
+      </div>
+      <div class="agent ag-answer">
+        <div class="agent-id">Agent 05</div>
+        <div class="agent-name">Integrity Guard</div>
+        <div class="agent-desc">Independently checks for plagiarism, hallucination, citation accuracy, and bad-faith content. Runs parallel to Evaluator — never combined. Flags silently. ARIA adjudicates conflicts between agent outputs.</div>
+        <div class="agent-trigger">On: answer submitted</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><div class="conn-line"></div><div class="conn-dot"></div><div class="conn-label" style="color:#7f77dd">scores to ARIA</div><div class="conn-dot" style="background:#7f77dd"></div><div class="conn-line"></div></div>
+
+  <!-- GROWTH -->
+  <div>
+    <div class="layer-label">Growth agents — trigger on thresholds &amp; cadence</div>
+    <div class="agents-row cols2">
+      <div class="agent ag-growth">
+        <div class="agent-id">Agent 06</div>
+        <div class="agent-name">Tier Engine</div>
+        <div class="agent-desc">Monitors every user's cumulative signal — question quality, answer scores, mentorship, time-in-tier. On threshold crossing, calculates eligibility, presents evidence to ARIA, triggers promotion or demotion with full audit trail.</div>
+        <div class="agent-trigger">On: score thresholds &amp; milestones</div>
+      </div>
+      <div class="agent ag-growth">
+        <div class="agent-id">Agent 07</div>
+        <div class="agent-name">Insight Narrator</div>
+        <div class="agent-desc">Generates personalised weekly growth reports per user — what landed, what improved, which answers changed someone's thinking, what the next growth edge is. Written in the Engageneering™ voice. Every insight earned from real data.</div>
+        <div class="agent-trigger">On: weekly cadence per user</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOW -->
+  <div class="flow-wrap">
+    <div class="flow-label">Question lifecycle — end to end</div>
+    <div class="flow-steps">
+      <div class="flow-step">User submits</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">ARIA routes</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">Gatekeeper screens</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">Question Rater scores</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">Smart Matcher invites top 5</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">Answers arrive</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">Evaluator + Guard (parallel)</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">ARIA aggregates</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">Tier Engine recalculates</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">Insight Narrator queued</div>
+    </div>
+  </div>
+
+  <div class="footer-note">© 2025 Engageneering™ · Section 41 Trademark · engageneering.org</div>
+</div>
+</body>
+</html>

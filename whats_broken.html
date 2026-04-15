@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="What's Broken in Education — and Why. Engageneering™'s unflinching diagnosis of the global education crisis. The evidence, the causes, the cost."/>
+<meta property="og:title" content="What's Broken in Education — and Why | Engageneering™"/>
+<meta property="og:description" content="We have built the most expensive system of human development in history. And it is failing. Here is why."/>
+<title>What's Broken — and Why | Engageneering™</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#060c1a;
+  --navy-mid:#0b1624;
+  --navy-card:#0f1e36;
+  --navy-border:#1e3a6a;
+  --gold:#c8922a;
+  --gold-bright:#f0c040;
+  --steel:#8a9ab8;
+  --muted:#4a6a8a;
+  --white:#ffffff;
+  --warm:#f5f0e8;
+  --red:#c0392b;
+  --red-soft:#e74c3c;
+  --amber:#e67e22;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:#c8d4e8;font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:1.9;overflow-x:hidden}
+::selection{background:rgba(200,146,42,0.3);color:#fff}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--gold)}
+
+#progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,var(--red-soft),var(--gold));z-index:999;width:0%;transition:width .1s}
+
+/* NAV */
+nav{position:fixed;top:2px;left:0;right:0;z-index:200;padding:1.1rem 3rem;display:flex;justify-content:space-between;align-items:center;background:rgba(6,12,26,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(30,58,106,0.4)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:3px;color:var(--gold);text-decoration:none;font-weight:700}
+.nav-right{display:flex;gap:1.5rem;align-items:center}
+.nav-link{font-size:10px;letter-spacing:2px;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.nav-link:hover{color:var(--gold)}
+
+/* COVER */
+.cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 5rem;position:relative;overflow:hidden}
+.cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 42%,#1a0a0a,var(--navy) 65%);z-index:0}
+.cover-content{position:relative;z-index:2}
+.cover-eyebrow{font-size:9px;letter-spacing:5px;color:var(--red-soft);text-transform:uppercase;margin-bottom:2rem;opacity:0;animation:fadeUp 1s ease .3s forwards}
+.cover-label{font-family:'Cormorant Garamond',serif;font-size:clamp(11px,1.5vw,14px);letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:1rem;opacity:0;animation:fadeUp 1s ease .5s forwards}
+.cover-title{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,7vw,100px);color:var(--white);line-height:1.0;font-weight:700;margin-bottom:.8rem;opacity:0;animation:fadeUp 1.2s ease .7s forwards}
+.cover-title .broken{color:#e74c3c;font-style:italic}
+.cover-title .why{color:var(--gold-bright)}
+.cover-deck{font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.2vw,24px);color:var(--steel);max-width:640px;margin:1.2rem auto 0;line-height:1.65;font-weight:300;font-style:italic;opacity:0;animation:fadeUp 1s ease 1s forwards}
+.cover-meta{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-top:2.5rem;opacity:0;animation:fadeUp 1s ease 1.3s forwards}
+.cover-meta-item{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:.5rem}
+.cover-meta-dot{width:4px;height:4px;border-radius:50%;background:var(--red-soft)}
+.cover-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeUp 1s ease 2s forwards;z-index:2}
+.cover-scroll-line{width:1px;height:42px;background:linear-gradient(to bottom,rgba(231,76,60,.5),transparent);animation:scrollPulse 2.4s ease infinite}
+.cover-scroll-text{font-size:8px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+
+/* WARNING BANNER */
+.warning-banner{background:rgba(192,57,43,.08);border-top:1px solid rgba(192,57,43,.3);border-bottom:1px solid rgba(192,57,43,.3);padding:1.2rem 3rem;text-align:center}
+.warning-text{font-size:13px;color:rgba(231,76,60,.8);letter-spacing:1px;font-style:italic}
+
+/* STAT COUNTER ROW */
+.stat-row{background:var(--navy-card);border-bottom:1px solid var(--navy-border);padding:2.5rem 2rem}
+.stat-row-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem}
+.stat-item{text-align:center}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:46px;color:var(--red-soft);letter-spacing:-2px;line-height:1}
+.stat-unit{font-size:20px;color:var(--amber)}
+.stat-label{font-size:11px;color:var(--steel);margin-top:6px;line-height:1.5;letter-spacing:.3px}
+.stat-source{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.5px}
+
+/* BODY */
+.doc-body{max-width:780px;margin:0 auto;padding:5rem 2rem 4rem}
+
+/* CHAPTER */
+.chapter{margin-bottom:7rem;opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform .9s ease}
+.chapter.visible{opacity:1;transform:translateY(0)}
+.chapter-num{font-size:9px;letter-spacing:5px;color:var(--red-soft);text-transform:uppercase;margin-bottom:1.4rem;display:flex;align-items:center;gap:1rem}
+.chapter-num::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(231,76,60,.4),transparent)}
+.chapter-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,3.8vw,46px);color:var(--white);line-height:1.15;font-weight:600;margin-bottom:2rem}
+.chapter-title .accent{color:var(--gold-bright);font-style:italic}
+.chapter-title .broken-accent{color:#e74c3c;font-style:italic}
+.chapter-body{color:#b0bcd4;line-height:1.95;margin-bottom:1.4rem}
+.chapter-body strong{color:var(--warm);font-weight:500}
+.chapter-body em{color:var(--gold);font-style:italic}
+
+/* PULL QUOTE */
+.pull-quote{border-left:2px solid var(--red-soft);padding:1.3rem 2rem;margin:2.8rem 0;background:rgba(192,57,43,.04);border-radius:0 6px 6px 0}
+.pull-quote.gold{border-color:var(--gold);background:rgba(200,146,42,.04)}
+.pull-quote-text{font-family:'Cormorant Garamond',serif;font-size:clamp(19px,2.6vw,28px);color:var(--gold-bright);line-height:1.5;font-style:italic;font-weight:300}
+.pull-quote.red .pull-quote-text{color:#f1948a}
+.pull-quote-attr{font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:.8rem;text-transform:uppercase}
+
+/* EVIDENCE BOX */
+.evidence-box{background:var(--navy-card);border-radius:10px;padding:2rem 2.4rem;margin:2.5rem 0;border:1px solid rgba(30,58,106,.6);position:relative}
+.evidence-box::before{content:'EVIDENCE';position:absolute;top:-10px;left:1.4rem;font-size:8px;letter-spacing:4px;color:var(--gold);background:var(--navy-card);padding:0 .6rem;text-transform:uppercase}
+.evidence-body{font-size:15px;color:#b8c8e0;line-height:1.75}
+.evidence-body strong{color:var(--warm)}
+.evidence-source{font-size:10px;color:var(--muted);margin-top:.8rem;letter-spacing:.5px;font-style:italic}
+
+/* BROKEN SYSTEM CARDS */
+.broken-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;margin:2.5rem 0}
+.broken-card{background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.25);border-radius:8px;padding:1.4rem;transition:border-color .3s}
+.broken-card:hover{border-color:rgba(231,76,60,.5)}
+.broken-card-title{font-family:'Cormorant Garamond',serif;font-size:16px;color:#f1948a;margin-bottom:.5rem;font-weight:600}
+.broken-card-body{font-size:13px;color:var(--steel);line-height:1.65}
+
+/* CONTRAST TABLE */
+.contrast-table{width:100%;border-collapse:collapse;margin:2.5rem 0;font-size:14px}
+.contrast-table th{padding:.8rem 1rem;text-align:left;font-size:9px;letter-spacing:3px;text-transform:uppercase;font-family:'Cormorant Garamond',serif;font-weight:600;border-bottom:1px solid var(--navy-border)}
+.contrast-table th:first-child{color:#f1948a}
+.contrast-table th:last-child{color:var(--gold-bright)}
+.contrast-table td{padding:.9rem 1rem;border-bottom:1px solid rgba(30,58,106,.3);vertical-align:top;line-height:1.6}
+.contrast-table tr:last-child td{border-bottom:none}
+.contrast-table td:first-child{color:#9aacbf;font-size:14px}
+.contrast-table td:last-child{color:#b8c8a0;font-size:14px}
+.contrast-table tr:hover td{background:rgba(30,58,106,.15)}
+
+/* VERDICT CALLOUT */
+.verdict{background:linear-gradient(135deg,#1a0808,#1a1008);border:1px solid rgba(192,57,43,.35);border-radius:12px;padding:3rem;margin:4rem 0;text-align:center;position:relative;overflow:hidden}
+.verdict::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(192,57,43,.06),transparent)}
+.verdict-label{font-size:9px;letter-spacing:5px;color:var(--red-soft);text-transform:uppercase;margin-bottom:1.2rem}
+.verdict-text{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,3vw,36px);color:var(--white);line-height:1.4;font-weight:600;position:relative}
+.verdict-text span{color:#f1948a;font-style:italic}
+
+/* HOPE SECTION */
+.hope-section{background:linear-gradient(135deg,#071828,#0c2040);border-radius:12px;padding:3rem;margin:4rem 0;border:1px solid var(--navy-border)}
+.hope-label{font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:1.2rem}
+.hope-title{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3vw,38px);color:var(--white);margin-bottom:1.2rem;font-weight:600;line-height:1.25}
+.hope-title span{color:var(--gold-bright)}
+.hope-body{font-size:15px;color:var(--steel);line-height:1.8}
+
+/* SHARE SECTION */
+.share-section{margin:4rem 0}
+.share-title{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:1.5rem}
+.share-cards{display:flex;flex-direction:column;gap:1rem}
+.share-card{background:var(--navy-card);border-radius:8px;padding:1.4rem 1.8rem;border:1px solid var(--navy-border);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;transition:border-color .25s}
+.share-card:hover{border-color:var(--gold)}
+.share-card-text{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold-bright);font-style:italic;line-height:1.5;flex:1}
+.share-btn{background:transparent;border:1px solid rgba(200,146,42,.4);color:var(--gold);padding:6px 14px;border-radius:4px;font-size:9px;letter-spacing:2px;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;white-space:nowrap;transition:all .2s;flex-shrink:0;margin-top:3px}
+.share-btn:hover{background:rgba(200,146,42,.1);border-color:var(--gold)}
+.share-btn.copied{color:#4ecf96;border-color:#4ecf96}
+
+/* CTA */
+.doc-cta{text-align:center;padding:5rem 2rem;border-top:1px solid rgba(30,58,106,.5);margin-top:3rem}
+.doc-cta-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,4vw,52px);color:var(--white);margin-bottom:1rem;font-weight:600}
+.doc-cta-title span{color:var(--gold-bright)}
+.doc-cta-sub{font-size:16px;color:var(--muted);margin-bottom:2.5rem;line-height:1.8;max-width:500px;margin-left:auto;margin-right:auto}
+.btn-gold{background:var(--gold);color:var(--navy);padding:14px 34px;border-radius:5px;font-size:11px;letter-spacing:2.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .3s}
+.btn-gold:hover{background:var(--gold-bright);transform:translateY(-3px);box-shadow:0 10px 36px rgba(240,192,64,.4)}
+.btn-outline{background:transparent;color:var(--gold);padding:13px 32px;border-radius:5px;font-size:11px;letter-spacing:2.5px;border:1.5px solid rgba(200,146,42,.55);cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .3s;margin-left:1rem}
+.btn-outline:hover{background:rgba(200,146,42,.1);border-color:var(--gold);transform:translateY(-3px)}
+
+/* FOOTER */
+.doc-footer{text-align:center;padding:2rem;border-top:1px solid rgba(30,58,106,.4)}
+.doc-footer-text{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+
+/* UTILS */
+.divider{width:48px;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:2rem 0}
+.divider.red{background:linear-gradient(to right,transparent,var(--red-soft),transparent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scrollPulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes hexFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.hex-deco{position:absolute;opacity:.05;pointer-events:none}
+
+@media(max-width:680px){
+  nav{padding:.9rem 1.2rem}
+  .doc-body{padding:3rem 1.2rem}
+  .warning-banner{padding:1rem 1.2rem}
+  .stat-row{padding:2rem 1.2rem}
+  .btn-outline{margin-left:0;margin-top:.8rem}
+  .share-card{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav>
+  <a class="nav-logo" href="/">ENGAGENEERING™</a>
+  <div class="nav-right">
+    <a class="nav-link" href="/engageneering_manifesto.html">Manifesto</a>
+    <a class="nav-link" href="/framework.html">Framework</a>
+    <a class="nav-link" href="/">← Home</a>
+  </div>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-bg"></div>
+  <svg class="hex-deco" style="top:12%;left:3%;width:160px;animation:hexFloat 9s ease infinite" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#e74c3c" stroke-width=".8"/></svg>
+  <svg class="hex-deco" style="top:20%;right:5%;width:100px;animation:hexFloat 12s ease infinite 2s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#c8922a" stroke-width=".6"/></svg>
+  <svg class="hex-deco" style="bottom:20%;right:4%;width:130px;animation:hexFloat 10s ease infinite 1s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#e74c3c" stroke-width=".7"/></svg>
+  <div class="cover-content">
+    <div class="cover-eyebrow">Engageneering™ — Diagnostic Series</div>
+    <div class="cover-label">The Cornerstone Document</div>
+    <h1 class="cover-title">
+      What's <span class="broken">Broken</span><br>
+      — and <span class="why">Why</span>
+    </h1>
+    <div class="cover-deck">We have built the most elaborate, most expensive, most universally mandated system of human development in history. And it is failing. Not at the edges. At the core.</div>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><div class="cover-meta-dot"></div>Seven Systemic Failures</div>
+      <div class="cover-meta-item"><div class="cover-meta-dot"></div>The Evidence</div>
+      <div class="cover-meta-item"><div class="cover-meta-dot"></div>The Human Cost</div>
+      <div class="cover-meta-item"><div class="cover-meta-dot"></div>The Way Forward</div>
+    </div>
+  </div>
+  <div class="cover-scroll">
+    <div class="cover-scroll-text">Read on</div>
+    <div class="cover-scroll-line"></div>
+  </div>
+</div>
+
+<!-- WARNING BANNER -->
+<div class="warning-banner">
+  <div class="warning-text">This document does not spare anyone's feelings — including ours. The evidence demands honesty. The movement demands more.</div>
+</div>
+
+<!-- STAT ROW -->
+<div class="stat-row">
+  <div class="stat-row-inner">
+    <div class="stat-item">
+      <div class="stat-num">70<span class="stat-unit">%</span></div>
+      <div class="stat-label">of new information forgotten within 24 hours under conventional teaching</div>
+      <div class="stat-source">Ebbinghaus Forgetting Curve, 1885 — confirmed repeatedly since</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">5<span class="stat-unit">%</span></div>
+      <div class="stat-label">average retention rate from lecture-only instruction after two weeks</div>
+      <div class="stat-source">National Training Laboratories, Learning Pyramid research</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">85<span class="stat-unit">%</span></div>
+      <div class="stat-label">of students report being disengaged for significant portions of the school day</div>
+      <div class="stat-source">Gallup Student Engagement Survey, 2022</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">$5<span class="stat-unit">T</span></div>
+      <div class="stat-label">spent globally on education annually — largely on a model designed in 1910</div>
+      <div class="stat-source">UNESCO Global Education Monitoring Report, 2023</div>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="doc-body">
+
+<!-- CHAPTER 1 -->
+<div class="chapter">
+  <div class="chapter-num">Failure 01</div>
+  <h2 class="chapter-title">We confused <span class="broken-accent">teaching</span> with learning.</h2>
+  <p class="chapter-body">This is the original error. The one from which all others flow. Teaching and learning are not the same thing. They are not even reliably connected. <strong>A teacher can teach all day without a single student learning anything.</strong> A student can learn deeply in a room where no teaching is happening at all.</p>
+  <p class="chapter-body">And yet we have built an entire global system — curricula, timetables, qualifications, inspection frameworks, teacher training, school league tables — on the assumption that if teaching happened, learning followed. We have measured inputs — hours in classroom, content covered, lessons delivered — and called it education.</p>
+  <p class="chapter-body">The result: we have optimised an entire profession for the wrong output. Teachers are evaluated on how well they teach. <em>Almost no system on earth evaluates them primarily on how well their students actually learn.</em></p>
+
+  <div class="evidence-box">
+    <div class="evidence-body">John Hattie's landmark meta-analysis <em>Visible Learning</em> (2009), synthesising over 800 meta-studies covering 80 million students, found that the single greatest predictor of student learning is not the quality of the teacher's instruction — it is the <strong>quality of the feedback loop between teacher and learner</strong>. Teaching without feedback is broadcasting. It is not education.</div>
+    <div class="evidence-source">Hattie, J. (2009). Visible Learning. Routledge.</div>
+  </div>
+
+  <div class="pull-quote red">
+    <div class="pull-quote-text">"The greatest illusion in education is that teaching produces learning the way a tap produces water. It does not. It never did."</div>
+    <div class="pull-quote-attr">— Engageneering™</div>
+  </div>
+</div>
+
+<!-- CHAPTER 2 -->
+<div class="chapter">
+  <div class="chapter-num">Failure 02</div>
+  <h2 class="chapter-title">Grades measure <span class="broken-accent">compliance,</span> not understanding.</h2>
+  <p class="chapter-body">The grade is the central myth of modern education. We have built an entire civilisational infrastructure — university admissions, scholarships, employment screening, social status, parental anxiety, student self-worth — on a number that research consistently shows is a <strong>poor predictor of real-world capability and a reliable destroyer of intrinsic motivation.</strong></p>
+  <p class="chapter-body">What do grades actually measure? Primarily: the ability to perform under timed, high-stakes, recall-heavy conditions — a skill set that is almost entirely useless in the contexts education claims to prepare students for. They measure compliance with the examiner's expectations. They measure access to coaching and tutoring. They measure the absence of test anxiety. They measure, powerfully and reliably, socioeconomic status.</p>
+  <p class="chapter-body">They measure, very weakly indeed, the depth of understanding, the capacity for novel application, the ability to collaborate, the drive to keep learning when no one is watching, or the character to persist in the face of failure. These are the things that determine whether a human life flourishes. <em>They are almost entirely invisible to the grade.</em></p>
+
+  <div class="evidence-box">
+    <div class="evidence-body">Alfie Kohn's research synthesis across three decades demonstrates that grading <strong>consistently produces three effects</strong> in learners: reduced interest in the subject being studied, preference for easier tasks that guarantee success, and shallower thinking. The grade does not motivate genuine learning. It motivates grade-seeking — which is a different behaviour entirely, with profoundly different consequences for actual development.</div>
+    <div class="evidence-source">Kohn, A. (1993). Punished by Rewards. Houghton Mifflin. / Kohn, A. (2011). The Case Against Grades. Educational Leadership.</div>
+  </div>
+
+  <div class="broken-grid">
+    <div class="broken-card">
+      <div class="broken-card-title">What grades claim to measure</div>
+      <div class="broken-card-body">Understanding · Capability · Achievement · Readiness · Intelligence</div>
+    </div>
+    <div class="broken-card">
+      <div class="broken-card-title">What grades actually measure</div>
+      <div class="broken-card-body">Recall under pressure · Compliance · Coaching access · Socioeconomic advantage · Absence of test anxiety</div>
+    </div>
+    <div class="broken-card">
+      <div class="broken-card-title">What grades destroy</div>
+      <div class="broken-card-body">Intrinsic motivation · Risk-taking · Love of difficulty · Intellectual honesty · The courage to not know</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAPTER 3 -->
+<div class="chapter">
+  <div class="chapter-num">Failure 03</div>
+  <h2 class="chapter-title">We built classrooms for <span class="broken-accent">factories,</span> not futures.</h2>
+  <p class="chapter-body">The architecture of the modern classroom — rows of desks facing a single point of authority, bells dividing time into uniform blocks, subjects siloed from each other, age-based cohorts moving lockstep through predetermined content — was not designed with the developing human mind in mind. It was designed with the factory shift in mind.</p>
+  <p class="chapter-body">Prussian education reformers of the early 19th century built the model that most of the world still uses. Their explicit goals were: national unity, military preparedness, and an industrial workforce that would show up on time, follow instructions without question, and perform repetitive tasks reliably. <strong>The system worked brilliantly for those goals. Those goals no longer exist.</strong></p>
+  <p class="chapter-body">The 21st century economy does not need compliant instruction-followers. It needs adaptive problem-solvers, creative collaborators, self-directed learners, and people who can navigate radical uncertainty with confidence and curiosity. <em>These are precisely the qualities that the factory classroom systematically suppresses.</em></p>
+
+  <div class="evidence-box">
+    <div class="evidence-body">The World Economic Forum's <em>Future of Jobs Report</em> (2023) identifies the top skills for the decade ahead as: analytical thinking, creative thinking, resilience and flexibility, motivation and self-awareness, curiosity and lifelong learning. <strong>None of these are reliably developed by instruction, memorisation, and standardised testing.</strong> All of them are developed by active engagement, productive struggle, peer collaboration, and intrinsic motivation — the conditions that conventional schooling systematically discourages.</div>
+    <div class="evidence-source">World Economic Forum. (2023). Future of Jobs Report. Geneva: WEF.</div>
+  </div>
+
+  <div class="pull-quote gold">
+    <div class="pull-quote-text">"We are educating children for jobs that don't yet exist, using methods designed for jobs that no longer do."</div>
+    <div class="pull-quote-attr">— Engageneering™</div>
+  </div>
+</div>
+
+<!-- CHAPTER 4 -->
+<div class="chapter">
+  <div class="chapter-num">Failure 04</div>
+  <h2 class="chapter-title">Content coverage became the <span class="broken-accent">enemy</span> of understanding.</h2>
+  <p class="chapter-body">Ask any teacher in any country what their greatest professional pressure is. The answer is almost always the same: <em>coverage.</em> Cover the curriculum. Get through the content. Finish the syllabus before the exam. The relentless pressure to cover ground means that understanding is perpetually sacrificed on the altar of pace.</p>
+  <p class="chapter-body">The curriculum — that vast, bloated inventory of content that every student is theoretically required to encounter — has become the oppressor of genuine education. It is the document that makes deep learning structurally impossible. Because you cannot cover thirty topics deeply. You can cover them superficially. You can create the appearance of having taught them. <strong>You cannot create genuine understanding of thirty things when the system gives you one week per topic and then moves on regardless.</strong></p>
+  <p class="chapter-body">The research on expertise is unambiguous: depth trumps breadth, always. Experts in any domain know fewer things than non-experts think they do — but they know those things at a level of integration, nuance, and applicability that changes how they think. Covering 30 topics at surface level produces 30 forgotten surface impressions. <em>Going deep on 10 produces a thinker.</em></p>
+
+  <div class="evidence-box">
+    <div class="evidence-body">A landmark OECD analysis comparing mathematics curricula across high-performing and low-performing countries found that <strong>the highest-performing systems taught fewer topics more deeply</strong>. Singapore, consistently among the top performers, teaches roughly 40% fewer mathematical concepts than the United States — and does so with dramatically superior outcomes. The irony: more content, less learning. Less content, more.</div>
+    <div class="evidence-source">Schmidt, W.H. et al. (2002). A Coherent Curriculum. American Educator. / OECD PISA reports, 2009-2022.</div>
+  </div>
+</div>
+
+<!-- CHAPTER 5 -->
+<div class="chapter">
+  <div class="chapter-num">Failure 05</div>
+  <h2 class="chapter-title">We extinguished curiosity and called it <span class="broken-accent">discipline.</span></h2>
+  <p class="chapter-body">Every child arrives at school as a natural scientist. They ask questions incessantly. They test hypotheses constantly. They have an almost unlimited appetite for understanding how things work. <strong>By the time they leave secondary school, the majority have had this capacity systematically trained out of them.</strong></p>
+  <p class="chapter-body">We did not intend to destroy curiosity. But we built systems that reward the right answer over the interesting question, that punish not-knowing as failure rather than celebrating it as the beginning of inquiry, that structure time so that student questions are interruptions rather than the curriculum itself. We taught students that school is a place where the teacher knows and the student receives — and that deviation from this arrangement is disruptive.</p>
+  <p class="chapter-body">The student who asks "but why does that work?" in the middle of a lesson is not a problem. <em>That student is the entire point.</em> And yet our systems treat that question — more often than not — as a delay to be managed rather than a doorway to be walked through.</p>
+
+  <div class="evidence-box">
+    <div class="evidence-body">George Land's longitudinal creativity study (originally conducted for NASA) tested 1,600 children at ages 5, 10, and 15, then re-tested the same cohort as adults. At age 5: <strong>98% scored at genius level for divergent thinking</strong>. At age 10: 30%. At age 15: 12%. Adults: 2%. "We are not taught to be creative," Land concluded. <strong>"We are taught to be uncreative."</strong> The school years are precisely the period of greatest decline.</div>
+    <div class="evidence-source">Land, G. & Jarman, B. (1992). Breakpoint and Beyond. HarperCollins.</div>
+  </div>
+
+  <div class="pull-quote red">
+    <div class="pull-quote-text">"We spend the first years of a child's life encouraging every question they ask. Then we send them to school and spend the next twelve years teaching them to stop."</div>
+    <div class="pull-quote-attr">— Engageneering™</div>
+  </div>
+</div>
+
+<!-- CHAPTER 6 -->
+<div class="chapter">
+  <div class="chapter-num">Failure 06</div>
+  <h2 class="chapter-title">Feedback arrives too <span class="broken-accent">late</span> to matter.</h2>
+  <p class="chapter-body">In almost every learning system on earth, the dominant feedback mechanism is the examination — a high-stakes event that occurs after the learning is supposed to have happened, delivers a verdict on the learner's performance weeks later, and provides information that is almost entirely useless for improving the learning that has already occurred. <strong>The exam tells the student how they did. It does not tell them how to do better.</strong> And by the time it arrives, they have already moved on.</p>
+  <p class="chapter-body">Imagine a sportsperson who trained for six months and received feedback only at competition day, in the form of a number between 0 and 100 with no explanation of what went wrong or how to improve. We would call this absurd. We would recognise immediately that this is not a coaching relationship — it is a judging relationship. And we would know that no athlete improves under a judging relationship alone.</p>
+  <p class="chapter-body">Yet this is precisely the feedback architecture of the global education system. <em>We have confused assessment with feedback, judgment with coaching, the verdict with the conversation.</em> And we have built entire professional cultures — exam boards, marking criteria, grade boundaries — around the verdict, while leaving the conversation almost entirely to chance.</p>
+
+  <div class="evidence-box">
+    <div class="evidence-body">Dylan Wiliam and Paul Black's landmark review <em>Inside the Black Box</em> (1998) analysed 250 studies on classroom assessment and concluded that <strong>improving the quality of in-class feedback is the single most powerful intervention available to raise student achievement</strong> — more powerful than reduced class sizes, more powerful than technology, more powerful than any curriculum reform. The evidence is thirty years old, universally accepted, and almost universally ignored in system design.</div>
+    <div class="evidence-source">Black, P. & Wiliam, D. (1998). Inside the Black Box. King's College London.</div>
+  </div>
+</div>
+
+<!-- CHAPTER 7 -->
+<div class="chapter">
+  <div class="chapter-num">Failure 07</div>
+  <h2 class="chapter-title">We forgot that teachers are <span class="broken-accent">human beings,</span> not delivery mechanisms.</h2>
+  <p class="chapter-body">The final and perhaps most damaging failure of the current system is what it does to the people within it. Teachers — among the most educated, most dedicated, most socially important professionals on earth — are routinely treated as curriculum-delivery devices. Their role is defined by what they must cover, not by who they are serving. Their success is measured by exam results, not by the quality of the human relationships that make learning possible.</p>
+  <p class="chapter-body">The consequences are predictable and visible everywhere: burnout at epidemic levels, departure from the profession within the first five years at rates that approach 50% in many countries, a creeping demoralisation that turns the most motivated new teachers into clock-watchers within a decade. <strong>We have built a system that systematically breaks the people it depends on.</strong></p>
+  <p class="chapter-body">And here is the deepest irony: <em>the teachers who engage their students most powerfully are almost never the ones who deliver content most efficiently.</em> They are the ones who ask better questions, who build genuine relationships, who create safety for failure, who make their own curiosity visible. These are human skills. They cannot be mandated. They cannot be inspected into existence. They grow in conditions of professional trust, autonomy, and genuine community — conditions that most school systems actively destroy.</p>
+
+  <div class="evidence-box">
+    <div class="evidence-body">A 2022 OECD TALIS survey across 48 countries found that <strong>fewer than 40% of teachers feel their profession is valued by society</strong>. In high-performing education systems — Finland, Canada, Singapore — teacher autonomy, collaboration time, and professional trust are structural features of the system, not aspirational extras. The correlation between teacher professional wellbeing and student learning outcomes is not incidental. <strong>You cannot build engaged learners with disengaged teachers.</strong></div>
+    <div class="evidence-source">OECD. (2022). TALIS 2022 Results. Paris: OECD Publishing.</div>
+  </div>
+
+  <div class="pull-quote gold">
+    <div class="pull-quote-text">"You cannot build engaged learners with disengaged teachers. The engagement must begin in the staffroom."</div>
+    <div class="pull-quote-attr">— Engageneering™</div>
+  </div>
+</div>
+
+<!-- THE VERDICT -->
+<div class="chapter">
+  <div class="chapter-num">The Verdict</div>
+  <h2 class="chapter-title">The <span class="accent">cost</span> of continuing.</h2>
+  <p class="chapter-body">These seven failures are not isolated problems. They are interconnected symptoms of a single systemic error — a philosophy of education that prioritises the appearance of learning over the reality of it, that serves the system's administrative needs over the learner's developmental ones, and that has persisted not because it works but because changing it is hard.</p>
+  <p class="chapter-body">The cost of continuing is not abstract. It is measured in the billions of students who leave school having never experienced genuine intellectual engagement. In the teachers who entered the profession to change lives and left it burned out and invisible. In the graduate who cannot think through a problem they haven't seen before. In the professional who stops learning the moment no one is grading them anymore. In the citizen who was never taught to ask why.</p>
+
+  <div class="contrast-table-wrap" style="overflow-x:auto;margin:2.5rem 0">
+    <table class="contrast-table">
+      <thead>
+        <tr>
+          <th>The current system produces...</th>
+          <th>The world now needs...</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Students who memorise and forget</td><td>People who understand and apply</td></tr>
+        <tr><td>Grade-seekers who avoid difficulty</td><td>Learners who seek challenge and complexity</td></tr>
+        <tr><td>Compliant answer-givers</td><td>Curious question-askers</td></tr>
+        <tr><td>Individual competitors</td><td>Collaborative problem-solvers</td></tr>
+        <tr><td>People who stop learning when no one is watching</td><td>Lifelong learners who cannot stop</td></tr>
+        <tr><td>Certificates of attendance</td><td>Evidence of genuine capability</td></tr>
+        <tr><td>Graduates prepared for 1975</td><td>Humans prepared for a world not yet imaginable</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="verdict">
+    <div class="verdict-label">The Engageneering™ Verdict</div>
+    <div class="verdict-text">The system is not failing because of bad teachers.<br>It is failing because of a <span>bad philosophy.</span><br>And philosophy can be changed.</div>
+  </div>
+</div>
+
+<!-- THE WAY FORWARD -->
+<div class="chapter">
+  <div class="hope-section">
+    <div class="hope-label">The Way Forward</div>
+    <h3 class="hope-title">This is not a counsel of <span>despair.</span></h3>
+    <p class="hope-body" style="margin-bottom:1rem">We have named seven failures not to paralyse but to liberate — because you cannot fix what you have not honestly diagnosed. And because the evidence that points so clearly to what is broken points with equal clarity to what works.</p>
+    <p class="hope-body" style="margin-bottom:1rem">We know what engagement looks like. We know how curiosity is triggered. We know how memory is built and how it is destroyed. We know how feedback accelerates learning. We know how peer connection deepens understanding. We know how to measure what actually matters. <strong>The knowledge exists. The frameworks exist. The evidence exists.</strong></p>
+    <p class="hope-body">What has been missing is a movement — a community of educators with the language, the tools, the identity, and the collective will to engineer something better. That is what Engageneering™ is building. One classroom at a time. Until the philosophy shifts.</p>
+  </div>
+</div>
+
+<!-- SHAREABLE QUOTES -->
+<div class="chapter">
+  <div class="share-section">
+    <div class="share-title">Share This</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:1.5rem;line-height:1.7">These ideas belong to the movement. Copy, share, post — and credit Engageneering™ if you do.</p>
+    <div class="share-cards">
+      <div class="share-card">
+        <div class="share-card-text">"The greatest illusion in education is that teaching produces learning the way a tap produces water. It does not. It never did." — Engageneering™</div>
+        <button class="share-btn" onclick="copyQuote(this,'The greatest illusion in education is that teaching produces learning the way a tap produces water. It does not. It never did. — Engageneering™ engageneering.org')">Copy</button>
+      </div>
+      <div class="share-card">
+        <div class="share-card-text">"We are educating children for jobs that don't yet exist, using methods designed for jobs that no longer do." — Engageneering™</div>
+        <button class="share-btn" onclick="copyQuote(this,'We are educating children for jobs that don\'t yet exist, using methods designed for jobs that no longer do. — Engageneering™ engageneering.org')">Copy</button>
+      </div>
+      <div class="share-card">
+        <div class="share-card-text">"At age 5, 98% of children score at genius level for creative thinking. By adulthood: 2%. The school years are the years of greatest decline." — Engageneering™ citing Land (1992)</div>
+        <button class="share-btn" onclick="copyQuote(this,'At age 5, 98% of children score at genius level for creative thinking. By adulthood: 2%. The school years are the years of greatest decline. — Engageneering™ engageneering.org')">Copy</button>
+      </div>
+      <div class="share-card">
+        <div class="share-card-text">"You cannot build engaged learners with disengaged teachers. The engagement must begin in the staffroom." — Engageneering™</div>
+        <button class="share-btn" onclick="copyQuote(this,'You cannot build engaged learners with disengaged teachers. The engagement must begin in the staffroom. — Engageneering™ engageneering.org')">Copy</button>
+      </div>
+      <div class="share-card">
+        <div class="share-card-text">"The system is not failing because of bad teachers. It is failing because of a bad philosophy. And philosophy can be changed." — Engageneering™</div>
+        <button class="share-btn" onclick="copyQuote(this,'The system is not failing because of bad teachers. It is failing because of a bad philosophy. And philosophy can be changed. — Engageneering™ engageneering.org')">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="doc-cta">
+  <h2 class="doc-cta-title">Now that you know <span>what's broken —</span></h2>
+  <p class="doc-cta-sub">Read the Framework. Take the audit. Join the movement that is building something better.</p>
+  <button class="btn-gold" onclick="window.location.href='/framework.html'">Read the Framework</button>
+  <button class="btn-outline" onclick="window.location.href='/engageneering_manifesto.html'">Read the Manifesto</button>
+</div>
+
+</div><!-- /doc-body -->
+
+<div class="doc-footer">
+  <div class="doc-footer-text">© 2025 Engageneering™ · All rights reserved · Section 41 Trademark · engageneering.org</div>
+</div>
+
+<script>
+/* Progress bar */
+window.addEventListener('scroll',()=>{
+  const d=document.documentElement;
+  document.getElementById('progress').style.width=((d.scrollTop/(d.scrollHeight-d.clientHeight))*100)+'%';
+});
+
+/* Scroll reveal */
+const chapters=document.querySelectorAll('.chapter');
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}
+  });
+},{threshold:.07,rootMargin:'0px 0px -40px 0px'});
+chapters.forEach(c=>obs.observe(c));
+
+/* Copy quotes */
+function copyQuote(btn,text){
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},2200);
+  });
+}
+</script>
+</body>
+</html>

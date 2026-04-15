@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="The Engageneering™ Framework — Six pillars for engineering engagement across every learning context. The operational core of the movement."/>
+<title>The Engageneering™ Framework — Engineer the Engagement</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#060c1a;
+  --navy-mid:#0b1624;
+  --navy-card:#0f1e36;
+  --navy-border:#1e3a6a;
+  --gold:#c8922a;
+  --gold-bright:#f0c040;
+  --gold-light:#f5d060;
+  --steel:#8a9ab8;
+  --muted:#4a6a8a;
+  --white:#ffffff;
+  --warm:#f5f0e8;
+  --p1:#c8922a;--p2:#3a7abd;--p3:#2a9d6a;--p4:#9b59b6;--p5:#e74c3c;--p6:#e67e22;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:#c8d4e8;font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:1.85;overflow-x:hidden}
+::selection{background:rgba(200,146,42,0.3);color:#fff}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--gold)}
+
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--gold);z-index:999;width:0%;transition:width .1s}
+
+/* NAV */
+nav{position:fixed;top:2px;left:0;right:0;z-index:200;padding:1.1rem 3rem;display:flex;justify-content:space-between;align-items:center;background:rgba(6,12,26,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(30,58,106,0.4)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:3px;color:var(--gold);text-decoration:none;font-weight:700}
+.nav-right{display:flex;gap:1.5rem;align-items:center}
+.nav-link{font-size:10px;letter-spacing:2px;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.nav-link:hover{color:var(--gold)}
+
+/* HERO */
+.fw-hero{min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 5rem;position:relative;overflow:hidden;background:radial-gradient(ellipse 70% 55% at 50% 45%,#0f2040,var(--navy) 70%)}
+.fw-eyebrow{font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:1.8rem;opacity:0;animation:fadeUp 1s ease .3s forwards}
+.fw-title{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,6vw,80px);color:var(--white);line-height:1.08;font-weight:700;margin-bottom:1rem;opacity:0;animation:fadeUp 1s ease .6s forwards}
+.fw-title span{color:var(--gold-bright);font-style:italic}
+.fw-sub{font-size:clamp(14px,1.8vw,19px);color:var(--steel);max-width:620px;line-height:1.8;margin:0 auto 2rem;opacity:0;animation:fadeUp 1s ease .9s forwards}
+.fw-meta{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp 1s ease 1.1s forwards}
+.fw-meta-item{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:.5rem}
+.fw-meta-dot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+
+/* CONTENTS */
+.contents{max-width:900px;margin:0 auto;padding:4rem 2rem 2rem}
+.contents-inner{background:var(--navy-card);border-radius:12px;padding:2.5rem;border:1px solid var(--navy-border)}
+.contents-title{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:1.8rem}
+.contents-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem}
+.contents-item{display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;border-radius:6px;transition:background .2s;cursor:pointer;text-decoration:none}
+.contents-item:hover{background:rgba(200,146,42,.08)}
+.contents-num{font-family:'Cormorant Garamond',serif;font-size:11px;color:var(--gold);min-width:24px;letter-spacing:1px}
+.contents-label{font-size:13px;color:var(--steel);letter-spacing:.3px}
+
+/* BODY */
+.fw-body{max-width:900px;margin:0 auto;padding:2rem 2rem 6rem}
+
+/* PILLAR SECTION */
+.pillar{margin-bottom:7rem;opacity:0;transform:translateY(30px);transition:opacity .9s ease,transform .9s ease}
+.pillar.visible{opacity:1;transform:translateY(0)}
+.pillar-header{display:flex;align-items:flex-start;gap:2rem;margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--navy-border)}
+.pillar-num-wrap{display:flex;flex-direction:column;align-items:center;gap:.5rem;flex-shrink:0}
+.pillar-hex{width:64px;height:72px}
+.pillar-num-label{font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.pillar-title-wrap{flex:1}
+.pillar-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;margin-bottom:.6rem}
+.pillar-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,3.5vw,42px);color:var(--white);line-height:1.15;font-weight:600;margin-bottom:.5rem}
+.pillar-tagline{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--steel)}
+
+/* Pillar body content */
+.pillar-body{color:#b0bcd4;line-height:1.95;margin-bottom:1.4rem}
+.pillar-body strong{color:var(--warm);font-weight:500}
+
+/* Context grid */
+.context-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:2rem 0}
+.context-card{background:var(--navy-card);border-radius:8px;padding:1.2rem 1.4rem;border-top:2px solid var(--navy-border)}
+.context-label{font-size:8px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem}
+.context-title{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--gold-bright);margin-bottom:.4rem;font-weight:600}
+.context-body{font-size:12px;color:var(--steel);line-height:1.65}
+
+/* Technique list */
+.technique-list{list-style:none;display:flex;flex-direction:column;gap:1rem;margin:1.8rem 0}
+.technique-item{display:flex;gap:1rem;align-items:flex-start;padding:1rem 1.2rem;background:rgba(15,30,54,.6);border-radius:6px;border-left:2px solid var(--navy-border);transition:border-color .2s}
+.technique-item:hover{border-color:var(--gold)}
+.technique-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px}
+.technique-name{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--gold-bright);margin-bottom:3px;font-weight:600}
+.technique-desc{font-size:13px;color:var(--steel);line-height:1.6}
+
+/* Pull quote */
+.pull-quote{border-left:2px solid var(--gold);padding:1.2rem 2rem;margin:2.5rem 0;background:rgba(200,146,42,.04);border-radius:0 6px 6px 0}
+.pull-quote-text{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.5vw,26px);color:var(--gold-bright);line-height:1.5;font-style:italic;font-weight:300}
+.pull-quote-attr{font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:.7rem;text-transform:uppercase}
+
+/* Callout */
+.callout{background:rgba(15,30,54,.8);border:1px solid rgba(30,58,106,.8);border-radius:8px;padding:1.8rem 2.2rem;margin:2rem 0}
+.callout-label{font-size:8px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:.8rem}
+.callout-text{font-family:'Cormorant Garamond',serif;font-size:16px;color:#c0cce0;line-height:1.75}
+
+/* ═══════════════════════════
+   SELF-ASSESSMENT
+═══════════════════════════ */
+.assessment-section{background:var(--navy-card);border-radius:16px;padding:3rem;border:1px solid var(--navy-border);margin:4rem 0;opacity:0;transform:translateY(30px);transition:opacity .9s ease,transform .9s ease}
+.assessment-section.visible{opacity:1;transform:translateY(0)}
+.assessment-title{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,3vw,38px);color:var(--white);margin-bottom:.6rem;font-weight:600}
+.assessment-title span{color:var(--gold-bright)}
+.assessment-sub{font-size:15px;color:var(--muted);margin-bottom:2.5rem;line-height:1.7}
+.assessment-intro{font-size:14px;color:var(--steel);margin-bottom:2rem;padding:1rem 1.4rem;background:rgba(200,146,42,.05);border-radius:6px;border-left:2px solid var(--gold);line-height:1.7}
+
+/* Pillar rows */
+.ap-row{margin-bottom:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid rgba(30,58,106,.4)}
+.ap-row:last-of-type{border-bottom:none;margin-bottom:1rem}
+.ap-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;flex-wrap:wrap;gap:.5rem}
+.ap-name{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold-bright);font-weight:600}
+.ap-score-display{font-size:13px;color:var(--gold);font-family:'Cormorant Garamond',serif;min-width:80px;text-align:right}
+.ap-desc{font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6}
+.ap-slider-wrap{display:flex;align-items:center;gap:1rem}
+.ap-label-lo{font-size:10px;color:var(--muted);letter-spacing:1px;white-space:nowrap}
+.ap-label-hi{font-size:10px;color:var(--gold);letter-spacing:1px;white-space:nowrap}
+.ap-slider{flex:1;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;outline:none;cursor:pointer;background:var(--navy-border)}
+.ap-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 8px rgba(200,146,42,.4);transition:transform .15s}
+.ap-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.ap-marks{display:flex;justify-content:space-between;margin-top:.3rem;padding:0 2px}
+.ap-mark{font-size:9px;color:rgba(74,106,138,.6)}
+
+/* Score result */
+.score-result{background:linear-gradient(135deg,#0c1e40,#182e58);border-radius:12px;padding:2.5rem;text-align:center;margin-top:2rem;display:none}
+.score-result.show{display:block}
+.score-circle{width:110px;height:110px;border-radius:50%;border:3px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 1.5rem;background:rgba(200,146,42,.08)}
+.score-val{font-family:'Cormorant Garamond',serif;font-size:38px;color:var(--gold-bright);line-height:1}
+.score-max{font-size:12px;color:var(--muted)}
+.score-band{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--white);margin-bottom:.6rem;font-weight:600}
+.score-band span{color:var(--gold-bright)}
+.score-message{font-size:14px;color:var(--steel);line-height:1.75;max-width:480px;margin:0 auto 1.5rem}
+.score-bars{display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem;margin:1.5rem 0}
+.score-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:.3rem}
+.score-bar-track{width:100%;height:60px;background:rgba(30,58,106,.4);border-radius:3px;position:relative;overflow:hidden}
+.score-bar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:3px;transition:height .8s ease}
+.score-bar-label{font-size:8px;color:var(--muted);letter-spacing:.5px;text-align:center;line-height:1.3}
+.btn-retake{background:transparent;color:var(--gold);border:1.5px solid rgba(200,146,42,.5);padding:10px 24px;border-radius:5px;font-size:11px;letter-spacing:2px;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .25s;margin-top:1rem}
+.btn-retake:hover{background:rgba(200,146,42,.1);border-color:var(--gold)}
+.btn-assess{background:var(--gold);color:var(--navy);padding:13px 30px;border-radius:5px;font-size:11px;letter-spacing:2px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .3s;margin-top:1.5rem;display:block;width:100%}
+.btn-assess:hover{background:var(--gold-bright);transform:translateY(-2px);box-shadow:0 8px 28px rgba(240,192,64,.35)}
+
+/* CTA */
+.fw-cta{text-align:center;padding:5rem 2rem;border-top:1px solid rgba(30,58,106,.5)}
+.fw-cta-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,4vw,50px);color:var(--white);margin-bottom:1rem;font-weight:600}
+.fw-cta-title span{color:var(--gold-bright)}
+.fw-cta-sub{font-size:16px;color:var(--muted);margin-bottom:2.5rem;line-height:1.8}
+.btn-gold{background:var(--gold);color:var(--navy);padding:14px 32px;border-radius:5px;font-size:11px;letter-spacing:2.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .3s}
+.btn-gold:hover{background:var(--gold-bright);transform:translateY(-3px);box-shadow:0 10px 36px rgba(240,192,64,.4)}
+.btn-outline{background:transparent;color:var(--gold);padding:13px 30px;border-radius:5px;font-size:11px;letter-spacing:2.5px;border:1.5px solid rgba(200,146,42,.55);cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .3s;margin-left:1rem}
+.btn-outline:hover{background:rgba(200,146,42,.1);border-color:var(--gold);transform:translateY(-3px)}
+
+/* FOOTER */
+.fw-footer{text-align:center;padding:2rem;border-top:1px solid rgba(30,58,106,.4)}
+.fw-footer-text{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+
+/* Divider */
+.divider{width:48px;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:2rem 0}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes hexFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.hex-deco{position:absolute;opacity:.06;pointer-events:none}
+
+@media(max-width:680px){
+  nav{padding:.9rem 1.2rem}
+  .fw-body,.contents,.fw-cta{padding-left:1.2rem;padding-right:1.2rem}
+  .pillar-header{flex-direction:column;gap:1rem}
+  .assessment-section{padding:1.8rem 1.2rem}
+  .btn-outline{margin-left:0;margin-top:.8rem}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav>
+  <a class="nav-logo" href="/">ENGAGENEERING™</a>
+  <div class="nav-right">
+    <a class="nav-link" href="/engageneering_manifesto.html">Manifesto</a>
+    <a class="nav-link" href="/">← Back to Site</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="fw-hero">
+  <svg class="hex-deco" style="top:10%;left:3%;width:160px;animation:hexFloat 9s ease infinite" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#c8922a" stroke-width="1"/></svg>
+  <svg class="hex-deco" style="top:20%;right:4%;width:90px;animation:hexFloat 11s ease infinite 2s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#f0c040" stroke-width=".7"/></svg>
+  <svg class="hex-deco" style="bottom:18%;right:6%;width:120px;animation:hexFloat 13s ease infinite 1s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#c8922a" stroke-width=".8"/></svg>
+
+  <div class="fw-eyebrow">Engageneering™ — Operational Core</div>
+  <h1 class="fw-title">The <span>Engageneering™</span><br>Framework</h1>
+  <p class="fw-sub">Six pillars for engineering engagement across every learning context — from pre-school to the boardroom. The operational heart of the movement.</p>
+  <div class="fw-meta">
+    <div class="fw-meta-item"><div class="fw-meta-dot"></div>Six Pillars</div>
+    <div class="fw-meta-item"><div class="fw-meta-dot"></div>Four Learning Contexts</div>
+    <div class="fw-meta-item"><div class="fw-meta-dot"></div>24 Core Techniques</div>
+    <div class="fw-meta-item"><div class="fw-meta-dot"></div>Self-Assessment Included</div>
+  </div>
+</div>
+
+<!-- CONTENTS -->
+<div class="contents">
+  <div class="contents-inner">
+    <div class="contents-title">Framework Contents</div>
+    <div class="contents-grid">
+      <a class="contents-item" href="#p1"><span class="contents-num">01</span><span class="contents-label">Active Learning Design</span></a>
+      <a class="contents-item" href="#p2"><span class="contents-num">02</span><span class="contents-label">Curiosity Engineering</span></a>
+      <a class="contents-item" href="#p3"><span class="contents-num">03</span><span class="contents-label">Peer Connection Systems</span></a>
+      <a class="contents-item" href="#p4"><span class="contents-num">04</span><span class="contents-label">Attention Architecture</span></a>
+      <a class="contents-item" href="#p5"><span class="contents-num">05</span><span class="contents-label">Real-Time Feedback Loops</span></a>
+      <a class="contents-item" href="#p6"><span class="contents-num">06</span><span class="contents-label">Impact Measurement</span></a>
+      <a class="contents-item" href="#assessment"><span class="contents-num">✦</span><span class="contents-label">Self-Assessment Audit</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="fw-body">
+
+<!-- ═══════════════ PILLAR 1 ═══════════════ -->
+<div class="pillar" id="p1">
+  <div class="pillar-header">
+    <div class="pillar-num-wrap">
+      <svg class="pillar-hex" viewBox="0 0 52 60">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="rgba(200,146,42,0.12)" stroke="#c8922a" stroke-width="1.5"/>
+        <text x="26" y="34" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="18" fill="#f0c040" font-weight="700">01</text>
+      </svg>
+      <div class="pillar-num-label">Pillar One</div>
+    </div>
+    <div class="pillar-title-wrap">
+      <div class="pillar-label" style="color:var(--p1)">Active Learning Design</div>
+      <div class="pillar-title">From <span style="color:var(--gold-bright);font-style:italic">receivers</span> to constructors.</div>
+      <div class="pillar-tagline">Every learner does something with knowledge — always.</div>
+    </div>
+  </div>
+
+  <p class="pillar-body">The most fundamental shift in Engageneering™ is the move from passive to active. In the transmission model, the teacher is the actor and the student is the audience. In the Engageneering™ model, <strong>the student is always the actor.</strong> The teacher becomes the director — designing experiences, not delivering content.</p>
+  <p class="pillar-body">Active learning is not busy work. It is not group projects for the sake of noise, or activities that substitute movement for thinking. True active learning means that at every moment of a session, learners are cognitively engaged — constructing, questioning, connecting, applying, or creating.</p>
+
+  <div class="pull-quote">
+    <div class="pull-quote-text">"Tell me and I forget. Teach me and I remember. Involve me and I learn."</div>
+    <div class="pull-quote-attr">— Benjamin Franklin</div>
+  </div>
+
+  <div class="divider"></div>
+  <p class="pillar-body" style="font-family:'Cormorant Garamond',serif;font-size:15px;letter-spacing:2px;color:var(--gold);text-transform:uppercase">Core Techniques</p>
+  <ul class="technique-list">
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(200,146,42,.15)">◈</div>
+      <div><div class="technique-name">Think-Pair-Share+</div><div class="technique-desc">Beyond the classic: learners think independently (2 min), pair to challenge each other's thinking — not just share — then synthesise a joint position for the group. The '+' is the challenge step most teachers skip.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(200,146,42,.15)">◉</div>
+      <div><div class="technique-name">Jigsaw Expertise</div><div class="technique-desc">Each learner becomes the expert on one component, then teaches it to peers. When you know you'll teach it — your brain engages differently. Accountability + peer teaching in one structure.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(200,146,42,.15)">◎</div>
+      <div><div class="technique-name">Muddiest Point</div><div class="technique-desc">At session mid-point, every learner writes the one thing they find most unclear on a card. Teacher reads them aloud anonymously. The class — not the teacher — attempts to resolve each muddy point first.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(200,146,42,.15)">⬡</div>
+      <div><div class="technique-name">Application First</div><div class="technique-desc">Present the real-world problem before teaching the concept. Let learners struggle productively with the application for 10 minutes before revealing the framework. The struggle primes the brain for the content.</div></div>
+    </li>
+  </ul>
+
+  <div class="context-grid">
+    <div class="context-card" style="border-color:var(--p1)">
+      <div class="context-label">Pre-School & Primary</div>
+      <div class="context-title">Learn through doing</div>
+      <div class="context-body">Stations, manipulatives, role-play, and discovery tasks. Every concept has a physical or sensory anchor. No more than 8 minutes of direct instruction before an active task.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p2)">
+      <div class="context-label">Secondary / High School</div>
+      <div class="context-title">Debate and construct</div>
+      <div class="context-body">Structured academic controversy, Socratic seminars, project-based learning with real audiences. Students present to each other — not just to the teacher.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p3)">
+      <div class="context-label">Higher Education</div>
+      <div class="context-title">Flipped and applied</div>
+      <div class="context-body">Content delivery moves outside class time. Class time is reserved entirely for application, analysis, and creation. Lectures become workshops.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p4)">
+      <div class="context-label">Corporate Training</div>
+      <div class="context-title">Simulate and decide</div>
+      <div class="context-body">Case studies, simulations, and live problem-solving replace slide decks. Participants bring real challenges into the room and leave with real solutions.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PILLAR 2 ═══════════════ -->
+<div class="pillar" id="p2">
+  <div class="pillar-header">
+    <div class="pillar-num-wrap">
+      <svg class="pillar-hex" viewBox="0 0 52 60">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="rgba(58,122,189,0.12)" stroke="#3a7abd" stroke-width="1.5"/>
+        <text x="26" y="34" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="18" fill="#6aaae8" font-weight="700">02</text>
+      </svg>
+      <div class="pillar-num-label">Pillar Two</div>
+    </div>
+    <div class="pillar-title-wrap">
+      <div class="pillar-label" style="color:var(--p2)">Curiosity Engineering</div>
+      <div class="pillar-title">Build the <span style="color:#6aaae8;font-style:italic">hunger</span> before the meal.</div>
+      <div class="pillar-tagline">Design the question before you deliver the answer.</div>
+    </div>
+  </div>
+
+  <p class="pillar-body">Curiosity is not a personality trait. It is a neurological state — one that can be reliably triggered by specific conditions. Engageneering™ treats curiosity as an engineerable input, not a hoped-for outcome. <strong>The teacher's first job is not to answer questions. It is to create them.</strong></p>
+  <p class="pillar-body">The curiosity gap — the psychological discomfort created by the distance between what we know and what we want to know — is the most powerful motivational force in learning. George Loewenstein's information-gap theory confirms what every great teacher has always felt intuitively: the itch must precede the scratch.</p>
+
+  <div class="callout">
+    <div class="callout-label">The Engageneering™ Curiosity Principle</div>
+    <div class="callout-text">Never answer a question the student hasn't yet asked. Never teach a concept before the learner feels the need for it. The moment of felt need — the "but why does that happen?" — is worth more than any explanation that follows.</div>
+  </div>
+
+  <ul class="technique-list">
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(58,122,189,.15)">?</div>
+      <div><div class="technique-name">The Curiosity Hook</div><div class="technique-desc">Open every session with an anomaly, contradiction, or mystery — something that shouldn't be true, but is. The brain cannot ignore unresolved contradiction. It demands resolution. That demand is your engagement.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(58,122,189,.15)">◐</div>
+      <div><div class="technique-name">Question Storms</div><div class="technique-desc">Before teaching a topic, learners generate as many questions as possible in 4 minutes — no answers allowed. Quantity over quality. This maps the curiosity landscape and creates personal investment in what follows.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(58,122,189,.15)">◑</div>
+      <div><div class="technique-name">Prediction Before Revelation</div><div class="technique-desc">Before showing results, data, or outcomes — ask learners to predict. The prediction creates a stake. Confirmation or refutation of the prediction is cognitively activating in a way that simply presenting information never is.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(58,122,189,.15)">◒</div>
+      <div><div class="technique-name">The Cliffhanger Close</div><div class="technique-desc">End sessions with an unresolved question — not a summary. "We now know X. But here's what doesn't fit..." The brain continues processing unresolved problems. The next session begins with a learner who has been thinking overnight.</div></div>
+    </li>
+  </ul>
+
+  <div class="context-grid">
+    <div class="context-card" style="border-color:var(--p1)">
+      <div class="context-label">Pre-School & Primary</div>
+      <div class="context-title">Wonder walls</div>
+      <div class="context-body">Physical "I wonder..." walls where children post questions throughout the week. The class votes on which to explore. Ownership of the inquiry begins with ownership of the question.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p2)">
+      <div class="context-label">Secondary / High School</div>
+      <div class="context-title">Essential questions</div>
+      <div class="context-body">Every unit is framed by one genuinely controversial essential question — one that experts still disagree on. Students know from day one that there is no tidy answer. That ambiguity is the engine.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p3)">
+      <div class="context-label">Higher Education</div>
+      <div class="context-title">Research as story</div>
+      <div class="context-body">Frame each lecture as a detective story — what did researchers not know? What clues did they follow? What dead ends? The process of discovery is more engaging than the discovery itself.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p4)">
+      <div class="context-label">Corporate Training</div>
+      <div class="context-title">The diagnostic open</div>
+      <div class="context-body">Begin every training with data from the participants' own organisation — their own numbers, their own gaps. Curiosity about one's own performance is the most reliable engagement trigger in professional development.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PILLAR 3 ═══════════════ -->
+<div class="pillar" id="p3">
+  <div class="pillar-header">
+    <div class="pillar-num-wrap">
+      <svg class="pillar-hex" viewBox="0 0 52 60">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="rgba(42,157,106,0.12)" stroke="#2a9d6a" stroke-width="1.5"/>
+        <text x="26" y="34" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="18" fill="#4ecf96" font-weight="700">03</text>
+      </svg>
+      <div class="pillar-num-label">Pillar Three</div>
+    </div>
+    <div class="pillar-title-wrap">
+      <div class="pillar-label" style="color:var(--p3)">Peer Connection Systems</div>
+      <div class="pillar-title">Learning is <span style="color:#4ecf96;font-style:italic">inherently social.</span></div>
+      <div class="pillar-tagline">Structure the community. The learning will follow.</div>
+    </div>
+  </div>
+
+  <p class="pillar-body">Humans are social learners. We learned language by hearing it spoken around us. We learned social norms by observing and imitating. We learned almost everything that actually matters by being in relationship with other people who knew it first. <strong>The isolated learner is working against human nature.</strong></p>
+  <p class="pillar-body">Yet the dominant model of education is fundamentally isolating — individual desks, individual tests, individual grades. Peer connection systems do not simply add collaboration to classrooms. They structurally redesign the social architecture of learning so that connection between learners becomes the default state, not the exception.</p>
+
+  <ul class="technique-list">
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(42,157,106,.15)">⬡</div>
+      <div><div class="technique-name">Learning Triads</div><div class="technique-desc">Stable groups of three — not pairs, not four. Three creates the minimum viable peer community: one speaker, one challenger, one synthesiser. Roles rotate every session. Accountability is structural, not asked for.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(42,157,106,.15)">◈</div>
+      <div><div class="technique-name">Peer Teaching Protocols</div><div class="technique-desc">The best way to learn something is to teach it. Structured peer teaching — with specific protocols for the teacher and the learner — produces significantly deeper retention than re-reading or re-listening ever does.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(42,157,106,.15)">◉</div>
+      <div><div class="technique-name">Structured Academic Controversy</div><div class="technique-desc">Pairs argue a position, then switch and argue the opposite. The requirement to steelman the other side builds genuine understanding — not just familiarity with one's own view — and creates productive intellectual friction.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(42,157,106,.15)">◎</div>
+      <div><div class="technique-name">Community Agreements</div><div class="technique-desc">The class — not the teacher — generates the rules of engagement at the start of every term. When learners author the norms, they enforce them. Ownership of the social contract transforms classroom culture.</div></div>
+    </li>
+  </ul>
+
+  <div class="context-grid">
+    <div class="context-card" style="border-color:var(--p1)">
+      <div class="context-label">Pre-School & Primary</div>
+      <div class="context-title">Learning families</div>
+      <div class="context-body">Stable mixed-age peer groups that work together on extended projects. The older child teaches; the younger child questions. Both learn more than they would in age-segregated groups.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p2)">
+      <div class="context-label">Secondary / High School</div>
+      <div class="context-title">Squad accountability</div>
+      <div class="context-body">Learning squads of 4 share responsibility for each member's progress. If one member doesn't understand, the squad hasn't finished. This reframes academic support as solidarity, not charity.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p3)">
+      <div class="context-label">Higher Education</div>
+      <div class="context-title">Research communities</div>
+      <div class="context-body">Students form communities of inquiry around shared questions — not assigned topics. The community determines what to investigate, divides the work, and presents collective findings.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p4)">
+      <div class="context-label">Corporate Training</div>
+      <div class="context-title">Practice pods</div>
+      <div class="context-body">Post-training pods of 3 meet fortnightly to practice skills, share application stories, and hold each other accountable to implementation. Learning doesn't end when the session does.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PILLAR 4 ═══════════════ -->
+<div class="pillar" id="p4">
+  <div class="pillar-header">
+    <div class="pillar-num-wrap">
+      <svg class="pillar-hex" viewBox="0 0 52 60">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="rgba(155,89,182,0.12)" stroke="#9b59b6" stroke-width="1.5"/>
+        <text x="26" y="34" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="18" fill="#c39bd3" font-weight="700">04</text>
+      </svg>
+      <div class="pillar-num-label">Pillar Four</div>
+    </div>
+    <div class="pillar-title-wrap">
+      <div class="pillar-label" style="color:var(--p4)">Attention Architecture</div>
+      <div class="pillar-title">Design with the <span style="color:#c39bd3;font-style:italic">brain,</span> not against it.</div>
+      <div class="pillar-tagline">Cognitive science applied — practically, not theoretically.</div>
+    </div>
+  </div>
+
+  <p class="pillar-body">The human brain did not evolve to sit still for sixty minutes absorbing information delivered by a single source. It evolved to scan for change, respond to novelty, build meaning through pattern, and consolidate learning through sleep and retrieval. <strong>Most classrooms are designed in direct opposition to how the brain actually works.</strong></p>
+  <p class="pillar-body">Attention Architecture is the application of cognitive science to session design — specifically the science of attention, working memory, cognitive load, spacing, retrieval practice, and interleaving. Not as theoretical concepts but as practical design constraints that every Engageneer™ internalises.</p>
+
+  <ul class="technique-list">
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(155,89,182,.15)">◐</div>
+      <div><div class="technique-name">The 10-2 Rule</div><div class="technique-desc">For every 10 minutes of direct instruction, learners need 2 minutes to process — discussing, writing, drawing, or applying. This is not a break. It is the consolidation window that converts short-term exposure into working memory.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(155,89,182,.15)">◑</div>
+      <div><div class="technique-name">Retrieval Openers</div><div class="technique-desc">Begin every session with 5 minutes of retrieval — not review. Learners recall last session's key ideas from memory before any prompting. The act of retrieval, not re-reading, is what builds long-term retention.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(155,89,182,.15)">◒</div>
+      <div><div class="technique-name">Interleaved Practice</div><div class="technique-desc">Mix topics and skills within sessions rather than teaching one thing to completion before moving to the next. Interleaving feels harder and less productive — it is harder — and it produces dramatically superior long-term retention.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(155,89,182,.15)">◓</div>
+      <div><div class="technique-name">Novelty Resets</div><div class="technique-desc">The brain habituates to constant stimuli. Introduce a deliberate pattern break every 15-20 minutes — a change of physical arrangement, a new voice, a visual shift, a movement. Novelty resets the attentional system without breaking the learning flow.</div></div>
+    </li>
+  </ul>
+
+  <div class="context-grid">
+    <div class="context-card" style="border-color:var(--p1)">
+      <div class="context-label">Pre-School & Primary</div>
+      <div class="context-title">5-minute cycles</div>
+      <div class="context-body">Maximum 5 minutes of any single activity type. Station rotations, movement integration, and multisensory anchoring. The young brain is built for breadth, not sustained focus.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p2)">
+      <div class="context-label">Secondary / High School</div>
+      <div class="context-title">Chunked lessons</div>
+      <div class="context-body">Every 60-minute lesson broken into 3 distinct chunks — each with its own hook, activity, and consolidation moment. No chunk longer than 20 minutes of sustained attention on one mode.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p3)">
+      <div class="context-label">Higher Education</div>
+      <div class="context-title">Spaced curriculum</div>
+      <div class="context-body">Deliberately revisit earlier material in later sessions — not as review but as application in new contexts. Spacing and interleaving are built into the course architecture, not left to chance.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p4)">
+      <div class="context-label">Corporate Training</div>
+      <div class="context-title">Micro-learning cadence</div>
+      <div class="context-body">Replace full-day training with distributed 90-minute sessions across 4 weeks. Apply spaced repetition between sessions. Retention at 3 months improves by over 80% compared to single-day intensive formats.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PILLAR 5 ═══════════════ -->
+<div class="pillar" id="p5">
+  <div class="pillar-header">
+    <div class="pillar-num-wrap">
+      <svg class="pillar-hex" viewBox="0 0 52 60">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="rgba(231,76,60,0.12)" stroke="#e74c3c" stroke-width="1.5"/>
+        <text x="26" y="34" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="18" fill="#f1948a" font-weight="700">05</text>
+      </svg>
+      <div class="pillar-num-label">Pillar Five</div>
+    </div>
+    <div class="pillar-title-wrap">
+      <div class="pillar-label" style="color:var(--p5)">Real-Time Feedback Loops</div>
+      <div class="pillar-title">Feedback is <span style="color:#f1948a;font-style:italic">information,</span> not judgment.</div>
+      <div class="pillar-tagline">Continuous, low-stakes, high-frequency. Always actionable.</div>
+    </div>
+  </div>
+
+  <p class="pillar-body">The conventional assessment model is almost perfectly designed to minimise learning. Feedback arrives weeks after the learning moment, after the student has moved on to new content, in the form of a number that tells them how they performed but not how to improve. <strong>This is not feedback. It is a verdict.</strong></p>
+  <p class="pillar-body">Real-time feedback loops replace the verdict with a conversation — continuous, specific, actionable signals that tell both teacher and learner, in the moment, what is understood and what needs attention. The goal is not to measure learning after the fact. It is to accelerate learning while it is happening.</p>
+
+  <ul class="technique-list">
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(231,76,60,.15)">◈</div>
+      <div><div class="technique-name">Traffic Light Cards</div><div class="technique-desc">Every learner has three cards — green (confident), amber (partial), red (lost). Held up at any point, they give the teacher a real-time heat map of the room's understanding. Zero marking. Immediate, actionable data.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(231,76,60,.15)">◉</div>
+      <div><div class="technique-name">Exit Tickets</div><div class="technique-desc">Three questions at the session close: one thing I understand confidently, one thing I'm still unsure about, one question I now have. Teacher reads before the next session. The session opens with the class's own unresolved questions.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(231,76,60,.15)">◎</div>
+      <div><div class="technique-name">Peer Feedback Protocols</div><div class="technique-desc">Structured peer review using the WWW/EBI frame (What Worked Well / Even Better If). The structure prevents feedback from becoming praise or criticism — it makes it useful. Peers are trained, not just asked.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(231,76,60,.15)">⬡</div>
+      <div><div class="technique-name">The Live Question Board</div><div class="technique-desc">A visible board where learners post questions anonymously throughout the session on sticky notes or digital cards. The teacher — and the class — respond to questions as they arise, not at the end. Questions become the curriculum.</div></div>
+    </li>
+  </ul>
+
+  <div class="context-grid">
+    <div class="context-card" style="border-color:var(--p1)">
+      <div class="context-label">Pre-School & Primary</div>
+      <div class="context-title">Show me signals</div>
+      <div class="context-body">Thumbs, facial expressions, drawing responses, physical movement to zones. Non-verbal, non-threatening, real-time. Every child can signal understanding without the risk of being wrong in front of peers.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p2)">
+      <div class="context-label">Secondary / High School</div>
+      <div class="context-title">Digital pulse checks</div>
+      <div class="context-body">Brief anonymised digital polls mid-lesson — not quizzes, pulse checks. Results shown to the class. The class discusses the distribution before the teacher comments. Metacognition becomes collaborative.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p3)">
+      <div class="context-label">Higher Education</div>
+      <div class="context-title">Seminar red flags</div>
+      <div class="context-body">Students can raise a red flag — physical or digital — at any point in a lecture to signal confusion. The lecture pauses. The student articulates the confusion. The class addresses it collectively before proceeding.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p4)">
+      <div class="context-label">Corporate Training</div>
+      <div class="context-title">Application check-ins</div>
+      <div class="context-body">Between distributed sessions, participants submit a 3-sentence application note — what they tried, what happened, what they need. The next session opens with the group's collective application experience.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PILLAR 6 ═══════════════ -->
+<div class="pillar" id="p6">
+  <div class="pillar-header">
+    <div class="pillar-num-wrap">
+      <svg class="pillar-hex" viewBox="0 0 52 60">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="rgba(230,126,34,0.12)" stroke="#e67e22" stroke-width="1.5"/>
+        <text x="26" y="34" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="18" fill="#f0a050" font-weight="700">06</text>
+      </svg>
+      <div class="pillar-num-label">Pillar Six</div>
+    </div>
+    <div class="pillar-title-wrap">
+      <div class="pillar-label" style="color:var(--p6)">Impact Measurement</div>
+      <div class="pillar-title">Measure what <span style="color:#f0a050;font-style:italic">actually matters.</span></div>
+      <div class="pillar-tagline">Replace the blunt instrument of grades with rich evidence of real learning.</div>
+    </div>
+  </div>
+
+  <p class="pillar-body">If engagement is the precondition of learning, then our measurement systems must capture engagement — not just its downstream proxy, the grade. The Engageneering™ measurement model does not replace assessment. It enriches it — adding dimensions that grades cannot capture but that predict real-world performance far more reliably.</p>
+  <p class="pillar-body"><strong>We measure curiosity growth</strong> — tracked through question quality over time. <strong>We measure peer teaching depth</strong> — how well can a learner explain this to someone who doesn't know it? <strong>We measure real-world application</strong> — can the learner use this knowledge in a context they have never seen before? <strong>We measure learning disposition</strong> — is this person becoming more of a learner?</p>
+
+  <ul class="technique-list">
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(230,126,34,.15)">◐</div>
+      <div><div class="technique-name">Question Quality Tracking</div><div class="technique-desc">Track the questions learners ask over a term — not the answers they give. Questions are categorised by Bloom's level. Growth in question sophistication is the clearest signal of deepening understanding available to any educator.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(230,126,34,.15)">◑</div>
+      <div><div class="technique-name">Transfer Tasks</div><div class="technique-desc">Assess understanding using problems in contexts never encountered during learning. Transfer — the ability to apply knowledge to novel situations — is the gold standard of real learning. It cannot be crammed for. It can only be built.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(230,126,34,.15)">◒</div>
+      <div><div class="technique-name">Portfolio of Growth</div><div class="technique-desc">Learners maintain a curated portfolio — not of best work, but of growth work. A piece from week 1, a reflection on it from week 12. The portfolio is the argument the learner makes for their own development.</div></div>
+    </li>
+    <li class="technique-item">
+      <div class="technique-icon" style="background:rgba(230,126,34,.15)">◓</div>
+      <div><div class="technique-name">Engagement Pulse Score</div><div class="technique-desc">A fortnightly 5-question self-assessment that tracks each learner's engagement across the six pillars. Aggregated anonymously, it gives the teacher the room's engagement health — and flags early where intervention is needed.</div></div>
+    </li>
+  </ul>
+
+  <div class="context-grid">
+    <div class="context-card" style="border-color:var(--p1)">
+      <div class="context-label">Pre-School & Primary</div>
+      <div class="context-title">Story of learning</div>
+      <div class="context-body">Learning journals where children draw and write what they discovered, wondered about, and tried. The journal is assessed for evidence of curiosity and risk-taking — not accuracy of content.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p2)">
+      <div class="context-label">Secondary / High School</div>
+      <div class="context-title">Defence and portfolio</div>
+      <div class="context-body">End-of-term portfolio defence — student presents their portfolio to a panel of peers and teachers, answers questions, and reflects on their learning journey. Grades are one input; the defence is the richer evidence.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p3)">
+      <div class="context-label">Higher Education</div>
+      <div class="context-title">Authentic assessment</div>
+      <div class="context-body">Replace exams with authentic tasks — policy briefs, design proposals, community interventions, research publications. Assessed by external practitioners, not just academic markers. Real stakes, real feedback.</div>
+    </div>
+    <div class="context-card" style="border-color:var(--p4)">
+      <div class="context-label">Corporate Training</div>
+      <div class="context-title">30-60-90 day impact</div>
+      <div class="context-body">Measure behaviour change at 30, 60, and 90 days post-training through structured self-report and manager observation. The only training metric that actually matters is what changed in practice — not what was understood in the room.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SELF-ASSESSMENT ═══════════════ -->
+<div class="assessment-section" id="assessment">
+  <h2 class="assessment-title">The Engageneering™ <span>Self-Assessment Audit</span></h2>
+  <p class="assessment-sub">Rate your current practice across all six pillars. Take 3 minutes. Be honest — this is for you, not for anyone else.</p>
+  <div class="assessment-intro">Rate each pillar from 1 (rarely or never present in your practice) to 10 (consistently and deliberately engineered). There are no right or wrong scores — only accurate and inaccurate ones. The value is in the honesty.</div>
+
+  <div id="auditForm">
+    <!-- Pillar sliders generated by JS -->
+  </div>
+
+  <button class="btn-assess" onclick="calculateScore()">Calculate My Engageneering™ Score</button>
+
+  <div class="score-result" id="scoreResult">
+    <div class="score-circle">
+      <div class="score-val" id="scoreVal">0</div>
+      <div class="score-max">/ 60</div>
+    </div>
+    <div class="score-band" id="scoreBand"></div>
+    <div class="score-message" id="scoreMessage"></div>
+    <div class="score-bars" id="scoreBars"></div>
+    <div id="scoreRecommendations" style="font-size:13px;color:var(--steel);line-height:1.75;max-width:520px;margin:0 auto;text-align:left"></div>
+    <button class="btn-retake" onclick="resetAudit()">Retake the Audit</button>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="fw-cta">
+  <h2 class="fw-cta-title">Ready to <span>Engageneer™</span> your classroom?</h2>
+  <p class="fw-cta-sub">The framework is the map. The movement is the journey. Join thousands of educators engineering engagement every day.</p>
+  <button class="btn-gold">Join the Movement</button>
+  <button class="btn-outline" onclick="window.location.href='/'">Back to Site</button>
+</div>
+
+</div><!-- /fw-body -->
+
+<div class="fw-footer">
+  <div class="fw-footer-text">© 2025 Engageneering™ · All rights reserved · Section 41 Trademark</div>
+</div>
+
+<script>
+/* Progress */
+window.addEventListener('scroll',()=>{
+  const d=document.documentElement;
+  document.getElementById('progress').style.width=((d.scrollTop/(d.scrollHeight-d.clientHeight))*100)+'%';
+});
+
+/* Scroll reveal */
+const revealEls=document.querySelectorAll('.pillar,.assessment-section');
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+},{threshold:.06,rootMargin:'0px 0px -40px 0px'});
+revealEls.forEach(el=>obs.observe(el));
+
+/* ── ASSESSMENT ── */
+const pillars=[
+  {id:'p1',name:'Active Learning Design',color:'#c8922a'},
+  {id:'p2',name:'Curiosity Engineering',color:'#3a7abd'},
+  {id:'p3',name:'Peer Connection Systems',color:'#2a9d6a'},
+  {id:'p4',name:'Attention Architecture',color:'#9b59b6'},
+  {id:'p5',name:'Real-Time Feedback Loops',color:'#e74c3c'},
+  {id:'p6',name:'Impact Measurement',color:'#e67e22'}
+];
+
+const descriptions=[
+  'How consistently do learners actively construct knowledge rather than passively receive it in your sessions?',
+  'How deliberately do you engineer curiosity — creating questions before providing answers — in your practice?',
+  'How structurally embedded is peer connection and collaborative learning in your sessions?',
+  'How intentionally do you design sessions around how attention and memory actually work?',
+  'How continuous and actionable is the feedback learners receive during — not just after — your sessions?',
+  'How richly do you measure engagement and real learning, beyond grades and test scores?'
+];
+
+const form=document.getElementById('auditForm');
+pillars.forEach((p,i)=>{
+  form.innerHTML+=`
+  <div class="ap-row">
+    <div class="ap-header">
+      <div class="ap-name" style="color:${p.color}">${i+1}. ${p.name}</div>
+      <div class="ap-score-display" id="disp_${p.id}">5 / 10</div>
+    </div>
+    <div class="ap-desc">${descriptions[i]}</div>
+    <div class="ap-slider-wrap">
+      <span class="ap-label-lo">Rarely</span>
+      <input type="range" class="ap-slider" id="sl_${p.id}" min="1" max="10" value="5"
+        style="accent-color:${p.color}"
+        oninput="document.getElementById('disp_${p.id}').textContent=this.value+' / 10'"/>
+      <span class="ap-label-hi">Always</span>
+    </div>
+    <div class="ap-marks">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<span class="ap-mark">${n}</span>`).join('')}</div>
+  </div>`;
+});
+
+const bands=[
+  {min:0, max:20, label:'Beginning Engageneer™',
+   msg:'You\'re at the start of the journey — and that\'s exactly where transformation begins. Focus on one pillar at a time. Start with Active Learning Design: introduce one active technique per session this week and notice what shifts.'},
+  {min:21,max:35, label:'Developing Engageneer™',
+   msg:'You have real foundations in place. Some pillars are working well — others need deliberate attention. Your next step is to identify your lowest-scoring pillar and commit to one new technique from that pillar for the next four weeks.'},
+  {min:36,max:48, label:'Practising Engageneer™',
+   msg:'Your practice is strong and getting stronger. You\'re engineering engagement consistently in multiple dimensions. Now focus on integration — how do your pillars reinforce each other? And how do you bring peers into the practice?'},
+  {min:49,max:60, label:'Master Engageneer™',
+   msg:'You are the proof of concept that the movement needs. Your classroom is the model other educators need to see. Your next contribution is not to improve your own practice — it is to develop the Engageneers™ around you. Become a mentor.'}
+];
+
+function calculateScore(){
+  const scores=pillars.map(p=>parseInt(document.getElementById('sl_'+p.id).value));
+  const total=scores.reduce((a,b)=>a+b,0);
+  const band=bands.find(b=>total>=b.min&&total<=b.max);
+
+  document.getElementById('scoreVal').textContent=total;
+  document.getElementById('scoreBand').innerHTML=`<span>${band.label}</span>`;
+  document.getElementById('scoreMessage').textContent=band.msg;
+
+  /* Bars */
+  const barsEl=document.getElementById('scoreBars');
+  barsEl.innerHTML=scores.map((s,i)=>`
+    <div class="score-bar-wrap">
+      <div class="score-bar-track">
+        <div class="score-bar-fill" style="height:${s*10}%;background:${pillars[i].color};opacity:.85"></div>
+      </div>
+      <div class="score-bar-label">${['ALD','CE','PCS','AA','RTFL','IM'][i]}<br>${s}/10</div>
+    </div>`).join('');
+
+  /* Recommendations */
+  const lowest=scores.indexOf(Math.min(...scores));
+  const highest=scores.indexOf(Math.max(...scores));
+  document.getElementById('scoreRecommendations').innerHTML=`
+    <div style="margin-top:1.2rem;padding:1rem 1.2rem;background:rgba(200,146,42,.06);border-radius:6px;border-left:2px solid ${pillars[lowest].color}">
+      <div style="font-size:9px;letter-spacing:2px;color:${pillars[lowest].color};text-transform:uppercase;margin-bottom:.5rem">Priority Focus</div>
+      <div><strong style="color:#c8d4e8">${pillars[lowest].name}</strong> is your lowest pillar (${scores[lowest]}/10). Visit the framework above and commit to one technique from this pillar starting this week.</div>
+    </div>
+    <div style="margin-top:.8rem;padding:1rem 1.2rem;background:rgba(200,146,42,.04);border-radius:6px;border-left:2px solid ${pillars[highest].color}">
+      <div style="font-size:9px;letter-spacing:2px;color:${pillars[highest].color};text-transform:uppercase;margin-bottom:.5rem">Your Strength</div>
+      <div><strong style="color:#c8d4e8">${pillars[highest].name}</strong> is your strongest pillar (${scores[highest]}/10). Use this as your anchor — and consider mentoring peers in this area.</div>
+    </div>`;
+
+  document.getElementById('scoreResult').classList.add('show');
+  setTimeout(()=>document.getElementById('scoreResult').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function resetAudit(){
+  pillars.forEach(p=>{
+    document.getElementById('sl_'+p.id).value=5;
+    document.getElementById('disp_'+p.id).textContent='5 / 10';
+  });
+  document.getElementById('scoreResult').classList.remove('show');
+  document.getElementById('auditForm').scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="The Engageneering™ Movement Strategy — How we grow from one classroom to a global force that changes the philosophy of education."/>
+<title>Movement Strategy | Engageneering™</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#060c1a;
+  --navy-mid:#0b1624;
+  --navy-card:#0f1e36;
+  --navy-border:#1e3a6a;
+  --gold:#c8922a;
+  --gold-bright:#f0c040;
+  --gold-light:#f5d060;
+  --steel:#8a9ab8;
+  --muted:#4a6a8a;
+  --white:#ffffff;
+  --warm:#f5f0e8;
+  --teal:#1a8a6a;
+  --teal-bright:#2ecc9a;
+  --purple:#6c3db0;
+  --purple-bright:#a67de0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:#c8d4e8;font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:1.9;overflow-x:hidden}
+::selection{background:rgba(200,146,42,0.3);color:#fff}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--gold)}
+
+#progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,var(--teal),var(--gold),var(--purple-bright));z-index:999;width:0%;transition:width .1s}
+
+/* NAV */
+nav{position:fixed;top:2px;left:0;right:0;z-index:200;padding:1.1rem 3rem;display:flex;justify-content:space-between;align-items:center;background:rgba(6,12,26,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(30,58,106,0.4)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:3px;color:var(--gold);text-decoration:none;font-weight:700}
+.nav-right{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap}
+.nav-link{font-size:10px;letter-spacing:2px;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.nav-link:hover{color:var(--gold)}
+
+/* COVER */
+.cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 5rem;position:relative;overflow:hidden}
+.cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse 75% 60% at 50% 42%,#071830,var(--navy) 68%);z-index:0}
+.cover-grid{position:absolute;inset:0;z-index:1;opacity:.04;background-image:linear-gradient(var(--navy-border) 1px,transparent 1px),linear-gradient(90deg,var(--navy-border) 1px,transparent 1px);background-size:60px 60px}
+.cover-content{position:relative;z-index:2}
+.cover-eyebrow{font-size:9px;letter-spacing:5px;color:var(--teal-bright);text-transform:uppercase;margin-bottom:2rem;opacity:0;animation:fadeUp 1s ease .3s forwards}
+.cover-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,6.5vw,92px);color:var(--white);line-height:1.05;font-weight:700;margin-bottom:1rem;opacity:0;animation:fadeUp 1.2s ease .6s forwards}
+.cover-title .accent-gold{color:var(--gold-bright);font-style:italic}
+.cover-title .accent-teal{color:var(--teal-bright);font-style:italic}
+.cover-deck{font-family:'Cormorant Garamond',serif;font-size:clamp(16px,2vw,22px);color:var(--steel);max-width:620px;margin:1.2rem auto 0;line-height:1.7;font-weight:300;font-style:italic;opacity:0;animation:fadeUp 1s ease .9s forwards}
+.cover-phases{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2.8rem;opacity:0;animation:fadeUp 1s ease 1.2s forwards}
+.cover-phase{background:rgba(15,30,54,.8);border:1px solid var(--navy-border);border-radius:8px;padding:.8rem 1.4rem;text-align:center;transition:border-color .3s}
+.cover-phase:hover{border-color:var(--gold)}
+.cover-phase-num{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;line-height:1}
+.cover-phase-label{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:3px}
+.cover-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeUp 1s ease 2s forwards;z-index:2}
+.cover-scroll-line{width:1px;height:42px;background:linear-gradient(to bottom,rgba(200,146,42,.5),transparent);animation:scrollPulse 2.4s ease infinite}
+.cover-scroll-text{font-size:8px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+
+/* BODY */
+.doc-body{max-width:860px;margin:0 auto;padding:5rem 2rem 4rem}
+
+/* SECTION */
+.section{margin-bottom:7rem;opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform .9s ease}
+.section.visible{opacity:1;transform:translateY(0)}
+.section-eyebrow{font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:1.2rem;display:flex;align-items:center;gap:1rem}
+.section-eyebrow::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(200,146,42,.35),transparent)}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,3.8vw,46px);color:var(--white);line-height:1.15;font-weight:600;margin-bottom:1.8rem}
+.section-title .ag{color:var(--gold-bright);font-style:italic}
+.section-title .at{color:var(--teal-bright);font-style:italic}
+.section-title .ap{color:var(--purple-bright);font-style:italic}
+.section-body{color:#b0bcd4;line-height:1.95;margin-bottom:1.4rem}
+.section-body strong{color:var(--warm);font-weight:500}
+.section-body em{color:var(--gold);font-style:italic}
+
+/* PHASE ROADMAP */
+.roadmap{display:flex;flex-direction:column;gap:0;margin:3rem 0;position:relative}
+.roadmap::before{content:'';position:absolute;left:42px;top:24px;bottom:24px;width:2px;background:linear-gradient(to bottom,var(--teal),var(--gold),var(--purple-bright));opacity:.4}
+.phase-row{display:flex;gap:2rem;padding-bottom:3.5rem;position:relative;opacity:0;transform:translateX(-20px);transition:all .7s ease}
+.phase-row.visible{opacity:1;transform:translateX(0)}
+.phase-icon{width:86px;height:86px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;border:2px solid}
+.phase-icon-num{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;line-height:1}
+.phase-icon-label{font-size:7px;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.phase-content{flex:1;padding-top:12px}
+.phase-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:.3rem}
+.phase-subtitle{font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem}
+.phase-body{font-size:14px;color:var(--steel);line-height:1.75;margin-bottom:1rem}
+.phase-metrics{display:flex;gap:.8rem;flex-wrap:wrap}
+.phase-metric{background:rgba(15,30,54,.8);border-radius:5px;padding:.4rem .8rem;font-size:11px;letter-spacing:.5px}
+
+/* FLYWHEEL */
+.flywheel{position:relative;margin:3rem auto;width:100%;max-width:560px}
+.flywheel-center{text-align:center;margin-bottom:2rem}
+.flywheel-title{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold-bright);margin-bottom:.4rem}
+.flywheel-sub{font-size:12px;color:var(--muted);letter-spacing:1px}
+.flywheel-steps{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.flywheel-step{background:var(--navy-card);border-radius:8px;padding:1.2rem;border:1px solid var(--navy-border);position:relative;transition:border-color .3s}
+.flywheel-step:hover{border-color:var(--gold)}
+.flywheel-arrow{position:absolute;font-size:18px;color:rgba(200,146,42,.4)}
+.fw-num{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold);line-height:1;margin-bottom:.3rem}
+.fw-label{font-size:13px;color:var(--gold-bright);font-family:'Cormorant Garamond',serif;margin-bottom:.3rem;font-weight:600}
+.fw-desc{font-size:12px;color:var(--steel);line-height:1.6}
+
+/* PILLAR CARDS */
+.strategy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.4rem;margin:2.5rem 0}
+.strategy-card{background:var(--navy-card);border-radius:10px;padding:1.8rem;border-top:3px solid;transition:transform .3s,box-shadow .3s}
+.strategy-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.strategy-card-icon{font-size:24px;margin-bottom:.8rem;font-family:'Cormorant Garamond',serif;font-weight:700}
+.strategy-card-title{font-family:'Cormorant Garamond',serif;font-size:18px;margin-bottom:.5rem;font-weight:600}
+.strategy-card-body{font-size:13px;color:var(--steel);line-height:1.7}
+
+/* PULL QUOTE */
+.pull-quote{border-left:2px solid var(--gold);padding:1.3rem 2rem;margin:2.8rem 0;background:rgba(200,146,42,.04);border-radius:0 6px 6px 0}
+.pull-quote.teal{border-color:var(--teal-bright);background:rgba(26,138,106,.04)}
+.pull-quote.purple{border-color:var(--purple-bright);background:rgba(108,61,176,.04)}
+.pull-quote-text{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.4vw,26px);color:var(--gold-bright);line-height:1.5;font-style:italic;font-weight:300}
+.pull-quote.teal .pull-quote-text{color:var(--teal-bright)}
+.pull-quote.purple .pull-quote-text{color:var(--purple-bright)}
+.pull-quote-attr{font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:.8rem;text-transform:uppercase}
+
+/* CALLOUT */
+.callout{background:rgba(15,30,54,.8);border:1px solid rgba(30,58,106,.8);border-radius:8px;padding:2rem 2.4rem;margin:2.5rem 0}
+.callout-label{font-size:8px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:.8rem}
+.callout-text{font-family:'Cormorant Garamond',serif;font-size:16px;color:#c0cce0;line-height:1.75}
+
+/* TIMELINE */
+.timeline-table{width:100%;border-collapse:collapse;margin:2rem 0;font-size:13px}
+.timeline-table th{padding:.7rem 1rem;text-align:left;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--navy-border);font-family:'Cormorant Garamond',serif}
+.timeline-table td{padding:.85rem 1rem;border-bottom:1px solid rgba(30,58,106,.3);vertical-align:top;line-height:1.6;color:#a0b0c8}
+.timeline-table tr:last-child td{border-bottom:none}
+.timeline-table td:first-child{color:var(--gold-bright);font-family:'Cormorant Garamond',serif;font-size:15px;white-space:nowrap;font-weight:600}
+.timeline-table td:nth-child(2){color:var(--steel)}
+.timeline-table td:nth-child(3){color:#80c0a0;font-size:12px}
+.timeline-table tr:hover td{background:rgba(30,58,106,.12)}
+
+/* NORTH STAR */
+.north-star{background:linear-gradient(135deg,#071828,#0e2445,#071828);border-radius:16px;padding:4rem;margin:4rem 0;text-align:center;border:1px solid rgba(200,146,42,.3);position:relative;overflow:hidden}
+.north-star::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(200,146,42,.07),transparent)}
+.ns-label{font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:1.5rem}
+.ns-title{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3.5vw,44px);color:var(--white);line-height:1.3;font-weight:600;margin-bottom:1.2rem}
+.ns-title span{color:var(--gold-bright)}
+.ns-body{font-size:15px;color:var(--steel);max-width:540px;margin:0 auto;line-height:1.8}
+
+/* PARTNER TIERS */
+.partner-tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.2rem;margin:2.5rem 0}
+.partner-tier{border-radius:10px;padding:1.6rem;border:1px solid}
+.tier-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-bottom:.6rem}
+.tier-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;margin-bottom:.5rem}
+.tier-body{font-size:12px;color:var(--steel);line-height:1.65}
+.tier-items{list-style:none;margin-top:.8rem;display:flex;flex-direction:column;gap:.3rem}
+.tier-items li{font-size:11px;color:var(--muted);display:flex;gap:.5rem;align-items:flex-start}
+.tier-items li::before{content:'✦';color:inherit;font-size:9px;flex-shrink:0;margin-top:3px}
+
+/* REVENUE MODEL */
+.revenue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;margin:2.5rem 0}
+.rev-card{background:var(--navy-card);border-radius:8px;padding:1.4rem;border-left:3px solid var(--gold)}
+.rev-stream{font-size:8px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:.4rem}
+.rev-title{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold-bright);margin-bottom:.4rem;font-weight:600}
+.rev-body{font-size:12px;color:var(--steel);line-height:1.6}
+.rev-potential{font-size:11px;color:#80c0a0;margin-top:.6rem;font-style:italic}
+
+/* CTA */
+.doc-cta{text-align:center;padding:5rem 2rem;border-top:1px solid rgba(30,58,106,.5)}
+.doc-cta-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,4vw,54px);color:var(--white);margin-bottom:1rem;font-weight:600;line-height:1.2}
+.doc-cta-title span{color:var(--gold-bright)}
+.doc-cta-sub{font-size:16px;color:var(--muted);margin-bottom:2.5rem;line-height:1.8;max-width:500px;margin-left:auto;margin-right:auto}
+.btn-gold{background:var(--gold);color:var(--navy);padding:15px 36px;border-radius:5px;font-size:11px;letter-spacing:2.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .3s}
+.btn-gold:hover{background:var(--gold-bright);transform:translateY(-3px);box-shadow:0 10px 36px rgba(240,192,64,.4)}
+.btn-outline{background:transparent;color:var(--gold);padding:14px 34px;border-radius:5px;font-size:11px;letter-spacing:2.5px;border:1.5px solid rgba(200,146,42,.55);cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .3s;margin-left:1rem}
+.btn-outline:hover{background:rgba(200,146,42,.1);border-color:var(--gold);transform:translateY(-3px)}
+
+/* FOOTER */
+.doc-footer{text-align:center;padding:2rem;border-top:1px solid rgba(30,58,106,.4)}
+.doc-footer-text{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+
+.divider{width:48px;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:2rem 0}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scrollPulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes hexFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.hex-deco{position:absolute;opacity:.05;pointer-events:none}
+
+@media(max-width:680px){
+  nav{padding:.9rem 1.2rem}
+  .nav-right{gap:.8rem}
+  .doc-body{padding:3rem 1.2rem}
+  .north-star{padding:2.5rem 1.4rem}
+  .phase-icon{width:60px;height:60px}
+  .phase-icon-num{font-size:18px}
+  .roadmap::before{left:30px}
+  .btn-outline{margin-left:0;margin-top:.8rem}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav>
+  <a class="nav-logo" href="/">ENGAGENEERING™</a>
+  <div class="nav-right">
+    <a class="nav-link" href="/engageneering_manifesto.html">Manifesto</a>
+    <a class="nav-link" href="/framework.html">Framework</a>
+    <a class="nav-link" href="/whats_broken.html">What's Broken</a>
+    <a class="nav-link" href="/">← Home</a>
+  </div>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-bg"></div>
+  <div class="cover-grid"></div>
+  <svg class="hex-deco" style="top:10%;left:3%;width:150px;animation:hexFloat 9s ease infinite" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#2ecc9a" stroke-width=".8"/></svg>
+  <svg class="hex-deco" style="top:18%;right:4%;width:100px;animation:hexFloat 12s ease infinite 2s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#c8922a" stroke-width=".6"/></svg>
+  <svg class="hex-deco" style="bottom:18%;right:5%;width:130px;animation:hexFloat 11s ease infinite 1s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#a67de0" stroke-width=".7"/></svg>
+  <svg class="hex-deco" style="bottom:22%;left:4%;width:80px;animation:hexFloat 14s ease infinite 3s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#2ecc9a" stroke-width=".5"/></svg>
+  <div class="cover-content">
+    <div class="cover-eyebrow">Engageneering™ — Internal Document · Part 4 of 4</div>
+    <h1 class="cover-title">
+      The <span class="accent-gold">Movement</span><br>
+      <span class="accent-teal">Strategy</span>
+    </h1>
+    <div class="cover-deck">From one classroom to a million educators. The architecture of a movement that changes what the world believes education is for.</div>
+    <div class="cover-phases">
+      <div class="cover-phase">
+        <div class="cover-phase-num" style="color:var(--teal-bright)">1 → 100</div>
+        <div class="cover-phase-label">Ignition</div>
+      </div>
+      <div class="cover-phase">
+        <div class="cover-phase-num" style="color:var(--gold-bright)">100 → 10K</div>
+        <div class="cover-phase-label">Momentum</div>
+      </div>
+      <div class="cover-phase">
+        <div class="cover-phase-num" style="color:var(--purple-bright)">10K → 100K</div>
+        <div class="cover-phase-label">Tipping Point</div>
+      </div>
+      <div class="cover-phase">
+        <div class="cover-phase-num" style="color:var(--gold-light)">100K → ∞</div>
+        <div class="cover-phase-label">System Change</div>
+      </div>
+    </div>
+  </div>
+  <div class="cover-scroll">
+    <div class="cover-scroll-text">The blueprint</div>
+    <div class="cover-scroll-line"></div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="doc-body">
+
+<!-- PREMISE -->
+<div class="section">
+  <div class="section-eyebrow">The Foundation</div>
+  <h2 class="section-title">Movements are not <span class="ag">built.</span> They are ignited.</h2>
+  <p class="section-body">Organisations are built. Movements are ignited — by an idea whose time has come, carried by people who cannot stay quiet about it, spreading through communities that were already ready but had no language for what they felt.</p>
+  <p class="section-body">Engageneering™ is not a company that needs a marketing strategy. It is a movement that needs <strong>three things: a clear enemy, a compelling identity, and a community that grows itself.</strong> The enemy is named in Part 3 — the broken philosophy of education. The identity is in the Manifesto and the logo. The community is what this strategy builds.</p>
+  <p class="section-body">Every great educational movement — Montessori, Waldorf, the open classroom movement, the maker movement — began the same way: with a small number of deeply committed practitioners who generated results so visible and undeniable that the movement spread through the power of what it produced. <em>We do the same. Starting now.</em></p>
+
+  <div class="pull-quote">
+    <div class="pull-quote-text">"A movement is a community with a cause. Build the community around the cause and the movement builds itself."</div>
+    <div class="pull-quote-attr">— Engageneering™ Movement Strategy</div>
+  </div>
+</div>
+
+<!-- NORTH STAR -->
+<div class="section">
+  <div class="north-star">
+    <div class="ns-label">The North Star</div>
+    <div class="ns-title">By 2030: <span>Engageneering™</span> is the most recognised movement for educational transformation on earth — present in every country, practised in every context, and credited with shifting the global conversation about what school is for.</div>
+    <div class="ns-body" style="margin-top:1.5rem">This is not a revenue target. It is a civilisational one. Every tactical decision — every partnership, every piece of content, every community feature — is evaluated against a single question: does this move us closer to that world?</div>
+  </div>
+</div>
+
+<!-- PHASE ROADMAP -->
+<div class="section">
+  <div class="section-eyebrow">Growth Architecture</div>
+  <h2 class="section-title">Four phases. <span class="at">One direction.</span></h2>
+  <p class="section-body">Movements do not scale linearly. They ignite, smoulder, then catch — and when they catch, they spread faster than any organisation could manage deliberately. Our strategy is designed around that reality: build deep before building wide, and let the depth generate the spread.</p>
+
+  <div class="roadmap" id="roadmap">
+
+    <div class="phase-row" style="transition-delay:.1s">
+      <div class="phase-icon" style="background:rgba(46,204,154,.08);border-color:var(--teal-bright);color:var(--teal-bright)">
+        <div class="phase-icon-num">01</div>
+        <div class="phase-icon-label" style="color:rgba(46,204,154,.6)">Ignition</div>
+      </div>
+      <div class="phase-content">
+        <div class="phase-title" style="color:var(--teal-bright)">Ignition — 1 to 100</div>
+        <div class="phase-subtitle" style="color:rgba(46,204,154,.6)">Months 1–6 · The founding community</div>
+        <div class="phase-body">Find the first hundred. Not randomly — deliberately. These are the educators who already believe what Engageneering™ believes but have had no tribe to belong to. They are on Twitter arguing for active learning. They are in staffrooms feeling alone. They are the ones who stayed in teaching because they refuse to give up on what it could be.<br><br>
+        Give them: identity (the name, the logo, the language), community (a private space to connect and share), and recognition (their classrooms are the first proof points). Ask nothing from them except their honest experience. <strong>The founding hundred are not customers. They are co-founders of the movement.</strong></div>
+        <div class="phase-metrics">
+          <span class="phase-metric" style="color:var(--teal-bright);border:1px solid rgba(46,204,154,.3)">100 founding educators</span>
+          <span class="phase-metric" style="color:var(--teal-bright);border:1px solid rgba(46,204,154,.3)">10 countries represented</span>
+          <span class="phase-metric" style="color:var(--teal-bright);border:1px solid rgba(46,204,154,.3)">First 10 classroom case studies</span>
+          <span class="phase-metric" style="color:var(--teal-bright);border:1px solid rgba(46,204,154,.3)">Community platform live</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="transition-delay:.2s">
+      <div class="phase-icon" style="background:rgba(200,146,42,.08);border-color:var(--gold);color:var(--gold)">
+        <div class="phase-icon-num">02</div>
+        <div class="phase-icon-label" style="color:rgba(200,146,42,.6)">Momentum</div>
+      </div>
+      <div class="phase-content">
+        <div class="phase-title" style="color:var(--gold-bright)">Momentum — 100 to 10,000</div>
+        <div class="phase-subtitle" style="color:rgba(200,146,42,.6)">Months 6–18 · The content flywheel</div>
+        <div class="phase-body">The founding hundred generates the content that attracts the next nine thousand, nine hundred. Every case study, every classroom story, every teacher who says "this changed my practice" becomes a piece of content that finds its audience. This is not marketing — it is the honest documentation of a movement in action.<br><br>
+        Launch the content flywheel: weekly practitioner stories, monthly deep-dives, the What's Broken series in shareable formats, and a podcast — <em>The Engageneering™ Sessions</em> — where practitioners teach practitioners. <strong>The movement educates itself. Our job is to create the infrastructure for that to happen.</strong></div>
+        <div class="phase-metrics">
+          <span class="phase-metric" style="color:var(--gold);border:1px solid rgba(200,146,42,.3)">10,000 community members</span>
+          <span class="phase-metric" style="color:var(--gold);border:1px solid rgba(200,146,42,.3)">50+ countries</span>
+          <span class="phase-metric" style="color:var(--gold);border:1px solid rgba(200,146,42,.3)">Podcast launched</span>
+          <span class="phase-metric" style="color:var(--gold);border:1px solid rgba(200,146,42,.3)">First institutional partners</span>
+          <span class="phase-metric" style="color:var(--gold);border:1px solid rgba(200,146,42,.3)">Revenue model activated</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="transition-delay:.3s">
+      <div class="phase-icon" style="background:rgba(108,61,176,.08);border-color:var(--purple-bright);color:var(--purple-bright)">
+        <div class="phase-icon-num">03</div>
+        <div class="phase-icon-label" style="color:rgba(166,125,224,.6)">Tipping</div>
+      </div>
+      <div class="phase-content">
+        <div class="phase-title" style="color:var(--purple-bright)">Tipping Point — 10K to 100K</div>
+        <div class="phase-subtitle" style="color:rgba(166,125,224,.6)">Year 2–3 · The institutional pivot</div>
+        <div class="phase-body">At ten thousand practitioners, Engageneering™ becomes visible to institutions. Schools, universities, and corporate learning teams begin approaching us — not the other way around. This is the pivot from grassroots to institutional without losing the grassroots soul.<br><br>
+        The Engageneering™ Certification launches — a rigorous, practitioner-led qualification that becomes the gold standard for engagement-centred teaching. The first Engageneering™ Summit brings the global community together in person for the first time. <strong>Regional chapters form organically in cities where the community density is high enough to sustain local meetups.</strong><br><br>
+        At this phase, the movement begins influencing policy — not through lobbying but through the sheer weight of evidence and the visibility of results. Governments and education ministries begin taking notice.</div>
+        <div class="phase-metrics">
+          <span class="phase-metric" style="color:var(--purple-bright);border:1px solid rgba(166,125,224,.3)">100,000 community members</span>
+          <span class="phase-metric" style="color:var(--purple-bright);border:1px solid rgba(166,125,224,.3)">Certification programme live</span>
+          <span class="phase-metric" style="color:var(--purple-bright);border:1px solid rgba(166,125,224,.3)">First global Summit</span>
+          <span class="phase-metric" style="color:var(--purple-bright);border:1px solid rgba(166,125,224,.3)">20+ institutional partners</span>
+          <span class="phase-metric" style="color:var(--purple-bright);border:1px solid rgba(166,125,224,.3)">Policy influence visible</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="padding-bottom:0;transition-delay:.4s">
+      <div class="phase-icon" style="background:rgba(240,192,64,.08);border-color:var(--gold-light);color:var(--gold-light)">
+        <div class="phase-icon-num">04</div>
+        <div class="phase-icon-label" style="color:rgba(245,208,96,.6)">System</div>
+      </div>
+      <div class="phase-content">
+        <div class="phase-title" style="color:var(--gold-light)">System Change — 100K to ∞</div>
+        <div class="phase-subtitle" style="color:rgba(245,208,96,.6)">Year 3–2030 · The philosophy shift</div>
+        <div class="phase-body">At one hundred thousand, Engageneering™ is no longer a movement that operates at the edge of the education system. It is a movement that operates inside it — reshaping teacher training curricula, informing national education policy, becoming the framework against which institutional practice is measured.<br><br>
+        The goal at this stage is not growth for its own sake. It is depth of transformation. <strong>A million superficially aware educators is worth less than one hundred thousand deeply transformed ones.</strong> The strategy remains the same as it was at one: go deep, document honestly, let the depth generate the spread.<br><br>
+        By 2030, Engageneering™ is a household name in education. Not because of marketing, but because the classrooms it has transformed are undeniably, visibly, measurably different — and the students who came through them are demonstrably more capable, more curious, and more human.</div>
+        <div class="phase-metrics">
+          <span class="phase-metric" style="color:var(--gold-light);border:1px solid rgba(245,208,96,.3)">1M+ educators reached</span>
+          <span class="phase-metric" style="color:var(--gold-light);border:1px solid rgba(245,208,96,.3)">National policy influence</span>
+          <span class="phase-metric" style="color:var(--gold-light);border:1px solid rgba(245,208,96,.3)">Teacher training integration</span>
+          <span class="phase-metric" style="color:var(--gold-light);border:1px solid rgba(245,208,96,.3)">Annual global Summit</span>
+          <span class="phase-metric" style="color:var(--gold-light);border:1px solid rgba(245,208,96,.3)">Self-sustaining ecosystem</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THE CONTENT FLYWHEEL -->
+<div class="section">
+  <div class="section-eyebrow">Content Strategy</div>
+  <h2 class="section-title">The <span class="ag">Content Flywheel</span></h2>
+  <p class="section-body">Movements spread through stories — not through advertising. Every piece of content Engageneering™ produces serves one purpose: to show, not tell, that the movement is working. The flywheel below is self-reinforcing. Each element feeds the next. Once it is turning, it does not stop.</p>
+
+  <div class="flywheel">
+    <div class="flywheel-steps">
+      <div class="flywheel-step">
+        <div class="fw-num">01</div>
+        <div class="fw-label">Practitioner applies</div>
+        <div class="fw-desc">An educator applies one Engageneering™ technique in their classroom and documents what shifts — participation, questions, energy.</div>
+      </div>
+      <div class="flywheel-step">
+        <div class="fw-num">02</div>
+        <div class="fw-label">Story is captured</div>
+        <div class="fw-desc">The story is shared in the community — raw, honest, specific. Not a success story. A real story. The community responds, refines, validates.</div>
+      </div>
+      <div class="flywheel-step">
+        <div class="fw-num">03</div>
+        <div class="fw-label">Content amplifies</div>
+        <div class="fw-desc">The best stories become shareable content — quote cards, short-form posts, podcast episodes, case study articles. They find new educators.</div>
+      </div>
+      <div class="flywheel-step">
+        <div class="fw-num">04</div>
+        <div class="fw-label">New educators join</div>
+        <div class="fw-desc">Educators who encounter the content recognise their own frustrations and hopes in it. They join the community. They become practitioners. The flywheel turns again.</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:1.2rem;font-size:12px;color:var(--muted);letter-spacing:1px;font-style:italic">The flywheel is powered by honesty, not polish.</div>
+  </div>
+
+  <div class="divider"></div>
+  <p class="section-body" style="font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:1rem">Content Formats by Channel</p>
+
+  <div class="strategy-grid">
+    <div class="strategy-card" style="border-color:var(--gold)">
+      <div class="strategy-card-icon" style="color:var(--gold)">✦</div>
+      <div class="strategy-card-title" style="color:var(--gold-bright)">Long-Form Documents</div>
+      <div class="strategy-card-body">The four founding documents — Manifesto, Framework, What's Broken, Movement Strategy — form the intellectual bedrock. These are shared, cited, printed, and pinned. They establish authority and give the movement its vocabulary.</div>
+    </div>
+    <div class="strategy-card" style="border-color:var(--teal)">
+      <div class="strategy-card-icon" style="color:var(--teal-bright)">◎</div>
+      <div class="strategy-card-title" style="color:var(--teal-bright)">Podcast: The Engageneering™ Sessions</div>
+      <div class="strategy-card-body">Weekly 30-minute conversations between practitioners. No experts. No thought leaders. Teachers talking to teachers about what actually happened in their classrooms. The most powerful content format for a practitioner movement.</div>
+    </div>
+    <div class="strategy-card" style="border-color:var(--purple-bright)">
+      <div class="strategy-card-icon" style="color:var(--purple-bright)">◈</div>
+      <div class="strategy-card-title" style="color:var(--purple-bright)">Social: Quote Architecture</div>
+      <div class="strategy-card-body">Every document in the Engageneering™ canon contains ten or more standalone shareable quotes — designed from the first draft to be screenshot and shared. The documents are long. The quotes are punchy. Both matter.</div>
+    </div>
+    <div class="strategy-card" style="border-color:var(--amber,#e67e22)">
+      <div class="strategy-card-icon" style="color:#e67e22">◉</div>
+      <div class="strategy-card-title" style="color:#f0a050">Newsletter: The Weekly Ignition</div>
+      <div class="strategy-card-body">A weekly email to the community — one classroom story, one technique, one quote, one question to take into the week. Under 400 words. Designed to be read in 90 seconds and thought about all day.</div>
+    </div>
+    <div class="strategy-card" style="border-color:#c0392b">
+      <div class="strategy-card-icon" style="color:#e74c3c">⬡</div>
+      <div class="strategy-card-title" style="color:#f1948a">Annual: The State of Engagement Report</div>
+      <div class="strategy-card-body">An annual data-driven report on the state of engagement in global education — drawing on community surveys, new research, and our own measurement data. The report that journalists cite. The document that reaches policymakers.</div>
+    </div>
+    <div class="strategy-card" style="border-color:var(--navy-border)">
+      <div class="strategy-card-icon" style="color:var(--steel)">◐</div>
+      <div class="strategy-card-title" style="color:var(--steel)">Video: Classroom Stories</div>
+      <div class="strategy-card-body">Short-form (3–5 min) documentary-style videos from real classrooms where Engageneering™ is being practised. No scripting, no production gloss. Real teachers, real students, real moments of engagement. The proof that the movement works.</div>
+    </div>
+  </div>
+</div>
+
+<!-- COMMUNITY ARCHITECTURE -->
+<div class="section">
+  <div class="section-eyebrow">Community Design</div>
+  <h2 class="section-title">The community <span class="at">grows itself.</span></h2>
+  <p class="section-body">The most important structural decision in building Engageneering™ is this: <strong>the community must be designed to generate value for its members, not from its members.</strong> A community that extracts — that asks members to contribute content for the organisation's benefit — eventually hollows out. A community that gives — that makes every member more capable, more connected, and more recognised — compounds.</p>
+
+  <div class="callout">
+    <div class="callout-label">The Community Design Principle</div>
+    <div class="callout-text">Every feature, every event, every piece of infrastructure in the Engageneering™ community must answer yes to this question: does this make an individual educator's practice better and their professional life richer? If the answer is no — we don't build it.</div>
+  </div>
+
+  <div class="strategy-grid">
+    <div class="strategy-card" style="border-color:var(--teal)">
+      <div class="strategy-card-title" style="color:var(--teal-bright)">The Practice Space</div>
+      <div class="strategy-card-body">The core community platform — asynchronous, international, organised by pillar and context. Where educators share what they tried, what worked, what didn't, and what they need next. Moderated by practitioners, not staff.</div>
+    </div>
+    <div class="strategy-card" style="border-color:var(--gold)">
+      <div class="strategy-card-title" style="color:var(--gold-bright)">Learning Pods</div>
+      <div class="strategy-card-body">Small, stable groups of 6–8 educators who meet monthly (virtually or in person) to work through the Framework together, share classroom experiments, and hold each other accountable. The atomic unit of the movement.</div>
+    </div>
+    <div class="strategy-card" style="border-color:var(--purple-bright)">
+      <div class="strategy-card-title" style="color:var(--purple-bright)">Engageneer™ Recognition</div>
+      <div class="strategy-card-body">A visible progression — Practising → Developing → Master → Mentor Engageneer™ — based on documented practice, not courses completed. The community confers recognition. The organisation makes it visible.</div>
+    </div>
+    <div class="strategy-card" style="border-color:#e67e22">
+      <div class="strategy-card-title" style="color:#f0a050">Regional Chapters</div>
+      <div class="strategy-card-body">Once 20+ practitioners exist in a city or region, a chapter forms — self-organising, locally led, connected to the global network. The chapter hosts meetups, supports local schools, and generates local case studies.</div>
+    </div>
+  </div>
+
+  <div class="pull-quote teal">
+    <div class="pull-quote-text">"The community is not a product feature. It is the product. Every educator who joins should feel — within their first week — that they have found their tribe."</div>
+    <div class="pull-quote-attr">— Engageneering™ Community Principle</div>
+  </div>
+</div>
+
+<!-- PARTNERSHIP TIERS -->
+<div class="section">
+  <div class="section-eyebrow">Partnership Strategy</div>
+  <h2 class="section-title">Partners who <span class="ag">carry the movement</span> forward.</h2>
+  <p class="section-body">Engageneering™ does not seek corporate sponsors. It seeks aligned partners — institutions and organisations whose missions genuinely converge with ours, and who gain as much from the partnership as we do. Every partnership is evaluated on one criterion: <em>does this put Engageneering™ tools in the hands of more educators who will use them honestly?</em></p>
+
+  <div class="partner-tiers">
+    <div class="partner-tier" style="border-color:var(--teal);background:rgba(26,138,106,.05)">
+      <div class="tier-label" style="color:var(--teal-bright)">Foundation Partners</div>
+      <div class="tier-name" style="color:var(--teal-bright)">Schools & Colleges</div>
+      <div class="tier-body">Individual institutions that commit to implementing the Engageneering™ Framework across their staff — receiving training, certification support, and community membership.</div>
+      <ul class="tier-items" style="color:var(--teal-bright)">
+        <li>Full framework implementation support</li>
+        <li>Staff certification pathway</li>
+        <li>Case study documentation</li>
+        <li>Community membership for all staff</li>
+      </ul>
+    </div>
+    <div class="partner-tier" style="border-color:var(--gold);background:rgba(200,146,42,.05)">
+      <div class="tier-label" style="color:var(--gold)">Movement Partners</div>
+      <div class="tier-name" style="color:var(--gold-bright)">Universities & Ed. Systems</div>
+      <div class="tier-body">Teacher training institutions that integrate Engageneering™ into their pre-service and in-service programmes — building the movement into the profession's foundation.</div>
+      <ul class="tier-items" style="color:var(--gold)">
+        <li>Curriculum integration support</li>
+        <li>Co-branded certification</li>
+        <li>Research collaboration</li>
+        <li>Summit speaking and visibility</li>
+      </ul>
+    </div>
+    <div class="partner-tier" style="border-color:var(--purple-bright);background:rgba(108,61,176,.05)">
+      <div class="tier-label" style="color:var(--purple-bright)">Strategic Partners</div>
+      <div class="tier-name" style="color:var(--purple-bright)">NGOs & Foundations</div>
+      <div class="tier-body">Mission-aligned organisations working on education access, quality, and equity globally — whose reach into underserved contexts extends the movement where it is needed most.</div>
+      <ul class="tier-items" style="color:var(--purple-bright)">
+        <li>Joint programme design</li>
+        <li>Co-funded initiatives</li>
+        <li>Global reach amplification</li>
+        <li>Shared impact reporting</li>
+      </ul>
+    </div>
+    <div class="partner-tier" style="border-color:#e67e22;background:rgba(230,126,34,.05)">
+      <div class="tier-label" style="color:#e67e22">Corporate Partners</div>
+      <div class="tier-name" style="color:#f0a050">L&D Teams & Corporates</div>
+      <div class="tier-body">Organisations applying Engageneering™ to professional learning and corporate training — bringing the philosophy into the workplace and funding the broader movement through commercial engagements.</div>
+      <ul class="tier-items" style="color:#e67e22">
+        <li>Corporate training programmes</li>
+        <li>L&D team certification</li>
+        <li>Bespoke framework adaptation</li>
+        <li>Impact measurement consulting</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- REVENUE MODEL -->
+<div class="section">
+  <div class="section-eyebrow">Sustainability</div>
+  <h2 class="section-title">A movement must be <span class="ag">financially sustainable</span> to last.</h2>
+  <p class="section-body">Movements that depend entirely on goodwill eventually stall. Engageneering™ is designed to be financially self-sustaining — not to extract value from educators, but to generate revenue from the institutions and contexts where budget exists, subsidising free access for individual practitioners.</p>
+  <p class="section-body"><strong>The core principle: the movement is free to individual educators. Always.</strong> Revenue comes from institutions, certifications, events, and corporate engagements — never from charging a classroom teacher for access to the tools they need.</p>
+
+  <div class="revenue-grid">
+    <div class="rev-card">
+      <div class="rev-stream">Stream 01</div>
+      <div class="rev-title">Certification</div>
+      <div class="rev-body">The Engageneering™ Certification — individual and institutional. Rigorous, practitioner-led, globally recognised.</div>
+      <div class="rev-potential">High margin · Scales with community</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-stream">Stream 02</div>
+      <div class="rev-title">Institutional Training</div>
+      <div class="rev-body">Whole-school and whole-university framework implementation programmes. Delivered by certified Engageneer™ Mentors.</div>
+      <div class="rev-potential">High value · Partnership-driven</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-stream">Stream 03</div>
+      <div class="rev-title">The Annual Summit</div>
+      <div class="rev-body">The global gathering of the movement — ticketed, sponsored by aligned organisations, and the single highest-impact visibility moment of the year.</div>
+      <div class="rev-potential">Event revenue + sponsorship</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-stream">Stream 04</div>
+      <div class="rev-title">Corporate L&D</div>
+      <div class="rev-body">The Engageneering™ Framework applied to professional learning contexts. Full consulting and training engagements with L&D teams globally.</div>
+      <div class="rev-potential">Highest revenue stream</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-stream">Stream 05</div>
+      <div class="rev-title">Publications</div>
+      <div class="rev-body">The Engageneering™ book (written when the community has generated enough case study evidence to make it undeniable). Co-authored with practitioners.</div>
+      <div class="rev-potential">Authority + reach amplifier</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-stream">Stream 06</div>
+      <div class="rev-title">Research Partnership</div>
+      <div class="rev-body">Funded research collaborations with universities studying the impact of engagement-centred learning at scale. The evidence base that makes the movement irrefutable.</div>
+      <div class="rev-potential">Grant-funded · Long-term</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="section">
+  <div class="section-eyebrow">Execution Timeline</div>
+  <h2 class="section-title">What happens <span class="at">when.</span></h2>
+  <p class="section-body">Strategy without execution is philosophy. Below is the operational timeline — what gets built, launched, and activated in each window, in the right sequence.</p>
+  <div style="overflow-x:auto">
+    <table class="timeline-table">
+      <thead>
+        <tr>
+          <th>Window</th>
+          <th>Priority Actions</th>
+          <th>Success Signal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Now → Month 1</td>
+          <td>Deploy all four documents. Launch engageneering.org. Set up community platform (Discord or Circle). Identify first 20 founding educators personally.</td>
+          <td>Site live. First 20 members in community.</td>
+        </tr>
+        <tr>
+          <td>Month 1–3</td>
+          <td>Founding community grows to 100. First 5 classroom case studies documented. Self-Assessment Audit shared widely. Social channels activated.</td>
+          <td>100 members. 5 stories. 1,000 audit completions.</td>
+        </tr>
+        <tr>
+          <td>Month 3–6</td>
+          <td>Podcast launches (The Engageneering™ Sessions). Weekly newsletter begins. First institutional conversations. Regional ambassador programme opens.</td>
+          <td>500+ community. Podcast in top 100 education charts.</td>
+        </tr>
+        <tr>
+          <td>Month 6–12</td>
+          <td>First institutional partnership signed. Certification programme designed with community input. First live event (virtual Summit). 1,000-educator milestone celebrated publicly.</td>
+          <td>1 institutional partner. 1,000 community members. Summit 200+ attendees.</td>
+        </tr>
+        <tr>
+          <td>Year 2</td>
+          <td>Certification launches. 5+ institutional partners. First in-person regional events. Annual State of Engagement Report published. 10,000-member milestone.</td>
+          <td>10,000 members. First certified Engageneer™ cohort. Media coverage begins.</td>
+        </tr>
+        <tr>
+          <td>Year 3</td>
+          <td>First global in-person Summit. 20+ institutional partners. Policy engagement begins. Book proposal developed. 100,000-member trajectory clear.</td>
+          <td>Global Summit 500+ attendees. Policy conversations active. Movement self-sustaining financially.</td>
+        </tr>
+        <tr>
+          <td>2027–2030</td>
+          <td>Book published. National curriculum influence in 3+ countries. 1M+ educators engaged. Annual Summit 5,000+ attendees. The philosophy begins to shift.</td>
+          <td>The world talks differently about what school is for.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- THE SINGLE MOST IMPORTANT THING -->
+<div class="section">
+  <div class="section-eyebrow">The Irreducible Core</div>
+  <h2 class="section-title">The one thing that <span class="ag">cannot be compromised.</span></h2>
+  <p class="section-body">Movements die in two ways. They are killed from outside — by the institutions they threaten, by ridicule, by being ignored until they become irrelevant. Or they are killed from inside — by growing too fast, by compromising their founding values to attract mainstream acceptance, by becoming the thing they set out to change.</p>
+  <p class="section-body">Engageneering™ will face both pressures. The external pressure will come from those with vested interests in the existing system — exam boards, textbook publishers, inspection frameworks. The internal pressure will come from the temptation to soften the message, to accommodate institutions on their terms, to grow faster by saying less.</p>
+  <p class="section-body"><strong>The one thing that cannot be compromised is the honesty.</strong> The Manifesto says what it says. What's Broken names what it names. The movement stands for what it stands for. The moment we begin qualifying, softening, or equivocating to make an institution more comfortable — that is the moment the movement begins to die. Small movements that stand for something clear change the world. Large movements that stand for something vague fill conference rooms.</p>
+
+  <div class="pull-quote purple">
+    <div class="pull-quote-text">"Stay small in spirit. Stay big in ambition. Stay uncompromising in honesty. The movement that keeps all three will last long enough to matter."</div>
+    <div class="pull-quote-attr">— Engageneering™ Movement Principle</div>
+  </div>
+
+  <div class="north-star" style="margin-top:3rem">
+    <div class="ns-label">The Final Word</div>
+    <div class="ns-title" style="font-size:clamp(18px,2.5vw,32px)">We do not need everyone to agree with us.<br>We need the <span>right people</span> to find us — and when they do, to feel that they have finally come home.</div>
+    <div class="ns-body" style="margin-top:1.5rem">The movement has a name. It has a face. It has a philosophy, a framework, a diagnosis, and now a strategy. The only thing left is to begin. And we have already begun. One classroom. One lesson. One student who leaned in when they had spent years leaning out.<br><br><strong style="color:var(--gold-bright)">That is the movement. Everything else is infrastructure.</strong></div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="doc-cta">
+  <h2 class="doc-cta-title">The strategy is written.<br><span>Now we execute.</span></h2>
+  <p class="doc-cta-sub">Start where you are. Use what you have. Do what only you can do — and let the movement find you.</p>
+  <button class="btn-gold" onclick="window.location.href='/'">Return to Home</button>
+  <button class="btn-outline" onclick="window.location.href='/engageneering_manifesto.html'">Read the Manifesto</button>
+</div>
+
+</div><!-- /doc-body -->
+
+<div class="doc-footer">
+  <div class="doc-footer-text">© 2025 Engageneering™ · All rights reserved · Section 41 Trademark · engageneering.org</div>
+</div>
+
+<script>
+window.addEventListener('scroll',()=>{
+  const d=document.documentElement;
+  document.getElementById('progress').style.width=((d.scrollTop/(d.scrollHeight-d.clientHeight))*100)+'%';
+});
+
+/* Reveal sections */
+const sections=document.querySelectorAll('.section');
+const sObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');sObs.unobserve(e.target);}});
+},{threshold:.06,rootMargin:'0px 0px -40px 0px'});
+sections.forEach(s=>sObs.observe(s));
+
+/* Reveal phase rows */
+const phases=document.querySelectorAll('.phase-row');
+const pObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');pObs.unobserve(e.target);}});
+},{threshold:.1});
+phases.forEach(p=>pObs.observe(p));
+</script>
+</body>
+</html>

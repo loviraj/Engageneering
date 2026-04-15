@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ARIA Agent Architecture v2 — Engageneering™</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'EB Garamond',Georgia,serif;background:#030810;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2.5rem 1.5rem}
+.arch{background:#060c1a;border-radius:16px;padding:2.4rem 2rem 2.6rem;display:flex;flex-direction:column;gap:1.7rem;max-width:960px;width:100%;border:1px solid #1e3a6a}
+.arch-title{text-align:center;font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:5px;color:#c8922a;text-transform:uppercase;margin-bottom:3px}
+.arch-ver{text-align:center;font-size:8.5px;letter-spacing:2px;color:#4a6a8a;text-transform:uppercase}
+
+.layer-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:#4a6a8a;margin-bottom:.7rem;display:flex;align-items:center;gap:.8rem}
+.layer-lbl::after{content:'';flex:1;height:1px;background:#1e3a6a}
+
+.aria-card{background:#0f1e36;border:1.5px solid #c8922a;border-radius:10px;padding:1.1rem 1.5rem;display:flex;align-items:center;gap:1.4rem}
+.aria-name{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;letter-spacing:2px;color:#f0c040;margin-bottom:4px}
+.aria-tag{font-size:11px;color:#8a9ab8;letter-spacing:.3px;line-height:1.6}
+
+.conn{display:flex;align-items:center;height:22px;gap:0}
+.cline{flex:1;height:1px;background:#1e3a6a}
+.cdot{width:6px;height:6px;border-radius:50%;background:#c8922a;flex-shrink:0}
+.clbl{font-size:9px;color:#c8922a;margin:0 8px;white-space:nowrap;letter-spacing:.5px}
+
+.grid{display:grid;gap:.8rem}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g2{grid-template-columns:1fr 1fr}
+
+.ag{border-radius:8px;padding:.9rem 1.1rem;border:1px solid}
+.ag-id{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:3px}
+.ag-name{font-size:13px;font-weight:700;letter-spacing:.3px;margin-bottom:4px;font-family:'Cormorant Garamond',serif}
+.ag-desc{font-size:11px;line-height:1.6;opacity:.9}
+.ag-trig{font-size:9px;border-radius:20px;padding:2px 9px;display:inline-block;margin-top:.5rem;border:1px solid;letter-spacing:.5px}
+.ag-idx{font-size:9px;font-weight:700;letter-spacing:.5px;margin-top:2px;margin-bottom:4px}
+
+.intake{background:#080f1e;border-color:#1e3a6a}
+.intake .ag-id{color:#378add}.intake .ag-name{color:#85b7eb}.intake .ag-desc{color:#6a8ab0}
+.intake .ag-trig{color:#0c447c;background:#e6f1fb;border-color:#85b7eb}
+
+.eval{background:#0d0c06;border-color:#4a3a0a}
+.eval .ag-id{color:#ba7517}.eval .ag-name{color:#f0c040}.eval .ag-desc{color:#7a6a38}.eval .ag-idx{color:#f0c040}
+.eval .ag-trig{color:#412402;background:#faeeda;border-color:#ef9f27}
+
+.intg{background:#0d0806;border-color:#3a1a0a}
+.intg .ag-id{color:#e24b4a}.intg .ag-name{color:#f09595}.intg .ag-desc{color:#7a4a48}.intg .ag-idx{color:#f09595}
+.intg .ag-trig{color:#501313;background:#fcebeb;border-color:#f09595}
+
+.arbiter{background:#120806;border-color:#5a2a1a}
+.arbiter .ag-id{color:#d85a30}.arbiter .ag-name{color:#f0997b}.arbiter .ag-desc{color:#7a4a38}
+.arbiter .ag-trig{color:#4a1b0c;background:#faece7;border-color:#d85a30}
+
+.growth{background:#0c0818;border-color:#2a1e5a}
+.growth .ag-id{color:#7f77dd}.growth .ag-name{color:#afa9ec}.growth .ag-desc{color:#6a628a}
+.growth .ag-trig{color:#3c3489;background:#eeedfe;border-color:#afa9ec}
+
+.cds-box{background:#0a1020;border:1px solid #1e3a6a;border-radius:8px;padding:1rem 1.3rem}
+.cds-title{font-size:9px;letter-spacing:3px;color:#c8922a;text-transform:uppercase;margin-bottom:.7rem}
+.cds-formula{font-size:12px;color:#f0c040;font-family:monospace;line-height:2;letter-spacing:.3px}
+.cds-note{font-size:10px;color:#5a7a9a;margin-top:.6rem;line-height:1.65}
+
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:.8rem}
+.grade-box{border-radius:8px;padding:.85rem 1.1rem;border:1px solid}
+.grade-lbl{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:4px}
+.grade-name{font-size:13px;font-weight:700;font-family:'Cormorant Garamond',serif;margin-bottom:4px}
+.grade-desc{font-size:11px;line-height:1.6;opacity:.9}
+
+.flow-wrap{background:#080f1c;border-radius:8px;padding:1rem 1.3rem;border:1px solid #1e3a6a}
+.flow-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:#4a6a8a;margin-bottom:.7rem}
+.flow-steps{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}
+.fs{font-size:10px;color:#8a9ab8;background:#0f1e36;border:1px solid #1e3a6a;border-radius:20px;padding:3px 10px;white-space:nowrap}
+.fa{color:#c8922a;font-size:12px;flex-shrink:0}
+
+.foot{text-align:center;font-size:8.5px;letter-spacing:2px;color:#2a4060;text-transform:uppercase;margin-top:.3rem}
+
+@media(max-width:680px){.g3{grid-template-columns:1fr}.g2{grid-template-columns:1fr}.dual{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="arch">
+
+  <div>
+    <div class="arch-title">Engageneering™ — ARIA Full Agent Architecture v2</div>
+    <div class="arch-ver" style="margin-top:4px">12 specialist agents · Dual grade system · Composite Defended Score · Zero human intervention · Full audit trail</div>
+  </div>
+
+  <!-- ARIA -->
+  <div>
+    <div class="layer-lbl">Orchestration layer</div>
+    <div class="aria-card">
+      <svg width="52" height="58" viewBox="0 0 52 60" style="flex-shrink:0">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
+        <polygon points="26,2 50,15 26,30" fill="#f5d060" opacity=".92"/>
+        <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/>
+        <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/>
+        <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".95"/>
+        <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/>
+        <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/>
+        <circle cx="26" cy="30" r="5.5" fill="#f5d060"/>
+        <circle cx="26" cy="30" r="3" fill="#0b1624"/>
+        <circle cx="26" cy="30" r="1.4" fill="#f5d060"/>
+      </svg>
+      <div>
+        <div class="aria-name">ARIA — Autonomous Routing &amp; Intelligence Arbiter</div>
+        <div class="aria-tag">Master orchestrator · Routes every platform event to specialist agents · Aggregates all indices · Raises divergence flags · Manages integrity suspensions · Drives tier escalation · Full audit trail on every decision · Zero human intervention required</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><div class="cline"></div><div class="cdot"></div><div class="clbl">intake pipeline</div><div class="cdot"></div><div class="cline"></div></div>
+
+  <!-- INTAKE -->
+  <div>
+    <div class="layer-lbl">Intake agents (01–03) — trigger on question submission</div>
+    <div class="grid g3">
+      <div class="ag intake">
+        <div class="ag-id">Agent 01</div>
+        <div class="ag-name">Gatekeeper</div>
+        <div class="ag-desc">Screens every question the moment it is submitted. Filters harmful, obnoxious, and bad-faith content. Returns approve / revise / reject + reason code. First gate — nothing passes without clearance.</div>
+        <div class="ag-trig">On: question submitted</div>
+      </div>
+      <div class="ag intake">
+        <div class="ag-id">Agent 02</div>
+        <div class="ag-name">Question Rater</div>
+        <div class="ag-desc">Scores on clarity, depth, originality, and engagement potential. Assigns Quality Score 0–100. Low scores return with specific improvement prompts before publishing to the feed.</div>
+        <div class="ag-trig">On: question approved</div>
+      </div>
+      <div class="ag intake">
+        <div class="ag-id">Agent 03</div>
+        <div class="ag-name">Smart Matcher</div>
+        <div class="ag-desc">Reads the question, scans declared expertise, answer history, and subject tags. Sends personalised invitations to the top 5 best-fit answerers only. Never cold-broadcasts to the full community.</div>
+        <div class="ag-trig">On: question published</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><div class="cline"></div><div class="cdot" style="background:#ba7517"></div><div class="clbl" style="color:#ba7517">answer arrives → 6 atomic evaluators fire in parallel</div><div class="cdot" style="background:#ba7517"></div><div class="cline"></div></div>
+
+  <!-- ATOMIC EVAL -->
+  <div>
+    <div class="layer-lbl">Atomic evaluation agents (04–09) — one index each, all parallel, all independent</div>
+    <div class="grid g3">
+      <div class="ag eval">
+        <div class="ag-id">Agent 04</div>
+        <div class="ag-name">Engagement Indexer</div>
+        <div class="ag-idx">Engagement Index (EI) · weight 25%</div>
+        <div class="ag-desc">Does the answer make the reader lean in? Scores narrative pull, hook strength, questions raised, energy of language, and degree to which it invites further thinking. Answers that engage deeply score above 80.</div>
+        <div class="ag-trig">On: answer submitted</div>
+      </div>
+      <div class="ag eval">
+        <div class="ag-id">Agent 05</div>
+        <div class="ag-name">Retention Indexer</div>
+        <div class="ag-idx">Retention Index (RI) · weight 20%</div>
+        <div class="ag-desc">Will this be remembered in 7 days? Scores use of memorable anchors, structural repetition, analogy density, and quotability of key phrases. Forgettable, generic answers score below 50.</div>
+        <div class="ag-trig">On: answer submitted</div>
+      </div>
+      <div class="ag eval">
+        <div class="ag-id">Agent 06</div>
+        <div class="ag-name">Applicability Indexer</div>
+        <div class="ag-idx">Real-life Applicability Index (RAI) · weight 25%</div>
+        <div class="ag-desc">Can this be used on Monday morning? Scores context specificity, transferability, step clarity, and whether the answer bridges theory to practice. Purely abstract answers are capped at 40.</div>
+        <div class="ag-trig">On: answer submitted</div>
+      </div>
+      <div class="ag eval">
+        <div class="ag-id">Agent 07</div>
+        <div class="ag-name">Creativity Indexer</div>
+        <div class="ag-idx">Creativity &amp; Originality Index (COI) · weight 15%</div>
+        <div class="ag-desc">Is this a fresh perspective or a restatement? Scores novelty of framing, unexpected connections, metaphor originality, and divergence from the most predictable response. Safe answers cap at 60.</div>
+        <div class="ag-trig">On: answer submitted</div>
+      </div>
+      <div class="ag eval">
+        <div class="ag-id">Agent 08</div>
+        <div class="ag-name">Accuracy Verifier</div>
+        <div class="ag-idx">Accuracy Index (AI) · weight 15%</div>
+        <div class="ag-desc">Is the answer factually correct and well-grounded? Scores claim verifiability, logical coherence, and appropriate grounding in evidence or experience. Penalises demonstrable factual errors.</div>
+        <div class="ag-trig">On: answer submitted</div>
+      </div>
+      <div class="ag intg">
+        <div class="ag-id">Agent 09</div>
+        <div class="ag-name">Integrity Guard</div>
+        <div class="ag-idx">Integrity Flag (IF) · binary gate</div>
+        <div class="ag-desc">Runs fully independently. Checks for plagiarism, hallucination, citation abuse, and bad faith. A flag suspends the answer. An IF overrides all index scores regardless of their values. Cannot be appealed without independent evidence.</div>
+        <div class="ag-trig">On: answer submitted (parallel)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><div class="cline"></div><div class="cdot" style="background:#d85a30"></div><div class="clbl" style="color:#d85a30">indices → ARIA aggregates → Arbiter reconciles dual grades</div><div class="cdot" style="background:#d85a30"></div><div class="cline"></div></div>
+
+  <!-- ARBITER + DUAL + CDS -->
+  <div>
+    <div class="layer-lbl">Grade arbiter (Agent 10) — produces the Composite Defended Score (CDS)</div>
+    <div class="ag arbiter" style="margin-bottom:.9rem">
+      <div class="ag-id">Agent 10</div>
+      <div class="ag-name">Comparative Grade Arbiter</div>
+      <div class="ag-desc">Receives all 5 index scores from Agents 04–08. Computes the Algorithmic Grade (AG). Receives the Engageneer™ Peer Grade (PG) with mandatory written justification per criterion. Blends both into the Composite Defended Score. Raises a Divergence Flag if AG and PG differ by more than 15 points — triggering mandatory second Engageneer™ review. Every CDS is fully explainable, challengeable, and permanently auditable.</div>
+      <div class="ag-trig">On: all indices received + Engageneer™ PG submitted</div>
+    </div>
+
+    <div class="cds-box">
+      <div class="cds-title">The Composite Defended Score (CDS) — published, transparent formula</div>
+      <div class="cds-formula">
+        AG  =  (EI × 0.25) + (RI × 0.20) + (RAI × 0.25) + (COI × 0.15) + (AI × 0.15)<br>
+        CDS =  (AG × 0.60) + (PG × 0.40)<br>
+        IF integrity flag raised  →  CDS suspended pending ARIA review<br>
+        IF |AG − PG| &gt; 15  →  Divergence Flag  →  second Engageneer™ review mandatory
+      </div>
+      <div class="cds-note">Every weight is published and stable. Every index is explained in plain language. Every CDS can be broken into its five components on request by the answerer. This formula is identical for every answer, every answerer, and every tier level. No exceptions. No special cases.</div>
+    </div>
+
+    <div class="dual">
+      <div class="grade-box" style="border-color:#1d9e75;background:#060f10">
+        <div class="grade-lbl" style="color:#1d9e75">Algorithmic Grade (AG)</div>
+        <div class="grade-name" style="color:#5dcaa5">Engageneering™ AI Grade</div>
+        <div class="grade-desc" style="color:#4a8a72">Produced by Agents 04–08. Objective, instant, and consistent across all answers. Broken into 5 published indices. Cannot be influenced by personal relationships, reputation, or bias. Can be challenged only with evidence of a specific indexing error.</div>
+      </div>
+      <div class="grade-box" style="border-color:#7f77dd;background:#0c0818">
+        <div class="grade-lbl" style="color:#7f77dd">Peer Grade (PG)</div>
+        <div class="grade-name" style="color:#afa9ec">Engageneer™ Human Grade</div>
+        <div class="grade-desc" style="color:#6a628a">Produced by a certified Engageneer™. Mandatory written justification required per criterion. Adds contextual wisdom, nuance, and lived classroom experience that no algorithm can fully replicate. Subject to divergence review and public visibility on request.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><div class="cline"></div><div class="cdot" style="background:#7f77dd"></div><div class="clbl" style="color:#7f77dd">CDS finalised → growth agents → tier escalation</div><div class="cdot" style="background:#7f77dd"></div><div class="cline"></div></div>
+
+  <!-- GROWTH -->
+  <div>
+    <div class="layer-lbl">Growth agents (11–12) — trigger on CDS finalisation &amp; weekly cadence</div>
+    <div class="grid g2">
+      <div class="ag growth">
+        <div class="ag-id">Agent 11</div>
+        <div class="ag-name">Tier Engine</div>
+        <div class="ag-desc">Monitors cumulative CDS history, question quality scores, mentorship activity, and time-in-tier per user. On threshold crossing, calculates eligibility, presents evidence to ARIA, and triggers promotion or demotion — with full audit trail available to the user on request at any time.</div>
+        <div class="ag-trig">On: CDS finalised · milestone thresholds</div>
+      </div>
+      <div class="ag growth">
+        <div class="ag-id">Agent 12</div>
+        <div class="ag-name">Insight Narrator</div>
+        <div class="ag-desc">Generates personalised weekly reports per user — full index breakdowns, growth edges, comparison to the user's own past scores (never to others), and specific next-action recommendations written in the Engageneering™ voice. Every word earned from real activity data.</div>
+        <div class="ag-trig">On: weekly cadence per user</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOW -->
+  <div class="flow-wrap">
+    <div class="flow-lbl">Full answer lifecycle — end to end</div>
+    <div class="flow-steps">
+      <div class="fs">Answer submitted</div><div class="fa">→</div>
+      <div class="fs">ARIA routes</div><div class="fa">→</div>
+      <div class="fs">Agents 04–09 parallel</div><div class="fa">→</div>
+      <div class="fs">EI · RI · RAI · COI · AI scored</div><div class="fa">→</div>
+      <div class="fs">Integrity check</div><div class="fa">→</div>
+      <div class="fs">AG computed</div><div class="fa">→</div>
+      <div class="fs">Engageneer™ submits PG</div><div class="fa">→</div>
+      <div class="fs">Arbiter reconciles</div><div class="fa">→</div>
+      <div class="fs">Divergence check</div><div class="fa">→</div>
+      <div class="fs">CDS published</div><div class="fa">→</div>
+      <div class="fs">Tier Engine recalculates</div><div class="fa">→</div>
+      <div class="fs">Insight Narrator queued</div>
+    </div>
+  </div>
+
+  <div class="foot">© 2025 Engageneering™ · Engageneer™ · Section 41 Trademark · engageneering.org · Architecture v2 · 12 agents</div>
+</div>
+</body>
+</html>

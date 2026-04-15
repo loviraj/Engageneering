@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>The Engageneering Manifesto</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#060c1a;
+  --navy-mid:#0b1624;
+  --gold:#c8922a;
+  --gold-bright:#f0c040;
+  --steel:#8a9ab8;
+  --muted:#4a6a8a;
+  --white:#ffffff;
+  --warm:#f5f0e8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:#c8d4e8;font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:1.85;overflow-x:hidden}
+::selection{background:rgba(200,146,42,0.3);color:#fff}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--gold)}
+
+/* PROGRESS BAR */
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--gold);z-index:999;transition:width .1s linear;width:0%}
+
+/* NAV */
+nav{position:fixed;top:2px;left:0;right:0;z-index:100;padding:1.2rem 3rem;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(6,12,26,0.95),transparent)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:3px;color:var(--gold);text-decoration:none;font-weight:700}
+.nav-back{font-size:10px;letter-spacing:2px;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.nav-back:hover{color:var(--gold)}
+
+/* COVER */
+.cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem;position:relative;overflow:hidden;background:radial-gradient(ellipse 70% 60% at 50% 45%,#0f2040,var(--navy) 70%)}
+.cover-eyebrow{font-size:9px;letter-spacing:6px;color:var(--gold);text-transform:uppercase;margin-bottom:2.5rem;opacity:0;animation:fadeUp 1s ease .3s forwards}
+.cover-rule{width:1px;height:60px;background:linear-gradient(to bottom,transparent,var(--gold),transparent);margin:0 auto 2.5rem;opacity:0;animation:fadeUp 1s ease .5s forwards}
+.cover-title{font-family:'Cormorant Garamond',serif;font-size:clamp(42px,7vw,96px);color:var(--white);line-height:1.05;letter-spacing:-1px;font-weight:700;margin-bottom:1rem;opacity:0;animation:fadeUp 1.2s ease .7s forwards}
+.cover-title span{color:var(--gold-bright)}
+.cover-subtitle{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.5vw,26px);color:var(--steel);font-style:italic;font-weight:300;margin-bottom:3rem;opacity:0;animation:fadeUp 1s ease 1s forwards}
+.cover-author{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;opacity:0;animation:fadeUp 1s ease 1.3s forwards}
+.cover-scroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeUp 1s ease 2s forwards}
+.cover-scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,rgba(200,146,42,.5),transparent);animation:scrollPulse 2.4s ease infinite}
+.cover-scroll-text{font-size:8px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+
+/* HEX DECO */
+.hex-deco{position:absolute;opacity:.07;pointer-events:none}
+
+/* BODY */
+.manifesto-body{max-width:740px;margin:0 auto;padding:6rem 2rem}
+
+/* SECTIONS */
+.m-section{margin-bottom:6rem;opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform .9s ease}
+.m-section.visible{opacity:1;transform:translateY(0)}
+.m-number{font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:1.4rem;display:flex;align-items:center;gap:1rem}
+.m-number::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(200,146,42,.4),transparent)}
+.m-heading{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,4vw,46px);color:var(--white);line-height:1.2;margin-bottom:2rem;font-weight:600}
+.m-heading span{color:var(--gold-bright);font-style:italic}
+.m-body{color:#b0bcd4;line-height:1.95;margin-bottom:1.4rem}
+.m-body strong{color:var(--warm);font-weight:500}
+
+/* PULL QUOTE */
+.pull-quote{border-left:2px solid var(--gold);padding:1.4rem 2rem;margin:3rem 0;background:rgba(200,146,42,.04);border-radius:0 6px 6px 0}
+.pull-quote-text{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,3vw,30px);color:var(--gold-bright);line-height:1.5;font-style:italic;font-weight:300}
+.pull-quote-attr{font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:.8rem;text-transform:uppercase}
+
+/* CALLOUT */
+.callout{background:rgba(15,30,54,.8);border:1px solid rgba(30,58,106,.8);border-radius:8px;padding:2rem 2.4rem;margin:2.5rem 0}
+.callout-label{font-size:8px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:1rem}
+.callout-text{font-family:'Cormorant Garamond',serif;font-size:17px;color:#c0cce0;line-height:1.7}
+
+/* THESIS LIST */
+.thesis-list{list-style:none;display:flex;flex-direction:column;gap:1.4rem;margin:2.5rem 0}
+.thesis-list li{display:flex;gap:1.2rem;align-items:flex-start}
+.thesis-num{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--gold);letter-spacing:1px;min-width:28px;padding-top:2px;opacity:.7}
+.thesis-text{font-size:16px;color:#b0bcd4;line-height:1.75}
+.thesis-text strong{color:var(--warm)}
+
+/* DECLARATION */
+.declaration{background:linear-gradient(135deg,#0c1e40,#182e58,#0a1830);border-radius:12px;padding:3.5rem;margin:4rem 0;text-align:center;position:relative;overflow:hidden;border:1px solid rgba(30,58,106,.6)}
+.declaration::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(200,146,42,.07),transparent)}
+.declaration-label{font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:1.5rem}
+.declaration-text{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,3.5vw,42px);color:var(--white);line-height:1.3;font-weight:600;position:relative}
+.declaration-text span{color:var(--gold-bright)}
+
+/* CTA */
+.manifesto-cta{text-align:center;padding:5rem 2rem;border-top:1px solid rgba(30,58,106,.5);margin-top:4rem}
+.cta-title{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,4vw,52px);color:var(--white);margin-bottom:1rem;font-weight:600}
+.cta-title span{color:var(--gold-bright)}
+.cta-sub{font-size:16px;color:var(--muted);margin-bottom:2.5rem;line-height:1.8}
+.btn-gold{background:var(--gold);color:var(--navy);padding:15px 36px;border-radius:5px;font-size:11px;letter-spacing:2.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all .3s;text-transform:uppercase}
+.btn-gold:hover{background:var(--gold-bright);transform:translateY(-3px);box-shadow:0 10px 36px rgba(240,192,64,.4)}
+.btn-outline{background:transparent;color:var(--gold);padding:14px 34px;border-radius:5px;font-size:11px;letter-spacing:2.5px;border:1.5px solid rgba(200,146,42,.55);cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all .3s;text-transform:uppercase;margin-left:1rem}
+.btn-outline:hover{background:rgba(200,146,42,.1);border-color:var(--gold);transform:translateY(-3px)}
+
+/* FOOTER */
+.manifesto-footer{text-align:center;padding:2.5rem;border-top:1px solid rgba(30,58,106,.4)}
+.manifesto-footer-text{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scrollPulse{0%,100%{opacity:.3}50%{opacity:1}}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav>
+  <a class="nav-logo" href="/">ENGAGENEERING</a>
+  <a class="nav-back" href="/">← Back to Site</a>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <svg class="hex-deco" style="top:8%;left:3%;width:180px;animation:hexFloat 9s ease infinite" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#c8922a" stroke-width="1"/></svg>
+  <svg class="hex-deco" style="top:18%;right:4%;width:110px;animation:hexFloat2 12s ease infinite 2s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#f0c040" stroke-width=".8"/></svg>
+  <svg class="hex-deco" style="bottom:15%;left:6%;width:80px;animation:hexFloat 14s ease infinite 4s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#c8922a" stroke-width=".6"/></svg>
+  <svg class="hex-deco" style="bottom:20%;right:5%;width:140px;animation:hexFloat2 10s ease infinite 1s" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="none" stroke="#1e3a6a" stroke-width="1.2"/></svg>
+
+  <div class="cover-eyebrow">Engageneering.org — Founding Document</div>
+  <div class="cover-rule"></div>
+  <h1 class="cover-title">The <span>Engageneering</span><br>Manifesto</h1>
+  <div class="cover-subtitle">A declaration for the future of learning</div>
+  <div class="cover-author">Published 2025 &nbsp;·&nbsp; engageneering.org</div>
+  <div class="cover-scroll">
+    <div class="cover-scroll-text">Read on</div>
+    <div class="cover-scroll-line"></div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="manifesto-body">
+
+  <!-- SECTION 1: THE INDICTMENT -->
+  <div class="m-section">
+    <div class="m-number">I &nbsp; The Indictment</div>
+    <h2 class="m-heading">Something is <span>profoundly wrong.</span></h2>
+    <p class="m-body">Every morning, hundreds of millions of children walk into classrooms around the world. They sit down. They open books. They listen. They copy. They memorise. They are tested. They are graded. They go home. They forget.</p>
+    <p class="m-body">And we call this — education.</p>
+    <p class="m-body">We have built the most elaborate, most expensive, most universally mandated system of human development in history. And in doing so, we have made one catastrophic error: <strong>we confused the delivery of content with the creation of learning.</strong></p>
+    <p class="m-body">The classroom, as it exists in most of the world today, is not a place where learning happens. It is a place where teaching happens — and we have spent a century pretending these are the same thing.</p>
+
+    <div class="pull-quote">
+      <div class="pull-quote-text">"We have spent a century building systems to measure what students remember. We forgot to build systems that make them care."</div>
+      <div class="pull-quote-attr">— Engageneering Manifesto</div>
+    </div>
+
+    <p class="m-body">The evidence is not subtle. Hermann Ebbinghaus mapped the forgetting curve in 1885 — showing that without meaningful application, humans forget up to 70% of new information within 24 hours. We have known this for 140 years. Our classrooms are still designed as if we hadn't.</p>
+    <p class="m-body">PISA data consistently shows that students who excel at standardised tests — who rank at the very top of national league tables — systematically underperform when asked to solve problems they haven't seen before. The very thing education is supposed to produce — thinking, adaptive, capable human beings — is the thing our system most reliably fails to develop.</p>
+    <p class="m-body">Alfie Kohn's research showed us that grades actively suppress intrinsic motivation. The moment you attach an external reward to a learning activity, the love of that activity diminishes. Students stop learning because they want to understand. They start learning because they want an A. And when the exam is over — they stop.</p>
+    <p class="m-body"><strong>We have engineered a system that produces the appearance of learning while systematically destroying its essence.</strong></p>
+  </div>
+
+  <!-- SECTION 2: THE ORIGINAL SIN -->
+  <div class="m-section">
+    <div class="m-number">II &nbsp; The Original Sin</div>
+    <h2 class="m-heading">Education was designed for a <span>world that no longer exists.</span></h2>
+    <p class="m-body">The modern school was not designed to develop human potential. It was designed to produce industrial-age workers — people who could follow instructions, sit still, show up on time, and perform repetitive tasks without complaint. The factory model didn't just influence the school. <strong>The school was the factory.</strong></p>
+    <p class="m-body">That world is gone. The tasks that once required human hands now require human minds. The jobs that will define the next fifty years — the ones that cannot be automated, cannot be outsourced, cannot be replicated by machines — are precisely the jobs that demand curiosity, creativity, collaboration, and the ability to learn continuously in the face of radical uncertainty.</p>
+    <p class="m-body">And yet. We still teach children to sit in rows. We still sort them by age rather than readiness. We still measure them with the same instruments we used in 1910. We still reward compliance over curiosity. We still call it education.</p>
+
+    <div class="callout">
+      <div class="callout-label">The Core Contradiction</div>
+      <div class="callout-text">We tell children that education will prepare them for a world that demands adaptability — then we design classrooms that reward rigidity. We say we want critical thinkers — then we punish them for questioning the curriculum. We claim to value creativity — then we grade it on a rubric.</div>
+    </div>
+
+    <p class="m-body">This is not a failure of individual teachers. Teachers are among the most dedicated, most under-resourced, most systematically constrained professionals on earth. They walk into classrooms every day and try, with everything they have, to make a broken system work for the children in front of them.</p>
+    <p class="m-body">This is a failure of the system itself. Of the philosophy that underlies it. Of the assumptions so deeply embedded that we no longer even see them as assumptions — we see them as facts.</p>
+    <p class="m-body"><strong>The assumption that teaching and learning are the same thing is the original sin of modern education.</strong> It is the lie at the foundation of the whole structure. And until we name it — clearly, loudly, without apology — we cannot begin to build something better.</p>
+  </div>
+
+  <!-- SECTION 3: WHAT LEARNING ACTUALLY IS -->
+  <div class="m-section">
+    <div class="m-number">III &nbsp; The Truth</div>
+    <h2 class="m-heading">What learning <span>actually is.</span></h2>
+    <p class="m-body">Learning is not the transfer of information from one mind to another. Learning is the construction of meaning by an individual mind — triggered by experience, sustained by curiosity, deepened by struggle, and cemented by application.</p>
+    <p class="m-body">You cannot give someone an understanding. You can only create the conditions in which understanding becomes possible. The teacher is not a transmitter. <strong>The teacher is an architect of conditions.</strong></p>
+    <p class="m-body">This is not a radical idea. Every great educator in history has known this. Socrates knew it — which is why he asked questions instead of giving answers. Dewey knew it — which is why he argued that education is life, not preparation for life. Freire knew it — which is why he called conventional teaching the "banking model" and declared it an act of oppression. Montessori knew it. Vygotsky knew it. Piaget knew it.</p>
+    <p class="m-body">We have known the truth about learning for over a century. The tragedy is not ignorance. <strong>The tragedy is that we built the wrong system anyway — and then kept it.</strong></p>
+
+    <div class="pull-quote">
+      <div class="pull-quote-text">"The mind is not a vessel to be filled, but a fire to be kindled."</div>
+      <div class="pull-quote-attr">— Plutarch, 100 AD</div>
+    </div>
+
+    <p class="m-body">Learning that sticks — that transfers, that compounds, that shapes how a person sees and moves through the world — has a set of conditions that are remarkably consistent across cultures, ages, and subjects. It happens when:</p>
+
+    <ul class="thesis-list">
+      <li><span class="thesis-num">01</span><span class="thesis-text"><strong>The learner is curious</strong> — not performing curiosity for a grade, but genuinely wanting to know what comes next.</span></li>
+      <li><span class="thesis-num">02</span><span class="thesis-text"><strong>The learner is active</strong> — constructing, questioning, applying, making, arguing, creating — not absorbing.</span></li>
+      <li><span class="thesis-num">03</span><span class="thesis-text"><strong>The learner feels safe to fail</strong> — where mistakes are information, not indictments, and risk-taking is structurally rewarded.</span></li>
+      <li><span class="thesis-num">04</span><span class="thesis-text"><strong>The learner is connected</strong> — to peers, to the material, to the teacher, to a purpose larger than the next exam.</span></li>
+      <li><span class="thesis-num">05</span><span class="thesis-text"><strong>The learner can see the point</strong> — not "because it's on the test" but because it matters, connects, applies, and opens doors.</span></li>
+    </ul>
+
+    <p class="m-body">These conditions do not emerge by accident. They can be deliberately created. They can be reliably engineered. <strong>That is what Engageneering is.</strong></p>
+  </div>
+
+  <!-- SECTION 4: THE DECLARATION -->
+  <div class="m-section">
+    <div class="m-number">IV &nbsp; The Declaration</div>
+    <h2 class="m-heading">We declare a <span>new philosophy.</span></h2>
+    <p class="m-body">Engageneering is not a methodology. It is not a teaching technique, a lesson template, or a professional development programme — though it produces all of these things.</p>
+    <p class="m-body">Engageneering is a <strong>philosophy of education</strong> built on a single, radical, evidence-backed premise:</p>
+
+    <div class="declaration">
+      <div class="declaration-label">The Central Premise</div>
+      <div class="declaration-text">Engagement is not a byproduct of good teaching.<br><span>It is the precondition of all learning.</span></div>
+    </div>
+
+    <p class="m-body">If a student is not engaged — not genuinely, intrinsically, curiously engaged — then no learning is occurring. Content may be transferred. Information may be temporarily stored. Exams may be passed. But learning — the kind that changes how a person thinks, that stays with them for life, that makes them more capable and more human — is not happening.</p>
+    <p class="m-body">And therefore: <strong>every decision a teacher makes — every lesson design, every question asked, every assessment constructed, every classroom arrangement chosen — must be evaluated first and foremost by one criterion: does this create, sustain, or deepen engagement?</strong></p>
+
+    <p class="m-body">We declare that:</p>
+    <ul class="thesis-list">
+      <li><span class="thesis-num">—</span><span class="thesis-text"><strong>Coverage is not learning.</strong> A curriculum completed is not an education delivered.</span></li>
+      <li><span class="thesis-num">—</span><span class="thesis-text"><strong>Grades are not knowledge.</strong> A mark on a paper is not evidence of understanding.</span></li>
+      <li><span class="thesis-num">—</span><span class="thesis-text"><strong>Silence is not attention.</strong> A quiet classroom is not a learning classroom.</span></li>
+      <li><span class="thesis-num">—</span><span class="thesis-text"><strong>Compliance is not curiosity.</strong> A student who does what they're told is not a student who is learning.</span></li>
+      <li><span class="thesis-num">—</span><span class="thesis-text"><strong>The teacher's job is not to teach.</strong> It is to engineer the conditions in which students cannot help but learn.</span></li>
+    </ul>
+  </div>
+
+  <!-- SECTION 5: THE FRAMEWORK -->
+  <div class="m-section">
+    <div class="m-number">V &nbsp; The Framework</div>
+    <h2 class="m-heading">Engagement can be <span>engineered.</span></h2>
+    <p class="m-body">The word "engineering" is deliberate. Engineers do not hope that bridges will stand. They understand the forces at work and design structures that reliably, predictably, consistently perform. Engageneering applies the same rigour to the classroom.</p>
+    <p class="m-body">Engagement is not magic. It is not the exclusive gift of charismatic teachers or exceptional students. It is the output of specific, learnable, repeatable conditions — conditions that any teacher, in any classroom, with any subject, can deliberately create.</p>
+    <p class="m-body">The Engageneering framework rests on six interconnected pillars — each one a domain in which the conditions for engagement can be deliberately engineered:</p>
+
+    <ul class="thesis-list">
+      <li><span class="thesis-num">01</span><span class="thesis-text"><strong>Active Learning Design</strong> — moving students from receivers to constructors. No passive absorption. Every learner is doing something with the knowledge.</span></li>
+      <li><span class="thesis-num">02</span><span class="thesis-text"><strong>Curiosity Engineering</strong> — designing the questions before providing the answers. Creating the itch before offering the scratch. Building hunger before serving the meal.</span></li>
+      <li><span class="thesis-num">03</span><span class="thesis-text"><strong>Peer Connection Systems</strong> — structuring collaboration so that the social nature of learning is an asset, not a distraction. Learning is inherently communal. Pretending otherwise is fighting human nature.</span></li>
+      <li><span class="thesis-num">04</span><span class="thesis-text"><strong>Attention Architecture</strong> — designing sessions around how the brain actually works. Cognitive load, spacing, retrieval, interleaving — applied practically, not theoretically.</span></li>
+      <li><span class="thesis-num">05</span><span class="thesis-text"><strong>Real-Time Feedback Loops</strong> — replacing summative judgment with continuous, low-stakes, high-frequency feedback that informs both teacher and learner in real time.</span></li>
+      <li><span class="thesis-num">06</span><span class="thesis-text"><strong>Impact Measurement</strong> — replacing the blunt instrument of grades with rich, multidimensional evidence of actual learning — curiosity growth, question quality, peer teaching, real-world application.</span></li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-label">The Engageneering Promise</div>
+      <div class="callout-text">Any teacher who applies these six pillars consistently will not just see higher engagement in their classroom. They will see deeper retention, stronger real-world application, greater student agency, and a measurable shift in the culture of learning itself. Not because we say so — because the evidence of a century of educational science says so.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: THE MOVEMENT -->
+  <div class="m-section">
+    <div class="m-number">VI &nbsp; The Movement</div>
+    <h2 class="m-heading">This is bigger than a <span>classroom.</span></h2>
+    <p class="m-body">We are not trying to make individual classrooms slightly better. We are trying to change what the world believes education is for.</p>
+    <p class="m-body">That is a movement. Movements are not built by organisations. They are built by people who have been changed — who have seen a better way and can no longer unsee it — and who refuse to stay quiet about it.</p>
+    <p class="m-body">Every teacher who applies Engageneering principles and sees a student light up who had never lit up before — that teacher becomes an evangelist. Every student who experiences a classroom where their curiosity is treated as a resource rather than an inconvenience — that student carries that experience for life. Every school that shifts its culture from coverage to engagement — that school becomes a proof point that the movement is right.</p>
+
+    <div class="pull-quote">
+      <div class="pull-quote-text">"First they ignore you, then they laugh at you, then they fight you, then you win."</div>
+      <div class="pull-quote-attr">— Attributed to Gandhi</div>
+    </div>
+
+    <p class="m-body">The educational establishment will resist. Systems built over centuries do not yield willingly. There will be those who say engagement is a luxury, that content must come first, that exams are the real world and we must prepare students for them. They are not wrong that exams exist. They are wrong that preparing students for exams is the same as preparing them for life.</p>
+    <p class="m-body">We are not anti-assessment. We are not anti-knowledge. We are not anti-structure. <strong>We are pro-learning.</strong> And we will not pretend that a system which produces graduates who cannot think, cannot apply, and cannot adapt is a system that is working.</p>
+    <p class="m-body">The movement begins in classrooms. One teacher, one lesson, one moment of genuine engagement that changes what a student believes is possible for themselves. Then another. Then a school. Then a district. Then a nation. Then the world.</p>
+    <p class="m-body"><strong>It begins with you.</strong></p>
+  </div>
+
+  <!-- SECTION 7: THE CALL -->
+  <div class="m-section">
+    <div class="m-number">VII &nbsp; The Call</div>
+    <h2 class="m-heading">Stop Teaching. <span>Start Engaging.</span></h2>
+    <p class="m-body">If you are a teacher who has felt the gap between what you know education could be and what your classroom is forced to be — this is your movement.</p>
+    <p class="m-body">If you are a student who has sat through years of school feeling like your curiosity was an obstacle rather than your greatest asset — this is your movement.</p>
+    <p class="m-body">If you are a parent who has watched a child arrive at school loving to learn and leave it tolerating it — this is your movement.</p>
+    <p class="m-body">If you are an administrator, a policy-maker, a researcher, a technologist who believes that education is the most important lever for human flourishing and that we are currently pulling it in the wrong direction — <strong>this is your movement.</strong></p>
+    <p class="m-body">Join us. Not as followers of a method, but as engineers of a future — one classroom, one lesson, one engaged student at a time.</p>
+
+    <div class="declaration" style="margin-top:3rem">
+      <div class="declaration-label">The Engageneering Creed</div>
+      <div class="declaration-text" style="font-size:clamp(16px,2.2vw,24px);line-height:1.6">
+        We believe curiosity is the curriculum.<br>
+        We believe engagement is the precondition of learning.<br>
+        We believe every teacher can engineer it.<br>
+        We believe every student deserves it.<br><br>
+        <span>We are Engageneering.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="manifesto-cta">
+    <h2 class="cta-title">Ready to <span>Engineer the Engagement?</span></h2>
+    <p class="cta-sub">Join thousands of educators building the movement — one classroom at a time.</p>
+    <button class="btn-gold">Join the Movement</button>
+    <button class="btn-outline">Back to Site</button>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="manifesto-footer">
+  <div class="manifesto-footer-text">© 2025 Engageneering.org &nbsp;·&nbsp; Engineer the Engagement &nbsp;·&nbsp; All rights reserved</div>
+</div>
+
+<style>
+@keyframes hexFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-16px) rotate(4deg)}}
+@keyframes hexFloat2{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-10px) rotate(-3deg)}}
+</style>
+
+<script>
+/* Progress bar */
+window.addEventListener('scroll',()=>{
+  const d=document.documentElement;
+  const pct=(d.scrollTop/(d.scrollHeight-d.clientHeight))*100;
+  document.getElementById('progress').style.width=pct+'%';
+});
+
+/* Scroll reveal */
+const sections=document.querySelectorAll('.m-section');
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+},{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+sections.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
