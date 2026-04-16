@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Engageneering™ — Crowd Learning Platform</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
@@ -410,6 +411,34 @@ nav{
 .tag-al{color:#4ecf96;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3)}
 
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.sidebar{display:none}}
+
+/* ── AUTH OVERLAY ── */
+.auth-overlay{position:fixed;inset:0;background:rgba(4,8,18,.9);z-index:500;display:none;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(8px)}
+.auth-overlay.open{display:flex}
+.auth-modal{background:#0b1624;border:1px solid var(--border-strong);border-radius:14px;width:100%;max-width:480px;overflow:hidden;position:relative}
+.auth-modal-close{position:absolute;top:.9rem;right:1.1rem;background:none;border:none;color:var(--text-tertiary);font-size:20px;cursor:pointer;line-height:1;transition:color .2s;z-index:2}
+.auth-modal-close:hover{color:var(--text-primary)}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border-mid)}
+.auth-tab{flex:1;padding:.85rem;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--text-tertiary);font-family:'Cormorant Garamond',serif;transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.auth-tab.active{color:var(--gold-b);border-bottom-color:var(--gold)}
+.auth-body{padding:1.8rem}
+.auth-section{display:none}.auth-section.active{display:block}
+.auth-field{margin-bottom:1rem}
+.auth-label{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:.4rem}
+.auth-input{width:100%;background:var(--bg-input);border:1px solid var(--border-strong);border-radius:6px;padding:10px 14px;color:var(--text-primary);font-family:'EB Garamond',serif;font-size:14px;outline:none;transition:border-color .2s}
+.auth-input:focus{border-color:rgba(200,146,42,.5)}
+.auth-input::placeholder{color:var(--text-dim)}
+.auth-divider{display:flex;align-items:center;gap:.8rem;margin:.9rem 0;font-size:10px;color:var(--text-dim);letter-spacing:1px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border-mid)}
+.oauth-btn{display:flex;align-items:center;gap:.8rem;width:100%;padding:.8rem 1.1rem;background:var(--bg-card);border:1px solid var(--border-strong);border-radius:6px;cursor:pointer;font-size:13px;color:var(--text-secondary);font-family:'EB Garamond',serif;transition:all .2s;margin-bottom:.6rem}
+.oauth-btn:hover{border-color:var(--gold);color:var(--text-primary)}
+.auth-error{font-size:11px;color:#f09595;margin-top:.5rem;min-height:16px}
+.auth-success{font-size:11px;color:var(--teal-b);margin-top:.5rem}
+.user-menu{display:flex;align-items:center;gap:.7rem}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold-b);font-weight:700;cursor:pointer;overflow:hidden}
+.user-avatar img{width:100%;height:100%;object-fit:cover}
+.signout-btn{font-size:10px;color:var(--text-dim);background:none;border:none;cursor:pointer;letter-spacing:1px;transition:color .2s}
+.signout-btn:hover{color:var(--text-tertiary)}
 </style>
 </head>
 <body>
@@ -787,6 +816,291 @@ nav{
   </div>
 </div>
 
+
+<script>
+// ── SUPABASE INIT ──────────────────────────────────────
+const SUPA_URL  = 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRicW5rY2pmdHhmYnh1anhzcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDE2OTgsImV4cCI6MjA5MTgxNzY5OH0.Y7R7MKo9mu5T4CMUAjAK1vMxnW_VqJKrieIi4MnCSeY';
+const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+
+// ── SESSION & UI STATE ─────────────────────────────────
+let currentUser = null;
+let currentProfile = null;
+
+async function initAuth() {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) await handleSession(session);
+
+  supa.auth.onAuthStateChange(async (_event, session) => {
+    if (session) await handleSession(session);
+    else handleSignout();
+  });
+}
+
+async function handleSession(session) {
+  currentUser = session.user;
+  // Load profile
+  const { data: profile } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
+  currentProfile = profile;
+  // Load role
+  const { data: role } = await supa.from('profile_roles').select('*').eq('user_id', currentUser.id).single();
+  updateNavUI(profile, role);
+  closeAuth();
+  // If no role yet → show role selection (first login)
+  if (!role) await createDefaultRole();
+}
+
+async function createDefaultRole() {
+  await supa.from('profile_roles').insert({
+    user_id: currentUser.id,
+    role: 'both',
+    seeker_tier: 1,
+    answerer_tier: 1
+  });
+}
+
+function handleSignout() {
+  currentUser = null;
+  currentProfile = null;
+  updateNavUI(null, null);
+}
+
+function updateNavUI(profile, role) {
+  const navR = document.querySelector('.nav-right');
+  if (!navR) return;
+  if (profile) {
+    const initials = (profile.display_name || 'U').charAt(0).toUpperCase();
+    const tierLabel = role ? `T${role.seeker_tier}` : 'T1';
+    const pts = role ? role.pts_total : 0;
+    navR.innerHTML = `
+      <div class="nav-badge">Questioner ${tierLabel} · <strong>${pts} pts</strong></div>
+      <div class="user-avatar" title="${profile.display_name || 'Profile'}">${profile.avatar_url ? `<img src="${profile.avatar_url}"/>` : initials}</div>
+      <button class="signout-btn" onclick="doSignout()">Sign out</button>`;
+  } else {
+    navR.innerHTML = `
+      <div class="nav-badge">Guest</div>
+      <button class="btn btn-secondary" onclick="openAuth('login')">Log In</button>
+      <button class="btn btn-primary" onclick="openAuth('signup')">Join</button>`;
+  }
+}
+
+// ── AUTH MODAL CONTROLS ────────────────────────────────
+function openAuth(tab='login') {
+  document.getElementById('authOverlay').classList.add('open');
+  switchAuthTab(tab);
+  document.body.style.overflow='hidden';
+}
+function closeAuth() {
+  document.getElementById('authOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function switchAuthTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
+  document.getElementById('sectionLogin').classList.toggle('active', tab==='login');
+  document.getElementById('sectionSignup').classList.toggle('active', tab==='signup');
+  document.getElementById('loginError').textContent='';
+  document.getElementById('signupError').textContent='';
+  document.getElementById('signupSuccess').textContent='';
+}
+document.getElementById('authOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('authOverlay')) closeAuth();
+});
+
+function linkedinComingSoon() {
+  alert('LinkedIn sign-in coming soon — use Google or email for now.');
+}
+
+// ── LOGIN ──────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pwd   = document.getElementById('loginPwd').value;
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  if (!email || !pwd) { errEl.textContent = 'Please enter email and password.'; return; }
+  const { error } = await supa.auth.signInWithPassword({ email, password: pwd });
+  if (error) errEl.textContent = error.message;
+}
+
+// ── SIGNUP ─────────────────────────────────────────────
+async function doSignup() {
+  const name  = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pwd   = document.getElementById('signupPwd').value;
+  const errEl = document.getElementById('signupError');
+  const okEl  = document.getElementById('signupSuccess');
+  errEl.textContent=''; okEl.textContent='';
+  if (!name || !email || !pwd) { errEl.textContent='All fields required.'; return; }
+  if (pwd.length < 8) { errEl.textContent='Password must be at least 8 characters.'; return; }
+  const { error } = await supa.auth.signUp({
+    email, password: pwd,
+    options: { data: { full_name: name } }
+  });
+  if (error) errEl.textContent = error.message;
+  else okEl.textContent = 'Account created — check your email to confirm, then log in.';
+}
+
+// ── OAUTH ──────────────────────────────────────────────
+async function oauthLogin(provider) {
+  const { error } = await supa.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: window.location.origin + '/platform.html' }
+  });
+  if (error) alert(error.message);
+}
+
+// ── SIGNOUT ────────────────────────────────────────────
+async function doSignout() {
+  await supa.auth.signOut();
+}
+
+// ── SAVE QUESTION TO DB ────────────────────────────────
+async function saveQuestion(text, tags, qualityScore, matchedUids) {
+  if (!currentUser) return null;
+  const { data, error } = await supa.from('questions').insert({
+    asker_id: currentUser.id,
+    text,
+    tags,
+    quality_score: qualityScore,
+    gatekeeper_verdict: 'approved',
+    status: 'published',
+    matched_uids: matchedUids,
+    published_at: new Date().toISOString()
+  }).select().single();
+  if (error) { console.error('Question save error:', error); return null; }
+  // Log to score_history
+  await supa.from('score_history').insert({
+    user_id: currentUser.id,
+    action_type: 'question',
+    ref_id: data.id,
+    quality_score: qualityScore,
+    pts_awarded: Math.round(qualityScore * 0.5)
+  });
+  // Update pts
+  await supa.from('profile_roles').update({
+    pts_total: (currentProfile?.pts_total || 0) + Math.round(qualityScore * 0.5),
+    seeker_pts: (currentProfile?.seeker_pts || 0) + Math.round(qualityScore * 0.5),
+    updated_at: new Date().toISOString()
+  }).eq('user_id', currentUser.id);
+  return data;
+}
+
+// ── SAVE ANSWER TO DB ──────────────────────────────────
+async function saveAnswer(questionId, text, scores) {
+  if (!currentUser) return null;
+  const { ei, ri, rai, coi, ai, ag, pg, cds } = scores;
+  const { data, error } = await supa.from('answers').insert({
+    question_id: questionId,
+    answerer_id: currentUser.id,
+    text,
+    ei_score: ei, ri_score: ri, rai_score: rai,
+    coi_score: coi, ai_score: ai,
+    ag, pg, cds,
+    integrity_pass: true,
+    status: 'published',
+    scored_at: new Date().toISOString()
+  }).select().single();
+  if (error) { console.error('Answer save error:', error); return null; }
+  // Log to score_history
+  await supa.from('score_history').insert({
+    user_id: currentUser.id,
+    action_type: 'answer',
+    ref_id: data.id,
+    ei, ri, rai, coi, ai, ag, pg, cds,
+    pts_awarded: Math.round(cds * 0.8)
+  });
+  // Update pts + run tier check
+  await supa.from('profile_roles').update({
+    pts_total: (currentProfile?.pts_total || 0) + Math.round(cds * 0.8),
+    answerer_pts: (currentProfile?.answerer_pts || 0) + Math.round(cds * 0.8),
+    updated_at: new Date().toISOString()
+  }).eq('user_id', currentUser.id);
+  await checkTierThreshold();
+  return data;
+}
+
+// ── TIER THRESHOLD CHECK ───────────────────────────────
+async function checkTierThreshold() {
+  if (!currentUser) return;
+  const { data: history } = await supa.from('score_history')
+    .select('cds,created_at')
+    .eq('user_id', currentUser.id)
+    .eq('action_type', 'answer')
+    .order('created_at', { ascending: false })
+    .limit(10);
+  if (!history || history.length < 3) return;
+  const avg = history.slice(0,5).reduce((s,r)=>s+(r.cds||0),0) / Math.min(history.length,5);
+  const { data: role } = await supa.from('profile_roles').select('*').eq('user_id', currentUser.id).single();
+  if (!role) return;
+  // Thresholds: T1→T2 avg≥60, T2→T3 avg≥70, T3→T4 avg≥78, T4→T5 avg≥86
+  const thresholds = {1:60, 2:70, 3:78, 4:86};
+  const currentTier = role.answerer_tier;
+  if (currentTier < 5 && avg >= (thresholds[currentTier] || 999)) {
+    const newTier = currentTier + 1;
+    await supa.from('profile_roles').update({ answerer_tier: newTier }).eq('user_id', currentUser.id);
+    await supa.from('tier_events').insert({
+      user_id: currentUser.id,
+      track: 'answerer',
+      from_tier: currentTier,
+      to_tier: newTier,
+      direction: 'promotion',
+      evidence: { avg_cds: avg, actions_counted: Math.min(history.length,5) }
+    });
+    // Notify user
+    await supa.from('notifications').insert({
+      user_id: currentUser.id,
+      type: 'tier_promotion',
+      title: `Promoted to Tier ${newTier}`,
+      body: `Your average CDS of ${Math.round(avg)} earned you a tier promotion on the Answerer track.`
+    });
+    setLog(`Tier Engine: promoted to Answerer T${newTier} · avg CDS ${Math.round(avg)}`);
+  }
+}
+
+// ── LOAD REAL QUESTIONS FROM DB ────────────────────────
+async function loadQuestions() {
+  const { data } = await supa.from('questions')
+    .select('*, profiles(display_name)')
+    .eq('status','published')
+    .order('created_at', { ascending: false })
+    .limit(20);
+  return data || [];
+}
+
+// ── LOAD LEADERBOARD ───────────────────────────────────
+async function loadLeaderboard() {
+  const { data } = await supa.from('leaderboard').select('*').limit(5);
+  if (!data) return;
+  const lb = document.querySelector('.widget-section:nth-child(2)');
+  if (!lb) return;
+  const tierNames = {1:'Curious/Responder',2:'Questioner/Explainer',3:'Challenger/Illuminator',4:'Pro Challenger/Teacher',5:'KA/Master Teacher'};
+  const rows = data.map((u,i) => `
+    <div class="lb-row">
+      <div class="lb-rank">${i+1}</div>
+      <div class="lb-name">${u.display_name||'Anon'}</div>
+      <div class="lb-tier" style="background:rgba(200,146,42,.1);color:#c8922a;border:1px solid rgba(200,146,42,.3)">T${u.seeker_tier||1}</div>
+      <div class="lb-pts">${u.pts_total||0}</div>
+    </div>`).join('');
+  lb.querySelector('.widget-title').insertAdjacentHTML('afterend', `<div id="lbRows">${rows}</div>`);
+  document.querySelector('#lbRows')?.previousElementSibling?.nextElementSibling?.remove();
+}
+
+// ── INIT ───────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  initAuth();
+  loadLeaderboard();
+  // Patch Ask button to require login
+  const origSubmit = window.submitQuestion;
+  window.submitQuestion = async function() {
+    if (!currentUser) { openAuth('signup'); return; }
+    const qText = document.getElementById('askInput').value.trim();
+    if (!qText) { alert('Please type a question.'); return; }
+    // Run existing ARIA pipeline, then save to DB
+    await origSubmit?.call(this);
+  };
+});
+</script>
+
 <script>
 const API="https://api.anthropic.com/v1/messages";
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -1029,5 +1343,77 @@ async function refreshInsight(cds){
   setTimeout(()=>{setDot('in','idle');setSt('in','Next: Sunday');},3500);
 }
 </script>
+
+<!-- ── AUTH MODAL ── -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-modal">
+    <button class="auth-modal-close" onclick="closeAuth()">×</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Log In</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Join</button>
+    </div>
+    <div class="auth-body">
+
+      <!-- LOGIN -->
+      <div class="auth-section active" id="sectionLogin">
+        <div class="oauth-btn" onclick="oauthLogin('google')">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+          Continue with Google
+        </div>
+        <div class="oauth-btn" onclick="linkedinComingSoon()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          Continue with LinkedIn
+        </div>
+        <div class="auth-divider">or email</div>
+        <div class="auth-field">
+          <label class="auth-label">Email</label>
+          <input class="auth-input" type="email" id="loginEmail" placeholder="you@school.edu"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Password</label>
+          <input class="auth-input" type="password" id="loginPwd" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:.3rem" onclick="doLogin()">Log In</button>
+        <div class="auth-error" id="loginError"></div>
+        <div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:.8rem">
+          No account? <span style="color:var(--gold);cursor:pointer" onclick="switchAuthTab('signup')">Join the movement</span>
+        </div>
+      </div>
+
+      <!-- SIGNUP -->
+      <div class="auth-section" id="sectionSignup">
+        <div class="oauth-btn" onclick="oauthLogin('google')">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+          Sign up with Google
+        </div>
+        <div class="oauth-btn" onclick="linkedinComingSoon()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          Sign up with LinkedIn
+        </div>
+        <div class="auth-divider">or email</div>
+        <div class="auth-field">
+          <label class="auth-label">Full Name</label>
+          <input class="auth-input" type="text" id="signupName" placeholder="Your name"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Email</label>
+          <input class="auth-input" type="email" id="signupEmail" placeholder="you@school.edu"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Password</label>
+          <input class="auth-input" type="password" id="signupPwd" placeholder="Min 8 characters" onkeydown="if(event.key==='Enter')doSignup()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:.3rem" onclick="doSignup()">Create Account</button>
+        <div class="auth-error" id="signupError"></div>
+        <div class="auth-success" id="signupSuccess"></div>
+        <div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:.8rem">
+          Already a member? <span style="color:var(--gold);cursor:pointer" onclick="switchAuthTab('login')">Log in</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

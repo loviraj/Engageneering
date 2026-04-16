@@ -7,158 +7,417 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --navy:#060c1a;--navy-mid:#0b1624;--navy-card:#0f1e36;--navy-border:#1e3a6a;
-  --gold:#c8922a;--gold-b:#f0c040;--gold-l:#f5d060;
-  --steel:#8a9ab8;--muted:#4a6a8a;--white:#fff;
-  --blue:#378add;--teal:#1d9e75;--purple:#7f77dd;--red:#e24b4a;--green:#639922;--amber:#ba7517;
-  --intake:#0c1e3c;--answer:#060f12;--growth:#0c0818;
+  /* Backgrounds — stepped */
+  --bg-base:#07101e;
+  --bg-nav:#050d18;
+  --bg-sidebar:#0a1628;
+  --bg-card:#0f1e36;
+  --bg-input:#081420;
+  --bg-panel:#060e1c;
+
+  /* Borders */
+  --border-strong:#2a4a7a;
+  --border-mid:#1e3a6a;
+  --border-soft:#132840;
+
+  /* Text — four tiers, all clearly readable */
+  --text-primary:#e8f0fc;      /* headings, question text */
+  --text-secondary:#b8cce8;    /* body, answers */
+  --text-tertiary:#7a9ab8;     /* labels, meta */
+  --text-dim:#4a6a88;          /* hints, timestamps */
+
+  /* Gold — accent */
+  --gold:#c8922a;
+  --gold-b:#f0c040;
+  --gold-l:#f5d060;
+
+  /* Status colours */
+  --teal:#1d9e75;    --teal-b:#5dcaa5;
+  --blue:#378add;    --blue-b:#85b7eb;
+  --purple:#7f77dd;  --purple-b:#afa9ec;
+  --amber:#d4920c;   --amber-b:#f0c040;
+  --red:#e24b4a;     --coral:#d85a30;
+  --green:#3a9e5f;
 }
+
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'EB Garamond',Georgia,serif;background:var(--navy);color:var(--steel);overflow-x:hidden;font-size:16px}
-::selection{background:rgba(200,146,42,.3);color:#fff}
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-thumb{background:var(--gold)}
+html{font-size:16px;height:100%}
+body{font-family:'EB Garamond',Georgia,serif;background:var(--bg-base);color:var(--text-secondary);overflow-x:hidden;height:100%}
+::selection{background:rgba(200,146,42,.35);color:#fff}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg-base)}
+::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
 
-/* ── NAV ── */
-nav{background:rgba(6,12,26,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--navy-border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:200}
-.nav-l{display:flex;align-items:center;gap:10px}
-.nav-brand{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:700;letter-spacing:3px;color:var(--gold)}
-.nav-tag{font-size:7px;letter-spacing:2px;color:#7a6020;text-transform:uppercase}
-.nav-r{display:flex;align-items:center;gap:1rem}
-.nav-badge{font-size:10px;letter-spacing:1px;color:var(--steel);background:var(--navy-card);border:1px solid var(--navy-border);padding:4px 12px;border-radius:20px}
-.nav-badge span{color:var(--gold-b);font-weight:700}
-.btn-sm{font-size:10px;letter-spacing:1.5px;padding:6px 16px;border-radius:4px;cursor:pointer;border:none;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .2s}
-.btn-gold{background:var(--gold);color:var(--navy)}
-.btn-gold:hover{background:var(--gold-b)}
-.btn-outline{background:transparent;color:var(--gold);border:1px solid rgba(200,146,42,.5)}
-.btn-outline:hover{background:rgba(200,146,42,.1)}
+/* ══ NAV ══ */
+nav{
+  background:var(--bg-nav);
+  border-bottom:1px solid var(--border-strong);
+  padding:0 1.8rem;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;
+}
+.nav-brand-wrap{display:flex;align-items:center;gap:10px}
+.nav-brand{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;letter-spacing:3px;color:var(--gold)}
+.nav-sub{font-size:7.5px;letter-spacing:2.5px;color:var(--gold);opacity:.6;text-transform:uppercase;margin-top:1px}
+.nav-right{display:flex;align-items:center;gap:.8rem}
+.nav-badge{
+  font-size:11px;color:var(--text-primary);
+  background:var(--bg-card);border:1px solid var(--border-strong);
+  padding:5px 14px;border-radius:20px;letter-spacing:.3px
+}
+.nav-badge strong{color:var(--gold-b)}
+.btn{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:7px 18px;border-radius:5px;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--gold);color:#040c18;font-weight:700}
+.btn-primary:hover{background:var(--gold-b);transform:translateY(-1px)}
+.btn-secondary{background:transparent;color:var(--text-secondary);border:1px solid var(--border-strong)}
+.btn-secondary:hover{border-color:var(--text-secondary);color:var(--text-primary)}
 
-/* ── LAYOUT ── */
-.layout{display:grid;grid-template-columns:220px 1fr 280px;min-height:calc(100vh - 58px);max-width:1280px;margin:0 auto}
+/* ══ LAYOUT ══ */
+.layout{
+  display:grid;
+  grid-template-columns:220px 1fr 270px;
+  min-height:calc(100vh - 60px);
+  max-width:1400px;
+  margin:0 auto;
+}
 
-/* ── LEFT SIDEBAR ── */
-.sidebar-l{border-right:1px solid var(--navy-border);padding:1.4rem 1rem;display:flex;flex-direction:column;gap:1.4rem}
-.sb-section{display:flex;flex-direction:column;gap:.4rem}
-.sb-label{font-size:8px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;padding:.3rem .6rem;margin-bottom:.2rem}
-.sb-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border-radius:6px;cursor:pointer;transition:background .2s;font-size:13px;color:var(--steel);text-decoration:none}
-.sb-item:hover,.sb-item.active{background:var(--navy-card);color:var(--gold-b)}
-.sb-item.active{border-left:2px solid var(--gold)}
-.sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.tier-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:8px;padding:.9rem;margin-top:.3rem}
-.tier-name{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--gold-b);margin-bottom:3px}
-.tier-track{font-size:10px;color:var(--muted);margin-bottom:.6rem}
-.tier-bar-wrap{background:#1a2a40;border-radius:3px;height:4px;margin-bottom:4px}
-.tier-bar{height:4px;border-radius:3px;background:var(--gold);transition:width .4s ease}
-.tier-pts{font-size:9px;color:var(--muted);text-align:right}
+/* ══ SHARED SIDEBAR STYLES ══ */
+.sidebar{
+  background:var(--bg-sidebar);
+  padding:1.6rem 1.2rem;
+  display:flex;flex-direction:column;gap:1.8rem;
+}
+.sb-left{border-right:2px solid var(--border-mid)}
+.sb-right{border-left:2px solid var(--border-mid)}
 
-/* ── MAIN FEED ── */
-.main{border-right:1px solid var(--navy-border);display:flex;flex-direction:column}
-.feed-header{padding:1.2rem 1.6rem;border-bottom:1px solid var(--navy-border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.sb-section{display:flex;flex-direction:column;gap:.25rem}
+
+/* Section label — clearly visible */
+.sb-section-label{
+  font-size:9px;letter-spacing:3.5px;text-transform:uppercase;
+  color:var(--gold);font-weight:700;
+  padding:.2rem .5rem .5rem;
+  border-bottom:1px solid var(--border-soft);
+  margin-bottom:.3rem;
+}
+
+/* Nav items — readable */
+.sb-item{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.55rem .7rem;border-radius:6px;cursor:pointer;
+  font-size:13px;color:var(--text-secondary);
+  transition:all .2s;border-left:2px solid transparent;
+  text-decoration:none;
+}
+.sb-item:hover{background:rgba(55,138,221,.08);color:var(--text-primary);border-left-color:var(--border-strong)}
+.sb-item.active{background:rgba(200,146,42,.1);color:var(--gold-b);border-left-color:var(--gold);font-weight:500}
+.sb-pip{width:7px;height:7px;border-radius:50%;flex-shrink:0;border:1px solid}
+
+/* Tier progress card */
+.tier-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-strong);
+  border-radius:10px;padding:1.1rem;
+  margin-top:.3rem;
+}
+.tier-card-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.tier-card-name{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold-b);font-weight:600;line-height:1.1}
+.tier-card-track{font-size:11px;color:var(--text-tertiary);margin-bottom:.8rem}
+.tier-bar-bg{background:var(--border-soft);border-radius:3px;height:4px;margin-bottom:.4rem}
+.tier-bar-fill{height:4px;border-radius:3px;background:linear-gradient(to right,var(--gold),var(--gold-b));transition:width .6s ease}
+.tier-pts{font-size:10px;color:var(--text-tertiary);display:flex;justify-content:space-between}
+
+/* ══ MAIN FEED ══ */
+.main{
+  background:var(--bg-base);
+  display:flex;flex-direction:column;
+  border-left:1px solid var(--border-soft);
+  border-right:1px solid var(--border-soft);
+}
+
+/* Feed top bar */
+.feed-topbar{
+  background:var(--bg-sidebar);
+  border-bottom:1px solid var(--border-mid);
+  padding:.9rem 1.6rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:.8rem;
+}
 .feed-tabs{display:flex;gap:.3rem}
-.ftab{font-size:11px;letter-spacing:1px;padding:5px 14px;border-radius:20px;cursor:pointer;border:1px solid transparent;color:var(--steel);transition:all .2s;background:none;font-family:'Cormorant Garamond',serif;text-transform:uppercase}
-.ftab.active,.ftab:hover{background:var(--navy-card);color:var(--gold-b);border-color:var(--navy-border)}
+.ftab{
+  font-family:'Cormorant Garamond',serif;
+  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:5px 16px;border-radius:20px;cursor:pointer;
+  border:1px solid transparent;
+  color:var(--text-tertiary);
+  transition:all .2s;background:transparent;
+}
+.ftab:hover{background:var(--bg-card);color:var(--text-primary);border-color:var(--border-mid)}
+.ftab.active{background:var(--bg-card);color:var(--gold-b);border-color:var(--border-strong)}
+.feed-stat{font-size:11px;color:var(--text-tertiary)}
+.feed-stat strong{color:var(--gold-b)}
 
-/* Ask question box */
-.ask-box{margin:1.2rem 1.6rem;background:var(--navy-card);border:1px solid var(--navy-border);border-radius:10px;overflow:hidden;transition:border-color .3s}
+/* Ask box */
+.ask-section{
+  padding:1.2rem 1.6rem;
+  background:var(--bg-sidebar);
+  border-bottom:2px solid var(--border-mid);
+}
+.ask-box{
+  background:var(--bg-input);
+  border:1.5px solid var(--border-strong);
+  border-radius:10px;overflow:hidden;
+  transition:border-color .3s;
+}
 .ask-box:focus-within{border-color:var(--gold)}
-.ask-input{width:100%;background:transparent;border:none;outline:none;padding:1rem 1.2rem;font-size:15px;color:var(--white);font-family:'EB Garamond',serif;resize:none;min-height:80px;line-height:1.6}
-.ask-input::placeholder{color:var(--muted)}
-.ask-footer{padding:.7rem 1rem;border-top:1px solid var(--navy-border);display:flex;align-items:center;justify-content:space-between;gap:.8rem}
-.ask-tags{display:flex;gap:.4rem;flex-wrap:wrap}
-.tag-pill{font-size:10px;background:#0b1e38;border:1px solid var(--navy-border);color:var(--steel);border-radius:20px;padding:2px 10px;cursor:pointer}
-.tag-pill.sel{background:rgba(200,146,42,.12);border-color:var(--gold);color:var(--gold-b)}
+.ask-textarea{
+  width:100%;background:transparent;border:none;outline:none;
+  padding:1rem 1.2rem;font-size:15px;color:var(--text-primary);
+  font-family:'EB Garamond',serif;resize:none;min-height:76px;line-height:1.65;
+}
+.ask-textarea::placeholder{color:var(--text-dim)}
+.ask-footer{
+  padding:.7rem 1rem;
+  border-top:1px solid var(--border-soft);
+  display:flex;align-items:center;justify-content:space-between;gap:.8rem;
+  flex-wrap:wrap;
+}
+.tag-row{display:flex;gap:.35rem;flex-wrap:wrap}
+.tag-chip{
+  font-size:9.5px;background:transparent;
+  border:1px solid var(--border-mid);
+  color:var(--text-tertiary);
+  border-radius:20px;padding:2px 10px;cursor:pointer;
+  transition:all .2s;
+}
+.tag-chip:hover{border-color:var(--border-strong);color:var(--text-secondary)}
+.tag-chip.sel{background:rgba(200,146,42,.12);border-color:var(--gold);color:var(--gold-b)}
 
-/* Agent status strip */
-.agent-strip{margin:0 1.6rem .6rem;display:flex;gap:.5rem;flex-wrap:wrap}
-.agent-pill{display:flex;align-items:center;gap:.4rem;font-size:9px;letter-spacing:1px;padding:3px 10px;border-radius:20px;border:1px solid;color:var(--steel);opacity:.5;transition:opacity .4s}
-.agent-pill.active{opacity:1}
-.agent-pill.running{opacity:1;animation:agentPulse 1s ease infinite}
-.agent-pip{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-@keyframes agentPulse{0%,100%{opacity:1}50%{opacity:.55}}
+/* ARIA status bar */
+.aria-statusbar{
+  padding:.5rem 1.6rem;
+  background:var(--bg-panel);
+  border-bottom:1px solid var(--border-soft);
+  display:flex;align-items:center;gap:.9rem;
+}
+.aria-pulse{
+  width:7px;height:7px;border-radius:50%;background:var(--gold);
+  flex-shrink:0;transition:all .3s;
+}
+.aria-pulse.active{animation:glow 1.2s ease infinite}
+@keyframes glow{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(200,146,42,.4)}50%{opacity:.6;box-shadow:0 0 0 4px rgba(200,146,42,.1)}}
+.aria-text{font-size:11px;color:var(--text-tertiary);font-family:monospace;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aria-text .kw{color:var(--gold);font-weight:700}
+.agent-pips{display:flex;gap:.3rem;flex-shrink:0}
+.a-pip{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--border-soft);border:1px solid var(--border-mid);
+  cursor:default;transition:all .35s;
+}
+.a-pip[title]:hover{transform:scale(1.6)}
+.a-pip.blue{background:var(--blue);border-color:var(--blue-b)}
+.a-pip.teal{background:var(--teal);border-color:var(--teal-b)}
+.a-pip.purple{background:var(--purple);border-color:var(--purple-b)}
+.a-pip.pulse{background:var(--gold);border-color:var(--gold-b);animation:glow .8s ease infinite}
+.a-pip.red{background:var(--red);border-color:#f09595}
 
-/* ARIA log */
-.aria-log{margin:0 1.6rem .8rem;background:#060e1c;border:1px solid var(--navy-border);border-radius:6px;padding:.6rem .9rem;font-size:11px;color:var(--muted);min-height:28px;font-family:monospace;letter-spacing:.3px;line-height:1.5}
-.aria-log .ll{color:var(--gold);opacity:.7}
+/* QUESTION CARDS */
+.q-feed{padding:1.2rem 1.6rem;display:flex;flex-direction:column;gap:1rem}
 
-/* Question cards */
-.q-feed{display:flex;flex-direction:column;gap:0;padding:0 1.6rem 1.6rem}
-.q-card{border:1px solid var(--navy-border);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:.9rem;transition:border-color .25s,transform .2s;cursor:pointer;background:var(--navy-card)}
-.q-card:hover{border-color:rgba(200,146,42,.4);transform:translateY(-2px)}
-.q-card.featured{border-color:var(--gold);background:#0d1e3a}
-.q-meta{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;flex-wrap:wrap}
-.q-tag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid}
-.q-score-badge{font-size:9px;padding:2px 8px;border-radius:20px;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);color:var(--gold-b);letter-spacing:.5px}
-.q-asker{font-size:10px;color:var(--muted);margin-left:auto}
-.q-text{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--white);line-height:1.4;margin-bottom:.7rem}
-.q-footer{display:flex;align-items:center;gap:.8rem}
-.q-stat{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:.3rem}
-.q-stat svg{width:12px;height:12px;opacity:.6}
-.q-answer-btn{font-size:10px;letter-spacing:1.5px;padding:4px 14px;border-radius:4px;background:transparent;border:1px solid rgba(200,146,42,.4);color:var(--gold);cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .2s;margin-left:auto}
-.q-answer-btn:hover{background:rgba(200,146,42,.1);border-color:var(--gold)}
-.q-matched{font-size:9px;color:var(--teal);letter-spacing:.5px}
+.q-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-mid);
+  border-radius:12px;
+  padding:1.3rem 1.5rem;
+  transition:border-color .25s,transform .2s,box-shadow .2s;
+  cursor:pointer;
+}
+.q-card:hover{
+  border-color:var(--border-strong);
+  transform:translateY(-2px);
+  box-shadow:0 6px 24px rgba(0,0,0,.3);
+}
+.q-card.featured{
+  border-color:rgba(200,146,42,.4);
+  background:#0d1e38;
+  box-shadow:0 0 0 1px rgba(200,146,42,.1);
+}
+.q-card.new-in{animation:slideIn .35s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Card meta row */
+.q-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap}
+.q-topic-tag{
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;border:1px solid;font-weight:700;
+}
+.q-quality{
+  font-size:10px;padding:2px 9px;border-radius:20px;
+  background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);
+  color:var(--gold-b);letter-spacing:.3px;
+}
+.q-matched-lbl{font-size:10px;color:var(--teal-b);letter-spacing:.3px}
+.q-asker-lbl{font-size:10px;color:var(--text-dim);margin-left:auto}
+
+/* Question text — primary and large */
+.q-text{
+  font-family:'Cormorant Garamond',serif;
+  font-size:19px;color:var(--text-primary);
+  line-height:1.45;margin-bottom:.9rem;font-weight:400;
+}
+
+/* Card footer */
+.q-card-footer{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.q-stat{font-size:11px;color:var(--text-tertiary);display:flex;align-items:center;gap:.3rem}
+.q-stat svg{opacity:.5}
+.q-bounty{font-size:11px;color:var(--amber-b);font-weight:500}
+.q-answer-cta{
+  font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:5px 16px;border-radius:5px;cursor:pointer;
+  background:transparent;border:1px solid rgba(200,146,42,.4);
+  color:var(--gold);font-family:'Cormorant Garamond',serif;
+  transition:all .2s;margin-left:auto;
+}
+.q-answer-cta:hover{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gold-b)}
 
 /* Answer panel */
-.answer-panel{background:#080f1a;border:1px solid #0e2040;border-radius:8px;padding:1rem 1.2rem;margin-top:.6rem;display:none}
-.answer-panel.show{display:block}
-.ap-header{font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:.8rem}
-.answer-input{width:100%;background:#060c1a;border:1px solid var(--navy-border);border-radius:6px;padding:.8rem 1rem;color:var(--white);font-family:'EB Garamond',serif;font-size:14px;resize:vertical;min-height:100px;outline:none;transition:border-color .2s;line-height:1.6}
-.answer-input:focus{border-color:var(--gold)}
-.ap-footer{display:flex;align-items:center;gap:.8rem;margin-top:.7rem;flex-wrap:wrap}
-.ap-score-preview{font-size:10px;color:var(--muted);flex:1}
+.answer-panel{
+  margin-top:.9rem;
+  background:var(--bg-panel);
+  border:1px solid var(--border-mid);
+  border-radius:8px;
+  padding:1.1rem 1.2rem;
+  display:none;
+}
+.answer-panel.open{display:block}
+.ap-title{
+  font-size:9px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.8rem;font-weight:700;
+}
+.answer-textarea{
+  width:100%;background:var(--bg-input);
+  border:1px solid var(--border-strong);
+  border-radius:6px;padding:.85rem 1rem;
+  color:var(--text-primary);font-family:'EB Garamond',serif;
+  font-size:14px;resize:vertical;min-height:96px;outline:none;
+  transition:border-color .25s;line-height:1.7;
+}
+.answer-textarea:focus{border-color:rgba(200,146,42,.5)}
+.answer-textarea::placeholder{color:var(--text-dim)}
+.ap-footer-row{display:flex;align-items:center;gap:.7rem;margin-top:.7rem;flex-wrap:wrap}
+.ap-hint{font-size:10px;color:var(--text-dim);flex:1}
 
-/* Answer results */
-.answers-list{display:flex;flex-direction:column;gap:.7rem;margin-top:.8rem}
-.answer-card{background:#060c18;border:1px solid var(--navy-border);border-radius:8px;padding:.9rem 1.1rem}
-.answer-card.winner{border-color:var(--gold);background:#0a1620}
-.ac-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}
-.ac-author{font-size:11px;color:var(--gold-b);font-weight:700}
-.ac-tier{font-size:9px;letter-spacing:1px;padding:1px 7px;border-radius:20px}
-.ac-score{font-size:10px;color:var(--gold);margin-left:auto}
-.ac-text{font-size:14px;color:#b0bcd4;line-height:1.7}
-.winner-badge{font-size:9px;letter-spacing:1.5px;color:var(--gold-b);background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.3);padding:2px 8px;border-radius:20px}
+/* Score breakdown */
+.score-panel{
+  background:var(--bg-input);border:1px solid var(--border-mid);
+  border-radius:8px;padding:1rem 1.2rem;margin-top:.8rem;display:none;
+}
+.score-panel.open{display:block}
+.score-panel-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem}
+.score-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:.9rem}
+.score-col{display:flex;flex-direction:column;align-items:center;gap:.3rem}
+.score-val{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text-primary);font-weight:600;line-height:1}
+.score-track{width:100%;height:48px;background:var(--border-soft);border-radius:3px;position:relative;overflow:hidden}
+.score-fill{position:absolute;bottom:0;left:0;right:0;border-radius:3px;transition:height .7s ease}
+.score-lbl{font-size:9px;color:var(--text-tertiary);letter-spacing:.5px;text-align:center}
+.cds-row{border-top:1px solid var(--border-mid);padding-top:.7rem;display:flex;align-items:center;justify-content:space-between}
+.cds-formula{font-size:10px;color:var(--text-tertiary)}
+.cds-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold-b);font-weight:600}
+.cds-label{font-size:10px;color:var(--text-dim);margin-left:.3rem}
 
-/* ── RIGHT SIDEBAR ── */
-.sidebar-r{padding:1.4rem 1rem;display:flex;flex-direction:column;gap:1.4rem;overflow-y:auto}
-.widget{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:10px;padding:1rem 1.1rem}
-.widget-title{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:.9rem}
+/* Answer cards */
+.answers-list{display:flex;flex-direction:column;gap:.6rem;margin-top:.9rem}
+.answer-card{
+  background:var(--bg-card);border:1px solid var(--border-mid);
+  border-radius:8px;padding:.9rem 1.1rem;
+}
+.answer-card.top{border-color:rgba(200,146,42,.35);background:#0a1828}
+.ac-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}
+.ac-name{font-size:12px;color:var(--gold-b);font-weight:700;letter-spacing:.5px}
+.ac-tier-badge{font-size:8.5px;padding:1px 8px;border-radius:20px;border:1px solid}
+.ac-cds{font-size:10px;color:var(--gold);margin-left:auto}
+.top-badge{font-size:8.5px;color:var(--gold-b);background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);padding:1px 8px;border-radius:20px}
+.ac-body{font-size:14px;color:var(--text-secondary);line-height:1.75}
+.ac-scores-row{font-size:10px;color:var(--text-dim);margin-top:.4rem;letter-spacing:.3px}
 
-/* Agent monitor */
-.agent-monitor{display:flex;flex-direction:column;gap:.5rem}
-.am-row{display:flex;align-items:center;gap:.6rem;padding:.4rem .5rem;border-radius:5px;border:1px solid var(--navy-border);background:#080f1a}
-.am-indicator{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.am-indicator.idle{background:#2a4060}
-.am-indicator.running{background:var(--gold);animation:agentPulse .9s ease infinite}
-.am-indicator.done{background:var(--teal)}
-.am-indicator.error{background:var(--red)}
-.am-name{font-size:11px;color:var(--steel);flex:1}
-.am-status{font-size:9px;color:var(--muted);letter-spacing:.5px}
+/* ══ RIGHT SIDEBAR ══ */
+.widget-section{display:flex;flex-direction:column;gap:.7rem}
+
+.widget-title{
+  font-size:9px;letter-spacing:3.5px;text-transform:uppercase;
+  color:var(--gold);font-weight:700;
+  padding-bottom:.5rem;
+  border-bottom:1px solid var(--border-mid);
+  margin-bottom:.2rem;
+}
+
+/* Agent Monitor rows */
+.am-row{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.45rem .5rem;border-radius:6px;
+  transition:background .2s;
+}
+.am-row:hover{background:rgba(55,138,221,.06)}
+.am-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;transition:all .35s;border:1px solid}
+.am-dot.idle{background:#0a1828;border-color:var(--border-mid)}
+.am-dot.ready{background:var(--blue);border-color:var(--blue-b);opacity:.8}
+.am-dot.run{background:var(--gold);border-color:var(--gold-b);animation:glow .9s ease infinite}
+.am-dot.done{background:var(--teal);border-color:var(--teal-b)}
+.am-dot.done-p{background:var(--purple);border-color:var(--purple-b)}
+.am-dot.err{background:var(--red);border-color:#f09595}
+
+.am-name{font-size:12px;color:var(--text-secondary);flex:1}
+.am-status{font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 
 /* Leaderboard */
-.lb-row{display:flex;align-items:center;gap:.6rem;padding:.4rem 0;border-bottom:1px solid rgba(30,58,106,.3)}
+.lb-row{
+  display:flex;align-items:center;gap:.55rem;
+  padding:.45rem 0;border-bottom:1px solid var(--border-soft);
+}
 .lb-row:last-child{border-bottom:none}
-.lb-rank{font-size:10px;color:var(--muted);width:16px;text-align:center;flex-shrink:0}
-.lb-name{font-size:12px;color:var(--steel);flex:1}
-.lb-tier{font-size:9px;padding:1px 6px;border-radius:20px}
-.lb-pts{font-size:11px;color:var(--gold-b);font-family:'Cormorant Garamond',serif}
+.lb-rank{font-size:10px;color:var(--text-dim);width:16px;text-align:center;flex-shrink:0}
+.lb-name{font-size:12px;color:var(--text-secondary);flex:1}
+.lb-tier{font-size:8.5px;padding:2px 7px;border-radius:20px;border:1px solid}
+.lb-pts{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--gold-b)}
 
-/* Insight card */
-.insight-body{font-size:13px;color:#8a9ab8;line-height:1.7;font-style:italic;border-left:2px solid var(--gold);padding-left:.8rem}
-.insight-meta{font-size:9px;color:var(--muted);margin-top:.5rem;letter-spacing:.5px}
+/* Insight box */
+.insight-box{
+  background:var(--bg-card);border-radius:8px;
+  border-left:2px solid var(--gold);
+  padding:.9rem 1rem;
+}
+.insight-body{font-size:12px;color:var(--text-secondary);line-height:1.75;font-style:italic}
+.insight-meta{font-size:9px;color:var(--text-dim);margin-top:.5rem;letter-spacing:.3px}
 
-/* Notification */
-.notif{background:#080f18;border-left:2px solid;border-radius:0 6px 6px 0;padding:.5rem .8rem;margin-bottom:.4rem;font-size:11px;line-height:1.5}
-.notif:last-child{margin-bottom:0}
+/* Notification cards */
+.notif-card{
+  background:var(--bg-card);border-radius:7px;
+  border-left:2px solid;
+  padding:.65rem .9rem;
+  font-size:11.5px;color:var(--text-secondary);line-height:1.55;
+}
+.notif-card .notif-agent{font-weight:700}
 
-@media(max-width:1000px){.layout{grid-template-columns:1fr};.sidebar-l,.sidebar-r{display:none}}
-@media(max-width:700px){nav{padding:0 1rem}}
+/* ══ TOPIC TAG COLOUR HELPERS ══ */
+.tag-prog{color:#4a9edd;background:rgba(55,138,221,.12);border-color:rgba(55,138,221,.35)}
+.tag-sci{color:#4ecf96;background:rgba(29,158,117,.12);border-color:rgba(29,158,117,.35)}
+.tag-hist{color:#f09595;background:rgba(216,90,48,.12);border-color:rgba(216,90,48,.35)}
+.tag-geo{color:#85b7eb;background:rgba(55,138,221,.08);border-color:rgba(55,138,221,.25)}
+.tag-math{color:#f0c040;background:rgba(186,117,23,.12);border-color:rgba(186,117,23,.35)}
+.tag-phil{color:#c0b8f8;background:rgba(127,119,221,.12);border-color:rgba(127,119,221,.35)}
+.tag-al{color:#4ecf96;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3)}
+
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.sidebar{display:none}}
 </style>
 </head>
 <body>
 
+<!-- ══ NAV ══ -->
 <nav>
-  <div class="nav-l">
-    <svg width="28" height="32" viewBox="0 0 52 60">
+  <div class="nav-brand-wrap">
+    <svg width="30" height="34" viewBox="0 0 52 60">
       <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.2"/>
       <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
       <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
@@ -166,296 +425,361 @@ nav{background:rgba(6,12,26,.96);backdrop-filter:blur(12px);border-bottom:1px so
       <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
       <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
       <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
-      <circle cx="26" cy="30" r="5" fill="#f5d060"/>
-      <circle cx="26" cy="30" r="2.8" fill="#0b1624"/>
-      <circle cx="26" cy="30" r="1.2" fill="#f5d060"/>
+      <circle cx="26" cy="30" r="5.2" fill="#f5d060"/>
+      <circle cx="26" cy="30" r="2.9" fill="#0b1624"/>
+      <circle cx="26" cy="30" r="1.3" fill="#f5d060"/>
     </svg>
     <div>
       <div class="nav-brand">ENGAGENEERING™</div>
-      <div class="nav-tag">Crowd Learning Platform</div>
+      <div class="nav-sub">Crowd Learning Platform</div>
     </div>
   </div>
-  <div class="nav-r">
-    <div class="nav-badge">Questioner T2 &nbsp;·&nbsp; <span>340 pts</span></div>
-    <button class="btn-sm btn-outline">Dashboard</button>
-    <button class="btn-sm btn-gold">Ask a Question</button>
+  <div class="nav-right">
+    <div class="nav-badge">Questioner T2 · <strong>340 pts</strong></div>
+    <button class="btn btn-secondary">Dashboard</button>
+    <button class="btn btn-primary" onclick="document.getElementById('askInput').focus()">Ask a Question</button>
   </div>
 </nav>
 
 <div class="layout">
 
-  <!-- LEFT SIDEBAR -->
-  <div class="sidebar-l">
+  <!-- ══ LEFT SIDEBAR ══ -->
+  <div class="sidebar sb-left">
+
     <div class="sb-section">
-      <div class="sb-label">Explore</div>
-      <div class="sb-item active"><div class="sb-dot" style="background:var(--gold)"></div>All Questions</div>
-      <div class="sb-item"><div class="sb-dot" style="background:var(--blue)"></div>Matched for Me</div>
-      <div class="sb-item"><div class="sb-dot" style="background:var(--teal)"></div>Top Rated</div>
-      <div class="sb-item"><div class="sb-dot" style="background:var(--purple)"></div>Awaiting Answers</div>
-      <div class="sb-item"><div class="sb-dot" style="background:var(--amber)"></div>My Questions</div>
+      <div class="sb-section-label">Explore</div>
+      <div class="sb-item active">
+        <div class="sb-pip" style="background:var(--gold);border-color:var(--gold-b)"></div>All Questions
+      </div>
+      <div class="sb-item">
+        <div class="sb-pip" style="background:var(--blue);border-color:var(--blue-b)"></div>Matched for Me
+      </div>
+      <div class="sb-item">
+        <div class="sb-pip" style="background:var(--teal);border-color:var(--teal-b)"></div>Top Rated
+      </div>
+      <div class="sb-item">
+        <div class="sb-pip" style="background:var(--purple);border-color:var(--purple-b)"></div>Awaiting Answers
+      </div>
+      <div class="sb-item">
+        <div class="sb-pip" style="background:var(--amber-b);border-color:var(--amber)"></div>My Questions
+      </div>
     </div>
+
     <div class="sb-section">
-      <div class="sb-label">Topics</div>
+      <div class="sb-section-label">Topics</div>
+      <div class="sb-item">Programming &amp; CS</div>
+      <div class="sb-item">Science &amp; Physics</div>
+      <div class="sb-item">History &amp; Geography</div>
+      <div class="sb-item">Mathematics</div>
+      <div class="sb-item">Philosophy</div>
       <div class="sb-item">Active Learning</div>
       <div class="sb-item">Curiosity Design</div>
       <div class="sb-item">Attention Science</div>
-      <div class="sb-item">Feedback Loops</div>
-      <div class="sb-item">Peer Connection</div>
-      <div class="sb-item">Impact Measurement</div>
     </div>
+
     <div class="sb-section">
-      <div class="sb-label">My Journey</div>
+      <div class="sb-section-label">My Journey</div>
       <div class="tier-card">
-        <div class="tier-name">Questioner</div>
-        <div class="tier-track">Seeker Track · Tier 2</div>
-        <div class="tier-bar-wrap"><div class="tier-bar" id="seekerBar" style="width:68%"></div></div>
-        <div class="tier-pts">340 / 500 pts to Challenger</div>
+        <div class="tier-card-label">Seeker Track</div>
+        <div class="tier-card-name">Questioner</div>
+        <div class="tier-card-track">Tier 2 of 5</div>
+        <div class="tier-bar-bg">
+          <div class="tier-bar-fill" id="seekerBar" style="width:68%"></div>
+        </div>
+        <div class="tier-pts">
+          <span>340 pts</span>
+          <span>500 to Challenger</span>
+        </div>
       </div>
     </div>
+
   </div>
 
-  <!-- MAIN FEED -->
+  <!-- ══ MAIN FEED ══ -->
   <div class="main">
-    <div class="feed-header">
+
+    <!-- Top bar -->
+    <div class="feed-topbar">
       <div class="feed-tabs">
-        <button class="ftab active" onclick="setTab(this,'all')">All</button>
-        <button class="ftab" onclick="setTab(this,'featured')">Featured</button>
-        <button class="ftab" onclick="setTab(this,'matched')">Matched</button>
-        <button class="ftab" onclick="setTab(this,'answered')">Answered</button>
+        <button class="ftab active" onclick="setTab(this)">All</button>
+        <button class="ftab" onclick="setTab(this)">Featured</button>
+        <button class="ftab" onclick="setTab(this)">Matched</button>
+        <button class="ftab" onclick="setTab(this)">Answered</button>
       </div>
-      <div style="font-size:11px;color:var(--muted)">ARIA processed <span style="color:var(--gold-b)" id="processedCount">247</span> events today</div>
+      <div class="feed-stat">ARIA processed <strong id="evtCount">247</strong> events today</div>
     </div>
 
-    <!-- ASK BOX -->
-    <div class="ask-box" id="askBox">
-      <textarea class="ask-input" id="askInput" placeholder="Ask an engaging question... What do you genuinely want to understand about learning and engagement?" rows="3"></textarea>
-      <div class="ask-footer">
-        <div class="ask-tags">
-          <div class="tag-pill" onclick="toggleTag(this)">Active Learning</div>
-          <div class="tag-pill" onclick="toggleTag(this)">Curiosity</div>
-          <div class="tag-pill" onclick="toggleTag(this)">Attention</div>
-          <div class="tag-pill" onclick="toggleTag(this)">Feedback</div>
-          <div class="tag-pill" onclick="toggleTag(this)">Assessment</div>
+    <!-- Ask section -->
+    <div class="ask-section">
+      <div class="ask-box">
+        <textarea class="ask-textarea" id="askInput" rows="3"
+          placeholder="Ask an engaging question — programming, science, history, philosophy, mathematics, geography. What do you genuinely want to understand?"></textarea>
+        <div class="ask-footer">
+          <div class="tag-row">
+            <div class="tag-chip" onclick="toggleTag(this)">Programming</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Science</div>
+            <div class="tag-chip" onclick="toggleTag(this)">History</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Geography</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Mathematics</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Philosophy</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Active Learning</div>
+          </div>
+          <button class="btn btn-primary" onclick="submitQuestion()">Submit to ARIA</button>
         </div>
-        <button class="btn-sm btn-gold" onclick="submitQuestion()">Submit to ARIA</button>
       </div>
     </div>
 
-    <!-- AGENT STATUS STRIP -->
-    <div class="agent-strip">
-      <div class="agent-pill" id="pill-gatekeeper" style="border-color:#1e3a6a;color:var(--blue)">
-        <div class="agent-pip" style="background:var(--blue)"></div>Gatekeeper
-      </div>
-      <div class="agent-pill" id="pill-rater" style="border-color:#1e3a6a;color:var(--blue)">
-        <div class="agent-pip" style="background:var(--blue)"></div>Question Rater
-      </div>
-      <div class="agent-pill" id="pill-matcher" style="border-color:#1e3a6a;color:var(--blue)">
-        <div class="agent-pip" style="background:var(--blue)"></div>Smart Matcher
-      </div>
-      <div class="agent-pill" id="pill-evaluator" style="border-color:#0f4a3a;color:var(--teal)">
-        <div class="agent-pip" style="background:var(--teal)"></div>Evaluator
-      </div>
-      <div class="agent-pill" id="pill-integrity" style="border-color:#0f4a3a;color:var(--teal)">
-        <div class="agent-pip" style="background:var(--teal)"></div>Integrity Guard
-      </div>
-      <div class="agent-pill" id="pill-tier" style="border-color:#2a1e5a;color:var(--purple)">
-        <div class="agent-pip" style="background:var(--purple)"></div>Tier Engine
-      </div>
-      <div class="agent-pill" id="pill-narrator" style="border-color:#2a1e5a;color:var(--purple)">
-        <div class="agent-pip" style="background:var(--purple)"></div>Insight Narrator
+    <!-- ARIA bar -->
+    <div class="aria-statusbar">
+      <div class="aria-pulse" id="ariaPulse"></div>
+      <div class="aria-text" id="ariaLog"><span class="kw">ARIA</span> · System ready · 12 agents online · Awaiting events</div>
+      <div class="agent-pips">
+        <div class="a-pip blue" id="pp-gk" title="Gatekeeper"></div>
+        <div class="a-pip blue" id="pp-qr" title="Question Rater"></div>
+        <div class="a-pip blue" id="pp-sm" title="Smart Matcher"></div>
+        <div class="a-pip teal" id="pp-ei" title="Engagement Indexer"></div>
+        <div class="a-pip teal" id="pp-ri" title="Retention Indexer"></div>
+        <div class="a-pip teal" id="pp-rai" title="Applicability Indexer"></div>
+        <div class="a-pip teal" id="pp-coi" title="Creativity Indexer"></div>
+        <div class="a-pip teal" id="pp-ai" title="Accuracy Verifier"></div>
+        <div class="a-pip teal" id="pp-ig" title="Integrity Guard"></div>
+        <div class="a-pip teal" id="pp-arb" title="Grade Arbiter"></div>
+        <div class="a-pip purple" id="pp-te" title="Tier Engine"></div>
+        <div class="a-pip" id="pp-in" title="Insight Narrator"></div>
       </div>
     </div>
 
-    <!-- ARIA LOG -->
-    <div class="aria-log" id="ariaLog">
-      <span class="ll">ARIA</span> · System ready · All 7 agents online · Awaiting events
-    </div>
-
-    <!-- QUESTION FEED -->
+    <!-- Questions -->
     <div class="q-feed" id="qFeed">
 
-      <!-- Q1 — Featured with answers -->
-      <div class="q-card featured" id="qCard1">
+      <!-- Q1: Programming -->
+      <div class="q-card featured">
         <div class="q-meta">
-          <div class="q-tag" style="color:#0c447c;background:#e6f1fb;border-color:#85b7eb">Active Learning</div>
-          <div class="q-score-badge">Quality 94</div>
-          <div class="q-matched" id="matchTag1">✦ Matched to you by Smart Matcher</div>
-          <div class="q-asker">Priya S. · Questioner T2</div>
+          <div class="q-topic-tag tag-prog">Programming</div>
+          <div class="q-quality">Quality 94</div>
+          <div class="q-matched-lbl">✦ Matched to you by Smart Matcher</div>
+          <div class="q-asker-lbl">Arjun M. · Questioner T2</div>
         </div>
-        <div class="q-text">How do you transform a 60-minute lecture into an active learning experience without losing content coverage — especially when the curriculum is fixed and dense?</div>
-        <div class="q-footer">
+        <div class="q-text">What is the most engaging way to explain variables to a 12-year-old who has never seen code before — without using technical jargon?</div>
+        <div class="q-card-footer">
           <div class="q-stat">
-            <svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1"/><path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1"/><path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
             3 answers
           </div>
-          <div class="q-stat">
-            <svg viewBox="0 0 12 12" fill="none"><path d="M6 1l1.5 3 3.5.5-2.5 2.5.5 3.5L6 9 3 10.5l.5-3.5L1 4.5 4.5 4z" stroke="currentColor" stroke-width="1"/></svg>
-            187 views
-          </div>
-          <div class="q-stat" style="color:var(--gold)">Bounty: +50 pts</div>
-          <button class="q-answer-btn" onclick="toggleAnswer('a1')">Answer</button>
+          <div class="q-stat">187 views</div>
+          <div class="q-bounty">Bounty +50 pts</div>
+          <button class="q-answer-cta" onclick="togglePanel('p1')">Answer</button>
         </div>
-        <div class="answer-panel" id="a1">
-          <div class="ap-header">Your answer — evaluated by Agent 04 + 05</div>
-          <textarea class="answer-input" id="ansInput1" placeholder="Give an engaging, specific answer. Use examples, analogies, and practical steps. The Answer Evaluator scores on accuracy, engagement quality, depth, originality, and applicability..."></textarea>
-          <div class="ap-footer">
-            <div class="ap-score-preview" id="scorePreview1">Answer Evaluator will score on 6 axes once submitted</div>
-            <button class="btn-sm btn-outline" onclick="toggleAnswer('a1')">Cancel</button>
-            <button class="btn-sm btn-gold" onclick="submitAnswer('ansInput1','answers1','scorePreview1')">Submit Answer</button>
+        <div class="answer-panel" id="p1">
+          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
+          <textarea class="answer-textarea" id="a1" placeholder="Give an engaging, specific answer. Use examples, analogies, real-world steps. ARIA scores on Engagement (25%), Retention (20%), Applicability (25%), Creativity (15%), and Accuracy (15%)..."></textarea>
+          <div class="ap-footer-row">
+            <div class="ap-hint" id="h1">CDS = AG×0.6 + PG×0.4 · 6 indices scored in parallel</div>
+            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p1')">Cancel</button>
+            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a1','l1','h1','sc1')">Submit Answer</button>
           </div>
-          <div class="answers-list" id="answers1">
-            <div class="answer-card winner">
+          <div class="score-panel" id="sc1"></div>
+          <div class="answers-list" id="l1">
+            <div class="answer-card top">
               <div class="ac-header">
-                <div class="ac-author">David O.</div>
-                <div class="ac-tier" style="background:#eeedfe;color:#3c3489;border:1px solid #afa9ec">Illuminator T3</div>
-                <div class="winner-badge">Best Answer · Score 91</div>
-                <div class="ac-score">91/100</div>
+                <div class="ac-name">Sarah K.</div>
+                <div class="ac-tier-badge" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator T3</div>
+                <div class="top-badge">Best Answer</div>
+                <div class="ac-cds">CDS 91</div>
               </div>
-              <div class="ac-text">Think of the lecture as a recipe, not a monologue. Break every 10 minutes with a 2-minute "construction pause" — students don't review notes, they build something: a one-sentence explanation to a peer, a quick sketch of the concept, a real-world example they've encountered. The content coverage doesn't shrink; it gets processed rather than just received. The curriculum is still covered — but now it lands somewhere.</div>
+              <div class="ac-body">Think of a variable like a labelled box. You write "score" on the outside, and whatever number is inside can change — but the box always answers to its name. When a player earns points, you don't make a new box, you just swap what's inside the old one. That single image does more work than three paragraphs of definition.</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Q2 -->
-      <div class="q-card" id="qCard2">
+      <!-- Q2: Science -->
+      <div class="q-card">
         <div class="q-meta">
-          <div class="q-tag" style="color:#085041;background:#e1f5ee;border-color:#5dcaa5">Curiosity Design</div>
-          <div class="q-score-badge">Quality 87</div>
-          <div class="q-asker">Mei-Lin C. · Explainer T2</div>
+          <div class="q-topic-tag tag-sci">Science</div>
+          <div class="q-quality">Quality 89</div>
+          <div class="q-asker-lbl">Fatima A. · Challenger T3</div>
         </div>
-        <div class="q-text">What is the single most effective opening move to trigger genuine curiosity in students who have been conditioned to expect passive instruction?</div>
-        <div class="q-footer">
-          <div class="q-stat">
-            <svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1"/><path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
-            1 answer
-          </div>
-          <div class="q-stat">
-            <svg viewBox="0 0 12 12" fill="none"><path d="M6 1l1.5 3 3.5.5-2.5 2.5.5 3.5L6 9 3 10.5l.5-3.5L1 4.5 4.5 4z" stroke="currentColor" stroke-width="1"/></svg>
-            94 views
-          </div>
-          <button class="q-answer-btn" onclick="toggleAnswer('a2')">Answer</button>
+        <div class="q-text">Why does time slow down near a black hole — and can you explain it in a way that makes a curious 15-year-old feel the actual strangeness of it?</div>
+        <div class="q-card-footer">
+          <div class="q-stat">2 answers</div>
+          <div class="q-stat">134 views</div>
+          <button class="q-answer-cta" onclick="togglePanel('p2')">Answer</button>
         </div>
-        <div class="answer-panel" id="a2">
-          <div class="ap-header">Your answer — evaluated by Agent 04 + 05</div>
-          <textarea class="answer-input" id="ansInput2" placeholder="Your engaging answer here..."></textarea>
-          <div class="ap-footer">
-            <div class="ap-score-preview" id="scorePreview2">Answer Evaluator will score on 6 axes once submitted</div>
-            <button class="btn-sm btn-outline" onclick="toggleAnswer('a2')">Cancel</button>
-            <button class="btn-sm btn-gold" onclick="submitAnswer('ansInput2','answers2','scorePreview2')">Submit Answer</button>
+        <div class="answer-panel" id="p2">
+          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
+          <textarea class="answer-textarea" id="a2" placeholder="Your engaging answer here..."></textarea>
+          <div class="ap-footer-row">
+            <div class="ap-hint" id="h2">6 indices scored in parallel once submitted</div>
+            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p2')">Cancel</button>
+            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a2','l2','h2','sc2')">Submit Answer</button>
           </div>
-          <div class="answers-list" id="answers2"></div>
+          <div class="score-panel" id="sc2"></div>
+          <div class="answers-list" id="l2"></div>
         </div>
       </div>
 
-      <!-- Q3 -->
-      <div class="q-card" id="qCard3">
+      <!-- Q3: History -->
+      <div class="q-card">
         <div class="q-meta">
-          <div class="q-tag" style="color:#3c3489;background:#eeedfe;border-color:#afa9ec">Attention Science</div>
-          <div class="q-score-badge">Quality 82</div>
-          <div class="q-asker">Kwame A. · Challenger T3</div>
+          <div class="q-topic-tag tag-hist">History</div>
+          <div class="q-quality">Quality 85</div>
+          <div class="q-asker-lbl">Marcus T. · Explainer T2</div>
         </div>
-        <div class="q-text">If the brain habituates to any repeated stimulus within 15–20 minutes, why do most school timetables still schedule 60-minute single-subject blocks? And what should we do instead?</div>
-        <div class="q-footer">
-          <div class="q-stat">
-            <svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1"/><path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
-            0 answers
-          </div>
-          <div class="q-stat">
-            <svg viewBox="0 0 12 12" fill="none"><path d="M6 1l1.5 3 3.5.5-2.5 2.5.5 3.5L6 9 3 10.5l.5-3.5L1 4.5 4.5 4z" stroke="currentColor" stroke-width="1"/></svg>
-            41 views
-          </div>
-          <button class="q-answer-btn" onclick="toggleAnswer('a3')">Answer</button>
+        <div class="q-text">How would you explain the fall of the Roman Empire to someone who thinks history is boring — using only things they already care about?</div>
+        <div class="q-card-footer">
+          <div class="q-stat">1 answer</div>
+          <div class="q-stat">98 views</div>
+          <div class="q-bounty">Bounty +30 pts</div>
+          <button class="q-answer-cta" onclick="togglePanel('p3')">Answer</button>
         </div>
-        <div class="answer-panel" id="a3">
-          <div class="ap-header">Your answer — evaluated by Agent 04 + 05</div>
-          <textarea class="answer-input" id="ansInput3" placeholder="Your engaging answer here..."></textarea>
-          <div class="ap-footer">
-            <div class="ap-score-preview" id="scorePreview3">Answer Evaluator will score on 6 axes once submitted</div>
-            <button class="btn-sm btn-outline" onclick="toggleAnswer('a3')">Cancel</button>
-            <button class="btn-sm btn-gold" onclick="submitAnswer('ansInput3','answers3','scorePreview3')">Submit Answer</button>
+        <div class="answer-panel" id="p3">
+          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
+          <textarea class="answer-textarea" id="a3" placeholder="Your engaging answer here..."></textarea>
+          <div class="ap-footer-row">
+            <div class="ap-hint" id="h3">6 indices scored in parallel once submitted</div>
+            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p3')">Cancel</button>
+            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a3','l3','h3','sc3')">Submit Answer</button>
           </div>
-          <div class="answers-list" id="answers3"></div>
+          <div class="score-panel" id="sc3"></div>
+          <div class="answers-list" id="l3"></div>
+        </div>
+      </div>
+
+      <!-- Q4: Geography -->
+      <div class="q-card">
+        <div class="q-meta">
+          <div class="q-topic-tag tag-geo">Geography</div>
+          <div class="q-quality">Quality 81</div>
+          <div class="q-asker-lbl">Yuki T. · Questioner T2</div>
+        </div>
+        <div class="q-text">Why do countries near the equator tend to be less economically developed? Explain the geography, climate, and colonial history together — not separately.</div>
+        <div class="q-card-footer">
+          <div class="q-stat">0 answers</div>
+          <div class="q-stat">57 views</div>
+          <button class="q-answer-cta" onclick="togglePanel('p4')">Answer</button>
+        </div>
+        <div class="answer-panel" id="p4">
+          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
+          <textarea class="answer-textarea" id="a4" placeholder="Your engaging answer here..."></textarea>
+          <div class="ap-footer-row">
+            <div class="ap-hint" id="h4">6 indices scored in parallel once submitted</div>
+            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p4')">Cancel</button>
+            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a4','l4','h4','sc4')">Submit Answer</button>
+          </div>
+          <div class="score-panel" id="sc4"></div>
+          <div class="answers-list" id="l4"></div>
+        </div>
+      </div>
+
+      <!-- Q5: Philosophy -->
+      <div class="q-card">
+        <div class="q-meta">
+          <div class="q-topic-tag tag-phil">Philosophy</div>
+          <div class="q-quality">Quality 88</div>
+          <div class="q-asker-lbl">Priya N. · Knowledge Architect T5</div>
+        </div>
+        <div class="q-text">Explain Occam's Razor in a way that someone could actually use tomorrow — with a concrete example from everyday decision-making, not textbook philosophy.</div>
+        <div class="q-card-footer">
+          <div class="q-stat">4 answers</div>
+          <div class="q-stat">213 views</div>
+          <button class="q-answer-cta" onclick="togglePanel('p5')">Answer</button>
+        </div>
+        <div class="answer-panel" id="p5">
+          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
+          <textarea class="answer-textarea" id="a5" placeholder="Your engaging answer here..."></textarea>
+          <div class="ap-footer-row">
+            <div class="ap-hint" id="h5">6 indices scored in parallel once submitted</div>
+            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p5')">Cancel</button>
+            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a5','l5','h5','sc5')">Submit Answer</button>
+          </div>
+          <div class="score-panel" id="sc5"></div>
+          <div class="answers-list" id="l5"></div>
+        </div>
+      </div>
+
+      <!-- Q6: Mathematics -->
+      <div class="q-card">
+        <div class="q-meta">
+          <div class="q-topic-tag tag-math">Mathematics</div>
+          <div class="q-quality">Quality 79</div>
+          <div class="q-asker-lbl">Lena V. · Responder T1</div>
+        </div>
+        <div class="q-text">Why does 0.999… equal 1 exactly — not approximately — and how would you convince a committed sceptic without resorting to algebra?</div>
+        <div class="q-card-footer">
+          <div class="q-stat">0 answers</div>
+          <div class="q-stat">44 views</div>
+          <div class="q-bounty">Bounty +40 pts</div>
+          <button class="q-answer-cta" onclick="togglePanel('p6')">Answer</button>
+        </div>
+        <div class="answer-panel" id="p6">
+          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
+          <textarea class="answer-textarea" id="a6" placeholder="Your engaging answer here..."></textarea>
+          <div class="ap-footer-row">
+            <div class="ap-hint" id="h6">6 indices scored in parallel once submitted</div>
+            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p6')">Cancel</button>
+            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a6','l6','h6','sc6')">Submit Answer</button>
+          </div>
+          <div class="score-panel" id="sc6"></div>
+          <div class="answers-list" id="l6"></div>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- RIGHT SIDEBAR -->
-  <div class="sidebar-r">
+  <!-- ══ RIGHT SIDEBAR ══ -->
+  <div class="sidebar sb-right">
 
     <!-- Agent Monitor -->
-    <div class="widget">
+    <div class="widget-section">
       <div class="widget-title">Agent Monitor</div>
-      <div class="agent-monitor" id="agentMonitor">
-        <div class="am-row"><div class="am-indicator idle" id="ind-aria"></div><div class="am-name">ARIA Orchestrator</div><div class="am-status" id="st-aria">Standby</div></div>
-        <div class="am-row"><div class="am-indicator idle" id="ind-gk"></div><div class="am-name">Gatekeeper</div><div class="am-status" id="st-gk">Idle</div></div>
-        <div class="am-row"><div class="am-indicator idle" id="ind-qr"></div><div class="am-name">Question Rater</div><div class="am-status" id="st-qr">Idle</div></div>
-        <div class="am-row"><div class="am-indicator idle" id="ind-sm"></div><div class="am-name">Smart Matcher</div><div class="am-status" id="st-sm">Idle</div></div>
-        <div class="am-row"><div class="am-indicator done" id="ind-ae"></div><div class="am-name">Answer Evaluator</div><div class="am-status" id="st-ae">3 scored today</div></div>
-        <div class="am-row"><div class="am-indicator done" id="ind-ig"></div><div class="am-name">Integrity Guard</div><div class="am-status" id="st-ig">0 flags</div></div>
-        <div class="am-row"><div class="am-indicator done" id="ind-te"></div><div class="am-name">Tier Engine</div><div class="am-status" id="st-te">2 recalculated</div></div>
-        <div class="am-row"><div class="am-indicator idle" id="ind-in"></div><div class="am-name">Insight Narrator</div><div class="am-status" id="st-in">Next: Sunday</div></div>
-      </div>
+      <div class="am-row"><div class="am-dot idle" id="d-aria"></div><div class="am-name">ARIA Orchestrator</div><div class="am-status" id="s-aria">Standby</div></div>
+      <div class="am-row"><div class="am-dot ready" id="d-gk"></div><div class="am-name">Gatekeeper</div><div class="am-status" id="s-gk">Ready</div></div>
+      <div class="am-row"><div class="am-dot ready" id="d-qr"></div><div class="am-name">Question Rater</div><div class="am-status" id="s-qr">Ready</div></div>
+      <div class="am-row"><div class="am-dot ready" id="d-sm"></div><div class="am-name">Smart Matcher</div><div class="am-status" id="s-sm">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ei"></div><div class="am-name">Engagement Indexer</div><div class="am-status" id="s-ei">3 scored</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ri"></div><div class="am-name">Retention Indexer</div><div class="am-status" id="s-ri">3 scored</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-rai"></div><div class="am-name">Applicability Indexer</div><div class="am-status" id="s-rai">3 scored</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-coi"></div><div class="am-name">Creativity Indexer</div><div class="am-status" id="s-coi">3 scored</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ai"></div><div class="am-name">Accuracy Verifier</div><div class="am-status" id="s-ai">3 scored</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ig"></div><div class="am-name">Integrity Guard</div><div class="am-status" id="s-ig">0 flags</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-arb"></div><div class="am-name">Grade Arbiter</div><div class="am-status" id="s-arb">3 CDS issued</div></div>
+      <div class="am-row"><div class="am-dot done-p" id="d-te"></div><div class="am-name">Tier Engine</div><div class="am-status" id="s-te">2 updated</div></div>
+      <div class="am-row"><div class="am-dot idle" id="d-in"></div><div class="am-name">Insight Narrator</div><div class="am-status" id="s-in">Next: Sunday</div></div>
     </div>
 
     <!-- Leaderboard -->
-    <div class="widget">
+    <div class="widget-section">
       <div class="widget-title">Top Engagedneers™ This Week</div>
-      <div>
-        <div class="lb-row">
-          <div class="lb-rank">1</div>
-          <div class="lb-name">David O.</div>
-          <div class="lb-tier" style="background:#eeedfe;color:#3c3489;border:1px solid #afa9ec;font-size:8px">Illuminator</div>
-          <div class="lb-pts">940</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-rank">2</div>
-          <div class="lb-name">Mei-Lin C.</div>
-          <div class="lb-tier" style="background:#e1f5ee;color:#085041;border:1px solid #5dcaa5;font-size:8px">Explainer</div>
-          <div class="lb-pts">720</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-rank">3</div>
-          <div class="lb-name">Kwame A.</div>
-          <div class="lb-tier" style="background:#e6f1fb;color:#0c447c;border:1px solid #85b7eb;font-size:8px">Challenger</div>
-          <div class="lb-pts">615</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-rank">4</div>
-          <div class="lb-name">Priya S.</div>
-          <div class="lb-tier" style="background:#e6f1fb;color:#0c447c;border:1px solid #85b7eb;font-size:8px">Questioner</div>
-          <div class="lb-pts">480</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-rank">5</div>
-          <div class="lb-name">You</div>
-          <div class="lb-tier" style="background:rgba(200,146,42,.1);color:#c8922a;border:1px solid rgba(200,146,42,.3);font-size:8px">Questioner</div>
-          <div class="lb-pts">340</div>
-        </div>
-      </div>
+      <div class="lb-row"><div class="lb-rank">1</div><div class="lb-name">David O.</div><div class="lb-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator</div><div class="lb-pts">940</div></div>
+      <div class="lb-row"><div class="lb-rank">2</div><div class="lb-name">Fatima A.</div><div class="lb-tier" style="background:#e1f5ee;color:#085041;border-color:#5dcaa5">Challenger</div><div class="lb-pts">780</div></div>
+      <div class="lb-row"><div class="lb-rank">3</div><div class="lb-name">Sarah K.</div><div class="lb-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator</div><div class="lb-pts">720</div></div>
+      <div class="lb-row"><div class="lb-rank">4</div><div class="lb-name">Marcus T.</div><div class="lb-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Explainer</div><div class="lb-pts">615</div></div>
+      <div class="lb-row"><div class="lb-rank">5</div><div class="lb-name">You</div><div class="lb-tier" style="background:rgba(200,146,42,.12);color:#c8922a;border-color:rgba(200,146,42,.4)">Questioner</div><div class="lb-pts">340</div></div>
     </div>
 
     <!-- Insight Narrator -->
-    <div class="widget">
+    <div class="widget-section">
       <div class="widget-title">Your Weekly Insight</div>
-      <div class="insight-body" id="insightBody">Your question this week about active learning design earned a Quality Score of 87 — your highest yet. The Challenger responses it attracted suggest you're ready to push your questions further into the why rather than the how.</div>
-      <div class="insight-meta">Generated by Insight Narrator · Agent 07</div>
+      <div class="insight-box">
+        <div class="insight-body" id="insightBody">Your programming question earned Quality 94 — your highest yet. The Illuminator-level responses it attracted confirm you're asking at the right depth. Push further into the why next time.</div>
+        <div class="insight-meta">Agent 12 · Insight Narrator · Generated Sunday</div>
+      </div>
     </div>
 
-    <!-- Notifications -->
-    <div class="widget">
+    <!-- Activity -->
+    <div class="widget-section">
       <div class="widget-title">Activity</div>
-      <div>
-        <div class="notif" style="border-color:var(--gold)">
-          <span style="color:var(--gold-b)">Smart Matcher</span> selected you for 1 new question matching your Attention Science expertise.
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <div class="notif-card" style="border-color:var(--gold)">
+          <span class="notif-agent" style="color:var(--gold-b)">Smart Matcher</span> selected you for 2 new questions matching your Programming expertise.
         </div>
-        <div class="notif" style="border-color:var(--teal)">
-          <span style="color:#5dcaa5">Tier Engine</span> · You are 160 pts from Challenger. Your last 3 questions averaged Quality 84.
+        <div class="notif-card" style="border-color:var(--teal)">
+          <span class="notif-agent" style="color:var(--teal-b)">Tier Engine</span> · 160 pts to Challenger. Last 3 questions averaged Quality 86.
         </div>
-        <div class="notif" style="border-color:var(--purple)">
-          <span style="color:var(--purple)">Answer Evaluator</span> · Your answer scored 76/100. Strong on depth, grow on analogy use.
+        <div class="notif-card" style="border-color:var(--purple)">
+          <span class="notif-agent" style="color:var(--purple-b)">Grade Arbiter</span> · CDS 76 on last answer. Growth edge: add concrete real-world examples.
         </div>
       </div>
     </div>
@@ -464,261 +788,246 @@ nav{background:rgba(6,12,26,.96);backdrop-filter:blur(12px);border-bottom:1px so
 </div>
 
 <script>
-const API_URL = "https://api.anthropic.com/v1/messages";
+const API="https://api.anthropic.com/v1/messages";
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-function setAriaLog(msg){document.getElementById('ariaLog').innerHTML=`<span class="ll">ARIA</span> · ${msg}`}
-function setPill(id,state){const el=document.getElementById('pill-'+id);if(!el)return;el.classList.remove('active','running');if(state==='running')el.classList.add('running');else if(state==='active')el.classList.add('active')}
-function setIndicator(id,state){const el=document.getElementById('ind-'+id);if(!el)return;el.className='am-indicator '+state}
-function setStatus(id,txt){const el=document.getElementById('st-'+id);if(el)el.textContent=txt}
+function setLog(t){document.getElementById('ariaLog').innerHTML=`<span class="kw">ARIA</span> · ${t}`}
+function setPip(id,cls){const e=document.getElementById('pp-'+id);if(e)e.className='a-pip '+cls}
+function setDot(id,cls){const e=document.getElementById('d-'+id);if(e)e.className='am-dot '+cls}
+function setSt(id,t){const e=document.getElementById('s-'+id);if(e)e.textContent=t}
+function ariaOn(){document.getElementById('ariaPulse').classList.add('active')}
+function ariaOff(){document.getElementById('ariaPulse').classList.remove('active')}
+function setTab(b){document.querySelectorAll('.ftab').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
+function toggleTag(e){e.classList.toggle('sel')}
+function togglePanel(id){document.getElementById(id).classList.toggle('open')}
 
-function toggleTag(el){el.classList.toggle('sel')}
-function setTab(btn,tab){document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
-function toggleAnswer(id){const el=document.getElementById(id);el.classList.toggle('show')}
-
-async function callClaude(systemPrompt, userMsg, maxTokens=400){
-  const r = await fetch(API_URL,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:maxTokens,
-      system:systemPrompt,
-      messages:[{role:'user',content:userMsg}]
-    })
-  });
-  const d = await r.json();
-  return d.content?.[0]?.text || '';
+async function callClaude(sys,usr,tok=350){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:tok,system:sys,messages:[{role:'user',content:usr}]})});
+  const d=await r.json();return d.content?.[0]?.text||'';
 }
 
-/* ── SUBMIT QUESTION — full agent pipeline ── */
 async function submitQuestion(){
-  const q = document.getElementById('askInput').value.trim();
+  const q=document.getElementById('askInput').value.trim();
   if(!q){alert('Please type a question first.');return;}
-  const tags = [...document.querySelectorAll('.tag-pill.sel')].map(t=>t.textContent).join(', ') || 'General';
+  const tags=[...document.querySelectorAll('.tag-chip.sel')].map(t=>t.textContent).join(', ')||'General';
+  ariaOn();setLog('Question received → routing to Gatekeeper');
+  setDot('aria','run');setSt('aria','Processing');
 
-  document.getElementById('processedCount').textContent = parseInt(document.getElementById('processedCount').textContent)+1;
+  await sleep(400);
 
-  // ARIA kicks off
-  setAriaLog('Event received: question submitted → routing to Gatekeeper');
-  setIndicator('aria','running');setStatus('aria','Processing');
-
-  await sleep(600);
-
-  // AGENT 01: GATEKEEPER
-  setPill('gatekeeper','running');setIndicator('gk','running');setStatus('gk','Screening...');
-  setAriaLog('Agent 01 Gatekeeper · Screening question for content policy...');
-
-  const gkResult = await callClaude(
-    `You are the Gatekeeper agent for Engageneering™, a global education platform. Your job is to screen questions submitted by educators. Approve genuine educational questions. Return ONLY JSON: {"verdict":"approve"|"revise"|"reject","reason":"one sentence","is_constructive":true|false}. Be generous — most educator questions are genuine.`,
+  // Agent 01 — Gatekeeper
+  setPip('gk','pulse');setDot('gk','run');setSt('gk','Screening...');
+  setLog('Agent 01 Gatekeeper · Screening for content policy...');
+  const gkR=await callClaude(
+    'You are the Gatekeeper for Engageneering™ crowd learning platform. Screen questions for harmful, obnoxious, or bad-faith content. Return ONLY JSON: {"verdict":"approve"|"revise"|"reject","reason":"one sentence"}. Be generous — genuine curiosity about any subject should be approved.',
     `Question: "${q}" | Tags: ${tags}`
   );
+  let gk={verdict:'approve',reason:'Genuine curiosity question.'};
+  try{gk=JSON.parse(gkR.replace(/```json|```/g,'').trim())}catch(e){}
+  setDot('gk','ready');setPip('gk','blue');setSt('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
+  if(gk.verdict==='reject'){setLog(`Gatekeeper: Rejected · ${gk.reason}`);ariaOff();setDot('aria','idle');setSt('aria','Standby');alert(`Not approved:\n${gk.reason}`);return;}
+  await sleep(400);
 
-  let gkData = {verdict:'approve',reason:'Question meets content standards',is_constructive:true};
-  try{gkData=JSON.parse(gkResult.replace(/```json|```/g,'').trim())}catch(e){}
-
-  setIndicator('gk','done');setPill('gatekeeper','active');
-
-  if(gkData.verdict==='reject'){
-    setStatus('gk','Rejected');
-    setAriaLog(`Gatekeeper REJECTED · ${gkData.reason}`);
-    alert(`Question not approved:\n${gkData.reason}\n\nPlease revise and resubmit.`);
-    setIndicator('aria','idle');setStatus('aria','Standby');
-    return;
-  }
-  if(gkData.verdict==='revise'){
-    setStatus('gk','Revision needed');
-    setAriaLog(`Gatekeeper: Revision suggested · ${gkData.reason}`);
-  } else {
-    setStatus('gk','Approved ✓');
-    setAriaLog(`Gatekeeper approved · Routing to Question Rater`);
-  }
-  await sleep(700);
-
-  // AGENT 02: QUESTION RATER
-  setPill('rater','running');setIndicator('qr','running');setStatus('qr','Scoring...');
-  setAriaLog('Agent 02 Question Rater · Scoring on clarity, depth, originality, engagement potential...');
-
-  const qrResult = await callClaude(
-    `You are the Question Rater agent for Engageneering™. Score this educational question on four axes (0-25 each): clarity, depth, originality, engagement_potential. Return ONLY JSON: {"clarity":N,"depth":N,"originality":N,"engagement_potential":N,"total":N,"feedback":"one sentence of specific improvement advice"}`,
+  // Agent 02 — Question Rater
+  setPip('qr','pulse');setDot('qr','run');setSt('qr','Scoring...');
+  setLog('Agent 02 Question Rater · Scoring clarity, depth, originality, engagement potential...');
+  const qrR=await callClaude(
+    'You are the Question Rater for Engageneering™. Score this question on four axes (0-25 each). Return ONLY JSON: {"clarity":N,"depth":N,"originality":N,"engagement_potential":N,"total":N,"feedback":"one sentence"}.',
     `Question: "${q}" | Tags: ${tags}`
   );
+  let qr={clarity:18,depth:17,originality:16,engagement_potential:19,total:70,feedback:'Good question with strong engagement potential.'};
+  try{qr=JSON.parse(qrR.replace(/```json|```/g,'').trim())}catch(e){}
+  setDot('qr','ready');setPip('qr','blue');setSt('qr',`Quality ${qr.total}`);
+  setLog(`Question Rater: Quality ${qr.total}/100 · ${qr.feedback}`);
+  await sleep(400);
 
-  let qrData = {clarity:18,depth:17,originality:15,engagement_potential:20,total:70,feedback:'Good question with strong engagement potential.'};
-  try{qrData=JSON.parse(qrResult.replace(/```json|```/g,'').trim())}catch(e){}
-
-  setIndicator('qr','done');setPill('rater','active');setStatus('qr',`Score: ${qrData.total}/100`);
-  setAriaLog(`Question Rater: Quality Score ${qrData.total}/100 · ${qrData.feedback}`);
-  await sleep(700);
-
-  // AGENT 03: SMART MATCHER
-  setPill('matcher','running');setIndicator('sm','running');setStatus('sm','Matching...');
-  setAriaLog('Agent 03 Smart Matcher · Scanning community for best-fit answerers...');
-
-  const smResult = await callClaude(
-    `You are the Smart Matcher agent for Engageneering™. Given a question, identify the ideal profile of answerers from the platform community and write personalised invitation messages. Return ONLY JSON: {"matched":["David O. — Illuminator","Mei-Lin C. — Explainer","Kwame A. — Challenger"],"invite_message":"one sentence personalised invitation"}`,
-    `Question: "${q}" | Tags: ${tags} | Quality Score: ${qrData.total}`
+  // Agent 03 — Smart Matcher
+  setPip('sm','pulse');setDot('sm','run');setSt('sm','Matching...');
+  setLog('Agent 03 Smart Matcher · Scanning community expertise, answer history, and subject tags...');
+  const smR=await callClaude(
+    'You are the Smart Matcher for Engageneering™. Identify best-fit answerers. Return ONLY JSON: {"matched":["Name — Tier","Name — Tier","Name — Tier"],"invite":"one sentence personalised invitation"}.',
+    `Question: "${q}" | Tags: ${tags} | Quality: ${qr.total}`
   );
+  let sm={matched:['David O. — Illuminator','Sarah K. — Illuminator','Fatima A. — Challenger'],invite:'Your expertise is exactly what this question needs.'};
+  try{sm=JSON.parse(smR.replace(/```json|```/g,'').trim())}catch(e){}
+  setDot('sm','ready');setPip('sm','blue');setSt('sm',`${(sm.matched||[]).length} matched`);
+  setLog(`Smart Matcher: Invited ${(sm.matched||[]).slice(0,2).join(', ')} and ${Math.max(0,(sm.matched||[]).length-2)} others`);
+  await sleep(350);
 
-  let smData = {matched:['David O. — Illuminator','Mei-Lin C. — Explainer','Kwame A. — Challenger'],invite_message:'Your expertise makes you ideal for this question.'};
-  try{smData=JSON.parse(smResult.replace(/```json|```/g,'').trim())}catch(e){}
+  // Tier Engine pts
+  setDot('te','run');setSt('te','Awarding pts...');
+  await sleep(450);
+  setDot('te','done-p');setSt('te','Points awarded ✓');
 
-  setIndicator('sm','done');setPill('matcher','active');setStatus('sm',`${smData.matched?.length||3} matched`);
-  setAriaLog(`Smart Matcher: Invited ${(smData.matched||[]).join(', ')} · "${smData.invite_message}"`);
-  await sleep(600);
+  setLog(`Published · Quality ${qr.total} · ${(sm.matched||[]).length} experts invited · Points awarded`);
+  setDot('aria','idle');setSt('aria','Standby');ariaOff();
 
-  // TIER ENGINE update
-  setIndicator('te','running');setStatus('te','Recalculating...');
-  await sleep(500);
-  setIndicator('te','done');setStatus('te','Points awarded ✓');
+  // Colour map
+  const colMap={
+    'Programming':'tag-prog','Science':'tag-sci','History':'tag-hist',
+    'Geography':'tag-geo','Mathematics':'tag-math','Philosophy':'tag-phil','Active Learning':'tag-al'
+  };
+  const firstTag=tags.split(',')[0].trim();
+  const tagCls=colMap[firstTag]||'tag-phil';
+  const uid='q'+Date.now();
 
-  // Publish question to feed
-  setAriaLog(`Question published · Quality ${qrData.total} · ${smData.matched?.length||3} experts invited · Tier Engine awarded points`);
-  setIndicator('aria','done');setStatus('aria','Complete');
-
-  const newQ = buildQCard(q, tags, qrData.total, smData.matched||[]);
-  document.getElementById('qFeed').insertAdjacentHTML('afterbegin', newQ);
-
-  // Update score
-  const bar = document.getElementById('seekerBar');
-  const cur = parseInt(bar.style.width)||68;
-  bar.style.width = Math.min(cur+8,100)+'%';
-  document.getElementById('processedCount').textContent = parseInt(document.getElementById('processedCount').textContent)+1;
+  document.getElementById('qFeed').insertAdjacentHTML('afterbegin',`
+    <div class="q-card featured new-in" id="${uid}">
+      <div class="q-meta">
+        <div class="q-topic-tag ${tagCls}">${firstTag}</div>
+        <div class="q-quality">Quality ${qr.total}</div>
+        <div class="q-matched-lbl">✦ ${(sm.matched||[]).length} experts invited</div>
+        <div class="q-asker-lbl">You · Questioner T2</div>
+      </div>
+      <div class="q-text">${q}</div>
+      <div class="q-card-footer">
+        <div class="q-stat">0 answers</div>
+        <div class="q-stat">Just published</div>
+        <button class="q-answer-cta" onclick="togglePanel('np${uid}')">Answer</button>
+      </div>
+      <div class="answer-panel" id="np${uid}">
+        <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
+        <textarea class="answer-textarea" id="na${uid}" placeholder="Your engaging answer here..."></textarea>
+        <div class="ap-footer-row">
+          <div class="ap-hint" id="nh${uid}">6 indices scored in parallel</div>
+          <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('np${uid}')">Cancel</button>
+          <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('na${uid}','nl${uid}','nh${uid}','ns${uid}')">Submit Answer</button>
+        </div>
+        <div class="score-panel" id="ns${uid}"></div>
+        <div class="answers-list" id="nl${uid}"></div>
+      </div>
+    </div>`);
 
   document.getElementById('askInput').value='';
-  document.querySelectorAll('.tag-pill').forEach(t=>t.classList.remove('sel'));
-
-  setTimeout(()=>{setIndicator('aria','idle');setStatus('aria','Standby');},2000);
+  document.querySelectorAll('.tag-chip').forEach(t=>t.classList.remove('sel'));
+  document.getElementById('evtCount').textContent=parseInt(document.getElementById('evtCount').textContent)+1;
+  const bar=document.getElementById('seekerBar');
+  bar.style.width=Math.min(parseInt(bar.style.width)+6,100)+'%';
 }
 
-function buildQCard(q,tags,score,matched){
-  const tagColors=['color:#0c447c;background:#e6f1fb;border-color:#85b7eb','color:#085041;background:#e1f5ee;border-color:#5dcaa5','color:#3c3489;background:#eeedfe;border-color:#afa9ec'];
-  const tagColor = tagColors[Math.floor(Math.random()*tagColors.length)];
-  const tag = tags.split(',')[0].trim()||'General';
-  const id = 'new'+Date.now();
-  return `<div class="q-card featured" id="${id}">
-    <div class="q-meta">
-      <div class="q-tag" style="${tagColor}">${tag}</div>
-      <div class="q-score-badge">Quality ${score}</div>
-      <div class="q-matched">✦ ${matched.length} experts invited</div>
-      <div class="q-asker">You · Questioner T2</div>
-    </div>
-    <div class="q-text">${q}</div>
-    <div class="q-footer">
-      <div class="q-stat">0 answers</div>
-      <div class="q-stat">Just published</div>
-      <button class="q-answer-btn" onclick="toggleAnswer('ap${id}')">Answer</button>
-    </div>
-    <div class="answer-panel" id="ap${id}">
-      <div class="ap-header">Your answer — evaluated by Agent 04 + 05</div>
-      <textarea class="answer-input" id="ai${id}" placeholder="Your engaging answer here..."></textarea>
-      <div class="ap-footer">
-        <div class="ap-score-preview" id="sp${id}">Answer Evaluator will score once submitted</div>
-        <button class="btn-sm btn-outline" onclick="toggleAnswer('ap${id}')">Cancel</button>
-        <button class="btn-sm btn-gold" onclick="submitAnswer('ai${id}','al${id}','sp${id}')">Submit Answer</button>
-      </div>
-      <div class="answers-list" id="al${id}"></div>
-    </div>
-  </div>`;
-}
+async function submitAnswer(inpId,listId,hintId,scoreId){
+  const ans=document.getElementById(inpId)?.value?.trim();
+  if(!ans||ans.length<15){alert('Please write a more complete answer.');return;}
+  const qCard=document.getElementById(inpId)?.closest('.q-card');
+  const q=qCard?.querySelector('.q-text')?.textContent||'this question';
 
-/* ── SUBMIT ANSWER — Evaluator + Integrity Guard in parallel ── */
-async function submitAnswer(inputId, listId, previewId){
-  const ans = document.getElementById(inputId)?.value?.trim();
-  if(!ans||ans.length<20){alert('Please write a more complete answer (at least 20 characters).');return;}
+  ariaOn();
+  setLog('Answer received → 6 atomic eval agents + Integrity Guard firing in parallel...');
+  setDot('aria','run');setSt('aria','Evaluating');
 
-  const question = document.querySelector('.q-card.featured .q-text')?.textContent||'an educational question';
+  const agents=['ei','ri','rai','coi','ai','ig'];
+  agents.forEach(a=>{setPip(a,'pulse');setDot(a,'run');setSt(a,'Scoring...')});
+  setPip('arb','pulse');setDot('arb','run');setSt('arb','Waiting...');
 
-  setAriaLog('Event received: answer submitted → running Evaluator + Integrity Guard in parallel');
-  setIndicator('aria','running');setStatus('aria','Processing answer');
-
-  // Run both agents simultaneously
-  setPill('evaluator','running');setIndicator('ae','running');setStatus('ae','Evaluating...');
-  setPill('integrity','running');setIndicator('ig','running');setStatus('ig','Checking...');
-
-  const [evalResult, intgResult] = await Promise.all([
-    callClaude(
-      `You are the Answer Evaluator for Engageneering™. Score this answer on six axes (0-100 composite): accuracy, engagement_quality, analogy_use, depth, originality, practical_applicability. Return ONLY JSON: {"accuracy":N,"engagement_quality":N,"analogy_use":N,"depth":N,"originality":N,"practical_applicability":N,"composite":N,"strengths":"one sentence","growth_edge":"one sentence"}`,
-      `Question: "${question}"\nAnswer: "${ans}"`
-    ),
-    callClaude(
-      `You are the Integrity Guard for Engageneering™. Check this answer for plagiarism, hallucination, and bad faith. Return ONLY JSON: {"integrity_pass":true|false,"confidence":N,"flags":[],"note":"one sentence"}`,
-      `Answer: "${ans}"`
-    )
+  const [eiR,riR,raiR,coiR,aiR,igR]=await Promise.all([
+    callClaude('You are the Engagement Indexer for Engageneering™. Score ONLY engagement quality (narrative pull, hooks, questions raised, energy). Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
+    callClaude('You are the Retention Indexer for Engageneering™. Score ONLY retention quality (memorable anchors, analogies, sticky phrases, structure). Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
+    callClaude('You are the Applicability Indexer for Engageneering™. Score ONLY real-life applicability (usable tomorrow, concrete steps, context fit, practicality). Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
+    callClaude('You are the Creativity Indexer for Engageneering™. Score ONLY creativity and originality (novel framing, unexpected connections, fresh perspective, metaphor quality). Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
+    callClaude('You are the Accuracy Verifier for Engageneering™. Score ONLY factual accuracy and logical coherence. Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
+    callClaude('You are the Integrity Guard for Engageneering™. Check for plagiarism, hallucination, and bad faith. Return ONLY JSON: {"pass":true|false,"note":"one sentence"}.',`Answer:"${ans}"`)
   ]);
 
-  let evalData = {accuracy:75,engagement_quality:72,analogy_use:60,depth:74,originality:68,practical_applicability:76,composite:74,strengths:'Clear and well-structured.',growth_edge:'Try adding a concrete classroom example.'};
-  let intgData = {integrity_pass:true,confidence:96,flags:[],note:'No integrity concerns detected.'};
+  let ei={score:72,note:'Good engagement.'};let ri={score:68,note:'Reasonably memorable.'};
+  let rai={score:74,note:'Applicable with effort.'};let coi={score:65,note:'Some originality.'};
+  let ai={score:78,note:'Factually sound.'};let ig={pass:true,note:'No concerns.'};
 
-  try{evalData=JSON.parse(evalResult.replace(/```json|```/g,'').trim())}catch(e){}
-  try{intgData=JSON.parse(intgResult.replace(/```json|```/g,'').trim())}catch(e){}
+  try{ei=JSON.parse(eiR.replace(/```json|```/g,'').trim())}catch(e){}
+  try{ri=JSON.parse(riR.replace(/```json|```/g,'').trim())}catch(e){}
+  try{rai=JSON.parse(raiR.replace(/```json|```/g,'').trim())}catch(e){}
+  try{coi=JSON.parse(coiR.replace(/```json|```/g,'').trim())}catch(e){}
+  try{ai=JSON.parse(aiR.replace(/```json|```/g,'').trim())}catch(e){}
+  try{ig=JSON.parse(igR.replace(/```json|```/g,'').trim())}catch(e){}
 
-  setIndicator('ae','done');setPill('evaluator','active');setStatus('ae',`Score: ${evalData.composite}/100`);
-  setIndicator('ig','done');setPill('integrity','active');setStatus('ig',intgData.integrity_pass?'Pass ✓':'Flag raised');
+  ['ei','ri','rai','coi','ai'].forEach(a=>{setDot(a,'done');setPip(a,'teal')});
+  setSt('ei',`EI ${ei.score}`);setSt('ri',`RI ${ri.score}`);setSt('rai',`RAI ${rai.score}`);
+  setSt('coi',`COI ${coi.score}`);setSt('ai',`AI ${ai.score}`);
+  setDot('ig',ig.pass?'done':'err');setPip('ig',ig.pass?'teal':'red');
+  setSt('ig',ig.pass?'Pass ✓':'Flagged!');
 
-  setAriaLog(`Evaluator: ${evalData.composite}/100 · "${evalData.strengths}" · Integrity: ${intgData.integrity_pass?'Pass':'Flagged'}`);
-
-  if(!intgData.integrity_pass){
-    alert(`Integrity Guard flagged this answer:\n${intgData.note}\n\nPlease revise before resubmitting.`);
-    setIndicator('aria','idle');setStatus('aria','Standby');
-    return;
+  if(!ig.pass){
+    setLog(`Integrity Guard: ${ig.note}`);ariaOff();setDot('aria','idle');setSt('aria','Standby');
+    alert(`Integrity Guard flagged:\n${ig.note}\n\nPlease revise and resubmit.`);return;
   }
 
-  // Update preview
-  if(document.getElementById(previewId)){
-    document.getElementById(previewId).textContent=`Score ${evalData.composite}/100 · ${evalData.strengths} · Growth edge: ${evalData.growth_edge}`;
-    document.getElementById(previewId).style.color=evalData.composite>=80?'#5dcaa5':evalData.composite>=60?'#f0c040':'#e24b4a';
-  }
+  // Compute scores
+  const ag=Math.round(ei.score*.25+ri.score*.20+rai.score*.25+coi.score*.15+ai.score*.15);
+  const pg=Math.min(100,Math.max(0,ag+Math.round(Math.random()*16-8)));
+  const cds=Math.round(ag*.6+pg*.4);
 
-  // Tier engine
-  setIndicator('te','running');setStatus('te','Recalculating...');
-  await sleep(600);
-  setIndicator('te','done');setStatus('te','Points awarded ✓');
+  setDot('arb','done');setPip('arb','teal');setSt('arb',`CDS ${cds} issued`);
+  setDot('te','run');setSt('te','Recalculating...');
+  await sleep(450);
+  setDot('te','done-p');setSt('te','Points awarded ✓');
 
-  // Add answer card to list
-  const list = document.getElementById(listId);
-  if(list){
-    list.insertAdjacentHTML('beforeend',`
-      <div class="answer-card ${evalData.composite>=85?'winner':''}">
-        <div class="ac-header">
-          <div class="ac-author">You</div>
-          <div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border:1px solid #85b7eb">Questioner T2</div>
-          ${evalData.composite>=85?'<div class="winner-badge">Top Answer</div>':''}
-          <div class="ac-score">${evalData.composite}/100</div>
+  setLog(`CDS ${cds}/100 · AG ${ag} + PG ${pg} · Tier Engine updated · Insight Narrator queued`);
+  setDot('aria','idle');setSt('aria','Standby');ariaOff();
+
+  // Update hint
+  const hint=document.getElementById(hintId);
+  if(hint){hint.textContent=`CDS ${cds}/100 · AG ${ag} (AI) + PG ${pg} (Engageneer™ peer grade)`;hint.style.color=cds>=80?'#5dcaa5':cds>=60?'#f0c040':'#e24b4a';}
+
+  // Score panel
+  const sp=document.getElementById(scoreId);
+  if(sp){
+    const idxs=[
+      {l:'EI',v:ei.score,c:'#378add',n:ei.note,w:'25%'},
+      {l:'RI',v:ri.score,c:'#1d9e75',n:ri.note,w:'20%'},
+      {l:'RAI',v:rai.score,c:'#d4920c',n:rai.note,w:'25%'},
+      {l:'COI',v:coi.score,c:'#7f77dd',n:coi.note,w:'15%'},
+      {l:'AI',v:ai.score,c:'#d85a30',n:ai.note,w:'15%'}
+    ];
+    sp.innerHTML=`
+      <div class="score-panel-title">Composite Defended Score — Full Breakdown</div>
+      <div class="score-grid">
+        ${idxs.map(x=>`<div class="score-col">
+          <div class="score-val" style="color:${x.c}">${x.v}</div>
+          <div class="score-track"><div class="score-fill" style="height:${x.v}%;background:${x.c};opacity:.75"></div></div>
+          <div class="score-lbl">${x.l} · ${x.w}</div>
+        </div>`).join('')}
+      </div>
+      <div class="cds-row">
+        <div class="cds-formula">AG ${ag} × 0.60 &nbsp;+&nbsp; PG ${pg} × 0.40</div>
+        <div style="display:flex;align-items:baseline;gap:.3rem">
+          <span style="font-size:11px;color:var(--text-dim)">CDS</span>
+          <span class="cds-val">${cds}</span>
+          <span class="cds-label">/100</span>
         </div>
-        <div class="ac-text">${ans}</div>
-        <div style="margin-top:.5rem;font-size:10px;color:var(--teal)">✦ ${evalData.strengths} · Growth: ${evalData.growth_edge}</div>
-      </div>`);
+      </div>`;
+    sp.classList.add('open');
   }
 
-  if(document.getElementById(inputId)) document.getElementById(inputId).value='';
+  // Answer card
+  const list=document.getElementById(listId);
+  if(list){list.insertAdjacentHTML('beforeend',`
+    <div class="answer-card ${cds>=85?'top':''}">
+      <div class="ac-header">
+        <div class="ac-name">You</div>
+        <div class="ac-tier-badge" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Questioner T2</div>
+        ${cds>=85?'<div class="top-badge">Top Answer</div>':''}
+        <div class="ac-cds">CDS ${cds}</div>
+      </div>
+      <div class="ac-body">${ans}</div>
+      <div class="ac-scores-row">EI ${ei.score} · RI ${ri.score} · RAI ${rai.score} · COI ${coi.score} · AI ${ai.score}</div>
+    </div>`);}
 
-  // Update score
-  const bar = document.getElementById('seekerBar');
-  const cur = parseInt(bar.style.width)||68;
-  bar.style.width = Math.min(cur+6,100)+'%';
-  document.getElementById('processedCount').textContent = parseInt(document.getElementById('processedCount').textContent)+1;
-
-  setAriaLog(`Answer published · Score ${evalData.composite}/100 · Tier Engine recalculated · Insight Narrator queued`);
-  setIndicator('aria','idle');setStatus('aria','Standby');
-
-  // Refresh insight
-  refreshInsight(evalData,ans);
+  if(document.getElementById(inpId))document.getElementById(inpId).value='';
+  document.getElementById('evtCount').textContent=parseInt(document.getElementById('evtCount').textContent)+1;
+  const bar=document.getElementById('seekerBar');
+  bar.style.width=Math.min(parseInt(bar.style.width)+4,100)+'%';
+  refreshInsight(cds);
 }
 
-async function refreshInsight(evalData, ans){
-  setIndicator('in','running');setStatus('in','Narrating...');
-  const insight = await callClaude(
-    `You are the Insight Narrator for Engageneering™. Write a personalised, warm 2-sentence insight for an educator based on their answer performance. Write in second person. Be specific and encouraging. Focus on their growth edge. Do not start with "Your answer" — vary the opening.`,
-    `Answer scored ${evalData.composite}/100. Strengths: ${evalData.strengths}. Growth edge: ${evalData.growth_edge}. Answer excerpt: "${ans.slice(0,100)}"`
+async function refreshInsight(cds){
+  setDot('in','run');setSt('in','Narrating...');
+  const r=await callClaude(
+    'You are the Insight Narrator for Engageneering™. Write a warm, specific 2-sentence insight for an educator based on their answer score. Second person. Vary the opening — never start with "Your answer". Focus on one specific growth edge.',
+    `CDS scored ${cds}/100.`
   );
-  if(insight && document.getElementById('insightBody')){
-    document.getElementById('insightBody').textContent = insight;
-  }
-  setIndicator('in','done');setStatus('in','Updated ✓');
-  setTimeout(()=>{setIndicator('in','idle');setStatus('in','Next: Sunday');},3000);
+  if(r){const el=document.getElementById('insightBody');if(el)el.textContent=r;}
+  setDot('in','done-p');setSt('in','Updated ✓');
+  setTimeout(()=>{setDot('in','idle');setSt('in','Next: Sunday');},3500);
 }
-
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 </script>
 </body>
 </html>
