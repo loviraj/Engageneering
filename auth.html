@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Engageneering™ — Join or Sign In</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='%23060c1a' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='26,2 50,15 26,30' fill='%23fff0a0' opacity='.97'/%3E%3Cpolygon points='50,15 50,45 26,30' fill='%23c88010' opacity='.95'/%3E%3Ccircle cx='26' cy='30' r='6' fill='%23f5d060'/%3E%3C/svg%3E"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:'EB Garamond',Georgia,serif;background:#060c1a;color:#b8cce8;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#2a4a7a}
+
+/* ── LAYOUT ── */
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+.left-panel{background:linear-gradient(145deg,#060c1a,#0a1628,#0f1e36);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;border-right:1px solid #1e3a6a;position:relative;overflow:hidden}
+.right-panel{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:2.5rem 2rem;overflow-y:auto}
+
+/* left decorative */
+.left-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(200,146,42,.06),transparent);pointer-events:none}
+.hex-bg{position:absolute;opacity:.04;font-size:120px;color:#c8922a;top:50%;left:50%;transform:translate(-50%,-50%);letter-spacing:-20px;white-space:nowrap}
+
+.brand-block{position:relative;text-align:center}
+.brand-name{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;letter-spacing:4px;color:#c8922a;margin-top:.8rem}
+.brand-tag{font-size:9px;letter-spacing:3px;color:#4a6a8a;text-transform:uppercase;margin-top:3px}
+.brand-divider{width:40px;height:1px;background:linear-gradient(to right,transparent,#c8922a,transparent);margin:1.4rem auto}
+.brand-credo{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3vw,36px);color:#e8f0fc;line-height:1.3;text-align:center;margin-bottom:1.4rem}
+.brand-credo em{color:#f0c040;font-style:italic}
+.brand-sub{font-size:14px;color:#7a9ab8;text-align:center;line-height:1.8;max-width:320px;margin:0 auto 2rem}
+
+.feature-list{display:flex;flex-direction:column;gap:.9rem;width:100%;max-width:320px}
+.feature{display:flex;align-items:flex-start;gap:.8rem;padding:.8rem 1rem;background:rgba(15,30,54,.6);border-radius:8px;border:1px solid #1e3a6a}
+.feature-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.feature-text{font-size:13px;color:#8a9ab8;line-height:1.55}
+.feature-text strong{color:#b8cce8;font-weight:500}
+
+/* ── RIGHT PANEL — ENTRY SELECTOR ── */
+.entry-header{text-align:center;margin-bottom:2rem;width:100%;max-width:480px}
+.entry-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:#e8f0fc;font-weight:600;margin-bottom:.4rem}
+.entry-sub{font-size:13px;color:#7a9ab8}
+
+.entry-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;width:100%;max-width:480px;margin-bottom:2rem}
+.entry-card{background:#0f1e36;border:1.5px solid #1e3a6a;border-radius:12px;padding:1.8rem 1.4rem;text-align:center;cursor:pointer;transition:all .25s}
+.entry-card:hover{border-color:#2a4a7a;transform:translateY(-3px)}
+.entry-card.selected{border-color:#c8922a;background:#0d1e38;box-shadow:0 0 0 1px rgba(200,146,42,.15)}
+.ec-icon{width:48px;height:48px;border-radius:12px;margin:0 auto .9rem;display:flex;align-items:center;justify-content:center}
+.ec-title{font-family:'Cormorant Garamond',serif;font-size:17px;color:#e8f0fc;font-weight:600;margin-bottom:.3rem}
+.ec-desc{font-size:12px;color:#7a9ab8;line-height:1.55}
+
+/* ── FORMS ── */
+.form-wrap{width:100%;max-width:480px;display:none}
+.form-wrap.active{display:block}
+
+.form-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:#e8f0fc;font-weight:600;margin-bottom:.3rem}
+.form-sub{font-size:13px;color:#7a9ab8;margin-bottom:1.4rem}
+.back-link{font-size:11px;color:#4a6a8a;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1.2rem;transition:color .2s;letter-spacing:.5px;text-transform:uppercase}
+.back-link:hover{color:#8a9ab8}
+
+/* field */
+.field{margin-bottom:.9rem}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+label{font-size:9px;letter-spacing:3px;color:#c8922a;text-transform:uppercase;display:block;margin-bottom:.35rem}
+input,select,textarea{width:100%;background:#081420;border:1px solid #1e3a6a;border-radius:6px;padding:11px 14px;color:#e8f0fc;font-family:'EB Garamond',serif;font-size:15px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:rgba(200,146,42,.6)}
+input::placeholder,textarea::placeholder{color:#3a5070}
+select option{background:#0f1e36;color:#e8f0fc}
+textarea{min-height:80px;resize:vertical;line-height:1.6}
+
+/* section labels inside form */
+.form-section{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#4a6a8a;padding:.4rem 0 .6rem;border-bottom:1px solid #1a2e50;margin:1.2rem 0 .9rem}
+
+/* interest tags */
+.interest-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
+.int-tag{font-size:11px;border:1px solid #1e3a6a;border-radius:20px;padding:4px 12px;cursor:pointer;color:#7a9ab8;transition:all .2s;background:#081420;user-select:none}
+.int-tag:hover{border-color:#2a4a7a;color:#b8cce8}
+.int-tag.sel{background:rgba(200,146,42,.12);border-color:#c8922a;color:#f0c040}
+
+/* role selector */
+.role-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-top:.4rem}
+.role-opt{border:1px solid #1e3a6a;border-radius:8px;padding:.8rem;cursor:pointer;transition:all .2s;background:#081420;text-align:center}
+.role-opt:hover{border-color:#2a4a7a}
+.role-opt.sel{border-color:#c8922a;background:rgba(200,146,42,.08)}
+.role-opt-name{font-size:13px;color:#b8cce8;font-weight:500;margin-bottom:2px}
+.role-opt-desc{font-size:10px;color:#4a6a8a;line-height:1.45}
+
+/* submit button */
+.submit-btn{width:100%;padding:13px;background:#c8922a;color:#040c18;border:none;border-radius:6px;font-size:12px;letter-spacing:2px;font-family:'Cormorant Garamond',serif;text-transform:uppercase;cursor:pointer;font-weight:700;transition:background .2s;margin-top:.5rem}
+.submit-btn:hover:not(:disabled){background:#f0c040}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+.err{font-size:12px;color:#f09595;margin-top:.5rem;min-height:16px;line-height:1.5}
+.ok{font-size:12px;color:#5dcaa5;margin-top:.5rem;line-height:1.5}
+
+/* progress dots */
+.progress{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.4rem}
+.prog-dot{width:28px;height:4px;border-radius:2px;background:#1e3a6a;transition:background .3s}
+.prog-dot.done{background:#c8922a}
+.prog-dot.active{background:rgba(200,146,42,.5)}
+
+/* step nav */
+.step-nav{display:flex;justify-content:space-between;margin-top:1rem;gap:.7rem}
+.step-back{flex:1;padding:11px;background:transparent;border:1px solid #1e3a6a;color:#7a9ab8;border-radius:6px;font-size:11px;letter-spacing:1.5px;font-family:'Cormorant Garamond',serif;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.step-back:hover{border-color:#2a4a7a;color:#b8cce8}
+.step-next{flex:2;padding:11px;background:#c8922a;color:#040c18;border:none;border-radius:6px;font-size:11px;letter-spacing:2px;font-family:'Cormorant Garamond',serif;text-transform:uppercase;cursor:pointer;font-weight:700;transition:background .2s}
+.step-next:hover{background:#f0c040}
+
+/* success */
+.success-box{text-align:center;padding:2rem 1rem;display:none}
+.success-box.show{display:block}
+
+@media(max-width:768px){
+  .page{grid-template-columns:1fr}
+  .left-panel{display:none}
+  .right-panel{padding:1.5rem 1.2rem}
+  .entry-cards{grid-template-columns:1fr 1fr}
+  .field-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- LEFT PANEL — brand -->
+  <div class="left-panel">
+    <div class="hex-bg">⬡ ⬡ ⬡</div>
+    <div class="brand-block">
+      <svg width="64" height="74" viewBox="0 0 52 60">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
+        <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
+        <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
+        <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
+        <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
+        <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
+        <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
+        <circle cx="26" cy="30" r="6.5" fill="#f5d060"/>
+        <circle cx="26" cy="30" r="3.7" fill="#0b1624"/>
+        <circle cx="26" cy="30" r="1.6" fill="#f5d060"/>
+      </svg>
+      <div class="brand-name">ENGAGENEERING™</div>
+      <div class="brand-tag">Crowd Learning Platform</div>
+      <div class="brand-divider"></div>
+      <div class="brand-credo">Stop Teaching.<br><em>Start Engaging.</em></div>
+      <div class="brand-sub">A global movement where great questions meet engaging answers — scored, ranked, and elevated by ARIA, our 12-agent autonomous intelligence.</div>
+    </div>
+    <div class="feature-list">
+      <div class="feature">
+        <div class="feature-icon" style="background:rgba(55,138,221,.15)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#85b7eb" stroke-width="1.2"/><path d="M7 4v3l2 1.5" stroke="#85b7eb" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="feature-text"><strong>ARIA scores every answer</strong> across 5 indices — Engagement, Retention, Applicability, Creativity, Accuracy</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon" style="background:rgba(29,158,117,.15)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10l-3.6 2 .7-4L1.2 5.2l4-.6z" stroke="#5dcaa5" stroke-width="1.2" fill="none"/></svg>
+        </div>
+        <div class="feature-text"><strong>Earn your tier</strong> from Curious to Engageneer™ — status based on contribution quality, not quantity</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon" style="background:rgba(127,119,221,.15)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="10" height="10" rx="2" stroke="#afa9ec" stroke-width="1.2"/><path d="M5 7h4M7 5v4" stroke="#afa9ec" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="feature-text"><strong>Weekly personalised insights</strong> from the Insight Narrator — your growth edge, your next step</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <!-- ENTRY SELECTOR -->
+    <div id="entrySelector" style="width:100%;max-width:480px">
+      <div class="entry-header">
+        <div class="entry-title">Welcome</div>
+        <div class="entry-sub">Choose how you want to continue</div>
+      </div>
+
+      <div class="entry-cards">
+        <div class="entry-card" onclick="showForm('login')">
+          <div class="ec-icon" style="background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.25)">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="7" r="4" stroke="#f0c040" stroke-width="1.4"/><path d="M3 19c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="#f0c040" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <div class="ec-title">Log In</div>
+          <div class="ec-desc">Already a member — enter your email and password to continue</div>
+        </div>
+        <div class="entry-card" onclick="showForm('signup')">
+          <div class="ec-icon" style="background:rgba(29,158,117,.12);border:1px solid rgba(29,158,117,.25)">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="9" cy="7" r="4" stroke="#5dcaa5" stroke-width="1.4"/><path d="M1 19c0-4.4 3.6-8 8-8" stroke="#5dcaa5" stroke-width="1.4" stroke-linecap="round"/><path d="M17 13v6M14 16h6" stroke="#5dcaa5" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <div class="ec-title">Join Free</div>
+          <div class="ec-desc">New here — create your profile and begin the movement</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;font-size:12px;color:#3a5070">
+        <a href="index.html" style="color:#3a5070;text-decoration:none">← Back to Engageneering.org</a>
+      </div>
+    </div>
+
+    <!-- ══ LOGIN FORM ══ -->
+    <div class="form-wrap" id="formLogin">
+      <div class="back-link" onclick="showEntry()">← Back</div>
+      <div class="form-title">Welcome back</div>
+      <div class="form-sub">Enter your email and password to continue</div>
+
+      <div class="field"><label>Email Address</label><input type="email" id="lEmail" placeholder="you@school.edu" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('lPwd').focus()"/></div>
+      <div class="field"><label>Password</label><input type="password" id="lPwd" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+
+      <button class="submit-btn" id="lBtn" onclick="doLogin()">Log In</button>
+      <div class="err" id="lErr"></div>
+
+      <div style="text-align:center;font-size:12px;color:#4a6a8a;margin-top:1.2rem">
+        Not a member yet? <span style="color:#c8922a;cursor:pointer" onclick="showForm('signup')">Join free</span>
+      </div>
+    </div>
+
+    <!-- ══ SIGNUP FORM — 3 steps ══ -->
+    <div class="form-wrap" id="formSignup">
+      <div class="back-link" onclick="showEntry()">← Back</div>
+
+      <!-- Progress -->
+      <div class="progress">
+        <div class="prog-dot active" id="pd1"></div>
+        <div class="prog-dot" id="pd2"></div>
+        <div class="prog-dot" id="pd3"></div>
+      </div>
+
+      <!-- STEP 1: Account -->
+      <div id="step1">
+        <div class="form-title">Create your account</div>
+        <div class="form-sub">Your login credentials — takes 30 seconds</div>
+
+        <div class="field-row">
+          <div class="field"><label>First Name</label><input type="text" id="sFirst" placeholder="First name" autocomplete="given-name"/></div>
+          <div class="field"><label>Last Name</label><input type="text" id="sLast" placeholder="Last name" autocomplete="family-name"/></div>
+        </div>
+        <div class="field"><label>Email Address</label><input type="email" id="sEmail" placeholder="you@school.edu" autocomplete="email"/></div>
+        <div class="field"><label>Password</label><input type="password" id="sPwd" placeholder="Minimum 8 characters" autocomplete="new-password"/></div>
+        <div class="field"><label>Confirm Password</label><input type="password" id="sPwd2" placeholder="Repeat your password" autocomplete="new-password" onkeydown="if(event.key==='Enter')nextStep(2)"/></div>
+        <div class="err" id="s1Err"></div>
+        <button class="step-next" onclick="nextStep(2)">Continue →</button>
+        <div style="text-align:center;font-size:12px;color:#4a6a8a;margin-top:1rem">Already a member? <span style="color:#c8922a;cursor:pointer" onclick="showForm('login')">Log in</span></div>
+      </div>
+
+      <!-- STEP 2: Profile -->
+      <div id="step2" style="display:none">
+        <div class="form-title">Your profile</div>
+        <div class="form-sub">Tell us about yourself so ARIA can personalise your experience</div>
+
+        <div class="field">
+          <label>Profession / Role</label>
+          <select id="sProfession">
+            <option value="">Select your role...</option>
+            <optgroup label="Education">
+              <option>Pre-school / Early Years Teacher</option>
+              <option>Primary School Teacher</option>
+              <option>Secondary / High School Teacher</option>
+              <option>University / College Lecturer</option>
+              <option>Special Education Teacher</option>
+              <option>School Principal / Head Teacher</option>
+              <option>Education Administrator</option>
+              <option>Education Researcher</option>
+              <option>Curriculum Designer</option>
+              <option>Instructional Designer</option>
+              <option>Education Consultant</option>
+            </optgroup>
+            <optgroup label="Corporate Learning">
+              <option>Corporate L&D Professional</option>
+              <option>Training Manager</option>
+              <option>HR Professional</option>
+              <option>Coach / Mentor</option>
+              <option>Organisational Development Specialist</option>
+            </optgroup>
+            <optgroup label="Student">
+              <option>School Student</option>
+              <option>Undergraduate Student</option>
+              <option>Postgraduate / PhD Student</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option>Parent / Home Educator</option>
+              <option>Ed-Tech Professional</option>
+              <option>Content Creator / YouTuber</option>
+              <option>Researcher / Academic</option>
+              <option>Other</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Country</label>
+            <select id="sCountry">
+              <option value="">Select country...</option>
+              <option>India</option><option>United States</option><option>United Kingdom</option>
+              <option>Australia</option><option>Canada</option><option>Singapore</option>
+              <option>UAE</option><option>South Africa</option><option>Nigeria</option>
+              <option>Kenya</option><option>Germany</option><option>France</option>
+              <option>Brazil</option><option>Philippines</option><option>New Zealand</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Years in Role</label>
+            <select id="sYears">
+              <option value="">Select...</option>
+              <option>Less than 1 year</option>
+              <option>1 – 3 years</option>
+              <option>4 – 7 years</option>
+              <option>8 – 15 years</option>
+              <option>More than 15 years</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Institution / Organisation (optional)</label>
+          <input type="text" id="sOrg" placeholder="School, university, or company name"/>
+        </div>
+
+        <div class="field">
+          <label>How did you hear about Engageneering™?</label>
+          <select id="sSource">
+            <option value="">Select...</option>
+            <option>YouTube</option><option>LinkedIn</option><option>Twitter / X</option>
+            <option>A colleague or friend</option><option>Google search</option>
+            <option>Conference or event</option><option>Newsletter or blog</option><option>Other</option>
+          </select>
+        </div>
+
+        <div class="err" id="s2Err"></div>
+        <div class="step-nav">
+          <button class="step-back" onclick="nextStep(1)">← Back</button>
+          <button class="step-next" onclick="nextStep(3)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Interests + Role -->
+      <div id="step3" style="display:none">
+        <div class="form-title">Your interests &amp; track</div>
+        <div class="form-sub">ARIA uses these to match questions and build your profile</div>
+
+        <div class="form-section">Choose your platform track</div>
+        <div class="role-grid">
+          <div class="role-opt sel" id="role-both" onclick="selectRole('both')">
+            <div class="role-opt-name" style="color:#f0c040">Seeker + Answerer</div>
+            <div class="role-opt-desc">Ask questions and give answers — the path to Engageneer™</div>
+          </div>
+          <div class="role-opt" id="role-seeker" onclick="selectRole('seeker')">
+            <div class="role-opt-name" style="color:#85b7eb">Seeker</div>
+            <div class="role-opt-desc">Primarily ask questions that spark great answers</div>
+          </div>
+          <div class="role-opt" id="role-answerer" onclick="selectRole('answerer')">
+            <div class="role-opt-name" style="color:#5dcaa5">Answerer</div>
+            <div class="role-opt-desc">Primarily illuminate questions with engaging answers</div>
+          </div>
+          <div class="role-opt" id="role-institution" onclick="selectRole('institution')">
+            <div class="role-opt-name" style="color:#afa9ec">Institution</div>
+            <div class="role-opt-desc">School, university, or corporate team account</div>
+          </div>
+        </div>
+
+        <div class="form-section" style="margin-top:1.4rem">Select your areas of expertise and interest</div>
+        <div class="interest-grid" id="interestGrid">
+          <!-- populated by JS -->
+        </div>
+
+        <div class="field" style="margin-top:1.2rem">
+          <label>What brings you to Engageneering™? (optional)</label>
+          <textarea id="sBio" placeholder="Briefly describe your learning challenge, teaching context, or what you hope to contribute..."></textarea>
+        </div>
+
+        <div class="err" id="s3Err"></div>
+        <div class="ok" id="s3Ok"></div>
+        <div class="step-nav">
+          <button class="step-back" onclick="nextStep(2)">← Back</button>
+          <button class="step-next" id="joinBtn" onclick="doSignup()">Join the Movement</button>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-box" id="successBox">
+        <svg width="64" height="74" viewBox="0 0 52 60" style="margin:0 auto 1.2rem;display:block">
+          <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
+          <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
+          <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
+          <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
+          <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
+          <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
+          <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
+          <circle cx="26" cy="30" r="6.5" fill="#f5d060"/>
+          <circle cx="26" cy="30" r="3.7" fill="#0b1624"/>
+          <circle cx="26" cy="30" r="1.6" fill="#f5d060"/>
+        </svg>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#f0c040;margin-bottom:.5rem;font-weight:600">Welcome to the Movement</div>
+        <div id="successTier" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);border-radius:20px;padding:.35rem 1.1rem;font-size:12px;color:#f0c040;margin-bottom:1rem;letter-spacing:.5px"></div>
+        <div id="successMsg" style="font-size:14px;color:#8a9ab8;line-height:1.8;margin-bottom:1.5rem;max-width:360px;margin-left:auto;margin-right:auto"></div>
+        <button class="submit-btn" onclick="window.location.href='platform.html'" style="max-width:280px;margin:0 auto;display:block">Enter the Platform →</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
+const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
+const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+
+// ── CHECK EXISTING SESSION ──
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) {
+    // Already logged in — go straight to platform
+    window.location.href = 'platform.html';
+  }
+});
+
+// ── STATE ──
+let selectedRole = 'both';
+let currentStep = 1;
+
+const INTERESTS = [
+  'Active Learning','Curiosity Design','Attention Science','Feedback Loops',
+  'Peer Learning','Assessment Reform','Classroom Management','Student Motivation',
+  'Project-Based Learning','Flipped Classroom','Blended Learning','Ed-Tech Tools',
+  'Critical Thinking','Socratic Method','Collaborative Learning','Game-Based Learning',
+  'Early Childhood Education','Special Education Needs','Higher Education Pedagogy',
+  'Corporate Training','Leadership Development','Coaching & Mentoring',
+  'STEM Education','Humanities & Arts','Language Learning','Mathematics Education',
+  'Science Communication','History & Social Studies','Physical Education',
+  'Mental Health & Wellbeing','Growth Mindset','Neuroscience of Learning',
+  'Educational Policy','Curriculum Design','Teacher Professional Development',
+  'Parent Engagement','Community Learning','Global Education','Inclusive Education',
+  'Digital Literacy','Artificial Intelligence in Education','Research Methods'
+];
+
+// Build interest grid
+const grid = document.getElementById('interestGrid');
+INTERESTS.forEach(i => {
+  const el = document.createElement('div');
+  el.className = 'int-tag';
+  el.textContent = i;
+  el.onclick = () => el.classList.toggle('sel');
+  grid.appendChild(el);
+});
+
+// ── NAVIGATION ──
+function showEntry() {
+  document.getElementById('entrySelector').style.display = 'block';
+  document.getElementById('formLogin').classList.remove('active');
+  document.getElementById('formSignup').classList.remove('active');
+}
+
+function showForm(type) {
+  document.getElementById('entrySelector').style.display = 'none';
+  document.getElementById('formLogin').classList.remove('active');
+  document.getElementById('formSignup').classList.remove('active');
+  document.getElementById('form' + (type === 'login' ? 'Login' : 'Signup')).classList.add('active');
+  if (type === 'signup') showStep(1);
+}
+
+function showStep(n) {
+  currentStep = n;
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('step' + i);
+    if (el) el.style.display = i === n ? 'block' : 'none';
+    const dot = document.getElementById('pd' + i);
+    if (dot) {
+      dot.className = 'prog-dot';
+      if (i < n) dot.classList.add('done');
+      else if (i === n) dot.classList.add('active');
+    }
+  });
+}
+
+function nextStep(n) {
+  // Validate current step before advancing
+  if (n > currentStep) {
+    if (currentStep === 1 && !validateStep1()) return;
+    if (currentStep === 2 && !validateStep2()) return;
+  }
+  showStep(n);
+}
+
+function selectRole(r) {
+  selectedRole = r;
+  ['both','seeker','answerer','institution'].forEach(k => {
+    document.getElementById('role-' + k).classList.toggle('sel', k === r);
+  });
+}
+
+// ── VALIDATION ──
+function validateStep1() {
+  const first = document.getElementById('sFirst').value.trim();
+  const last  = document.getElementById('sLast').value.trim();
+  const email = document.getElementById('sEmail').value.trim();
+  const pwd   = document.getElementById('sPwd').value;
+  const pwd2  = document.getElementById('sPwd2').value;
+  const err   = document.getElementById('s1Err');
+  err.textContent = '';
+  if (!first || !last) { err.textContent = 'Please enter your first and last name.'; return false; }
+  if (!email || !email.includes('@')) { err.textContent = 'Please enter a valid email address.'; return false; }
+  if (pwd.length < 8) { err.textContent = 'Password must be at least 8 characters.'; return false; }
+  if (pwd !== pwd2) { err.textContent = 'Passwords do not match.'; return false; }
+  return true;
+}
+
+function validateStep2() {
+  const prof = document.getElementById('sProfession').value;
+  const country = document.getElementById('sCountry').value;
+  const err = document.getElementById('s2Err');
+  err.textContent = '';
+  if (!prof) { err.textContent = 'Please select your profession or role.'; return false; }
+  if (!country) { err.textContent = 'Please select your country.'; return false; }
+  return true;
+}
+
+// ── LOGIN ──
+async function doLogin() {
+  const email = document.getElementById('lEmail').value.trim();
+  const pwd   = document.getElementById('lPwd').value;
+  const err   = document.getElementById('lErr');
+  const btn   = document.getElementById('lBtn');
+  err.textContent = '';
+  if (!email) { err.textContent = 'Please enter your email address.'; return; }
+  if (!pwd)   { err.textContent = 'Please enter your password.'; return; }
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+  try {
+    const { data, error } = await supa.auth.signInWithPassword({ email, password: pwd });
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        err.textContent = 'Email or password incorrect. Please check and try again, or join free if you are new.';
+      } else if (error.message.includes('Email not confirmed')) {
+        err.textContent = 'Please check your email and click the confirmation link before logging in.';
+      } else {
+        err.textContent = error.message;
+      }
+    } else if (data?.session) {
+      err.style.color = '#5dcaa5';
+      err.textContent = 'Signed in! Taking you to the platform...';
+      setTimeout(() => window.location.href = 'platform.html', 800);
+    }
+  } catch(e) {
+    err.textContent = 'Connection error. Please check your internet and try again.';
+  } finally {
+    btn.textContent = 'Log In'; btn.disabled = false;
+  }
+}
+
+// ── SIGNUP ──
+async function doSignup() {
+  if (!validateStep1()) { showStep(1); return; }
+  if (!validateStep2()) { showStep(2); return; }
+
+  const first    = document.getElementById('sFirst').value.trim();
+  const last     = document.getElementById('sLast').value.trim();
+  const email    = document.getElementById('sEmail').value.trim();
+  const pwd      = document.getElementById('sPwd').value;
+  const prof     = document.getElementById('sProfession').value;
+  const country  = document.getElementById('sCountry').value;
+  const years    = document.getElementById('sYears').value;
+  const org      = document.getElementById('sOrg').value.trim();
+  const source   = document.getElementById('sSource').value;
+  const bio      = document.getElementById('sBio').value.trim();
+  const tags     = [...document.querySelectorAll('.int-tag.sel')].map(t => t.textContent);
+  const err      = document.getElementById('s3Err');
+  const ok       = document.getElementById('s3Ok');
+  const btn      = document.getElementById('joinBtn');
+
+  err.textContent = ''; ok.textContent = '';
+  btn.textContent = 'Creating your account...'; btn.disabled = true;
+
+  try {
+    const fullName = `${first} ${last}`;
+    const { data, error } = await supa.auth.signUp({
+      email, password: pwd,
+      options: {
+        data: {
+          full_name: fullName,
+          profession: prof,
+          country,
+          years_in_role: years,
+          organisation: org,
+          source,
+          bio,
+          role: selectedRole,
+          expertise_tags: tags
+        },
+        emailRedirectTo: window.location.origin + '/platform.html'
+      }
+    });
+
+    if (error) {
+      if (error.message.includes('already registered')) {
+        err.textContent = 'This email is already registered. Please log in instead.';
+      } else {
+        err.textContent = error.message;
+      }
+      return;
+    }
+
+    // If session exists — email confirmation is off, create profile immediately
+    if (data?.session) {
+      const uid = data.session.user.id;
+      await createProfile(uid, fullName, data.session.user.user_metadata, tags);
+      showSuccess(fullName, selectedRole, true);
+      return;
+    }
+
+    // Email confirmation required
+    showSuccess(fullName, selectedRole, false);
+
+  } catch(e) {
+    err.textContent = 'Connection error. Please check your internet and try again.';
+  } finally {
+    btn.textContent = 'Join the Movement'; btn.disabled = false;
+  }
+}
+
+async function createProfile(uid, fullName, meta, tags) {
+  // Profile
+  await supa.from('profiles').upsert({
+    id: uid,
+    display_name: fullName,
+    status: 'active'
+  }, { onConflict: 'id' });
+
+  // Role with all collected data
+  await supa.from('profile_roles').upsert({
+    user_id: uid,
+    role: selectedRole,
+    seeker_tier: 1,
+    answerer_tier: 1,
+    pts_total: 0,
+    seeker_pts: 0,
+    answerer_pts: 0,
+    expertise_tags: tags
+  }, { onConflict: 'user_id' });
+}
+
+function showSuccess(name, role, loggedIn) {
+  // Hide all steps
+  [1,2,3].forEach(i => { const el = document.getElementById('step' + i); if(el) el.style.display='none'; });
+  document.getElementById('successBox').classList.add('show');
+  const TIER_LABELS = {
+    both: '✦ Curious · T1 · Seeker + Answerer Track',
+    seeker: '✦ Curious · T1 · Seeker Track',
+    answerer: '✦ Responder · T1 · Answerer Track',
+    institution: '✦ Institution Account · Active'
+  };
+  const MSGS = {
+    both: `${name}, both tracks are now active. ARIA has noted your expertise and will match questions to you from day one. Your first Insight Narrator report arrives Sunday.`,
+    seeker: `${name}, your Seeker profile is live. Ask your first question above and watch ARIA's Smart Matcher route it to the best answerers.`,
+    answerer: `${name}, your Answerer profile is live. ARIA will invite you to questions that match your declared expertise. Your CDS scoring begins with your first answer.`,
+    institution: `${name}, your institution account is active. Invite your team members and begin your collective Engageneering™ journey.`
+  };
+  document.getElementById('successTier').textContent = TIER_LABELS[role] || TIER_LABELS.both;
+  document.getElementById('successMsg').textContent = loggedIn
+    ? MSGS[role] || MSGS.both
+    : `Account created! Check your email at the address you registered with and click the confirmation link. Once confirmed, log in here to begin your journey.`;
+
+  if (!loggedIn) {
+    document.querySelector('#successBox .submit-btn').textContent = 'Go to Log In →';
+    document.querySelector('#successBox .submit-btn').onclick = () => showForm('login');
+  }
+}
+</script>
+</body>
+</html>

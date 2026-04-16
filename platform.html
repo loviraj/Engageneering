@@ -236,7 +236,7 @@ nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.6rem;h
 <body>
 
 <!-- ══ AUTH SCREEN ══ -->
-<div id="screenAuth" class="screen active">
+<div id="screenAuth" class="screen active" style="background:#060c1a">
   <div class="auth-wrap">
     <div class="auth-logo">
       <svg width="58" height="66" viewBox="0 0 52 60">
@@ -544,11 +544,16 @@ async function doOAuth(provider){
 // ══ SIGNOUT ══
 async function doSignout(){
   await supa.auth.signOut();
+  window.location.href='auth.html';
 }
 
 // ══ SESSION — central handler ══
 async function onSession(session){
-  if(!session){showScreen('screenAuth');U=null;P=null;R=null;return;}
+  if(!session){
+    // No session — redirect to auth page
+    window.location.href='auth.html';
+    return;
+  }
   U=session.user;
   diagEl.style.color='#5dcaa5';
   diagEl.textContent=`✓ Connected as ${U.email}`;
