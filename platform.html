@@ -1201,11 +1201,13 @@ async function loadLeaderboard() {
 
 // ── INIT ───────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  // Hard auth gate — show immediately, hide only when session confirmed
+  showPlatformGate();
   initAuth().then(() => {
-    // After session check — if still no user, show gate overlay
+    // If after 2.5s still no session, keep gate up
     setTimeout(() => {
       if (!currentUser) showPlatformGate();
-    }, 1200);
+    }, 2500);
   });
   loadLeaderboard();
   // Patch Ask button to require login
@@ -1303,8 +1305,45 @@ async function submitQuestion(){
   const tagCls=colMap[firstTag]||'tag-phil';
   const uid='q'+Date.now();
 
+  // Save question to Supabase
+  let dbQuestionId = null;
+  if(currentUser){
+    try{
+      const {data:savedQ,error:qErr} = await supa.from('questions').insert({
+        asker_id: currentUser.id,
+        text: q,
+        tags: tags.split(',').map(t=>t.trim()).filter(Boolean),
+        quality_score: qr.total,
+        gatekeeper_verdict: gk.verdict,
+        status: 'published',
+        matched_uids: [],
+        published_at: new Date().toISOString()
+      }).select().single();
+      if(!qErr && savedQ){
+        dbQuestionId = savedQ.id;
+        // Log to score_history
+        await supa.from('score_history').insert({
+          user_id: currentUser.id,
+          action_type: 'question',
+          ref_id: savedQ.id,
+          quality_score: qr.total,
+          pts_awarded: Math.round(qr.total * 0.5)
+        });
+        // Update pts
+        const {data:rData} = await supa.from('profile_roles').select('pts_total,seeker_pts').eq('user_id',currentUser.id).single();
+        if(rData){
+          await supa.from('profile_roles').update({
+            pts_total:(rData.pts_total||0)+Math.round(qr.total*0.5),
+            seeker_pts:(rData.seeker_pts||0)+Math.round(qr.total*0.5),
+            updated_at:new Date().toISOString()
+          }).eq('user_id',currentUser.id);
+        }
+      }
+    }catch(e){console.warn('Question save failed:',e.message);}
+  }
+
   document.getElementById('qFeed').insertAdjacentHTML('afterbegin',`
-    <div class="q-card featured new-in" id="${uid}">
+    <div class="q-card featured new-in" id="${uid}" data-question-id="${dbQuestionId||''}">
       <div class="q-meta">
         <div class="q-topic-tag ${tagCls}">${firstTag}</div>
         <div class="q-quality">Quality ${qr.total}</div>
@@ -1338,8 +1377,9 @@ async function submitQuestion(){
 }
 
 async function submitAnswer(inpId,listId,hintId,scoreId){
+  if(!currentUser){openAuth('signup');return;}
   const ans=document.getElementById(inpId)?.value?.trim();
-  if(!ans||ans.length<15){alert('Please write a more complete answer.');return;}
+  if(!ans||ans.length<15){alert('Please write a more complete answer — at least 15 characters.');return;}
   const qCard=document.getElementById(inpId)?.closest('.q-card');
   const q=qCard?.querySelector('.q-text')?.textContent||'this question';
 
@@ -1351,25 +1391,24 @@ async function submitAnswer(inpId,listId,hintId,scoreId){
   agents.forEach(a=>{setPip(a,'pulse');setDot(a,'run');setSt(a,'Scoring...')});
   setPip('arb','pulse');setDot('arb','run');setSt('arb','Waiting...');
 
-  const [eiR,riR,raiR,coiR,aiR,igR]=await Promise.all([
-    callClaude('You are the Engagement Indexer for Engageneering™. Score ONLY engagement quality (narrative pull, hooks, questions raised, energy). Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
-    callClaude('You are the Retention Indexer for Engageneering™. Score ONLY retention quality (memorable anchors, analogies, sticky phrases, structure). Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
-    callClaude('You are the Applicability Indexer for Engageneering™. Score ONLY real-life applicability (usable tomorrow, concrete steps, context fit, practicality). Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
-    callClaude('You are the Creativity Indexer for Engageneering™. Score ONLY creativity and originality (novel framing, unexpected connections, fresh perspective, metaphor quality). Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
-    callClaude('You are the Accuracy Verifier for Engageneering™. Score ONLY factual accuracy and logical coherence. Return ONLY JSON: {"score":N,"note":"one sentence"} 0-100.',`Q:"${q}"\nA:"${ans}"`),
-    callClaude('You are the Integrity Guard for Engageneering™. Check for plagiarism, hallucination, and bad faith. Return ONLY JSON: {"pass":true|false,"note":"one sentence"}.',`Answer:"${ans}"`)
+  // Run all 6 eval agents in parallel via Edge Function
+  const payload = {question:q, answer:ans};
+  let [ei,ri,rai,coi,ai,ig] = await Promise.all([
+    callAgent('engagement_indexer', payload),
+    callAgent('retention_indexer', payload),
+    callAgent('applicability_indexer', payload),
+    callAgent('creativity_indexer', payload),
+    callAgent('accuracy_verifier', payload),
+    callAgent('integrity_guard', payload)
   ]);
 
-  let ei={score:72,note:'Good engagement.'};let ri={score:68,note:'Reasonably memorable.'};
-  let rai={score:74,note:'Applicable with effort.'};let coi={score:65,note:'Some originality.'};
-  let ai={score:78,note:'Factually sound.'};let ig={pass:true,note:'No concerns.'};
-
-  try{ei=JSON.parse(eiR.replace(/```json|```/g,'').trim())}catch(e){}
-  try{ri=JSON.parse(riR.replace(/```json|```/g,'').trim())}catch(e){}
-  try{rai=JSON.parse(raiR.replace(/```json|```/g,'').trim())}catch(e){}
-  try{coi=JSON.parse(coiR.replace(/```json|```/g,'').trim())}catch(e){}
-  try{ai=JSON.parse(aiR.replace(/```json|```/g,'').trim())}catch(e){}
-  try{ig=JSON.parse(igR.replace(/```json|```/g,'').trim())}catch(e){}
+  // Apply fallbacks if edge function returns empty
+  if(!ei?.score) ei={score:72,note:'Good engagement.'};
+  if(!ri?.score) ri={score:68,note:'Reasonably memorable.'};
+  if(!rai?.score) rai={score:74,note:'Applicable with effort.'};
+  if(!coi?.score) coi={score:65,note:'Some originality.'};
+  if(!ai?.score) ai={score:78,note:'Factually sound.'};
+  if(ig?.pass===undefined) ig={pass:true,note:'No concerns.'};
 
   ['ei','ri','rai','coi','ai'].forEach(a=>{setDot(a,'done');setPip(a,'teal')});
   setSt('ei',`EI ${ei.score}`);setSt('ri',`RI ${ri.score}`);setSt('rai',`RAI ${rai.score}`);
@@ -1389,9 +1428,55 @@ async function submitAnswer(inpId,listId,hintId,scoreId){
 
   setDot('arb','done');setPip('arb','teal');setSt('arb',`CDS ${cds} issued`);
   setDot('te','run');setSt('te','Recalculating...');
+
+  // Save answer to Supabase — find question_id from card data attribute or use null
+  const qCard2 = document.getElementById(inpId)?.closest('.q-card');
+  const questionId = qCard2?.dataset?.questionId || null;
+  if(currentUser){
+    try {
+      const {data:savedAns, error:ansErr} = await supa.from('answers').insert({
+        question_id: questionId,
+        answerer_id: currentUser.id,
+        text: ans,
+        ei_score: ei.score, ri_score: ri.score, rai_score: rai.score,
+        coi_score: coi.score, ai_score: ai.score,
+        integrity_pass: ig.pass,
+        ag, pg, cds,
+        status: 'published',
+        scored_at: new Date().toISOString()
+      }).select().single();
+
+      if(!ansErr && savedAns){
+        // Log to score_history
+        await supa.from('score_history').insert({
+          user_id: currentUser.id,
+          action_type: 'answer',
+          ref_id: savedAns.id,
+          ei: ei.score, ri: ri.score, rai: rai.score,
+          coi: coi.score, ai: ai.score,
+          ag, pg, cds,
+          pts_awarded: Math.round(cds * 0.8)
+        });
+        // Update pts
+        const {data:roleData} = await supa.from('profile_roles').select('pts_total,answerer_pts').eq('user_id',currentUser.id).single();
+        if(roleData){
+          await supa.from('profile_roles').update({
+            pts_total: (roleData.pts_total||0) + Math.round(cds*0.8),
+            answerer_pts: (roleData.answerer_pts||0) + Math.round(cds*0.8),
+            updated_at: new Date().toISOString()
+          }).eq('user_id',currentUser.id);
+        }
+        console.log('Answer saved to DB:', savedAns.id);
+      } else {
+        console.warn('Answer save error:', ansErr?.message);
+      }
+    } catch(dbErr){
+      console.warn('DB save failed (non-critical):', dbErr.message);
+    }
+  }
+
   await sleep(450);
   setDot('te','done-p');setSt('te','Points awarded ✓');
-
   setLog(`CDS ${cds}/100 · AG ${ag} + PG ${pg} · Tier Engine updated · Insight Narrator queued`);
   setDot('aria','idle');setSt('aria','Standby');ariaOff();
 
