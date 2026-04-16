@@ -633,39 +633,111 @@ function setTopic(topic, btn) {
   loadFeed();
 }
 
-// ══ LOAD FEED FROM SUPABASE ══
+// ══ LOAD FEED FROM SUPABASE — FULLY PERSONALISED ══
 async function loadFeed() {
   const feed = document.getElementById('qFeed');
-  feed.innerHTML = '<div class="empty-feed"><div class="empty-feed-title">Loading...</div></div>';
+  feed.innerHTML = `<div class="empty-feed"><div class="empty-feed-title">Loading ${activeFilter==='mine'?'your questions':activeFilter==='answered'?'your answers':activeFilter==='matched'?'questions matched to you':'questions'}...</div></div>`;
 
   try {
-    let query = supa.from('questions')
-      .select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)')
-      .eq('status','published')
-      .order('created_at',{ascending:false})
-      .limit(30);
+    let questions = [];
+    const base = 'id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)';
 
-    if(activeTopic) query = query.contains('tags',[activeTopic]);
-    if(activeFilter==='mine' && currentUser) query = supa.from('questions').select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)').eq('asker_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
-    if(activeFilter==='featured') query = supa.from('questions').select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)').eq('status','published').gte('quality_score',80).order('quality_score',{ascending:false}).limit(20);
-    if(activeFilter==='matched' && currentUser) query = supa.from('questions').select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)').eq('status','published').contains('matched_uids',[currentUser.id]).order('created_at',{ascending:false}).limit(20);
-    if(activeFilter==='answered') query = supa.from('questions').select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)').eq('status','published').gt('answer_count',0).order('answer_count',{ascending:false}).limit(20);
+    if(activeFilter==='mine'){
+      // MY QUESTIONS — only questions this user asked
+      if(!currentUser){feed.innerHTML=emptyState('Sign in to see your questions','Your submitted questions will appear here.');return;}
+      const {data,error} = await supa.from('questions').select(base).eq('asker_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
+      if(error) throw error;
+      questions = data||[];
+      if(!questions.length){feed.innerHTML=emptyState('No questions yet','Ask your first question above and it will appear here.');return;}
 
-    const {data:questions, error} = await query;
+    } else if(activeFilter==='answered'){
+      // ANSWERED — questions the current user has answered, with their answers
+      if(!currentUser){feed.innerHTML=emptyState('Sign in to see your answers','Questions you have answered will appear here with your scores.');return;}
+      const {data:myAnswers} = await supa.from('answers').select('question_id,text,ei_score,ri_score,rai_score,coi_score,ai_score,ag,pg,cds,created_at').eq('answerer_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
+      if(!myAnswers||!myAnswers.length){feed.innerHTML=emptyState('No answers yet','Submit your first answer and your scoring history will appear here.');return;}
+      // Load the questions for those answers
+      const qIds = [...new Set((myAnswers).map(a=>a.question_id).filter(Boolean))];
+      if(qIds.length){
+        const {data:qs} = await supa.from('questions').select(base).in('id',qIds);
+        // Attach user's answer to each question
+        questions = (qs||[]).map(q=>({
+          ...q,
+          myAnswer: myAnswers.find(a=>a.question_id===q.id)
+        }));
+      }
+      // Also show answers to sample questions (no DB question_id)
+      const orphanAnswers = myAnswers.filter(a=>!a.question_id);
+      if(orphanAnswers.length && !questions.length){
+        feed.innerHTML = orphanAnswers.map(a=>`
+          <div class="q-card">
+            <div class="q-meta"><div class="q-tag tag-gen">Your Answer</div><div class="q-asker">${new Date(a.created_at).toLocaleDateString()}</div></div>
+            <div class="q-text" style="font-size:15px;color:var(--t2)">${a.text}</div>
+            ${renderInlineScore(a)}
+          </div>`).join('');
+        return;
+      }
+      if(!questions.length){feed.innerHTML=emptyState('No linked answers found','Your answers will appear here once you respond to published questions.');return;}
 
-    if(error) throw error;
+    } else if(activeFilter==='matched'){
+      // MATCHED — questions ARIA sent to this user
+      if(!currentUser){feed.innerHTML=emptyState('Sign in to see matched questions','ARIA personalises questions for you based on your expertise.');return;}
+      const {data,error} = await supa.from('questions').select(base).eq('status','published').contains('matched_uids',[currentUser.id]).order('created_at',{ascending:false}).limit(30);
+      if(error) throw error;
+      questions = data||[];
+      if(!questions.length){
+        // Fall back to tag-matched questions from user's expertise
+        const tags = currentRole?.expertise_tags||[];
+        if(tags.length){
+          const {data:tagged} = await supa.from('questions').select(base).eq('status','published').overlaps('tags',tags).order('created_at',{ascending:false}).limit(20);
+          questions = tagged||[];
+        }
+        if(!questions.length){feed.innerHTML=emptyState('No matched questions yet','As you use the platform, ARIA's Smart Matcher will route questions that fit your expertise directly to you.');return;}
+      }
 
-    if(!questions||questions.length===0){
-      // Show sample questions if DB is empty
-      feed.innerHTML = renderSampleQuestions();
-      return;
+    } else if(activeFilter==='featured'){
+      // FEATURED — high quality questions from the community
+      const {data,error} = await supa.from('questions').select(base).eq('status','published').gte('quality_score',80).order('quality_score',{ascending:false}).limit(20);
+      if(error) throw error;
+      questions = data||[];
+      if(!questions.length){
+        // Fall back to any published question
+        const {data:any} = await supa.from('questions').select(base).eq('status','published').order('created_at',{ascending:false}).limit(10);
+        questions = any||[];
+      }
+      if(!questions.length){feed.innerHTML=renderSampleQuestions();return;}
+
+    } else {
+      // ALL — community feed, optionally filtered by topic
+      let q = supa.from('questions').select(base).eq('status','published').order('created_at',{ascending:false}).limit(30);
+      if(activeTopic) q = q.contains('tags',[activeTopic]);
+      const {data,error} = await q;
+      if(error) throw error;
+      questions = data||[];
+      if(!questions.length){feed.innerHTML=renderSampleQuestions();return;}
     }
 
     feed.innerHTML = questions.map(q=>renderQCard(q)).join('');
-  } catch(err) {
-    console.warn('Feed load error:', err.message);
+
+  } catch(err){
+    console.warn('Feed load error:',err.message);
     feed.innerHTML = renderSampleQuestions();
   }
+}
+
+function emptyState(title,sub){
+  return `<div class="empty-feed"><div class="empty-feed-title">${title}</div><div class="empty-feed-sub">${sub}</div></div>`;
+}
+
+function renderInlineScore(a){
+  if(!a||!a.cds) return '';
+  return `<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.6rem;font-size:11px">
+    <span style="color:var(--t4)">EI ${a.ei_score||'—'}</span>
+    <span style="color:var(--t4)">RI ${a.ri_score||'—'}</span>
+    <span style="color:var(--t4)">RAI ${a.rai_score||'—'}</span>
+    <span style="color:var(--t4)">COI ${a.coi_score||'—'}</span>
+    <span style="color:var(--t4)">AI ${a.ai_score||'—'}</span>
+    <span style="color:var(--gold-b);font-weight:700">CDS ${a.cds}</span>
+  </div>`;
 }
 
 function renderSampleQuestions() {
@@ -718,6 +790,11 @@ function renderQCard(q, forceFeature=false) {
       </div>
       <div class="score-panel" id="${scoreId}"></div>
       <div class="answers-list" id="${listId}">
+        ${myAnswer?`<div class="answer-card top">
+          <div class="ac-hdr"><div class="ac-name">${currentProfile?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Your Answer</div><div class="top-badge">CDS ${myAnswer.cds}</div><div class="ac-cds">${new Date(myAnswer.created_at).toLocaleDateString()}</div></div>
+          <div class="ac-body">${myAnswer.text}</div>
+          ${renderInlineScore(myAnswer)}
+        </div>`:''}
         ${q.id?.startsWith('s1')?`<div class="answer-card top">
           <div class="ac-hdr"><div class="ac-name">Sarah K.</div><div class="ac-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator T3</div><div class="top-badge">Best Answer</div><div class="ac-cds">CDS 91</div></div>
           <div class="ac-body">Think of a variable like a labelled box. You write "score" on the outside, and whatever number is inside can change — but the box always answers to its name. That single image does more work than three paragraphs of definition.</div>

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="description" content="Engageneering™ — Stop Teaching. Start Engaging. A global movement and crowd learning platform redefining the philosophy of education through engineered engagement."/>
 <title>Engageneering™ — Engineer the Engagement</title>
@@ -1053,11 +1054,82 @@ function handleContact(){
   document.getElementById('cname').value='';document.getElementById('cemail').value='';document.getElementById('cmsg').value='';
 }
 
-/* ── AUTH MODAL ── */
-let currentTab='login',currentSignupStep=1,selectedRole='';
-function openModal(tab){currentTab=tab;document.getElementById('authModal').classList.add('open');switchTab(tab);document.body.style.overflow='hidden';}
-function closeModal(){document.getElementById('authModal').classList.remove('open');document.body.style.overflow='';resetSignup();}
-document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeModal();});
+// ── SUPABASE ──────────────────────────────────────────
+const SUPA_URL  = 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRicW5rY2pmdHhmYnh1anhzcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDE2OTgsImV4cCI6MjA5MTgxNzY5OH0.Y7R7MKo9mu5T4CMUAjAK1vMxnW_VqJKrieIi4MnCSeY';
+const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+
+let _user = null;
+const TIER_NAMES = {1:'Curious',2:'Questioner',3:'Challenger',4:'Pro Challenger',5:'Knowledge Architect'};
+
+// ── SESSION CHECK ON LOAD ────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const {data:{session}} = await supa.auth.getSession();
+  if(session) handleIndexSession(session.user);
+  supa.auth.onAuthStateChange((_,session)=>{
+    if(session) handleIndexSession(session.user);
+    else handleIndexSignout();
+  });
+});
+
+async function handleIndexSession(user) {
+  _user = user;
+  const {data:profile} = await supa.from('profiles').select('display_name,avatar_url').eq('id',user.id).single();
+  const {data:role} = await supa.from('profile_roles').select('seeker_tier,pts_total').eq('user_id',user.id).single();
+  updateIndexNav(profile,role);
+  closeModal();
+}
+
+function handleIndexSignout() {
+  _user = null;
+  updateIndexNav(null,null);
+}
+
+function updateIndexNav(profile, role) {
+  const navR = document.querySelector('.nav-right');
+  if(!navR) return;
+  if(profile && _user) {
+    const initials = (profile.display_name||'E').charAt(0).toUpperCase();
+    const tier = role ? TIER_NAMES[role.seeker_tier||1] : 'Curious';
+    const pts  = role?.pts_total||0;
+    navR.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.6rem;background:rgba(15,30,54,.8);border:1px solid #2a4a7a;border-radius:20px;padding:5px 14px 5px 6px">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(200,146,42,.2);border:1px solid rgba(200,146,42,.4);display:flex;align-items:center;justify-content:center;font-size:12px;color:#f0c040;font-weight:700">${initials}</div>
+        <div style="line-height:1.2">
+          <div style="font-size:12px;color:#e8f0fc">${profile.display_name||'Engageneer'}</div>
+          <div style="font-size:10px;color:#c8922a">${tier} · ${pts} pts</div>
+        </div>
+      </div>
+      <button onclick="window.location.href='platform.html'" style="background:var(--gold);color:var(--navy);padding:8px 20px;border-radius:4px;font-size:10px;letter-spacing:1.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .2s">Enter Platform</button>
+      <button onclick="doIndexSignout()" style="background:transparent;color:var(--steel);border:1px solid rgba(138,154,184,.3);padding:7px 14px;border-radius:4px;font-size:10px;letter-spacing:1px;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase">Sign Out</button>`;
+  } else {
+    navR.innerHTML = `
+      <button class="btn-nav-login" onclick="openModal('login')">Log In</button>
+      <button class="btn-nav-join" onclick="openModal('signup')">Join the Movement</button>`;
+  }
+}
+
+async function doIndexSignout(){
+  await supa.auth.signOut();
+}
+
+// ── AUTH MODAL ───────────────────────────────────────
+let currentTab='login', currentSignupStep=1, selectedRole='';
+
+function openModal(tab){
+  currentTab=tab;
+  document.getElementById('authModal').classList.add('open');
+  switchTab(tab);
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('authModal').classList.remove('open');
+  document.body.style.overflow='';
+  resetSignup();
+}
+document.getElementById('authModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('authModal'))closeModal();
+});
 
 function switchTab(tab){
   currentTab=tab;
@@ -1071,32 +1143,111 @@ function switchTab(tab){
 
 function showSignupStep(n){
   currentSignupStep=n;
-  ['signupStep1','signupStep2','signupStep3'].forEach((id,i)=>{document.getElementById(id).style.display=i===n-1?'block':'none';});
-  ['prog1','prog2','prog3'].forEach((id,i)=>{const el=document.getElementById(id);el.classList.toggle('done',i<n-1);el.classList.toggle('active',i===n-1);});
+  ['signupStep1','signupStep2','signupStep3'].forEach((id,i)=>{
+    document.getElementById(id).style.display=i===n-1?'block':'none';
+  });
+  ['prog1','prog2','prog3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.toggle('done',i<n-1);
+    el.classList.toggle('active',i===n-1);
+  });
 }
-function nextStep(n){showSignupStep(n);}
+function nextStep(n){
+  // Validate step 1 before proceeding
+  if(n===2 && currentSignupStep===1){
+    const email = document.getElementById('signupEmail')?.value?.trim();
+    const pwd   = document.getElementById('signupPwd')?.value;
+    const name  = document.getElementById('signupName')?.value?.trim();
+    if(!name||!email||!pwd){alert('Please fill in all fields.');return;}
+    if(pwd.length<8){alert('Password must be at least 8 characters.');return;}
+  }
+  showSignupStep(n);
+}
 
-function selectRole(card,role){selectedRole=role;document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');}
+function selectRole(card,role){
+  selectedRole=role;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
+  card.classList.add('sel');
+}
 function toggleExpTag(el){el.classList.toggle('sel');}
 
-function handleOAuth(provider){console.log('OAuth:',provider);}
-function handleLogin(){
-  const e=document.getElementById('loginEmail').value.trim();
-  if(!e){alert('Please enter your email.');return;}
-  closeModal();
+// ── OAUTH ────────────────────────────────────────────
+async function handleOAuth(provider){
+  const {error} = await supa.auth.signInWithOAuth({
+    provider,
+    options:{redirectTo: window.location.origin+'/platform.html'}
+  });
+  if(error) alert(error.message);
 }
 
-function completeSignup(){
+// ── EMAIL LOGIN ──────────────────────────────────────
+async function handleLogin(){
+  const email = document.getElementById('loginEmail')?.value?.trim();
+  const pwd   = document.getElementById('loginPwd')?.value;
+  if(!email||!pwd){alert('Please enter your email and password.');return;}
+  const btn = document.querySelector('#stepLogin .btn-gold, #stepLogin button[onclick*="handleLogin"]');
+  if(btn){btn.textContent='Signing in...';btn.disabled=true;}
+  const {data,error} = await supa.auth.signInWithPassword({email,password:pwd});
+  if(error){
+    alert(error.message==='Invalid login credentials'?'Email or password incorrect.':error.message);
+    if(btn){btn.textContent='Log In';btn.disabled=false;}
+    return;
+  }
+  if(data?.session) window.location.href='platform.html';
+}
+
+// ── EMAIL SIGNUP (step 3 completion) ────────────────
+async function completeSignup(){
+  const name  = document.getElementById('signupName')?.value?.trim();
+  const email = document.getElementById('signupEmail')?.value?.trim();
+  const pwd   = document.getElementById('signupPwd')?.value;
+  const role  = selectedRole||'both';
+  const tags  = [...document.querySelectorAll('.exp-tag.sel')].map(t=>t.textContent);
+
+  const btn = document.querySelector('#signupStep3 .btn-gold');
+  if(btn){btn.textContent='Creating account...';btn.disabled=true;}
+
+  const {data,error} = await supa.auth.signUp({
+    email, password:pwd,
+    options:{data:{full_name:name},emailRedirectTo:window.location.origin+'/platform.html'}
+  });
+
+  if(error){
+    alert(error.message);
+    if(btn){btn.textContent='Join the Movement';btn.disabled=false;}
+    return;
+  }
+
+  // If session returned (email confirm off) — create profile + role then go to platform
+  if(data?.session){
+    const uid = data.session.user.id;
+    await supa.from('profiles').upsert({id:uid,display_name:name,status:'active'},{onConflict:'id'});
+    await supa.from('profile_roles').upsert({
+      user_id:uid,role,seeker_tier:1,answerer_tier:1,
+      pts_total:0,expertise_tags:tags
+    },{onConflict:'user_id'});
+    window.location.href='platform.html';
+    return;
+  }
+
+  // Email confirmation required
   const roleLabels={questioner:'Curious · Tier 1 · Seeker Track',answerer:'Responder · Tier 1 · Answerer Track',both:'Curious · Tier 1 · Seeker + Answerer',institution:'Institution Account · Active'};
-  const msgs={questioner:'Your Seeker profile is live. ARIA has noted your expertise areas and will route matched questions to you from day one.',answerer:'Your Answerer profile is live. ARIA will invite you to questions that match your declared expertise. Your first Insight Narrator report arrives Sunday.',both:'Both tracks activated. You are on the path toward Engageneer™ — the rarest status in the community. ARIA is watching your growth.',institution:'Your institution account is active. Invite your team members to join under your account and begin the collective journey.'};
-  const role=selectedRole||'both';
+  const msgs={questioner:'Your Seeker profile is queued. Confirm your email to activate.',answerer:'Your Answerer profile is queued. Confirm your email to activate.',both:'Both tracks activated once you confirm your email. Check your inbox.',institution:'Institution account queued. Confirm your email to activate.'};
   document.getElementById('welcomeTier').textContent='✦ '+roleLabels[role];
   document.getElementById('welcomeMsg').textContent=msgs[role];
   document.getElementById('signupStep3').style.display='none';
   document.getElementById('modalSuccess').classList.add('show');
 }
 
-function resetSignup(){selectedRole='';showSignupStep(1);document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));document.querySelectorAll('.exp-tag').forEach(t=>t.classList.remove('sel'));document.getElementById('modalSuccess').classList.remove('show');document.getElementById('stepSignup').classList.remove('active');document.getElementById('stepLogin').classList.add('active');}
+function resetSignup(){
+  selectedRole='';
+  showSignupStep(1);
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('.exp-tag').forEach(t=>t.classList.remove('sel'));
+  document.getElementById('modalSuccess').classList.remove('show');
+  document.getElementById('stepSignup').classList.remove('active');
+  document.getElementById('stepLogin').classList.add('active');
+}
 </script>
 </body>
 </html>
