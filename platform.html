@@ -892,6 +892,18 @@ function resetModal(){
   recBlob=null;uploadFile=null;
   document.querySelectorAll('#submitModal .tag-chip').forEach(c=>c.classList.remove('on'));
   const pv=document.getElementById('uploadPreview');if(pv)pv.style.display='none';
+  // Clear recorder state
+  const s=document.getElementById('recStatus');
+  if(s){s.textContent='Click Start Recording to begin';s.style.color='';}
+  const t=document.getElementById('recTimer');
+  if(t){t.textContent='0:00';t.classList.remove('show','over');}
+  // Reset recorder UI
+  const rph=document.getElementById('recPlaceholder');if(rph)rph.style.display='flex';
+  const rv=document.getElementById('recVideo');if(rv){rv.style.display='none';rv.srcObject=null;}
+  const rpb=document.getElementById('recPlayback');if(rpb){rpb.style.display='none';rpb.src='';}
+  const rst=document.getElementById('recStart');if(rst)rst.style.display='flex';
+  const rsp=document.getElementById('recStop');if(rsp)rsp.style.display='none';
+  const rrt=document.getElementById('recRetake');if(rrt)rrt.style.display='none';
 }
 
 // ══ CONTENT TYPE ══
@@ -913,12 +925,17 @@ function switchVideoTab(t){
 
 // ══ RECORDER — QUESTION MODAL ══
 async function startRec(){
+  // Clear any previous error immediately
+  const statusEl=document.getElementById('recStatus');
+  if(statusEl){statusEl.textContent='Requesting camera access...';statusEl.style.color='';}
   try{
     mediaStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
     const v=document.getElementById('recVideo');
     v.srcObject=mediaStream;v.style.display='block';
     document.getElementById('recPlaceholder').style.display='none';
     document.getElementById('recPlayback').style.display='none';
+    // Clear status once camera is confirmed working
+    if(statusEl){statusEl.textContent='';statusEl.style.color='';}
     recChunks=[];recSeconds=0;
     mediaRecorder=new MediaRecorder(mediaStream,{mimeType:getSupportedMime()});
     mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
@@ -945,7 +962,25 @@ async function startRec(){
       if(recSeconds>=maxRecSeconds){timer.classList.add('over');stopRec();}
     },1000);
   }catch(e){
-    document.getElementById('recStatus').textContent='Camera access denied. Please allow camera access and try again.';
+    const s=document.getElementById('recStatus');
+    if(!s)return;
+    s.style.color='#f09595';
+    if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
+      s.textContent='Camera permission denied. Click the camera icon in your browser address bar and allow access, then try again.';
+    } else if(e.name==='NotFoundError'||e.name==='DevicesNotFoundError'){
+      s.textContent='No camera found. Please connect a camera and try again.';
+    } else if(e.name==='NotReadableError'||e.name==='TrackStartError'){
+      s.textContent='Camera is in use by another app. Close other apps using the camera and try again.';
+    } else if(e.name==='OverconstrainedError'){
+      // Retry without video constraint
+      try{
+        mediaStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+        s.textContent='';s.style.color='';
+        startRec();return;
+      }catch(e2){s.textContent='Camera error: '+e2.message;}
+    } else {
+      s.textContent='Camera error: '+e.message+'. Try refreshing the page.';
+    }
   }
 }
 
@@ -966,8 +1001,10 @@ function retakeRec(){
   document.getElementById('recStart').style.display='flex';
   document.getElementById('recStop').style.display='none';
   document.getElementById('recRetake').style.display='none';
-  document.getElementById('recStatus').textContent='Camera ready';
-  document.getElementById('recTimer').textContent='0:00';
+  const s=document.getElementById('recStatus');
+  if(s){s.textContent='Click Start Recording to begin';s.style.color='';}
+  const t=document.getElementById('recTimer');
+  if(t){t.textContent='0:00';t.classList.remove('show','over');}
 }
 
 // ══ UPLOAD — QUESTION MODAL ══
@@ -995,6 +1032,8 @@ function getSupportedMime(){
 const ansRecState={};
 
 async function startAnsRec(qid){
+  const statEl=document.getElementById(`av-status-${qid}`);
+  if(statEl){statEl.textContent='Requesting camera access...';statEl.style.color='';}
   try{
     const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
     ansRecState[qid]={stream,chunks:[],seconds:0,blob:null};
@@ -1028,7 +1067,18 @@ async function startAnsRec(qid){
       if(ansRecState[qid].seconds>=180)stopAnsRec(qid);
     },1000);
   }catch(e){
-    document.getElementById(`av-status-${qid}`).textContent='Camera access denied.';
+    const s=document.getElementById(`av-status-${qid}`);
+    if(!s)return;
+    s.style.color='#f09595';
+    if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
+      s.textContent='Camera permission denied. Click the camera icon in your browser address bar to allow access.';
+    } else if(e.name==='NotFoundError'){
+      s.textContent='No camera found. Please connect a camera and try again.';
+    } else if(e.name==='NotReadableError'){
+      s.textContent='Camera is in use by another app. Close other apps and try again.';
+    } else {
+      s.textContent='Camera error: '+e.message;
+    }
   }
 }
 
