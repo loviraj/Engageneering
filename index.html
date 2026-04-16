@@ -397,8 +397,8 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
     <li><a href="#contact">Contact</a></li>
   </ul>
   <div class="nav-right">
-    <button class="btn-nav-login" onclick="openModal('login')">Log In</button>
-    <button class="btn-nav-join" onclick="openModal('signup')">Join the Movement</button>
+    <button class="btn-nav-login" onclick="window.location.href='auth.html'">Log In</button>
+    <button class="btn-nav-join" onclick="window.location.href='auth.html'">Join the Movement</button>
   </div>
   <div class="hamburger" id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
 </nav>
@@ -411,8 +411,8 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   <a href="#documents" onclick="toggleMenu()">Documents</a>
   <a href="#contact" onclick="toggleMenu()">Contact</a>
   <div style="display:flex;gap:.7rem;margin-top:.5rem;flex-wrap:wrap">
-    <button class="btn-nav-login" onclick="toggleMenu();openModal('login')">Log In</button>
-    <button class="btn-nav-join" onclick="toggleMenu();openModal('signup')">Join the Movement</button>
+    <button class="btn-nav-login" onclick="window.location.href='auth.html'">Log In</button>
+    <button class="btn-nav-join" onclick="window.location.href='auth.html'">Join the Movement</button>
   </div>
 </div>
 
@@ -463,7 +463,7 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
     <p class="hero-sub">A global movement and crowd learning platform redefining what education is for — powered by ARIA, our 12-agent autonomous intelligence architecture.</p>
 
     <div class="hero-btns">
-      <button class="btn-gold" onclick="openModal('signup')">Join the Movement</button>
+      <button class="btn-gold" onclick="window.location.href='auth.html'">Join the Movement</button>
       <button class="btn-outline-d" onclick="go('aria')">Meet ARIA</button>
     </div>
   </div>
@@ -685,7 +685,7 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
       <div style="font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:.8rem;position:relative">Both tracks converge here</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3.5vw,36px);color:var(--white);font-weight:600;margin-bottom:.7rem;position:relative">⬡ &nbsp; Engageneer™ &nbsp; ⬡</div>
       <div style="font-size:14px;color:var(--steel);max-width:560px;margin:0 auto;line-height:1.8;position:relative">The rarest status. Awarded — never claimed. An Engageneer™ has both asked questions that changed how the community thinks, and given answers that changed how people learn. Elected by the community. Recognised publicly.</div>
-      <button class="btn-gold" style="margin-top:1.6rem;position:relative" onclick="openModal('signup')">Begin Your Journey</button>
+      <button class="btn-gold" style="margin-top:1.6rem;position:relative" onclick="window.location.href='auth.html'">Begin Your Journey</button>
     </div>
   </div>
 </section>
@@ -785,7 +785,7 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   <h2 class="cta-title reveal">Ready to <span>Ignite the Room?</span></h2>
   <p class="cta-sub reveal">Join thousands of educators who have stopped teaching and started engaging. Your transformation — and your tier journey — starts with one step.</p>
   <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative" class="reveal">
-    <button class="btn-gold" onclick="openModal('signup')">Join the Movement</button>
+    <button class="btn-gold" onclick="window.location.href='auth.html'">Join the Movement</button>
     <button class="btn-outline-d" onclick="window.location.href='platform.html'">Enter the Platform</button>
   </div>
 </div>
@@ -1056,7 +1056,7 @@ function handleContact(){
 
 // ── SUPABASE ──────────────────────────────────────────
 const SUPA_URL  = 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
-const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRicW5rY2pmdHhmYnh1anhzcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDE2OTgsImV4cCI6MjA5MTgxNzY5OH0.Y7R7MKo9mu5T4CMUAjAK1vMxnW_VqJKrieIi4MnCSeY';
+const SUPA_ANON = 'PASTE_YOUR_SUPABASE_ANON_KEY_HERE';
 const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
 
 let _user = null;
@@ -1104,8 +1104,8 @@ function updateIndexNav(profile, role) {
       <button onclick="doIndexSignout()" style="background:transparent;color:var(--steel);border:1px solid rgba(138,154,184,.3);padding:7px 14px;border-radius:4px;font-size:10px;letter-spacing:1px;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase">Sign Out</button>`;
   } else {
     navR.innerHTML = `
-      <button class="btn-nav-login" onclick="openModal('login')">Log In</button>
-      <button class="btn-nav-join" onclick="openModal('signup')">Join the Movement</button>`;
+      <button class="btn-nav-login" onclick="window.location.href='auth.html'">Log In</button>
+      <button class="btn-nav-join" onclick="window.location.href='auth.html'">Join the Movement</button>`;
   }
 }
 
@@ -1248,6 +1248,31 @@ function resetSignup(){
   document.getElementById('stepSignup').classList.remove('active');
   document.getElementById('stepLogin').classList.add('active');
 }
+
+// ── CHECK SESSION — show user in nav if already logged in ──
+(async()=>{
+  if(!window.supabase||!window.ENG_CONFIG?.SUPA_ANON)return;
+  try{
+    const sb=supabase.createClient(window.ENG_CONFIG.SUPA_URL,window.ENG_CONFIG.SUPA_ANON);
+    const{data:{session}}=await sb.auth.getSession();
+    if(!session)return;
+    const{data:profile}=await sb.from('profiles').select('display_name').eq('id',session.user.id).single();
+    const{data:role}=await sb.from('profile_roles').select('seeker_tier,pts_total').eq('user_id',session.user.id).single();
+    const navR=document.querySelector('.nav-right');
+    if(!navR)return;
+    const TIERS={1:'Curious',2:'Questioner',3:'Challenger',4:'Pro Challenger',5:'Knowledge Architect'};
+    const tier=TIERS[role?.seeker_tier||1];
+    const pts=role?.pts_total||0;
+    const init=(profile?.display_name||'E').charAt(0).toUpperCase();
+    navR.innerHTML=`
+      <div style="display:flex;align-items:center;gap:.6rem;background:rgba(15,30,54,.8);border:1px solid #2a4a7a;border-radius:20px;padding:5px 14px 5px 6px">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(200,146,42,.2);border:1px solid rgba(200,146,42,.4);display:flex;align-items:center;justify-content:center;font-size:11px;color:#f0c040;font-weight:700">${init}</div>
+        <div style="line-height:1.2"><div style="font-size:12px;color:#e8f0fc">${profile?.display_name||'Engageneer'}</div><div style="font-size:10px;color:#c8922a">${tier} · ${pts} pts</div></div>
+      </div>
+      <button onclick="window.location.href='platform.html'" style="background:var(--gold);color:var(--navy);padding:8px 20px;border-radius:4px;font-size:10px;letter-spacing:1.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase">Enter Platform</button>`;
+  }catch(e){}
+})();
+
 </script>
 </body>
 </html>
