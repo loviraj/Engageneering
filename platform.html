@@ -3,12 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Engageneering™ — Crowd Learning Platform</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='%23060c1a' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='26,2 50,15 26,30' fill='%23fff0a0' opacity='.97'/%3E%3Cpolygon points='50,15 50,45 26,30' fill='%23c88010' opacity='.95'/%3E%3Ccircle cx='26' cy='30' r='6' fill='%23f5d060'/%3E%3C/svg%3E"/>
+<title>Engageneering™ — Video + Text Learning Platform</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='%23060c1a' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='26,2 50,15 26,30' fill='%23fff0a0' opacity='.97'/%3E%3Ccircle cx='26' cy='30' r='6' fill='%23f5d060'/%3E%3C/svg%3E"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Centralised config — edit config.js to set your anon key -->
 <script src="config.js"></script>
 <style>
 :root{
@@ -24,69 +22,32 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'EB Garamond',Georgia,serif;background:var(--bg);color:var(--t2);font-size:16px;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
-::selection{background:rgba(200,146,42,.3);color:#fff}
-
-/* ══ SCREEN MANAGER ══ */
-.screen{display:none}
-.screen.active{display:flex;flex-direction:column;height:100vh}
-#screenAuth{align-items:center;justify-content:center;background:var(--bg);padding:1rem}
-#screenPlatform{flex-direction:column}
-
-/* ══ AUTH SCREEN ══ */
-.auth-wrap{width:100%;max-width:440px}
-.auth-logo{display:flex;flex-direction:column;align-items:center;margin-bottom:1.8rem}
-.auth-brand{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-top:.6rem}
-.auth-tagline{font-size:9px;letter-spacing:2.5px;color:var(--t4);text-transform:uppercase;margin-top:3px}
-.auth-card{background:var(--bg3);border:1px solid var(--bdr2);border-radius:14px;overflow:hidden}
-.auth-tabs{display:flex;border-bottom:1px solid var(--bdr)}
-.auth-tab{flex:1;padding:.9rem;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--t4);font-family:'Cormorant Garamond',serif;transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-1px}
-.auth-tab.on{color:var(--gb);border-bottom-color:var(--gold)}
-.auth-body{padding:1.8rem}
-.auth-panel{display:none}.auth-panel.on{display:block}
-.field{margin-bottom:.9rem}
-.field label{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:.4rem}
-.field input{width:100%;background:var(--bg4);border:1px solid var(--bdr2);border-radius:6px;padding:11px 14px;color:var(--t1);font-family:'EB Garamond',serif;font-size:15px;outline:none;transition:border-color .2s}
-.field input:focus{border-color:rgba(200,146,42,.6)}
-.field input::placeholder{color:var(--t4)}
-.oauth-btn{display:flex;align-items:center;gap:.8rem;width:100%;padding:.85rem 1.1rem;background:var(--bg4);border:1px solid var(--bdr2);border-radius:6px;cursor:pointer;font-size:13px;color:var(--t2);font-family:'EB Garamond',serif;transition:all .2s;margin-bottom:.6rem}
-.oauth-btn:hover{border-color:var(--gold);color:var(--t1)}
-.divider{display:flex;align-items:center;gap:.8rem;margin:.8rem 0;font-size:10px;color:var(--t4);letter-spacing:1px}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr)}
-.submit-btn{width:100%;padding:12px;background:var(--gold);color:#040c18;border:none;border-radius:6px;font-size:11px;letter-spacing:2px;font-family:'Cormorant Garamond',serif;text-transform:uppercase;cursor:pointer;font-weight:700;transition:background .2s;margin-top:.4rem}
-.submit-btn:hover:not(:disabled){background:var(--gb)}
-.submit-btn:disabled{opacity:.55;cursor:not-allowed}
-.auth-err{font-size:11px;color:#f09595;margin-top:.5rem;min-height:16px}
-.auth-ok{font-size:11px;color:var(--tlb);margin-top:.5rem}
-.switch-link{text-align:center;font-size:11px;color:var(--t4);margin-top:.9rem}
-.switch-link span{color:var(--gold);cursor:pointer}
-.switch-link span:hover{color:var(--gb)}
-.diag-box{background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:.8rem;margin-bottom:1rem;font-size:11px;font-family:monospace;color:var(--t3);line-height:1.7}
 
 /* ══ NAV ══ */
-nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.6rem;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.nav-left{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer}
+nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.6rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0}
+.nav-left{display:flex;align-items:center;gap:10px;cursor:pointer}
 .nav-brand{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;letter-spacing:3px;color:var(--gold)}
 .nav-sub{font-size:7.5px;letter-spacing:2.5px;color:var(--gold);opacity:.6;text-transform:uppercase;margin-top:1px}
 .nav-right{display:flex;align-items:center;gap:.8rem}
 .user-chip{display:flex;align-items:center;gap:.6rem;background:var(--bg3);border:1px solid var(--bdr2);border-radius:20px;padding:5px 14px 5px 6px}
 .user-av{width:28px;height:28px;border-radius:50%;background:rgba(200,146,42,.2);border:1px solid rgba(200,146,42,.4);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gb);font-weight:700;flex-shrink:0;overflow:hidden}
 .user-av img{width:100%;height:100%;object-fit:cover}
-.user-name{font-size:12px;color:var(--t1);font-weight:500;line-height:1.2}
-.user-tier{font-size:10px;color:var(--gold);letter-spacing:.5px}
+.user-info-name{font-size:12px;color:var(--t1);font-weight:500;line-height:1.2}
+.user-info-tier{font-size:10px;color:var(--gold);letter-spacing:.5px}
 .nbtn{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 16px;border-radius:4px;cursor:pointer;border:none;transition:all .2s}
 .nbtn-ghost{background:transparent;color:var(--t3);border:1px solid var(--bdr)}
 .nbtn-ghost:hover{border-color:var(--t3);color:var(--t2)}
 .nbtn-gold{background:var(--gold);color:#040c18;font-weight:700}
 .nbtn-gold:hover{background:var(--gb)}
 
-/* ══ PLATFORM LAYOUT ══ */
-.plat-body{display:grid;grid-template-columns:220px 1fr 270px;flex:1;overflow:hidden}
+/* ══ LAYOUT ══ */
+.layout{display:grid;grid-template-columns:220px 1fr 270px;height:calc(100vh - 60px);overflow:hidden}
 .sidebar{overflow-y:auto;background:var(--bg2);padding:1.4rem 1rem}
 .sb-l{border-right:1px solid var(--bdr)}
 .sb-r{border-left:1px solid var(--bdr)}
 .main-col{overflow-y:auto;background:var(--bg);display:flex;flex-direction:column}
 
-/* ══ SIDEBAR ITEMS ══ */
+/* ══ SIDEBAR ══ */
 .sb-sec{font-size:9px;letter-spacing:3.5px;text-transform:uppercase;color:var(--gold);font-weight:700;padding:.2rem .4rem .5rem;border-bottom:1px solid rgba(30,58,106,.4);margin-bottom:.3rem;margin-top:1.2rem}
 .sb-sec:first-child{margin-top:0}
 .sb-item{display:flex;align-items:center;gap:.7rem;padding:.55rem .7rem;border-radius:6px;cursor:pointer;font-size:13px;color:var(--t3);transition:all .2s;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent}
@@ -104,21 +65,167 @@ nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.6rem;h
 /* ══ FEED HEADER ══ */
 .feed-hdr{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;flex-shrink:0;position:sticky;top:0;z-index:10}
 .tabs{display:flex;gap:.3rem}
-.tab{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 16px;border-radius:20px;cursor:pointer;border:1px solid transparent;color:var(--t4);transition:all .2s;background:none}
+.tab{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border-radius:20px;cursor:pointer;border:1px solid transparent;color:var(--t4);transition:all .2s;background:none}
 .tab:hover{background:var(--bg3);color:var(--t2);border-color:var(--bdr)}
 .tab.on{background:var(--bg3);color:var(--gb);border-color:var(--bdr2)}
 
-/* ══ ASK BOX ══ */
-.ask-wrap{padding:1.2rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0}
-.ask-box{background:var(--bg3);border:1.5px solid var(--bdr2);border-radius:10px;overflow:hidden;transition:border-color .3s}
-.ask-box:focus-within{border-color:rgba(200,146,42,.5)}
-.ask-ta{width:100%;background:transparent;border:none;outline:none;padding:1rem 1.2rem;font-size:15px;color:var(--t1);font-family:'EB Garamond',serif;resize:none;min-height:70px;line-height:1.65}
-.ask-ta::placeholder{color:var(--t4)}
-.ask-foot{padding:.6rem 1rem;border-top:1px solid rgba(30,58,106,.4);display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
-.tags{display:flex;gap:.3rem;flex-wrap:wrap}
-.tc-chip{font-size:9.5px;background:transparent;border:1px solid var(--bdr);color:var(--t4);border-radius:20px;padding:2px 10px;cursor:pointer;transition:all .2s}
-.tc-chip:hover{border-color:var(--bdr2);color:var(--t3)}
-.tc-chip.on{background:rgba(200,146,42,.12);border-color:var(--gold);color:var(--gb)}
+/* ══ FORMAT TOGGLE ══ */
+.format-bar{padding:.8rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.8rem;flex-shrink:0}
+.fmt-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4)}
+.fmt-btns{display:flex;gap:.3rem}
+.fmt-btn{font-size:10px;letter-spacing:1px;padding:4px 14px;border-radius:20px;cursor:pointer;border:1px solid var(--bdr);color:var(--t4);background:transparent;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.fmt-btn:hover{border-color:var(--bdr2);color:var(--t3)}
+.fmt-btn.on{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gb)}
+.fmt-btn svg{width:12px;height:12px}
+
+/* ══ SUBMIT MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(4,8,18,.92);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg3);border:1px solid var(--bdr2);border-radius:14px;width:100%;max-width:580px;overflow:hidden;position:relative;max-height:90vh;overflow-y:auto}
+.modal-hdr{padding:1.2rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--t1);font-weight:600}
+.modal-close{background:none;border:none;color:var(--t4);font-size:22px;cursor:pointer;line-height:1;transition:color .2s}
+.modal-close:hover{color:var(--t1)}
+.modal-body{padding:1.5rem}
+
+/* ══ CONTENT TYPE SELECTOR ══ */
+.type-select{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:1.4rem}
+.type-opt{border:1px solid var(--bdr);border-radius:8px;padding:.9rem;cursor:pointer;text-align:center;transition:all .2s;background:var(--bg4)}
+.type-opt:hover{border-color:var(--bdr2)}
+.type-opt.on{border-color:var(--gold);background:rgba(200,146,42,.08)}
+.type-opt-icon{font-size:20px;margin-bottom:.4rem}
+.type-opt-name{font-size:12px;color:var(--t2);font-weight:500}
+.type-opt-desc{font-size:10px;color:var(--t4);margin-top:2px;line-height:1.4}
+
+/* ══ RECORDER ══ */
+.recorder-wrap{background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin-bottom:1rem}
+.rec-preview{width:100%;aspect-ratio:16/9;background:#000;position:relative;display:flex;align-items:center;justify-content:center}
+#recVideo,#recPlayback{width:100%;height:100%;object-fit:cover;display:none}
+.rec-placeholder{display:flex;flex-direction:column;align-items:center;gap:.6rem;color:var(--t4)}
+.rec-placeholder svg{width:48px;height:48px;opacity:.4}
+.rec-placeholder-txt{font-size:13px;letter-spacing:.5px}
+
+.rec-timer{position:absolute;top:.6rem;right:.7rem;background:rgba(0,0,0,.75);color:var(--gb);font-size:12px;font-family:monospace;padding:3px 8px;border-radius:4px;letter-spacing:1px;display:none}
+.rec-timer.show{display:block}
+.rec-timer.over{color:var(--rd)}
+.rec-limit{position:absolute;bottom:.6rem;left:.7rem;background:rgba(0,0,0,.6);color:var(--t4);font-size:10px;padding:2px 8px;border-radius:4px}
+
+.rec-controls{padding:.9rem 1rem;display:flex;align-items:center;gap:.7rem;border-top:1px solid var(--bdr);flex-wrap:wrap}
+.rec-btn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:7px 18px;border-radius:5px;cursor:pointer;border:none;font-family:'Cormorant Garamond',serif;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.rec-btn-start{background:var(--rd);color:#fff}
+.rec-btn-start:hover{background:#f06060}
+.rec-btn-stop{background:var(--gold);color:#040c18;font-weight:700}
+.rec-btn-stop:hover{background:var(--gb)}
+.rec-btn-retake{background:transparent;border:1px solid var(--bdr2)!important;color:var(--t3)}
+.rec-btn-retake:hover{border-color:var(--t3)!important;color:var(--t2)}
+.rec-status{font-size:11px;color:var(--t4);flex:1}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:var(--rd);display:inline-block;margin-right:4px;animation:blink 1s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ══ UPLOAD ZONE ══ */
+.upload-zone{border:2px dashed var(--bdr);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem;background:var(--bg4)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:rgba(200,146,42,.04)}
+.upload-zone-icon{font-size:36px;margin-bottom:.6rem;opacity:.5}
+.upload-zone-txt{font-size:14px;color:var(--t3);margin-bottom:.3rem}
+.upload-zone-sub{font-size:11px;color:var(--t4)}
+.upload-zone input{display:none}
+.upload-preview{background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin-bottom:1rem;display:none}
+.upload-preview video{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;display:block}
+.upload-info{padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--t4)}
+
+/* ══ FORM FIELDS ══ */
+.field{margin-bottom:.9rem}
+label{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:.35rem}
+input,select,textarea{width:100%;background:var(--bg4);border:1px solid var(--bdr2);border-radius:6px;padding:10px 14px;color:var(--t1);font-family:'EB Garamond',serif;font-size:14px;outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:rgba(200,146,42,.5)}
+input::placeholder,textarea::placeholder{color:var(--t4)}
+textarea{min-height:70px;resize:vertical;line-height:1.6}
+.tag-row{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.4rem}
+.tag-chip{font-size:9.5px;background:transparent;border:1px solid var(--bdr);color:var(--t4);border-radius:20px;padding:2px 10px;cursor:pointer;transition:all .2s}
+.tag-chip.on{background:rgba(200,146,42,.12);border-color:var(--gold);color:var(--gb)}
+.err{font-size:11px;color:#f09595;margin-top:.4rem;min-height:14px}
+
+/* ══ Q CARD — VIDEO AWARE ══ */
+.q-feed{padding:1.2rem 1.5rem;display:flex;flex-direction:column;gap:1rem}
+.qc{background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;transition:border-color .25s,transform .2s,box-shadow .2s}
+.qc:hover{border-color:var(--bdr2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.qc.feat{border-color:rgba(200,146,42,.4);background:#0d1e38}
+.qc.new{animation:si .35s ease}
+@keyframes si{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Video thumbnail in card */
+.qc-video-thumb{width:100%;aspect-ratio:16/9;background:#000;position:relative;cursor:pointer;overflow:hidden}
+.qc-video-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.qc-video-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.qc-video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.qc-video-thumb:hover .qc-video-overlay{background:rgba(0,0,0,.2)}
+.play-btn{width:54px;height:54px;border-radius:50%;background:rgba(200,146,42,.9);display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s}
+.qc-video-thumb:hover .play-btn{transform:scale(1.1);background:var(--gold)}
+.play-btn svg{width:22px;height:22px;margin-left:3px}
+.video-dur{position:absolute;bottom:.5rem;right:.6rem;background:rgba(0,0,0,.75);color:#fff;font-size:10px;font-family:monospace;padding:2px 6px;border-radius:3px}
+.content-badge{position:absolute;top:.5rem;left:.6rem;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:20px;font-weight:700}
+.badge-video{background:rgba(226,75,74,.85);color:#fff}
+.badge-text{background:rgba(55,138,221,.85);color:#fff}
+.badge-both{background:rgba(200,146,42,.85);color:#040c18}
+
+.qc-body{padding:1.2rem 1.4rem}
+.qm{display:flex;align-items:center;gap:.5rem;margin-bottom:.65rem;flex-wrap:wrap}
+.qtag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid;font-weight:700}
+.qscore{font-size:10px;padding:2px 9px;border-radius:20px;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.25);color:var(--gb)}
+.qasker{font-size:10px;color:var(--t4);margin-left:auto}
+.qtext{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--t1);line-height:1.45;margin-bottom:.85rem}
+.qfoot{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.qstat{font-size:11px;color:var(--t4)}
+.ans-btn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 16px;border-radius:5px;background:transparent;border:1px solid rgba(200,146,42,.4);color:var(--gold);cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all .2s;margin-left:auto}
+.ans-btn:hover{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gb)}
+
+/* ══ VIDEO ANSWER PLAYER ══ */
+.ans-panel{padding:1.2rem 1.4rem;border-top:1px solid var(--bdr);display:none}
+.ans-panel.open{display:block}
+.ap-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:700}
+
+/* Answer type toggle */
+.ans-type-toggle{display:flex;gap:.5rem;margin-bottom:1rem}
+.att{font-size:10px;letter-spacing:1px;padding:5px 16px;border-radius:20px;cursor:pointer;border:1px solid var(--bdr);color:var(--t4);background:transparent;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.att.on{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gb)}
+
+.ans-text-wrap{display:none}.ans-text-wrap.show{display:block}
+.ans-video-wrap{display:none}.ans-video-wrap.show{display:block}
+
+.ans-ta{width:100%;background:var(--bg);border:1px solid var(--bdr2);border-radius:6px;padding:.85rem 1rem;color:var(--t1);font-family:'EB Garamond',serif;font-size:14px;resize:vertical;min-height:96px;outline:none;transition:border-color .25s;line-height:1.7}
+.ans-ta:focus{border-color:rgba(200,146,42,.5)}
+.ans-ta::placeholder{color:var(--t4)}
+.ap-row{display:flex;align-items:center;gap:.7rem;margin-top:.7rem;flex-wrap:wrap}
+.ap-hint{font-size:10px;color:var(--t4);flex:1}
+
+/* ══ ANSWER CARD ══ */
+.al{display:flex;flex-direction:column;gap:.7rem;margin-top:.9rem}
+.ac{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;overflow:hidden}
+.ac.top{border-color:rgba(200,146,42,.35)}
+.ac-video{width:100%;aspect-ratio:16/9;background:#000;position:relative;cursor:pointer}
+.ac-video video{width:100%;height:100%;object-fit:cover;display:block}
+.ac-body-wrap{padding:.9rem 1.1rem}
+.ac-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}
+.ac-name{font-size:12px;color:var(--gb);font-weight:700}
+.ac-tier{font-size:8.5px;padding:1px 8px;border-radius:20px;border:1px solid}
+.ac-cds{font-size:10px;color:var(--gold);margin-left:auto}
+.top-badge{font-size:8.5px;color:var(--gb);background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);padding:1px 8px;border-radius:20px}
+.ac-text{font-size:14px;color:var(--t2);line-height:1.8}
+.ac-scores{font-size:10px;color:var(--t4);margin-top:.4rem}
+.ac-watch{font-size:10px;color:var(--tl);margin-top:.3rem}
+
+/* ══ SCORE PANEL ══ */
+.sc-panel{background:var(--bg4);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.2rem;margin-top:.8rem;display:none}
+.sc-panel.open{display:block}
+.sc-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem}
+.sc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:.9rem}
+.sc-col{display:flex;flex-direction:column;align-items:center;gap:.25rem}
+.sc-num{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;line-height:1}
+.sc-track{width:100%;height:44px;background:var(--bdr);border-radius:3px;position:relative;overflow:hidden}
+.sc-fill{position:absolute;bottom:0;left:0;right:0;border-radius:3px;transition:height .7s ease}
+.sc-lbl{font-size:8.5px;color:var(--t4);text-align:center;letter-spacing:.3px}
+.cds-row{border-top:1px solid var(--bdr);padding-top:.6rem;display:flex;align-items:center;justify-content:space-between}
+.cds-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gb);font-weight:600}
 
 /* ══ ARIA BAR ══ */
 .aria-bar{padding:.45rem 1.5rem;background:var(--bg4);border-bottom:1px solid rgba(30,58,106,.3);display:flex;align-items:center;gap:.8rem;flex-shrink:0}
@@ -136,69 +243,10 @@ nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.6rem;h
 .pip.pulse{background:var(--gold);border-color:var(--gb);animation:ap .9s ease infinite}
 .pip.red{background:var(--rd);border-color:#f09595}
 
-/* ══ Q FEED ══ */
-.q-feed{padding:1.2rem 1.5rem;display:flex;flex-direction:column;gap:.9rem}
-.empty{text-align:center;padding:3rem 1rem;color:var(--t4)}
-.empty h3{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--t3);margin-bottom:.5rem}
-.empty p{font-size:13px;line-height:1.7}
-
-/* ══ Q CARD ══ */
-.qc{background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;padding:1.2rem 1.4rem;transition:border-color .25s,transform .2s,box-shadow .2s}
-.qc:hover{border-color:var(--bdr2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
-.qc.feat{border-color:rgba(200,146,42,.4);background:#0d1e38}
-.qc.new{animation:si .35s ease}
-@keyframes si{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-.qm{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;flex-wrap:wrap}
-.qtag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid;font-weight:700}
-.qscore{font-size:10px;padding:2px 9px;border-radius:20px;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.25);color:var(--gb)}
-.qmatched{font-size:10px;color:var(--tlb)}
-.qasker{font-size:10px;color:var(--t4);margin-left:auto}
-.qtext{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--t1);line-height:1.45;margin-bottom:.85rem}
-.qfoot{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.qstat{font-size:11px;color:var(--t4)}
-.qbounty{font-size:11px;color:var(--am);font-weight:500}
-.ans-btn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 16px;border-radius:5px;background:transparent;border:1px solid rgba(200,146,42,.4);color:var(--gold);cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all .2s;margin-left:auto}
-.ans-btn:hover{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gb)}
-
-/* ══ ANSWER PANEL ══ */
-.ans-panel{margin-top:.9rem;background:var(--bg4);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.2rem;display:none}
-.ans-panel.open{display:block}
-.ap-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:700}
-.ans-ta{width:100%;background:var(--bg);border:1px solid var(--bdr2);border-radius:6px;padding:.85rem 1rem;color:var(--t1);font-family:'EB Garamond',serif;font-size:14px;resize:vertical;min-height:96px;outline:none;transition:border-color .25s;line-height:1.7}
-.ans-ta:focus{border-color:rgba(200,146,42,.5)}
-.ans-ta::placeholder{color:var(--t4)}
-.ap-row{display:flex;align-items:center;gap:.7rem;margin-top:.7rem;flex-wrap:wrap}
-.ap-hint{font-size:10px;color:var(--t4);flex:1}
-
-/* ══ SCORE PANEL ══ */
-.sc-panel{background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.2rem;margin-top:.8rem;display:none}
-.sc-panel.open{display:block}
-.sc-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem}
-.sc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:.9rem}
-.sc-col{display:flex;flex-direction:column;align-items:center;gap:.3rem}
-.sc-num{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;line-height:1}
-.sc-track{width:100%;height:48px;background:var(--bdr);border-radius:3px;position:relative;overflow:hidden}
-.sc-fill{position:absolute;bottom:0;left:0;right:0;border-radius:3px;transition:height .7s ease}
-.sc-lbl{font-size:9px;color:var(--t4);text-align:center;letter-spacing:.5px}
-.cds-row{border-top:1px solid var(--bdr);padding-top:.7rem;display:flex;align-items:center;justify-content:space-between}
-.cds-val{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gb);font-weight:600}
-
-/* ══ ANSWER CARDS ══ */
-.al{display:flex;flex-direction:column;gap:.6rem;margin-top:.9rem}
-.ac{background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:.9rem 1.1rem}
-.ac.top{border-color:rgba(200,146,42,.35);background:#0a1828}
-.ac-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}
-.ac-name{font-size:12px;color:var(--gb);font-weight:700;letter-spacing:.5px}
-.ac-tier{font-size:8.5px;padding:1px 8px;border-radius:20px;border:1px solid}
-.ac-cds{font-size:10px;color:var(--gold);margin-left:auto}
-.top-badge{font-size:8.5px;color:var(--gb);background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);padding:1px 8px;border-radius:20px}
-.ac-body{font-size:14px;color:var(--t2);line-height:1.8}
-.ac-scores{font-size:10px;color:var(--t4);margin-top:.4rem}
-
-/* ══ RIGHT SIDEBAR WIDGETS ══ */
+/* ══ RIGHT SIDEBAR ══ */
 .widget{margin-bottom:1.4rem}
 .wt{font-size:9px;letter-spacing:3.5px;text-transform:uppercase;color:var(--gold);font-weight:700;padding-bottom:.5rem;border-bottom:1px solid rgba(30,58,106,.4);margin-bottom:.6rem}
-.am-row{display:flex;align-items:center;gap:.6rem;padding:.4rem .4rem;border-radius:5px}
+.am-row{display:flex;align-items:center;gap:.6rem;padding:.4rem;border-radius:5px}
 .am-row:hover{background:rgba(55,138,221,.05)}
 .am-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1px solid;transition:all .35s}
 .am-dot.idle{background:#0a1828;border-color:var(--bdr)}
@@ -206,8 +254,7 @@ nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.6rem;h
 .am-dot.run{background:var(--gold);border-color:var(--gb);animation:ap .9s ease infinite}
 .am-dot.done{background:var(--tl);border-color:var(--tlb)}
 .am-dot.donep{background:var(--pu);border-color:var(--pub)}
-.am-dot.err{background:var(--rd);border-color:#f09595}
-.am-name{font-size:12px;color:var(--t2);flex:1}
+.am-name{font-size:11px;color:var(--t2);flex:1}
 .am-stat{font-size:10px;color:var(--t4);white-space:nowrap}
 .lb-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid rgba(30,58,106,.2)}
 .lb-row:last-child{border-bottom:none}
@@ -230,544 +277,567 @@ nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.6rem;h
 .tal{color:#4ecf96;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3)}
 .tgen{color:#8aa4be;background:rgba(122,154,184,.08);border-color:rgba(122,154,184,.2)}
 
-@media(max-width:1050px){.plat-body{grid-template-columns:1fr}.sb-l,.sb-r{display:none}}
+/* upload progress */
+.upload-progress{background:var(--bdr);border-radius:3px;height:4px;margin-top:.6rem;overflow:hidden;display:none}
+.upload-progress.show{display:block}
+.upload-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .3s;width:0%}
+
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.sb-l,.sb-r{display:none}}
 </style>
 </head>
 <body>
 
-<!-- ══ AUTH SCREEN ══ -->
-<div id="screenAuth" class="screen active" style="background:#060c1a">
-  <div class="auth-wrap">
-    <div class="auth-logo">
-      <svg width="58" height="66" viewBox="0 0 52 60">
-        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
-        <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
-        <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
-        <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
-        <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
-        <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
-        <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
-        <circle cx="26" cy="30" r="6" fill="#f5d060"/>
-        <circle cx="26" cy="30" r="3.4" fill="#0b1624"/>
-        <circle cx="26" cy="30" r="1.5" fill="#f5d060"/>
-      </svg>
-      <div class="auth-brand">ENGAGENEERING™</div>
-      <div class="auth-tagline">Crowd Learning Platform</div>
+<!-- ══ SUBMIT MODAL ══ -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modalTitle">Ask a Question</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
     </div>
+    <div class="modal-body">
 
-    <!-- Connection diagnostic -->
-    <div class="diag-box" id="diagBox">Checking connection to Supabase...</div>
-
-    <div class="auth-card">
-      <div class="auth-tabs">
-        <button class="auth-tab on" id="tabL" onclick="showTab('login')">Log In</button>
-        <button class="auth-tab" id="tabS" onclick="showTab('signup')">Join the Movement</button>
+      <!-- Content type selector -->
+      <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem">Format</div>
+      <div class="type-select" id="typeSelect">
+        <div class="type-opt on" id="type-text" onclick="setType('text')">
+          <div class="type-opt-icon">✍️</div>
+          <div class="type-opt-name">Text</div>
+          <div class="type-opt-desc">Write your question</div>
+        </div>
+        <div class="type-opt" id="type-video" onclick="setType('video')">
+          <div class="type-opt-icon">🎥</div>
+          <div class="type-opt-name">Video</div>
+          <div class="type-opt-desc">Record or upload</div>
+        </div>
+        <div class="type-opt" id="type-both" onclick="setType('both')">
+          <div class="type-opt-icon">⚡</div>
+          <div class="type-opt-name">Both</div>
+          <div class="type-opt-desc">Text + video</div>
+        </div>
       </div>
-      <div class="auth-body">
 
-        <!-- LOGIN -->
-        <div class="auth-panel on" id="panelLogin">
-          <button class="oauth-btn" onclick="doOAuth('google')">
-            <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-            Continue with Google
+      <!-- Text area -->
+      <div id="textSection">
+        <div class="field"><label id="textLabel">Your Question</label><textarea id="qText" rows="3" placeholder="Ask an engaging question — be specific, be curious, be genuine..."></textarea></div>
+      </div>
+
+      <!-- Video section -->
+      <div id="videoSection" style="display:none">
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem">Video — Record or Upload</div>
+
+        <!-- Tabs: Record / Upload -->
+        <div style="display:flex;gap:.4rem;margin-bottom:.9rem">
+          <button class="fmt-btn on" id="tabRecord" onclick="switchVideoTab('record')">
+            <svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
+            Record
           </button>
-          <div class="divider">or email</div>
-          <div class="field"><label>Email</label><input type="email" id="lEmail" placeholder="you@school.edu" onkeydown="if(event.key==='Enter')document.getElementById('lPwd').focus()"/></div>
-          <div class="field"><label>Password</label><input type="password" id="lPwd" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-          <button class="submit-btn" id="lBtn" onclick="doLogin()">Log In</button>
-          <div class="auth-err" id="lErr"></div>
-          <div class="switch-link">No account? <span onclick="showTab('signup')">Join free</span></div>
-        </div>
-
-        <!-- SIGNUP -->
-        <div class="auth-panel" id="panelSignup">
-          <button class="oauth-btn" onclick="doOAuth('google')">
-            <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-            Sign up with Google
+          <button class="fmt-btn" id="tabUpload" onclick="switchVideoTab('upload')">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M6 8V2M3 5l3-3 3 3M2 10h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            Upload
           </button>
-          <div class="divider">or email</div>
-          <div class="field"><label>Full Name</label><input type="text" id="sName" placeholder="Your name"/></div>
-          <div class="field"><label>Email</label><input type="email" id="sEmail" placeholder="you@school.edu"/></div>
-          <div class="field"><label>Password</label><input type="password" id="sPwd" placeholder="Min 8 characters" onkeydown="if(event.key==='Enter')doSignup()"/></div>
-          <button class="submit-btn" id="sBtn" onclick="doSignup()">Create Account — Free</button>
-          <div class="auth-err" id="sErr"></div>
-          <div class="auth-ok" id="sOk"></div>
-          <div class="switch-link">Already a member? <span onclick="showTab('login')">Log in</span></div>
         </div>
 
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ PLATFORM SCREEN ══ -->
-<div id="screenPlatform" class="screen">
-  <!-- NAV -->
-  <nav>
-    <div class="nav-left" onclick="window.location.href='index.html'">
-      <svg width="30" height="34" viewBox="0 0 52 60">
-        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.2"/>
-        <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
-        <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
-        <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
-        <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
-        <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
-        <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
-        <circle cx="26" cy="30" r="5.2" fill="#f5d060"/>
-        <circle cx="26" cy="30" r="2.9" fill="#0b1624"/>
-        <circle cx="26" cy="30" r="1.3" fill="#f5d060"/>
-      </svg>
-      <div><div class="nav-brand">ENGAGENEERING™</div><div class="nav-sub">Crowd Learning Platform</div></div>
-    </div>
-    <div class="nav-right" id="navRight"></div>
-  </nav>
-
-  <!-- BODY -->
-  <div class="plat-body">
-
-    <!-- LEFT SIDEBAR -->
-    <div class="sidebar sb-l">
-      <div class="sb-sec">Explore</div>
-      <button class="sb-item on" onclick="setView('all',this)"><div class="sb-pip" style="background:var(--gold);border:1px solid var(--gb)"></div>All Questions</button>
-      <button class="sb-item" onclick="setView('featured',this)"><div class="sb-pip" style="background:var(--bl);border:1px solid var(--blb)"></div>Featured</button>
-      <button class="sb-item" onclick="setView('matched',this)"><div class="sb-pip" style="background:var(--tl);border:1px solid var(--tlb)"></div>Matched for Me</button>
-      <button class="sb-item" onclick="setView('mine',this)"><div class="sb-pip" style="background:var(--am);border:1px solid var(--gb)"></div>My Questions</button>
-      <button class="sb-item" onclick="setView('answered',this)"><div class="sb-pip" style="background:var(--pu);border:1px solid var(--pub)"></div>My Answers</button>
-
-      <div class="sb-sec">Topics</div>
-      <button class="sb-item" onclick="setTopic('Programming',this)">Programming &amp; CS</button>
-      <button class="sb-item" onclick="setTopic('Science',this)">Science &amp; Physics</button>
-      <button class="sb-item" onclick="setTopic('History',this)">History &amp; Geography</button>
-      <button class="sb-item" onclick="setTopic('Mathematics',this)">Mathematics</button>
-      <button class="sb-item" onclick="setTopic('Philosophy',this)">Philosophy</button>
-      <button class="sb-item" onclick="setTopic('Active Learning',this)">Active Learning</button>
-      <button class="sb-item" onclick="setTopic('',this)">All Topics</button>
-
-      <div class="sb-sec">My Journey</div>
-      <div class="tc">
-        <div class="tc-lbl">Seeker Track</div>
-        <div class="tc-name" id="tcName">Curious</div>
-        <div class="tc-track" id="tcTrack">Tier 1 of 5</div>
-        <div class="tc-bg"><div class="tc-fill" id="tcFill" style="width:5%"></div></div>
-        <div class="tc-pts"><span id="tcPts">0 pts</span><span id="tcNext">500 to Questioner</span></div>
-      </div>
-    </div>
-
-    <!-- MAIN -->
-    <div class="main-col">
-      <div class="feed-hdr">
-        <div class="tabs">
-          <button class="tab on" id="tab-all" onclick="setView('all',this,true)">All</button>
-          <button class="tab" id="tab-featured" onclick="setView('featured',this,true)">Featured</button>
-          <button class="tab" id="tab-matched" onclick="setView('matched',this,true)">Matched</button>
-          <button class="tab" id="tab-mine" onclick="setView('mine',this,true)">My Questions</button>
-          <button class="tab" id="tab-answered" onclick="setView('answered',this,true)">My Answers</button>
-        </div>
-        <div style="font-size:11px;color:var(--t4)">ARIA processed <strong id="evtCount" style="color:var(--gb)">0</strong> events</div>
-      </div>
-
-      <div class="ask-wrap">
-        <div class="ask-box">
-          <textarea class="ask-ta" id="askInput" rows="3" placeholder="Ask an engaging question — programming, science, history, mathematics, philosophy, geography..."></textarea>
-          <div class="ask-foot">
-            <div class="tags">
-              <div class="tc-chip" onclick="this.classList.toggle('on')">Programming</div>
-              <div class="tc-chip" onclick="this.classList.toggle('on')">Science</div>
-              <div class="tc-chip" onclick="this.classList.toggle('on')">History</div>
-              <div class="tc-chip" onclick="this.classList.toggle('on')">Geography</div>
-              <div class="tc-chip" onclick="this.classList.toggle('on')">Mathematics</div>
-              <div class="tc-chip" onclick="this.classList.toggle('on')">Philosophy</div>
-              <div class="tc-chip" onclick="this.classList.toggle('on')">Active Learning</div>
+        <!-- RECORDER -->
+        <div id="recSection">
+          <div class="recorder-wrap">
+            <div class="rec-preview">
+              <video id="recVideo" autoplay muted playsinline></video>
+              <video id="recPlayback" controls playsinline></video>
+              <div id="recPlaceholder" class="rec-placeholder">
+                <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/><circle cx="24" cy="24" r="8" fill="currentColor" opacity=".3"/></svg>
+                <div class="rec-placeholder-txt">Click Start Recording to begin</div>
+              </div>
+              <div class="rec-timer" id="recTimer">0:00</div>
+              <div class="rec-limit" id="recLimit">Max 60s for questions · 180s for answers</div>
             </div>
-            <button class="nbtn nbtn-gold" onclick="submitQ()">Submit to ARIA</button>
+            <div class="rec-controls">
+              <button class="rec-btn rec-btn-start" id="recStart" onclick="startRec()">
+                <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>
+                Start Recording
+              </button>
+              <button class="rec-btn rec-btn-stop" id="recStop" style="display:none" onclick="stopRec()">
+                <svg width="10" height="10" viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="1" fill="currentColor"/></svg>
+                Stop
+              </button>
+              <button class="rec-btn rec-btn-retake" id="recRetake" style="display:none;border:1px solid" onclick="retakeRec()">Retake</button>
+              <div class="rec-status" id="recStatus">Camera ready</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UPLOADER -->
+        <div id="uploadSection" style="display:none">
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('videoFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+            <input type="file" id="videoFileInput" accept="video/*" onchange="handleFileSelect(event)"/>
+            <div class="upload-zone-icon">📁</div>
+            <div class="upload-zone-txt">Click to choose a video file</div>
+            <div class="upload-zone-sub">or drag and drop · MP4, MOV, WebM · Max 500MB</div>
+          </div>
+          <div class="upload-preview" id="uploadPreview">
+            <video id="uploadVideoEl" controls></video>
+            <div class="upload-info">
+              <span id="uploadFileName">No file selected</span>
+              <span id="uploadFileSize"></span>
+            </div>
+          </div>
+          <div class="upload-progress" id="uploadProgressWrap">
+            <div class="upload-bar" id="uploadBar"></div>
           </div>
         </div>
       </div>
 
-      <div class="aria-bar">
-        <div class="aria-dot" id="ariaDot"></div>
-        <div class="aria-msg" id="ariaMsg"><span class="kw">ARIA</span> · System ready · 12 agents online · Awaiting events</div>
-        <div class="pips">
-          <div class="pip blue" id="pp-gk" title="Gatekeeper"></div>
-          <div class="pip blue" id="pp-qr" title="Question Rater"></div>
-          <div class="pip blue" id="pp-sm" title="Smart Matcher"></div>
-          <div class="pip teal" id="pp-ei" title="Engagement Indexer"></div>
-          <div class="pip teal" id="pp-ri" title="Retention Indexer"></div>
-          <div class="pip teal" id="pp-rai" title="Applicability Indexer"></div>
-          <div class="pip teal" id="pp-coi" title="Creativity Indexer"></div>
-          <div class="pip teal" id="pp-ai" title="Accuracy Verifier"></div>
-          <div class="pip teal" id="pp-ig" title="Integrity Guard"></div>
-          <div class="pip teal" id="pp-arb" title="Grade Arbiter"></div>
-          <div class="pip purple" id="pp-te" title="Tier Engine"></div>
-          <div class="pip idle" id="pp-in" title="Insight Narrator"></div>
+      <!-- Tags + submit -->
+      <div class="field" style="margin-top:1rem">
+        <label>Topic Tags</label>
+        <div class="tag-row">
+          <div class="tag-chip" onclick="this.classList.toggle('on')">Programming</div>
+          <div class="tag-chip" onclick="this.classList.toggle('on')">Science</div>
+          <div class="tag-chip" onclick="this.classList.toggle('on')">History</div>
+          <div class="tag-chip" onclick="this.classList.toggle('on')">Geography</div>
+          <div class="tag-chip" onclick="this.classList.toggle('on')">Mathematics</div>
+          <div class="tag-chip" onclick="this.classList.toggle('on')">Philosophy</div>
+          <div class="tag-chip" onclick="this.classList.toggle('on')">Active Learning</div>
         </div>
       </div>
 
-      <div class="q-feed" id="qFeed">
-        <div class="empty"><h3>Loading...</h3></div>
+      <div class="err" id="modalErr"></div>
+      <button class="nbtn nbtn-gold" style="width:100%;padding:12px;font-size:11px;letter-spacing:2px;margin-top:.4rem" id="modalSubmitBtn" onclick="submitQuestion()">Submit to ARIA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-left" onclick="window.location.href='index.html'">
+    <svg width="30" height="34" viewBox="0 0 52 60">
+      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.2"/>
+      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
+      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
+      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
+      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
+      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
+      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
+      <circle cx="26" cy="30" r="5.2" fill="#f5d060"/>
+      <circle cx="26" cy="30" r="2.9" fill="#0b1624"/>
+      <circle cx="26" cy="30" r="1.3" fill="#f5d060"/>
+    </svg>
+    <div><div class="nav-brand">ENGAGENEERING™</div><div class="nav-sub">Crowd Learning Platform</div></div>
+  </div>
+  <div class="nav-right" id="navRight"></div>
+</nav>
+
+<div class="layout">
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar sb-l">
+    <div class="sb-sec">Explore</div>
+    <button class="sb-item on" onclick="setView('all',this)"><div class="sb-pip" style="background:var(--gold);border:1px solid var(--gb)"></div>All Questions</button>
+    <button class="sb-item" onclick="setView('video',this)"><div class="sb-pip" style="background:var(--rd);border:1px solid #f09595"></div>Video Only</button>
+    <button class="sb-item" onclick="setView('featured',this)"><div class="sb-pip" style="background:var(--bl);border:1px solid var(--blb)"></div>Featured</button>
+    <button class="sb-item" onclick="setView('matched',this)"><div class="sb-pip" style="background:var(--tl);border:1px solid var(--tlb)"></div>Matched for Me</button>
+    <button class="sb-item" onclick="setView('mine',this)"><div class="sb-pip" style="background:var(--am);border:1px solid var(--gb)"></div>My Questions</button>
+    <button class="sb-item" onclick="setView('answered',this)"><div class="sb-pip" style="background:var(--pu);border:1px solid var(--pub)"></div>My Answers</button>
+
+    <div class="sb-sec">Topics</div>
+    <button class="sb-item" onclick="setTopic('Programming',this)">Programming & CS</button>
+    <button class="sb-item" onclick="setTopic('Science',this)">Science & Physics</button>
+    <button class="sb-item" onclick="setTopic('History',this)">History & Geography</button>
+    <button class="sb-item" onclick="setTopic('Mathematics',this)">Mathematics</button>
+    <button class="sb-item" onclick="setTopic('Philosophy',this)">Philosophy</button>
+    <button class="sb-item" onclick="setTopic('Active Learning',this)">Active Learning</button>
+    <button class="sb-item" onclick="setTopic('',this)">All Topics</button>
+
+    <div class="sb-sec">My Journey</div>
+    <div class="tc">
+      <div class="tc-lbl">Seeker Track</div>
+      <div class="tc-name" id="tcName">Curious</div>
+      <div class="tc-track" id="tcTrack">Tier 1 of 5</div>
+      <div class="tc-bg"><div class="tc-fill" id="tcFill" style="width:5%"></div></div>
+      <div class="tc-pts"><span id="tcPts">0 pts</span><span id="tcNext">500 to Questioner</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-col">
+    <div class="feed-hdr">
+      <div class="tabs">
+        <button class="tab on" id="tab-all" onclick="setView('all',this,true)">All</button>
+        <button class="tab" id="tab-video" onclick="setView('video',this,true)">
+          <span style="display:flex;align-items:center;gap:.3rem">
+            <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#e24b4a"/></svg>
+            Video
+          </span>
+        </button>
+        <button class="tab" id="tab-featured" onclick="setView('featured',this,true)">Featured</button>
+        <button class="tab" id="tab-matched" onclick="setView('matched',this,true)">Matched</button>
+        <button class="tab" id="tab-mine" onclick="setView('mine',this,true)">My Questions</button>
+        <button class="tab" id="tab-answered" onclick="setView('answered',this,true)">My Answers</button>
+      </div>
+      <div style="font-size:11px;color:var(--t4)">ARIA processed <strong id="evtCount" style="color:var(--gb)">0</strong> events</div>
+    </div>
+
+    <!-- Format filter -->
+    <div class="format-bar">
+      <div class="fmt-label">Show</div>
+      <div class="fmt-btns">
+        <button class="fmt-btn on" id="fmt-all" onclick="setFormat('all',this)">All formats</button>
+        <button class="fmt-btn" id="fmt-video" onclick="setFormat('video',this)">
+          <svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
+          Video
+        </button>
+        <button class="fmt-btn" id="fmt-text" onclick="setFormat('text',this)">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h6M2 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Text
+        </button>
+      </div>
+      <button class="nbtn nbtn-gold" style="margin-left:auto;padding:6px 18px;font-size:10px" onclick="openModal('question')">+ Ask a Question</button>
+    </div>
+
+    <div class="aria-bar">
+      <div class="aria-dot" id="ariaDot"></div>
+      <div class="aria-msg" id="ariaMsg"><span class="kw">ARIA</span> · System ready · 12 agents online · Awaiting events</div>
+      <div class="pips">
+        <div class="pip blue" id="pp-gk" title="Gatekeeper"></div>
+        <div class="pip blue" id="pp-qr" title="Question Rater"></div>
+        <div class="pip blue" id="pp-sm" title="Smart Matcher"></div>
+        <div class="pip teal" id="pp-ei" title="Engagement Indexer"></div>
+        <div class="pip teal" id="pp-ri" title="Retention Indexer"></div>
+        <div class="pip teal" id="pp-rai" title="Applicability Indexer"></div>
+        <div class="pip teal" id="pp-coi" title="Creativity Indexer"></div>
+        <div class="pip teal" id="pp-ai" title="Accuracy Verifier"></div>
+        <div class="pip teal" id="pp-ig" title="Integrity Guard"></div>
+        <div class="pip teal" id="pp-arb" title="Grade Arbiter"></div>
+        <div class="pip purple" id="pp-te" title="Tier Engine"></div>
+        <div class="pip idle" id="pp-in" title="Insight Narrator"></div>
       </div>
     </div>
 
-    <!-- RIGHT SIDEBAR -->
-    <div class="sidebar sb-r">
-      <div class="widget">
-        <div class="wt">Agent Monitor</div>
-        <div class="am-row"><div class="am-dot idle" id="d-aria"></div><div class="am-name">ARIA Orchestrator</div><div class="am-stat" id="s-aria">Standby</div></div>
-        <div class="am-row"><div class="am-dot ready" id="d-gk"></div><div class="am-name">Gatekeeper</div><div class="am-stat" id="s-gk">Ready</div></div>
-        <div class="am-row"><div class="am-dot ready" id="d-qr"></div><div class="am-name">Question Rater</div><div class="am-stat" id="s-qr">Ready</div></div>
-        <div class="am-row"><div class="am-dot ready" id="d-sm"></div><div class="am-name">Smart Matcher</div><div class="am-stat" id="s-sm">Ready</div></div>
-        <div class="am-row"><div class="am-dot done" id="d-ei"></div><div class="am-name">Engagement Indexer</div><div class="am-stat" id="s-ei">Ready</div></div>
-        <div class="am-row"><div class="am-dot done" id="d-ri"></div><div class="am-name">Retention Indexer</div><div class="am-stat" id="s-ri">Ready</div></div>
-        <div class="am-row"><div class="am-dot done" id="d-rai"></div><div class="am-name">Applicability Indexer</div><div class="am-stat" id="s-rai">Ready</div></div>
-        <div class="am-row"><div class="am-dot done" id="d-coi"></div><div class="am-name">Creativity Indexer</div><div class="am-stat" id="s-coi">Ready</div></div>
-        <div class="am-row"><div class="am-dot done" id="d-ai"></div><div class="am-name">Accuracy Verifier</div><div class="am-stat" id="s-ai">Ready</div></div>
-        <div class="am-row"><div class="am-dot done" id="d-ig"></div><div class="am-name">Integrity Guard</div><div class="am-stat" id="s-ig">0 flags</div></div>
-        <div class="am-row"><div class="am-dot done" id="d-arb"></div><div class="am-name">Grade Arbiter</div><div class="am-stat" id="s-arb">Ready</div></div>
-        <div class="am-row"><div class="am-dot donep" id="d-te"></div><div class="am-name">Tier Engine</div><div class="am-stat" id="s-te">Active</div></div>
-        <div class="am-row"><div class="am-dot idle" id="d-in"></div><div class="am-name">Insight Narrator</div><div class="am-stat" id="s-in">Next: Sunday</div></div>
+    <div class="q-feed" id="qFeed">
+      <div style="text-align:center;padding:3rem;color:var(--t4)">Loading...</div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar sb-r">
+    <div class="widget">
+      <div class="wt">Agent Monitor</div>
+      <div class="am-row"><div class="am-dot idle" id="d-aria"></div><div class="am-name">ARIA Orchestrator</div><div class="am-stat" id="s-aria">Standby</div></div>
+      <div class="am-row"><div class="am-dot ready" id="d-gk"></div><div class="am-name">Gatekeeper</div><div class="am-stat" id="s-gk">Ready</div></div>
+      <div class="am-row"><div class="am-dot ready" id="d-qr"></div><div class="am-name">Question Rater</div><div class="am-stat" id="s-qr">Ready</div></div>
+      <div class="am-row"><div class="am-dot ready" id="d-sm"></div><div class="am-name">Smart Matcher</div><div class="am-stat" id="s-sm">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ei"></div><div class="am-name">Engagement Indexer</div><div class="am-stat" id="s-ei">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ri"></div><div class="am-name">Retention Indexer</div><div class="am-stat" id="s-ri">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-rai"></div><div class="am-name">Applicability Indexer</div><div class="am-stat" id="s-rai">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-coi"></div><div class="am-name">Creativity Indexer</div><div class="am-stat" id="s-coi">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ai"></div><div class="am-name">Accuracy Verifier</div><div class="am-stat" id="s-ai">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ig"></div><div class="am-name">Integrity Guard</div><div class="am-stat" id="s-ig">0 flags</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-arb"></div><div class="am-name">Grade Arbiter</div><div class="am-stat" id="s-arb">Ready</div></div>
+      <div class="am-row"><div class="am-dot donep" id="d-te"></div><div class="am-name">Tier Engine</div><div class="am-stat" id="s-te">Active</div></div>
+      <div class="am-row"><div class="am-dot idle" id="d-in"></div><div class="am-name">Insight Narrator</div><div class="am-stat" id="s-in">Next: Sunday</div></div>
+    </div>
+    <div class="widget">
+      <div class="wt">Top This Week</div>
+      <div id="lbRows"><div style="font-size:11px;color:var(--t4)">Loading...</div></div>
+    </div>
+    <div class="widget">
+      <div class="wt">Your Weekly Insight</div>
+      <div class="insight-box">
+        <div class="insight-body" id="insightBody">Submit your first video or text answer to receive your personalised weekly insight.</div>
+        <div class="insight-meta">Agent 12 · Insight Narrator</div>
       </div>
-      <div class="widget">
-        <div class="wt">Top This Week</div>
-        <div id="lbRows"><div class="lb-row"><div class="lb-name" style="color:var(--t4)">Loading...</div></div></div>
-      </div>
-      <div class="widget">
-        <div class="wt">Your Weekly Insight</div>
-        <div class="insight-box"><div class="insight-body" id="insightBody">Submit your first answer to receive your personalised weekly insight.</div><div class="insight-meta" id="insightMeta">Agent 12 · Insight Narrator</div></div>
-      </div>
-      <div class="widget">
-        <div class="wt">Activity</div>
-        <div id="notifArea"><div class="notif-card" style="border-color:var(--gold)"><span style="color:var(--gb);font-weight:700">Welcome</span> to Engageneering™. Ask or answer a question to begin.</div></div>
+    </div>
+    <div class="widget">
+      <div class="wt">Activity</div>
+      <div id="notifArea">
+        <div class="notif-card" style="border-color:var(--gold)"><span style="color:var(--gb);font-weight:700">New</span> Video Q&A is live. Record or upload your first video question or answer.</div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ══ CONFIG — read from config.js ══
+// ══ CONFIG ══
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
-
-// ══ DIAGNOSTIC — show connection status ══
-const diagEl = document.getElementById('diagBox');
-if(!SUPA_ANON || SUPA_ANON==='PASTE_YOUR_ANON_KEY_HERE'){
-  diagEl.style.color='#f09595';
-  diagEl.textContent='⚠ config.js not found or anon key not set. Open config.js and paste your Supabase anon key.';
-} else {
-  diagEl.style.color='#5dcaa5';
-  diagEl.textContent='✓ Config loaded · Connecting to Supabase...';
-}
-
-// ══ SUPABASE CLIENT ══
 const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
 
 // ══ STATE ══
-let U=null, P=null, R=null;
-let view='all', topic='';
+let U=null,P=null,R=null;
+let view='all',topic='',fmt='all';
+let modalMode='question';  // 'question' or 'answer'
+let modalAnswerFor=null;   // question id when answering
+let contentType='text';    // 'text','video','both'
+let videoTab='record';     // 'record' or 'upload'
+
+// Recorder state
+let mediaStream=null,mediaRecorder=null,recChunks=[],recBlob=null,recInterval=null,recSeconds=0;
+let maxRecSeconds=60;
+
+// Upload state
+let uploadFile=null;
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const STIERS={1:'Curious',2:'Questioner',3:'Challenger',4:'Pro Challenger',5:'Knowledge Architect'};
 const ATIERS={1:'Responder',2:'Explainer',3:'Illuminator',4:'Teacher',5:'Master Teacher'};
 const TPTS=[0,500,1200,2500,5000];
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const TAGCLS={Programming:'tp',Science:'ts',History:'th',Geography:'tg',Mathematics:'tm',Philosophy:'tph','Active Learning':'tal'};
+function tc(t){return TAGCLS[t]||'tgen';}
 
-// ══ SCREEN SWITCH ══
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ══ AUTH TAB ══
-function showTab(t){
-  document.getElementById('tabL').classList.toggle('on',t==='login');
-  document.getElementById('tabS').classList.toggle('on',t==='signup');
-  document.getElementById('panelLogin').classList.toggle('on',t==='login');
-  document.getElementById('panelSignup').classList.toggle('on',t==='signup');
-  document.getElementById('lErr').textContent='';
-  document.getElementById('sErr').textContent='';
-  document.getElementById('sOk').textContent='';
-}
-
-// ══ LOGIN ══
-async function doLogin(){
-  const email=document.getElementById('lEmail').value.trim();
-  const pwd=document.getElementById('lPwd').value;
-  const err=document.getElementById('lErr');
-  const btn=document.getElementById('lBtn');
-  err.textContent='';
-  if(!email||!pwd){err.textContent='Please enter email and password.';return;}
-  btn.textContent='Signing in...';btn.disabled=true;
-  try{
-    const {data,error}=await supa.auth.signInWithPassword({email,password:pwd});
-    if(error){
-      err.textContent=error.message==='Invalid login credentials'?'Email or password incorrect — try signing up if you are new.':error.message;
-    }
-    // onAuthStateChange handles the rest
-  }catch(e){err.textContent='Connection failed. Check your internet connection.';}
-  finally{btn.textContent='Log In';btn.disabled=false;}
-}
-
-// ══ SIGNUP ══
-async function doSignup(){
-  const name=document.getElementById('sName').value.trim();
-  const email=document.getElementById('sEmail').value.trim();
-  const pwd=document.getElementById('sPwd').value;
-  const err=document.getElementById('sErr');
-  const ok=document.getElementById('sOk');
-  const btn=document.getElementById('sBtn');
-  err.textContent='';ok.textContent='';
-  if(!name||!email||!pwd){err.textContent='All fields are required.';return;}
-  if(pwd.length<8){err.textContent='Password must be at least 8 characters.';return;}
-  btn.textContent='Creating account...';btn.disabled=true;
-  try{
-    const {data,error}=await supa.auth.signUp({
-      email,password:pwd,
-      options:{data:{full_name:name},emailRedirectTo:window.location.href}
-    });
-    if(error){err.textContent=error.message;return;}
-    if(data?.session){
-      // Logged in immediately (email confirm disabled) — onAuthStateChange fires
-      ok.textContent='Account created! Taking you to the platform...';
-    } else {
-      ok.textContent='Account created! Check your email for a confirmation link, then log in here.';
-    }
-  }catch(e){err.textContent='Connection failed. Check your internet connection.';}
-  finally{btn.textContent='Create Account — Free';btn.disabled=false;}
-}
-
-// ══ OAUTH ══
-async function doOAuth(provider){
-  const {error}=await supa.auth.signInWithOAuth({
-    provider,
-    options:{redirectTo:window.location.href}
-  });
-  if(error)alert(error.message);
-}
-
-// ══ SIGNOUT ══
-async function doSignout(){
-  await supa.auth.signOut();
-  window.location.href='auth.html';
-}
-
-// ══ SESSION — central handler ══
-async function onSession(session){
-  if(!session){
-    // No session — redirect to auth page
-    window.location.href='auth.html';
-    return;
-  }
+// ══ INIT ══
+window.addEventListener('DOMContentLoaded',async()=>{
+  const{data:{session}}=await supa.auth.getSession();
+  if(!session){window.location.href='auth.html';return;}
   U=session.user;
-  diagEl.style.color='#5dcaa5';
-  diagEl.textContent=`✓ Connected as ${U.email}`;
+  await loadUserData();
+  buildNav();buildTierCard();
+  loadFeed();loadLeaderboard();
+  loadInsight();loadEvtCount();
+  supa.auth.onAuthStateChange((_,s)=>{if(!s)window.location.href='auth.html';});
+});
 
-  // Ensure profile
+async function loadUserData(){
   let{data:prof}=await supa.from('profiles').select('*').eq('id',U.id).single();
   if(!prof){
-    await supa.from('profiles').upsert({
-      id:U.id,
-      display_name:U.user_metadata?.full_name||U.email?.split('@')[0]||'Engageneer',
-      avatar_url:U.user_metadata?.avatar_url||null,
-      status:'active'
-    },{onConflict:'id'});
+    await supa.from('profiles').upsert({id:U.id,display_name:U.user_metadata?.full_name||U.email?.split('@')[0]||'Engageneer',status:'active'},{onConflict:'id'});
     ({data:prof}=await supa.from('profiles').select('*').eq('id',U.id).single());
   }
   P=prof;
-
-  // Ensure role
   let{data:role}=await supa.from('profile_roles').select('*').eq('user_id',U.id).single();
   if(!role){
-    await supa.from('profile_roles').upsert({
-      user_id:U.id,role:'both',
-      seeker_tier:1,answerer_tier:1,
-      pts_total:0,seeker_pts:0,answerer_pts:0,
-      expertise_tags:[]
-    },{onConflict:'user_id'});
+    await supa.from('profile_roles').upsert({user_id:U.id,role:'both',seeker_tier:1,answerer_tier:1,pts_total:0,seeker_pts:0,answerer_pts:0,expertise_tags:[]},{onConflict:'user_id'});
     ({data:role}=await supa.from('profile_roles').select('*').eq('user_id',U.id).single());
   }
   R=role;
-
-  // Show platform
-  showScreen('screenPlatform');
-  buildNav();
-  buildTierCard();
-  loadFeed();
-  loadLeaderboard();
-  loadInsight();
-  loadNotifs();
-  loadEvtCount();
 }
+
+async function doSignout(){await supa.auth.signOut();window.location.href='auth.html';}
 
 // ══ NAV ══
 function buildNav(){
   const nr=document.getElementById('navRight');
   if(!P){nr.innerHTML='';return;}
   const init=(P.display_name||'E').charAt(0).toUpperCase();
-  const tierName=R?STIERS[R.seeker_tier||1]:'Curious';
+  const tier=R?STIERS[R.seeker_tier||1]:'Curious';
   const pts=R?.pts_total||0;
   nr.innerHTML=`
     <div class="user-chip">
       <div class="user-av">${P.avatar_url?`<img src="${P.avatar_url}"/>`:`${init}`}</div>
-      <div><div class="user-name">${P.display_name||'Engageneer'}</div><div class="user-tier">${tierName} · ${pts} pts</div></div>
+      <div><div class="user-info-name">${P.display_name||'Engageneer'}</div><div class="user-info-tier">${tier} · ${pts} pts</div></div>
     </div>
     <button class="nbtn nbtn-ghost" onclick="doSignout()">Sign Out</button>`;
 }
 
-// ══ TIER CARD ══
 function buildTierCard(){
   if(!R)return;
-  const t=R.seeker_tier||1;
-  const pts=R.seeker_pts||0;
-  const next=TPTS[t]||5000;
-  const pct=Math.min(Math.round(pts/next*100),100);
+  const t=R.seeker_tier||1,pts=R.seeker_pts||0,next=TPTS[t]||5000;
   document.getElementById('tcName').textContent=STIERS[t]||'Curious';
   document.getElementById('tcTrack').textContent=`Seeker Track · Tier ${t} of 5`;
-  document.getElementById('tcFill').style.width=pct+'%';
+  document.getElementById('tcFill').style.width=Math.min(Math.round(pts/next*100),100)+'%';
   document.getElementById('tcPts').textContent=`${pts} pts`;
   document.getElementById('tcNext').textContent=`${Math.max(0,next-pts)} to ${STIERS[t+1]||'Engageneer™'}`;
 }
 
-// ══ VIEW FILTER ══
+// ══ VIEW + FORMAT ══
 function setView(v,btn,fromTab=false){
   view=v;
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   if(btn)btn.classList.add('on');
-  const tabEl=document.getElementById('tab-'+v);
-  if(tabEl)tabEl.classList.add('on');
-  // Sync sidebar
-  const sbMap={all:0,featured:1,matched:2,mine:3,answered:4};
-  const sbItems=document.querySelectorAll('.sb-item');
-  if(sbMap[v]!==undefined)sbItems[sbMap[v]]?.classList.add('on');
+  const t=document.getElementById('tab-'+v);if(t)t.classList.add('on');
+  const map={all:0,video:1,featured:2,matched:3,mine:4,answered:5};
+  const si=document.querySelectorAll('.sb-item');
+  if(map[v]!==undefined)si[map[v]]?.classList.add('on');
   loadFeed();
 }
-
 function setTopic(t,btn){
-  topic=t;
+  topic=t;view='all';
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('on'));
   if(btn)btn.classList.add('on');
-  view='all';
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   document.getElementById('tab-all').classList.add('on');
   loadFeed();
 }
+function setFormat(f,btn){
+  fmt=f;
+  document.querySelectorAll('.fmt-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  loadFeed();
+}
 
 // ══ LOAD FEED ══
-const BASE='id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)';
+const BASE='id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,content_type,video_url,video_thumbnail,video_duration,profiles!questions_asker_id_fkey(display_name)';
 
 async function loadFeed(){
   const feed=document.getElementById('qFeed');
-  feed.innerHTML=`<div class="empty"><h3>Loading...</h3></div>`;
+  feed.innerHTML='<div style="text-align:center;padding:2rem;color:var(--t4)">Loading...</div>';
   try{
     let qs=[];
-
     if(view==='mine'){
-      if(!U){feed.innerHTML=empty('Sign in to see your questions','Your submitted questions appear here.');return;}
-      const{data,error}=await supa.from('questions').select(BASE).eq('asker_id',U.id).order('created_at',{ascending:false}).limit(50);
-      if(error)throw error;
+      const{data}=await supa.from('questions').select(BASE).eq('asker_id',U.id).order('created_at',{ascending:false}).limit(50);
       qs=data||[];
-      if(!qs.length){feed.innerHTML=empty('No questions yet','Ask your first question above — it will appear here with its ARIA quality score.');return;}
-
-    }else if(view==='answered'){
-      if(!U){feed.innerHTML=empty('Sign in to see your answers','Questions you have answered appear here with your full score breakdown.');return;}
-      // Load user's answers with scores
-      const{data:myAns}=await supa.from('answers').select('id,question_id,text,ei_score,ri_score,rai_score,coi_score,ai_score,ag,pg,cds,created_at').eq('answerer_id',U.id).order('created_at',{ascending:false}).limit(50);
-      if(!myAns||!myAns.length){feed.innerHTML=empty('No answers yet','Answer questions from the feed and your scoring history appears here.');return;}
-      // Fetch linked questions
-      const qIds=[...new Set(myAns.map(a=>a.question_id).filter(Boolean))];
-      if(qIds.length){
-        const{data:linkedQs}=await supa.from('questions').select(BASE).in('id',qIds);
-        qs=(linkedQs||[]).map(q=>({...q,myAnswer:myAns.find(a=>a.question_id===q.id)}));
-      }
-      // Show standalone answers (to sample questions without DB ids)
-      if(!qs.length){
-        const cards=myAns.map(a=>`<div class="qc"><div class="qm"><div class="qtag tgen">Your Answer</div><div class="qasker">${new Date(a.created_at).toLocaleDateString()}</div></div><div class="qtext" style="font-size:15px">${a.text}</div>${inlineScore(a)}</div>`).join('');
-        feed.innerHTML=cards;return;
-      }
-
-    }else if(view==='matched'){
-      if(!U){feed.innerHTML=empty('Sign in to see matched questions','ARIA personalises questions for you based on your expertise tags.');return;}
-      const{data}=await supa.from('questions').select(BASE).eq('status','published').contains('matched_uids',[U.id]).order('created_at',{ascending:false}).limit(30);
+      if(!qs.length){feed.innerHTML=empty('No questions yet','Ask your first question above — text or video.');return;}
+    }else if(view==='video'){
+      const{data}=await supa.from('questions').select(BASE).eq('status','published').in('content_type',['video','both']).order('created_at',{ascending:false}).limit(30);
       qs=data||[];
-      if(!qs.length){
-        // Fallback: tag overlap with user expertise
-        const tags=R?.expertise_tags||[];
-        if(tags.length){const{data:t}=await supa.from('questions').select(BASE).eq('status','published').overlaps('tags',tags).order('created_at',{ascending:false}).limit(20);qs=t||[];}
-        if(!qs.length){feed.innerHTML=empty('No matched questions yet','As you build your profile, ARIA Smart Matcher will route questions that fit your expertise directly here.');return;}
-      }
-
+      if(!qs.length){feed.innerHTML=empty('No video questions yet','Be the first to ask a video question.');return;}
     }else if(view==='featured'){
       const{data}=await supa.from('questions').select(BASE).eq('status','published').gte('quality_score',80).order('quality_score',{ascending:false}).limit(20);
       qs=data||[];
-      if(!qs.length){const{data:any}=await supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(10);qs=any||[];}
       if(!qs.length){feed.innerHTML=sampleFeed();return;}
-
+    }else if(view==='matched'){
+      const{data}=await supa.from('questions').select(BASE).eq('status','published').contains('matched_uids',[U.id]).order('created_at',{ascending:false}).limit(30);
+      qs=data||[];
+      if(!qs.length){feed.innerHTML=empty('No matched questions yet','ARIA will route personalised questions here as you build your profile.');return;}
+    }else if(view==='answered'){
+      const{data:myAns}=await supa.from('answers').select('id,question_id,text,video_url,video_thumbnail,ei_score,ri_score,rai_score,coi_score,ai_score,ag,pg,cds,content_type,created_at').eq('answerer_id',U.id).order('created_at',{ascending:false}).limit(50);
+      if(!myAns||!myAns.length){feed.innerHTML=empty('No answers yet','Answer questions from the feed and your history appears here.');return;}
+      const qIds=[...new Set(myAns.map(a=>a.question_id).filter(Boolean))];
+      if(qIds.length){const{data:lq}=await supa.from('questions').select(BASE).in('id',qIds);qs=(lq||[]).map(q=>({...q,myAnswer:myAns.find(a=>a.question_id===q.id)}));}
+      if(!qs.length){
+        feed.innerHTML=myAns.map(a=>`<div class="qc"><div class="qc-body"><div class="qm"><div class="qtag tgen">Your Answer</div><div class="qasker">${new Date(a.created_at).toLocaleDateString()}</div></div>${a.video_url?videoPlayer(a.video_url,a.video_thumbnail,'answer'):`<div class="qtext" style="font-size:15px">${a.text||''}</div>`}${inlineScore(a)}</div></div>`).join('');
+        return;
+      }
     }else{
-      // ALL
       let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
       if(topic)q=q.contains('tags',[topic]);
-      const{data,error}=await q;
-      if(error)throw error;
+      if(fmt==='video')q=q.in('content_type',['video','both']);
+      else if(fmt==='text')q=q.eq('content_type','text');
+      const{data}=await q;
       qs=data||[];
       if(!qs.length){feed.innerHTML=sampleFeed();return;}
     }
-
     feed.innerHTML=qs.map(q=>qCard(q)).join('');
-  }catch(e){
-    console.warn('Feed error:',e.message);
-    feed.innerHTML=sampleFeed();
-  }
+  }catch(e){console.warn(e);feed.innerHTML=sampleFeed();}
 }
 
-function empty(title,sub){return`<div class="empty"><h3>${title}</h3><p>${sub}</p></div>`;}
+function empty(t,s){return`<div style="text-align:center;padding:3rem 1rem;color:var(--t4)"><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--t3);margin-bottom:.5rem">${t}</div><div style="font-size:13px;line-height:1.7">${s}</div></div>`;}
 
 function inlineScore(a){
   if(!a?.cds)return'';
   const c=a.cds>=80?'#5dcaa5':a.cds>=60?'#f0c040':'#f09595';
-  return`<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.6rem;font-size:11px;color:var(--t4)">EI ${a.ei_score||'—'} &nbsp; RI ${a.ri_score||'—'} &nbsp; RAI ${a.rai_score||'—'} &nbsp; COI ${a.coi_score||'—'} &nbsp; AI ${a.ai_score||'—'} &nbsp; <span style="color:${c};font-weight:700">CDS ${a.cds}</span></div>`;
+  return`<div style="font-size:10px;color:var(--t4);margin-top:.5rem">EI ${a.ei_score||'—'} · RI ${a.ri_score||'—'} · RAI ${a.rai_score||'—'} · COI ${a.coi_score||'—'} · AI ${a.ai_score||'—'} · <span style="color:${c};font-weight:700">CDS ${a.cds}</span></div>`;
 }
 
-// ══ Q CARD ══
-const TAGCLS={Programming:'tp',Science:'ts',History:'th',Geography:'tg',Mathematics:'tm',Philosophy:'tph','Active Learning':'tal'};
-function tagCls(t){return TAGCLS[t]||'tgen';}
+function videoPlayer(url,thumb,type){
+  const id='v'+Math.random().toString(36).substr(2,6);
+  return`<div class="qc-video-thumb" onclick="playVideo('${id}','${url}')">
+    ${thumb?`<img src="${thumb}" alt="video thumbnail"/>`:
+    `<video id="${id}" src="${url}" preload="metadata" style="display:block"></video>`}
+    <div class="qc-video-overlay">
+      <div class="play-btn"><svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg></div>
+    </div>
+    <div class="content-badge badge-video">Video</div>
+  </div>`;
+}
 
+function playVideo(id,url){
+  const v=document.getElementById(id);
+  if(v){v.style.display='block';v.play();}
+  else{
+    const el=document.createElement('video');
+    el.src=url;el.controls=true;el.style.cssText='width:100%;height:100%;object-fit:cover;display:block;background:#000';
+    const thumb=document.querySelector(`[onclick*="${id}"] img`);
+    if(thumb)thumb.replaceWith(el);
+    el.play();
+  }
+}
+
+function fmtDur(s){if(!s)return'';const m=Math.floor(s/60),sec=s%60;return`${m}:${sec.toString().padStart(2,'0')}`;}
+
+// ══ Q CARD ══
 function qCard(q,force=false){
   const tag=(q.tags||[])[0]||'General';
-  const cls=tagCls(tag);
+  const cls=tc(tag);
   const isMe=U&&q.asker_id===U.id;
   const isMatch=U&&(q.matched_uids||[]).includes(U.id);
   const feat=force||(q.quality_score>=85);
   const asker=q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
+  const ct=q.content_type||'text';
   const pid='panel-'+q.id;
   const aid='ans-'+q.id;
   const lid='list-'+q.id;
   const hid='hint-'+q.id;
   const sid='sc-'+q.id;
   const ma=q.myAnswer;
+  const hasVid=ct==='video'||ct==='both';
+
   return`<div class="qc ${feat?'feat':''}" data-qid="${q.id}">
-    <div class="qm">
-      <div class="qtag ${cls}">${tag}</div>
-      ${q.quality_score!=null?`<div class="qscore">Quality ${q.quality_score}</div>`:''}
-      ${isMatch?`<div class="qmatched">✦ Matched to you</div>`:''}
-      ${isMe?`<div class="qmatched" style="color:var(--gold)">✦ Your question</div>`:''}
-      <div class="qasker">${asker}</div>
-    </div>
-    <div class="qtext">${q.text}</div>
-    <div class="qfoot">
-      <div class="qstat">${q.answer_count||0} answers</div>
-      <div class="qstat">${q.views||0} views</div>
-      ${q.bounty_pts>0?`<div class="qbounty">Bounty +${q.bounty_pts} pts`:''}
-      <button class="ans-btn" onclick="togglePanel('${pid}')">Answer</button>
+    ${hasVid&&q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):''}
+    <div class="qc-body">
+      <div class="qm">
+        <div class="qtag ${cls}">${tag}</div>
+        ${q.quality_score!=null?`<div class="qscore">Quality ${q.quality_score}</div>`:''}
+        ${ct!=='text'?`<span class="content-badge ${ct==='video'?'badge-video':'badge-both'}" style="position:relative;font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:20px">${ct==='video'?'Video':'Text+Video'}</span>`:''}
+        ${isMatch?`<span style="font-size:10px;color:var(--tlb)">✦ Matched</span>`:''}
+        ${isMe?`<span style="font-size:10px;color:var(--gold)">✦ Yours</span>`:''}
+        <div class="qasker">${asker}</div>
+      </div>
+      ${q.text?`<div class="qtext">${q.text}</div>`:''}
+      <div class="qfoot">
+        <div class="qstat">${q.answer_count||0} answers</div>
+        <div class="qstat">${q.views||0} views</div>
+        ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">Bounty +${q.bounty_pts} pts</div>`:''}
+        <button class="ans-btn" onclick="togglePanel('${pid}')">Answer</button>
+      </div>
     </div>
     <div class="ans-panel" id="${pid}">
-      <div class="ap-title">Your answer — 6 atomic agents + Engageneer™ peer grade</div>
-      <textarea class="ans-ta" id="${aid}" placeholder="Give an engaging, specific answer. Use examples, analogies, real-world steps. ARIA scores: Engagement (25%) · Retention (20%) · Applicability (25%) · Creativity (15%) · Accuracy (15%)..."></textarea>
+      <div class="ap-title">Your answer — text, video, or both</div>
+      <!-- Answer type toggle -->
+      <div class="ans-type-toggle">
+        <button class="att on" id="att-text-${q.id}" onclick="setAnsType('${q.id}','text')">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h6M2 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Text
+        </button>
+        <button class="att" id="att-video-${q.id}" onclick="setAnsType('${q.id}','video')">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
+          Video
+        </button>
+        <button class="att" id="att-both-${q.id}" onclick="setAnsType('${q.id}','both')">⚡ Both</button>
+      </div>
+
+      <!-- Text answer -->
+      <div class="ans-text-wrap show" id="atw-${q.id}">
+        <textarea class="ans-ta" id="${aid}" placeholder="Give an engaging, specific answer. Use examples, analogies, and real-world steps..."></textarea>
+      </div>
+
+      <!-- Video answer -->
+      <div class="ans-video-wrap" id="avw-${q.id}">
+        <div class="recorder-wrap" style="margin-bottom:.8rem">
+          <div class="rec-preview" style="aspect-ratio:16/9">
+            <video id="av-cam-${q.id}" autoplay muted playsinline style="display:none;width:100%;height:100%;object-fit:cover"></video>
+            <video id="av-play-${q.id}" controls playsinline style="display:none;width:100%;height:100%;object-fit:cover"></video>
+            <div id="av-ph-${q.id}" class="rec-placeholder">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/><circle cx="24" cy="24" r="8" fill="currentColor" opacity=".3"/></svg>
+              <div class="rec-placeholder-txt">Record or upload a video answer</div>
+            </div>
+            <div class="rec-timer" id="av-timer-${q.id}">0:00</div>
+          </div>
+          <div class="rec-controls">
+            <button class="rec-btn rec-btn-start" id="av-start-${q.id}" onclick="startAnsRec('${q.id}')">
+              <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>
+              Record
+            </button>
+            <button class="rec-btn rec-btn-stop" id="av-stop-${q.id}" style="display:none" onclick="stopAnsRec('${q.id}')">Stop</button>
+            <button class="rec-btn rec-btn-retake" id="av-retake-${q.id}" style="display:none;border:1px solid" onclick="retakeAnsRec('${q.id}')">Retake</button>
+            <label class="rec-btn" style="background:transparent;border:1px solid var(--bdr2);color:var(--t3);cursor:pointer">
+              <input type="file" accept="video/*" style="display:none" onchange="handleAnsUpload(event,'${q.id}')"/>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 7V2M2 4l3-3 3 3M1 9h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Upload
+            </label>
+            <div class="rec-status" id="av-status-${q.id}">Max 3 minutes</div>
+          </div>
+        </div>
+      </div>
+
       <div class="ap-row">
         <div class="ap-hint" id="${hid}">CDS = AG × 0.60 + PG × 0.40 · 6 indices scored in parallel</div>
         <button class="nbtn nbtn-ghost" style="padding:5px 14px;font-size:10px" onclick="togglePanel('${pid}')">Cancel</button>
-        <button class="nbtn nbtn-gold" style="padding:7px 22px" id="sbtn-${q.id}" onclick="submitA('${q.id}','${aid}','${lid}','${hid}','${sid}',this)">Submit Answer</button>
+        <button class="nbtn nbtn-gold" style="padding:7px 22px" id="sbtn-${q.id}" onclick="submitAnswer('${q.id}','${aid}','${lid}','${hid}','${sid}',this)">Submit Answer</button>
       </div>
       <div class="sc-panel" id="${sid}"></div>
       <div class="al" id="${lid}">
-        ${ma?`<div class="ac top"><div class="ac-hdr"><div class="ac-name">${P?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Your Answer</div><div class="top-badge">CDS ${ma.cds}</div><div class="ac-cds">${new Date(ma.created_at).toLocaleDateString()}</div></div><div class="ac-body">${ma.text}</div>${inlineScore(ma)}</div>`:''}
-        ${q.id==='s1'?`<div class="ac top"><div class="ac-hdr"><div class="ac-name">Sarah K.</div><div class="ac-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator T3</div><div class="top-badge">Best Answer</div><div class="ac-cds">CDS 91</div></div><div class="ac-body">Think of a variable like a labelled box. You write "score" on the outside, and whatever number is inside can change — but the box always answers to its name. That single image does more work than three paragraphs of definition.</div></div>`:''}
+        ${ma?`<div class="ac top">${ma.video_url?`<div class="ac-video">${videoPlayer(ma.video_url,ma.video_thumbnail,'answer')}</div>`:''}
+          <div class="ac-body-wrap"><div class="ac-hdr"><div class="ac-name">${P?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Your Answer</div><div class="top-badge">CDS ${ma.cds}</div><div class="ac-cds">${new Date(ma.created_at).toLocaleDateString()}</div></div>${ma.text?`<div class="ac-text">${ma.text}</div>`:''}${inlineScore(ma)}</div></div>`:''}
+        ${q.id==='s1'?`<div class="ac top"><div class="ac-body-wrap"><div class="ac-hdr"><div class="ac-name">Sarah K.</div><div class="ac-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator T3</div><div class="top-badge">Best Answer</div><div class="ac-cds">CDS 91</div></div><div class="ac-text">Think of a variable like a labelled box. You write "score" on the outside, and whatever number is inside can change — but the box always answers to its name. That single image does more work than three paragraphs of definition.</div></div></div>`:''}
       </div>
     </div>
   </div>`;
@@ -775,17 +845,244 @@ function qCard(q,force=false){
 
 function togglePanel(id){document.getElementById(id)?.classList.toggle('open');}
 
+// Per-card answer type
+const ansTypes={};
+function setAnsType(qid,type){
+  ansTypes[qid]=type;
+  ['text','video','both'].forEach(t=>{
+    document.getElementById(`att-${t}-${qid}`)?.classList.toggle('on',t===type);
+  });
+  document.getElementById(`atw-${qid}`)?.classList.toggle('show',type==='text'||type==='both');
+  document.getElementById(`avw-${qid}`)?.classList.toggle('show',type==='video'||type==='both');
+}
+
 // ══ SAMPLE FEED ══
 function sampleFeed(){
-  const samples=[
-    {id:'s1',text:'What is the most engaging way to explain variables to a 12-year-old who has never seen code before — without technical jargon?',tags:['Programming'],quality_score:94,answer_count:3,views:187,bounty_pts:50,profiles:{display_name:'Arjun M.'},asker_id:'',matched_uids:[]},
-    {id:'s2',text:'Why does time slow down near a black hole — and can you explain it in a way that makes a curious 15-year-old feel the actual strangeness of it?',tags:['Science'],quality_score:89,answer_count:2,views:134,bounty_pts:0,profiles:{display_name:'Fatima A.'},asker_id:'',matched_uids:[]},
-    {id:'s3',text:'How would you explain the fall of the Roman Empire to someone who thinks history is boring — using only things they already care about?',tags:['History'],quality_score:85,answer_count:1,views:98,bounty_pts:30,profiles:{display_name:'Marcus T.'},asker_id:'',matched_uids:[]},
-    {id:'s4',text:'Why do countries near the equator tend to be less economically developed? Explain geography, climate, and history together.',tags:['Geography'],quality_score:81,answer_count:0,views:57,bounty_pts:0,profiles:{display_name:'Yuki T.'},asker_id:'',matched_uids:[]},
-    {id:'s5',text:"Explain Occam's Razor in a way that someone could actually use tomorrow — with a concrete everyday example.",tags:['Philosophy'],quality_score:88,answer_count:4,views:213,bounty_pts:0,profiles:{display_name:'Priya N.'},asker_id:'',matched_uids:[]},
-    {id:'s6',text:'Why does 0.999… equal 1 exactly — not approximately — and how would you convince a committed sceptic without algebra?',tags:['Mathematics'],quality_score:79,answer_count:0,views:44,bounty_pts:40,profiles:{display_name:'Lena V.'},asker_id:'',matched_uids:[]}
+  const s=[
+    {id:'s1',text:'What is the most engaging way to explain variables to a 12-year-old who has never seen code before?',tags:['Programming'],quality_score:94,answer_count:3,views:187,bounty_pts:50,profiles:{display_name:'Arjun M.'},asker_id:'',matched_uids:[],content_type:'text'},
+    {id:'s2',text:'Why does time slow down near a black hole — explained in a way that makes a 15-year-old feel the actual strangeness?',tags:['Science'],quality_score:89,answer_count:2,views:134,bounty_pts:0,profiles:{display_name:'Fatima A.'},asker_id:'',matched_uids:[],content_type:'text'},
+    {id:'s3',text:'How would you explain the fall of the Roman Empire to someone who thinks history is boring?',tags:['History'],quality_score:85,answer_count:1,views:98,bounty_pts:30,profiles:{display_name:'Marcus T.'},asker_id:'',matched_uids:[],content_type:'text'},
+    {id:'s4',text:"Explain Occam's Razor with a concrete example from everyday decision-making.",tags:['Philosophy'],quality_score:88,answer_count:4,views:213,bounty_pts:0,profiles:{display_name:'Priya N.'},asker_id:'',matched_uids:[],content_type:'text'},
+    {id:'s5',text:'Why does 0.999… equal 1 exactly — and how would you convince a sceptic without algebra?',tags:['Mathematics'],quality_score:79,answer_count:0,views:44,bounty_pts:40,profiles:{display_name:'Lena V.'},asker_id:'',matched_uids:[],content_type:'text'}
   ];
-  return samples.map((q,i)=>qCard(q,i===0)).join('');
+  return s.map((q,i)=>qCard(q,i===0)).join('');
+}
+
+// ══ MODAL ══
+function openModal(mode,qid=null){
+  modalMode=mode;modalAnswerFor=qid;
+  document.getElementById('modalTitle').textContent=mode==='question'?'Ask a Question':'Give an Answer';
+  document.getElementById('submitModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  resetModal();
+}
+function closeModal(){
+  document.getElementById('submitModal').classList.remove('open');
+  document.body.style.overflow='';
+  stopRec(true);
+  resetModal();
+}
+document.getElementById('submitModal').addEventListener('click',e=>{if(e.target===document.getElementById('submitModal'))closeModal();});
+
+function resetModal(){
+  contentType='text';videoTab='record';
+  setType('text');
+  document.getElementById('qText').value='';
+  document.getElementById('modalErr').textContent='';
+  recBlob=null;uploadFile=null;
+  document.querySelectorAll('#submitModal .tag-chip').forEach(c=>c.classList.remove('on'));
+  const pv=document.getElementById('uploadPreview');if(pv)pv.style.display='none';
+}
+
+// ══ CONTENT TYPE ══
+function setType(t){
+  contentType=t;
+  ['text','video','both'].forEach(k=>{document.getElementById('type-'+k).classList.toggle('on',k===t);});
+  document.getElementById('textSection').style.display=(t==='text'||t==='both')?'block':'none';
+  document.getElementById('videoSection').style.display=(t==='video'||t==='both')?'block':'none';
+}
+
+// ══ VIDEO TAB ══
+function switchVideoTab(t){
+  videoTab=t;
+  document.getElementById('tabRecord').classList.toggle('on',t==='record');
+  document.getElementById('tabUpload').classList.toggle('on',t==='upload');
+  document.getElementById('recSection').style.display=t==='record'?'block':'none';
+  document.getElementById('uploadSection').style.display=t==='upload'?'block':'none';
+}
+
+// ══ RECORDER — QUESTION MODAL ══
+async function startRec(){
+  try{
+    mediaStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    const v=document.getElementById('recVideo');
+    v.srcObject=mediaStream;v.style.display='block';
+    document.getElementById('recPlaceholder').style.display='none';
+    document.getElementById('recPlayback').style.display='none';
+    recChunks=[];recSeconds=0;
+    mediaRecorder=new MediaRecorder(mediaStream,{mimeType:getSupportedMime()});
+    mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
+    mediaRecorder.onstop=()=>{
+      recBlob=new Blob(recChunks,{type:getSupportedMime()});
+      const url=URL.createObjectURL(recBlob);
+      const pb=document.getElementById('recPlayback');
+      pb.src=url;pb.style.display='block';
+      document.getElementById('recVideo').style.display='none';
+      document.getElementById('recRetake').style.display='flex';
+      document.getElementById('recStart').style.display='none';
+      document.getElementById('recStop').style.display='none';
+      document.getElementById('recStatus').textContent=`Recorded ${fmtDur(recSeconds)} · Review and submit`;
+    };
+    mediaRecorder.start(100);
+    document.getElementById('recStart').style.display='none';
+    document.getElementById('recStop').style.display='flex';
+    document.getElementById('recStatus').innerHTML='<span class="rec-dot"></span> Recording...';
+    const timer=document.getElementById('recTimer');
+    timer.classList.add('show');
+    recInterval=setInterval(()=>{
+      recSeconds++;
+      timer.textContent=fmtDur(recSeconds);
+      if(recSeconds>=maxRecSeconds){timer.classList.add('over');stopRec();}
+    },1000);
+  }catch(e){
+    document.getElementById('recStatus').textContent='Camera access denied. Please allow camera access and try again.';
+  }
+}
+
+function stopRec(silent=false){
+  if(recInterval){clearInterval(recInterval);recInterval=null;}
+  if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
+  if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null;}
+  document.getElementById('recTimer')?.classList.remove('show','over');
+  if(!silent)document.getElementById('recStatus').textContent='Recording complete';
+}
+
+function retakeRec(){
+  recBlob=null;recChunks=[];recSeconds=0;
+  const v=document.getElementById('recVideo');
+  const pb=document.getElementById('recPlayback');
+  v.style.display='none';pb.style.display='none';pb.src='';
+  document.getElementById('recPlaceholder').style.display='flex';
+  document.getElementById('recStart').style.display='flex';
+  document.getElementById('recStop').style.display='none';
+  document.getElementById('recRetake').style.display='none';
+  document.getElementById('recStatus').textContent='Camera ready';
+  document.getElementById('recTimer').textContent='0:00';
+}
+
+// ══ UPLOAD — QUESTION MODAL ══
+function handleDrop(e){
+  e.preventDefault();document.getElementById('uploadZone').classList.remove('drag');
+  const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('video/'))setUploadFile(f);
+}
+function handleFileSelect(e){const f=e.target.files[0];if(f)setUploadFile(f);}
+function setUploadFile(f){
+  uploadFile=f;
+  const url=URL.createObjectURL(f);
+  const pv=document.getElementById('uploadPreview');
+  const ve=document.getElementById('uploadVideoEl');
+  ve.src=url;pv.style.display='block';
+  document.getElementById('uploadFileName').textContent=f.name;
+  document.getElementById('uploadFileSize').textContent=(f.size/1024/1024).toFixed(1)+' MB';
+}
+
+function getSupportedMime(){
+  const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];
+  return types.find(t=>MediaRecorder.isTypeSupported(t))||'video/webm';
+}
+
+// ══ RECORDER — ANSWER PANELS (per card) ══
+const ansRecState={};
+
+async function startAnsRec(qid){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    ansRecState[qid]={stream,chunks:[],seconds:0,blob:null};
+    const cam=document.getElementById(`av-cam-${qid}`);
+    cam.srcObject=stream;cam.style.display='block';
+    document.getElementById(`av-ph-${qid}`).style.display='none';
+    document.getElementById(`av-play-${qid}`).style.display='none';
+    const mr=new MediaRecorder(stream,{mimeType:getSupportedMime()});
+    ansRecState[qid].recorder=mr;
+    mr.ondataavailable=e=>{if(e.data.size>0)ansRecState[qid].chunks.push(e.data);};
+    mr.onstop=()=>{
+      const blob=new Blob(ansRecState[qid].chunks,{type:getSupportedMime()});
+      ansRecState[qid].blob=blob;
+      const url=URL.createObjectURL(blob);
+      const pb=document.getElementById(`av-play-${qid}`);
+      pb.src=url;pb.style.display='block';cam.style.display='none';
+      document.getElementById(`av-retake-${qid}`).style.display='flex';
+      document.getElementById(`av-start-${qid}`).style.display='none';
+      document.getElementById(`av-stop-${qid}`).style.display='none';
+      document.getElementById(`av-status-${qid}`).textContent=`Recorded ${fmtDur(ansRecState[qid].seconds)}`;
+    };
+    mr.start(100);
+    document.getElementById(`av-start-${qid}`).style.display='none';
+    document.getElementById(`av-stop-${qid}`).style.display='flex';
+    document.getElementById(`av-status-${qid}`).innerHTML='<span class="rec-dot"></span> Recording...';
+    const timer=document.getElementById(`av-timer-${qid}`);
+    timer.classList.add('show');
+    ansRecState[qid].interval=setInterval(()=>{
+      ansRecState[qid].seconds++;
+      timer.textContent=fmtDur(ansRecState[qid].seconds);
+      if(ansRecState[qid].seconds>=180)stopAnsRec(qid);
+    },1000);
+  }catch(e){
+    document.getElementById(`av-status-${qid}`).textContent='Camera access denied.';
+  }
+}
+
+function stopAnsRec(qid){
+  const s=ansRecState[qid];if(!s)return;
+  if(s.interval){clearInterval(s.interval);s.interval=null;}
+  if(s.recorder&&s.recorder.state!=='inactive')s.recorder.stop();
+  if(s.stream){s.stream.getTracks().forEach(t=>t.stop());s.stream=null;}
+  document.getElementById(`av-timer-${qid}`)?.classList.remove('show');
+}
+
+function retakeAnsRec(qid){
+  if(ansRecState[qid]){ansRecState[qid].blob=null;ansRecState[qid].chunks=[];}
+  const cam=document.getElementById(`av-cam-${qid}`);
+  const pb=document.getElementById(`av-play-${qid}`);
+  if(cam)cam.style.display='none';
+  if(pb){pb.style.display='none';pb.src='';}
+  document.getElementById(`av-ph-${qid}`).style.display='flex';
+  document.getElementById(`av-start-${qid}`).style.display='flex';
+  document.getElementById(`av-stop-${qid}`).style.display='none';
+  document.getElementById(`av-retake-${qid}`).style.display='none';
+  document.getElementById(`av-status-${qid}`).textContent='Max 3 minutes';
+  const t=document.getElementById(`av-timer-${qid}`);if(t)t.textContent='0:00';
+}
+
+async function handleAnsUpload(e,qid){
+  const f=e.target.files[0];if(!f)return;
+  if(!ansRecState[qid])ansRecState[qid]={};
+  ansRecState[qid].blob=f;
+  const url=URL.createObjectURL(f);
+  const pb=document.getElementById(`av-play-${qid}`);
+  pb.src=url;pb.style.display='block';
+  document.getElementById(`av-ph-${qid}`).style.display='none';
+  document.getElementById(`av-retake-${qid}`).style.display='flex';
+  document.getElementById(`av-status-${qid}`).textContent=`${f.name} · ${(f.size/1024/1024).toFixed(1)} MB`;
+}
+
+// ══ UPLOAD TO SUPABASE STORAGE ══
+async function uploadVideoToStorage(blob,folder){
+  const ext=blob.type.includes('mp4')?'mp4':'webm';
+  const path=`${folder}/${U.id}/${Date.now()}.${ext}`;
+  document.getElementById('uploadProgressWrap').classList.add('show');
+  const{data,error}=await supa.storage.from('engageneering-videos').upload(path,blob,{
+    contentType:blob.type,
+    upsert:false,
+    onUploadProgress:(p)=>{
+      const pct=Math.round(p.loaded/p.total*100);
+      document.getElementById('uploadBar').style.width=pct+'%';
+    }
+  });
+  document.getElementById('uploadProgressWrap').classList.remove('show');
+  if(error){console.error('Upload error:',error);return null;}
+  const{data:urlData}=supa.storage.from('engageneering-videos').getPublicUrl(path);
+  return urlData?.publicUrl||null;
 }
 
 // ══ ARIA HELPERS ══
@@ -796,8 +1093,7 @@ function pip(id,c){const e=document.getElementById('pp-'+id);if(e)e.className='p
 function dot(id,c){const e=document.getElementById('d-'+id);if(e)e.className='am-dot '+c;}
 function st(id,t){const e=document.getElementById('s-'+id);if(e)e.textContent=t;}
 
-// ══ EDGE FUNCTION CALL ══
-async function agent(name,payload){
+async function callAgent(name,payload){
   try{
     const r=await fetch(`${SUPA_URL}/functions/v1/aria-agent`,{
       method:'POST',
@@ -806,109 +1102,135 @@ async function agent(name,payload){
     });
     const txt=await r.text();
     try{return JSON.parse(txt);}catch{return{};}
-  }catch(e){console.warn('Agent failed:',name,e.message);return{};}
+  }catch(e){return{};}
 }
 
 // ══ SUBMIT QUESTION ══
-async function submitQ(){
-  if(!U){showScreen('screenAuth');return;}
-  const q=document.getElementById('askInput').value.trim();
-  if(!q){alert('Please type a question first.');return;}
-  const tags=[...document.querySelectorAll('.tc-chip.on')].map(t=>t.textContent);
-  const tagStr=tags.join(', ')||'General';
+async function submitQuestion(){
+  const q=document.getElementById('qText').value.trim();
+  const tags=[...document.querySelectorAll('#submitModal .tag-chip.on')].map(t=>t.textContent);
+  const needsText=contentType==='text'||contentType==='both';
+  const needsVideo=contentType==='video'||contentType==='both';
+  const err=document.getElementById('modalErr');
+  err.textContent='';
 
+  if(needsText&&!q){err.textContent='Please write your question.';return;}
+  if(needsVideo&&videoTab==='record'&&!recBlob){err.textContent='Please record a video before submitting.';return;}
+  if(needsVideo&&videoTab==='upload'&&!uploadFile){err.textContent='Please select a video file.';return;}
+
+  const btn=document.getElementById('modalSubmitBtn');
+  btn.textContent='Processing...';btn.disabled=true;
   ariaOn();log('Question received → routing to Gatekeeper');
   dot('aria','run');st('aria','Processing');
 
-  await sleep(300);
-  pip('gk','pulse');dot('gk','run');st('gk','Screening...');
-  log('Agent 01 Gatekeeper · Screening for content policy...');
-  let gk=await agent('gatekeeper',{question:q,tags:tagStr});
-  if(!gk.verdict)gk={verdict:'approve',reason:'Genuine curiosity question.'};
-  dot('gk','ready');pip('gk','blue');st('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
-  if(gk.verdict==='reject'){log(`Gatekeeper: ${gk.reason}`);ariaOff();dot('aria','idle');st('aria','Standby');alert(`Not approved:\n${gk.reason}`);return;}
+  // Upload video if needed
+  let videoUrl=null;
+  if(needsVideo){
+    const blob=recBlob||uploadFile;
+    log('Uploading video to Supabase Storage...');
+    btn.textContent='Uploading video...';
+    videoUrl=await uploadVideoToStorage(blob,'questions');
+    if(!videoUrl){err.textContent='Video upload failed. Please try again.';btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
+  }
+
+  btn.textContent='ARIA scoring...';
   await sleep(300);
 
+  // Agent 01: Gatekeeper
+  pip('gk','pulse');dot('gk','run');st('gk','Screening...');
+  log('Agent 01 Gatekeeper · Screening content...');
+  let gk=await callAgent('gatekeeper',{question:q||'Video question',tags:tags.join(', ')||'General'});
+  if(!gk.verdict)gk={verdict:'approve',reason:'Content approved.'};
+  dot('gk','ready');pip('gk','blue');st('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
+  if(gk.verdict==='reject'){err.textContent=`Not approved: ${gk.reason}`;btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
+  await sleep(300);
+
+  // Agent 02: Question Rater
   pip('qr','pulse');dot('qr','run');st('qr','Scoring...');
-  log('Agent 02 Question Rater · Scoring clarity, depth, originality, engagement potential...');
-  let qr=await agent('question_rater',{question:q,tags:tagStr});
+  let qr=await callAgent('question_rater',{question:q||'Video question',tags:tags.join(', ')});
   if(!qr.total)qr={clarity:17,depth:16,originality:16,engagement_potential:17,total:66,feedback:'Good question.'};
   dot('qr','ready');pip('qr','blue');st('qr',`Quality ${qr.total}`);
-  log(`Question Rater: Quality ${qr.total}/100 · ${qr.feedback}`);
+  log(`Question Rater: Quality ${qr.total}/100`);
   await sleep(300);
 
+  // Agent 03: Smart Matcher
   pip('sm','pulse');dot('sm','run');st('sm','Matching...');
-  log('Agent 03 Smart Matcher · Scanning community expertise and tags...');
-  let sm=await agent('smart_matcher',{question:q,tags:tagStr});
-  if(!sm.matched)sm={matched:['Top experts invited'],invite:'Your expertise is needed here.'};
+  let sm=await callAgent('smart_matcher',{question:q||'Video question',tags:tags.join(', ')});
+  if(!sm.matched)sm={matched:['Top experts invited']};
   dot('sm','ready');pip('sm','blue');st('sm',`${(sm.matched||[]).length} matched`);
-  log(`Smart Matcher: ${(sm.matched||[]).length} experts invited`);
 
   // Save to DB
   let dbId=null;
   try{
-    const{data:sq,error:qe}=await supa.from('questions').insert({
-      asker_id:U.id,text:q,
+    const{data:sq}=await supa.from('questions').insert({
+      asker_id:U.id,
+      text:needsText?q:null,
+      video_url:videoUrl,
+      content_type:contentType,
       tags:tags.length?tags:['General'],
       quality_score:qr.total,
       gatekeeper_verdict:gk.verdict,
       status:'published',
       published_at:new Date().toISOString()
     }).select().single();
-    if(!qe&&sq){
+    if(sq){
       dbId=sq.id;
-      await supa.from('score_history').insert({user_id:U.id,action_type:'question',ref_id:sq.id,quality_score:qr.total,pts_awarded:Math.round(qr.total*.5)});
       const pts=Math.round(qr.total*.5);
-      await supa.from('profile_roles').update({
-        pts_total:(R?.pts_total||0)+pts,
-        seeker_pts:(R?.seeker_pts||0)+pts,
-        updated_at:new Date().toISOString()
-      }).eq('user_id',U.id);
+      await supa.from('score_history').insert({user_id:U.id,action_type:'question',ref_id:sq.id,quality_score:qr.total,pts_awarded:pts});
+      await supa.from('profile_roles').update({pts_total:(R?.pts_total||0)+pts,seeker_pts:(R?.seeker_pts||0)+pts,updated_at:new Date().toISOString()}).eq('user_id',U.id);
       if(R){R.pts_total=(R.pts_total||0)+pts;R.seeker_pts=(R.seeker_pts||0)+pts;}
     }
-  }catch(e){console.warn('Q save:',e.message);}
+  }catch(e){console.warn(e);}
 
-  dot('te','run');st('te','Updating...');
+  dot('te','run');st('te','Awarding pts...');
   await sleep(350);
   dot('te','donep');st('te','Points awarded ✓');
-  log(`Published · Quality ${qr.total} · ${(sm.matched||[]).length} experts invited`);
+  log(`Published · Quality ${qr.total} · ${contentType} format · ${(sm.matched||[]).length} experts invited`);
   dot('aria','idle');st('aria','Standby');ariaOff();
 
+  closeModal();
   buildNav();buildTierCard();
   document.getElementById('evtCount').textContent=parseInt(document.getElementById('evtCount').textContent||0)+1;
 
   // Prepend new card
-  const newQ={id:dbId||'new-'+Date.now(),text:q,tags:tags.length?tags:['General'],quality_score:qr.total,answer_count:0,views:0,bounty_pts:0,profiles:{display_name:P?.display_name||'You'},asker_id:U.id,matched_uids:[]};
+  const newQ={id:dbId||'new-'+Date.now(),text:needsText?q:null,video_url:videoUrl,content_type:contentType,tags:tags.length?tags:['General'],quality_score:qr.total,answer_count:0,views:0,bounty_pts:0,profiles:{display_name:P?.display_name||'You'},asker_id:U.id,matched_uids:[]};
   document.getElementById('qFeed').insertAdjacentHTML('afterbegin',qCard(newQ));
-  document.getElementById('askInput').value='';
-  document.querySelectorAll('.tc-chip').forEach(c=>c.classList.remove('on'));
 }
 
 // ══ SUBMIT ANSWER ══
-async function submitA(qid,aid,lid,hid,sid,btn){
-  if(!U){showScreen('screenAuth');return;}
-  const ans=document.getElementById(aid)?.value?.trim();
-  if(!ans||ans.length<15){alert('Please write a more complete answer (at least 15 characters).');return;}
+async function submitAnswer(qid,aid,lid,hid,sid,btn){
+  const ansType=ansTypes[qid]||'text';
+  const textAns=document.getElementById(aid)?.value?.trim();
+  const recState=ansRecState[qid];
+  const ansBlob=recState?.blob||null;
+  const needText=ansType==='text'||ansType==='both';
+  const needVideo=ansType==='video'||ansType==='both';
 
-  // Get question text from the card
+  if(needText&&(!textAns||textAns.length<15)){alert('Please write a more complete text answer (at least 15 characters).');return;}
+  if(needVideo&&!ansBlob){alert('Please record or upload a video before submitting.');return;}
+
   const card=btn?.closest('.qc');
   const qText=card?.querySelector('.qtext')?.textContent||'this question';
 
   if(btn){btn.textContent='Evaluating...';btn.disabled=true;}
   ariaOn();
-  log('Answer received → 6 atomic eval agents + Integrity Guard firing in parallel...');
+  log('Answer received → uploading + 6 atomic eval agents firing in parallel...');
   dot('aria','run');st('aria','Evaluating');
   ['ei','ri','rai','coi','ai','ig'].forEach(a=>{pip(a,'pulse');dot(a,'run');st(a,'Scoring...');});
-  pip('arb','pulse');dot('arb','run');st('arb','Waiting...');
 
-  const pl={question:qText,answer:ans};
+  // Upload video if needed
+  let videoUrl=null;
+  if(needVideo&&ansBlob){
+    log('Uploading answer video...');
+    videoUrl=await uploadVideoToStorage(ansBlob,'answers');
+    if(!videoUrl){alert('Video upload failed. Please try again.');if(btn){btn.textContent='Submit Answer';btn.disabled=false;}ariaOff();return;}
+  }
+
+  const pl={question:qText,answer:textAns||'Video answer'};
   let[ei,ri,rai,coi,ai,ig]=await Promise.all([
-    agent('engagement_indexer',pl),
-    agent('retention_indexer',pl),
-    agent('applicability_indexer',pl),
-    agent('creativity_indexer',pl),
-    agent('accuracy_verifier',pl),
-    agent('integrity_guard',pl)
+    callAgent('engagement_indexer',pl),callAgent('retention_indexer',pl),
+    callAgent('applicability_indexer',pl),callAgent('creativity_indexer',pl),
+    callAgent('accuracy_verifier',pl),callAgent('integrity_guard',pl)
   ]);
   if(!ei?.score)ei={score:72,note:'Good engagement.'};
   if(!ri?.score)ri={score:68,note:'Reasonably memorable.'};
@@ -921,11 +1243,7 @@ async function submitA(qid,aid,lid,hid,sid,btn){
   st('ei',`EI ${ei.score}`);st('ri',`RI ${ri.score}`);st('rai',`RAI ${rai.score}`);st('coi',`COI ${coi.score}`);st('ai',`AI ${ai.score}`);
   dot('ig',ig.pass?'done':'err');pip('ig',ig.pass?'teal':'red');st('ig',ig.pass?'Pass ✓':'Flagged!');
 
-  if(!ig.pass){
-    log(`Integrity Guard: ${ig.note}`);ariaOff();dot('aria','idle');st('aria','Standby');
-    if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
-    alert(`Integrity Guard:\n${ig.note}`);return;
-  }
+  if(!ig.pass){log(`Integrity Guard: ${ig.note}`);ariaOff();dot('aria','idle');if(btn){btn.textContent='Submit Answer';btn.disabled=false;}alert(`Integrity Guard:\n${ig.note}`);return;}
 
   const ag=Math.round(ei.score*.25+ri.score*.20+rai.score*.25+coi.score*.15+ai.score*.15);
   const pg=Math.min(100,Math.max(0,ag+Math.round(Math.random()*16-8)));
@@ -935,78 +1253,65 @@ async function submitA(qid,aid,lid,hid,sid,btn){
   dot('arb','done');pip('arb','teal');st('arb',`CDS ${cds} issued`);
   dot('te','run');st('te','Recalculating...');
 
-  // Save to DB
+  // Save
   try{
     const realQId=qid.startsWith('s')||qid.startsWith('new')?null:qid;
-    const{data:sa,error:ae}=await supa.from('answers').insert({
-      question_id:realQId,answerer_id:U.id,text:ans,
+    const{data:sa}=await supa.from('answers').insert({
+      question_id:realQId,answerer_id:U.id,
+      text:needText?textAns:null,
+      video_url:videoUrl,
+      content_type:ansType,
       ei_score:ei.score,ri_score:ri.score,rai_score:rai.score,coi_score:coi.score,ai_score:ai.score,
       integrity_pass:true,ag,pg,cds,status:'published',
       scored_at:new Date().toISOString()
     }).select().single();
-    if(!ae&&sa){
+    if(sa){
       await supa.from('score_history').insert({user_id:U.id,action_type:'answer',ref_id:sa.id,ei:ei.score,ri:ri.score,rai:rai.score,coi:coi.score,ai:ai.score,ag,pg,cds,pts_awarded:pts});
       const{data:rn}=await supa.from('profile_roles').select('pts_total,answerer_pts').eq('user_id',U.id).single();
-      if(rn){
-        await supa.from('profile_roles').update({pts_total:(rn.pts_total||0)+pts,answerer_pts:(rn.answerer_pts||0)+pts,updated_at:new Date().toISOString()}).eq('user_id',U.id);
-        if(R){R.pts_total=(rn.pts_total||0)+pts;R.answerer_pts=(rn.answerer_pts||0)+pts;}
-      }
+      if(rn)await supa.from('profile_roles').update({pts_total:(rn.pts_total||0)+pts,answerer_pts:(rn.answerer_pts||0)+pts,updated_at:new Date().toISOString()}).eq('user_id',U.id);
+      if(R){R.pts_total=(R?.pts_total||0)+pts;R.answerer_pts=(R?.answerer_pts||0)+pts;}
     }
-  }catch(e){console.warn('Answer save:',e.message);}
+  }catch(e){console.warn(e);}
 
   await sleep(400);
   dot('te','donep');st('te','Points awarded ✓');
-  log(`CDS ${cds}/100 · AG ${ag} + PG ${pg} · +${pts} pts · Tier Engine updated`);
+  log(`CDS ${cds}/100 · AG ${ag} + PG ${pg} · +${pts} pts`);
   dot('aria','idle');st('aria','Standby');ariaOff();
 
-  // Update hint
   const h=document.getElementById(hid);
-  if(h){h.textContent=`CDS ${cds}/100 · AG ${ag} (AI) + PG ${pg} (Engageneer™) · +${pts} pts`;h.style.color=cds>=80?'#5dcaa5':cds>=60?'#f0c040':'#f09595';}
+  if(h){h.textContent=`CDS ${cds}/100 · AG ${ag} + PG ${pg} · +${pts} pts`;h.style.color=cds>=80?'#5dcaa5':cds>=60?'#f0c040':'#f09595';}
 
-  // Score breakdown
   const sp=document.getElementById(sid);
   if(sp){
     const ix=[{l:'EI',v:ei.score,c:'#378add',w:'25%'},{l:'RI',v:ri.score,c:'#1d9e75',w:'20%'},{l:'RAI',v:rai.score,c:'#d4920c',w:'25%'},{l:'COI',v:coi.score,c:'#7f77dd',w:'15%'},{l:'AI',v:ai.score,c:'#d85a30',w:'15%'}];
-    sp.innerHTML=`<div class="sc-title">Composite Defended Score — Full Breakdown</div>
+    sp.innerHTML=`<div class="sc-title">Composite Defended Score</div>
       <div class="sc-grid">${ix.map(x=>`<div class="sc-col"><div class="sc-num" style="color:${x.c}">${x.v}</div><div class="sc-track"><div class="sc-fill" style="height:${x.v}%;background:${x.c};opacity:.8"></div></div><div class="sc-lbl">${x.l} · ${x.w}</div></div>`).join('')}</div>
       <div class="cds-row"><div style="font-size:11px;color:var(--t4)">AG ${ag} × 0.60 + PG ${pg} × 0.40</div><div style="display:flex;align-items:baseline;gap:.3rem"><span style="font-size:11px;color:var(--t4)">CDS</span><span class="cds-val">${cds}</span><span style="font-size:11px;color:var(--t4)">/100</span></div></div>`;
     sp.classList.add('open');
   }
 
-  // Answer card
   const lst=document.getElementById(lid);
-  if(lst){lst.insertAdjacentHTML('beforeend',`<div class="ac ${cds>=85?'top':''}"><div class="ac-hdr"><div class="ac-name">${P?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">${ATIERS[R?.answerer_tier||1]||'Responder'}</div>${cds>=85?'<div class="top-badge">Top Answer</div>':''}<div class="ac-cds">CDS ${cds}</div></div><div class="ac-body">${ans}</div><div class="ac-scores">EI ${ei.score} · RI ${ri.score} · RAI ${rai.score} · COI ${coi.score} · AI ${ai.score}</div></div>`);}
+  if(lst){lst.insertAdjacentHTML('beforeend',`
+    <div class="ac ${cds>=85?'top':''}">
+      ${videoUrl?`<div class="ac-video"><div class="qc-video-thumb" onclick="playVideo('ava${Date.now()}','${videoUrl}')"><video src="${videoUrl}" preload="metadata" style="display:block"></video><div class="qc-video-overlay"><div class="play-btn"><svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg></div></div></div>`:''}
+      <div class="ac-body-wrap">
+        <div class="ac-hdr"><div class="ac-name">${P?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">${ATIERS[R?.answerer_tier||1]}</div>${cds>=85?'<div class="top-badge">Top Answer</div>':''}<div class="ac-cds">CDS ${cds}</div></div>
+        ${textAns?`<div class="ac-text">${textAns}</div>`:''}
+        <div class="ac-scores">EI ${ei.score} · RI ${ri.score} · RAI ${rai.score} · COI ${coi.score} · AI ${ai.score}</div>
+        ${videoUrl?`<div class="ac-watch">Video answer uploaded ✓</div>`:''}
+      </div>
+    </div>`);}
 
   if(document.getElementById(aid))document.getElementById(aid).value='';
   if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
   document.getElementById('evtCount').textContent=parseInt(document.getElementById('evtCount').textContent||0)+1;
   buildNav();buildTierCard();
-  checkTierPromotion();
-}
-
-// ══ TIER CHECK ══
-async function checkTierPromotion(){
-  if(!U||!R)return;
-  const{data:h}=await supa.from('score_history').select('cds').eq('user_id',U.id).eq('action_type','answer').order('created_at',{ascending:false}).limit(5);
-  if(!h||h.length<3)return;
-  const avg=h.reduce((s,r)=>s+(r.cds||0),0)/h.length;
-  const t=R.answerer_tier||1;
-  const thresh={1:60,2:70,3:78,4:86};
-  if(t<5&&avg>=(thresh[t]||999)){
-    const nt=t+1;
-    await supa.from('profile_roles').update({answerer_tier:nt}).eq('user_id',U.id);
-    await supa.from('tier_events').insert({user_id:U.id,track:'answerer',from_tier:t,to_tier:nt,direction:'promotion',evidence:{avg_cds:Math.round(avg)}});
-    R.answerer_tier=nt;
-    log(`Tier Engine: promoted to ${ATIERS[nt]} T${nt} · avg CDS ${Math.round(avg)}`);
-    addNotif(`Promotion!`,`You are now ${ATIERS[nt]} T${nt} on the Answerer track.`,'#c8922a');
-    buildNav();buildTierCard();
-  }
 }
 
 // ══ LEADERBOARD ══
 async function loadLeaderboard(){
   const{data}=await supa.from('profiles').select('display_name,profile_roles(pts_total,seeker_tier)').limit(10);
-  if(!data||!data.length){document.getElementById('lbRows').innerHTML='<div class="lb-row"><div class="lb-name" style="color:var(--t4)">Be the first!</div></div>';return;}
+  if(!data||!data.length){document.getElementById('lbRows').innerHTML='<div style="font-size:11px;color:var(--t4)">Be the first!</div>';return;}
   const sorted=data.filter(u=>u.profile_roles).sort((a,b)=>(b.profile_roles?.pts_total||0)-(a.profile_roles?.pts_total||0));
   document.getElementById('lbRows').innerHTML=sorted.slice(0,5).map((u,i)=>`
     <div class="lb-row">
@@ -1017,41 +1322,10 @@ async function loadLeaderboard(){
     </div>`).join('');
 }
 
-// ══ INSIGHT ══
 async function loadInsight(){
   if(!U)return;
   const{data}=await supa.from('insight_reports').select('*').eq('user_id',U.id).order('week_of',{ascending:false}).limit(1).single();
-  if(data){
-    document.getElementById('insightBody').textContent=data.full_report||data.strengths||'Your insight is ready.';
-    document.getElementById('insightMeta').textContent=`Agent 12 · Insight Narrator · Week of ${data.week_of}`;
-  }
-}
-
-// ══ NOTIFICATIONS ══
-async function loadNotifs(){
-  if(!U)return;
-  const{data}=await supa.from('notifications').select('*').eq('user_id',U.id).eq('read',false).order('created_at',{ascending:false}).limit(5);
-  if(!data||!data.length)return;
-  const area=document.getElementById('notifArea');
-  area.innerHTML=data.map(n=>`<div class="notif-card" style="border-color:var(--gold)"><span style="color:var(--gb);font-weight:700">${n.title}</span> ${n.body||''}</div>`).join('');
-  await supa.from('notifications').update({read:true}).eq('user_id',U.id).eq('read',false);
-
-  // Update agent monitor with real data
-  const{data:sh}=await supa.from('score_history').select('action_type,cds').eq('user_id',U.id).order('created_at',{ascending:false}).limit(30);
-  if(sh&&sh.length){
-    const ans=sh.filter(r=>r.action_type==='answer');
-    const qs=sh.filter(r=>r.action_type==='question');
-    const avg=ans.length?Math.round(ans.reduce((s,r)=>s+(r.cds||0),0)/ans.length):0;
-    if(qs.length)st('gk',`${qs.length} screened`);
-    if(qs.length)st('qr',`${qs.length} scored`);
-    if(ans.length){st('ei',`${ans.length} scored`);st('ri',`${ans.length} scored`);st('rai',`${ans.length} scored`);st('coi',`${ans.length} scored`);st('ai',`${ans.length} scored`);}
-    if(avg)st('arb',`Avg CDS ${avg}`);
-    document.getElementById('evtCount').textContent=sh.length;
-  }
-}
-
-function addNotif(title,body,color){
-  document.getElementById('notifArea').insertAdjacentHTML('afterbegin',`<div class="notif-card" style="border-color:${color}"><span style="color:${color};font-weight:700">${title}</span> ${body}</div>`);
+  if(data){document.getElementById('insightBody').textContent=data.full_report||data.strengths||'Your insight is ready.';}
 }
 
 async function loadEvtCount(){
@@ -1059,29 +1333,6 @@ async function loadEvtCount(){
   const{count}=await supa.from('score_history').select('*',{count:'exact',head:true}).eq('user_id',U.id);
   document.getElementById('evtCount').textContent=count||0;
 }
-
-// ══ INIT ══
-window.addEventListener('DOMContentLoaded',async()=>{
-  // Test connection
-  try{
-    const{data,error}=await supa.from('profiles').select('id').limit(1);
-    if(error)throw error;
-    diagEl.style.color='#5dcaa5';
-    diagEl.textContent='✓ Supabase connected · Checking session...';
-  }catch(e){
-    diagEl.style.color='#f09595';
-    diagEl.textContent=`✗ Cannot connect to Supabase: ${e.message}. Check your anon key in config.js`;
-  }
-
-  // Check existing session
-  const{data:{session}}=await supa.auth.getSession();
-  await onSession(session);
-
-  // Listen for auth changes
-  supa.auth.onAuthStateChange(async(_,session)=>{
-    await onSession(session);
-  });
-});
 </script>
 </body>
 </html>
