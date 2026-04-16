@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='%23060c1a' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='26,2 50,15 26,30' fill='%23fff0a0' opacity='.97'/%3E%3Cpolygon points='50,15 50,45 26,30' fill='%23c88010' opacity='.95'/%3E%3Cpolygon points='50,45 26,58 26,30' fill='%231a3c6a' opacity='.95'/%3E%3Cpolygon points='26,58 2,45 26,30' fill='%23060e20' opacity='.97'/%3E%3Cpolygon points='2,45 2,15 26,30' fill='%231e4070' opacity='.95'/%3E%3Cpolygon points='2,15 26,2 26,30' fill='%23d4a020' opacity='.95'/%3E%3Ccircle cx='26' cy='30' r='6' fill='%23f5d060'/%3E%3Ccircle cx='26' cy='30' r='3.5' fill='%23060c1a'/%3E%3Ccircle cx='26' cy='30' r='1.6' fill='%23f5d060'/%3E%3C/svg%3E"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="description" content="The Engageneering™ Framework — Six pillars for engineering engagement across every learning context. The operational core of the movement."/>
 <title>The Engageneering™ Framework — Engineer the Engagement</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
@@ -23,7 +25,33 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--navy);color:#c8d4e8;font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:1.85;overflow-x:hidden}
+body{background:var(--navy);color:#ccd8f0;font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:1.9;overflow-x:hidden}
+/* ── READABILITY UPGRADES ── */
+h2,h3{color:#e8f0fc}
+p{color:#bccce0;font-size:clamp(15px,2.2vw,18px);line-height:1.9}
+.pillar-intro{color:#bccce0;font-size:clamp(15px,2vw,17px);line-height:1.85}
+.technique-title{font-size:clamp(14px,2vw,16px);color:#d8e8f8;font-weight:500}
+.technique-body{font-size:clamp(13px,1.8vw,15px);color:#9ab0cc;line-height:1.8}
+.context-label{font-size:clamp(10px,1.5vw,12px)}
+.context-item{font-size:clamp(12px,1.8vw,14px);color:#9ab0cc}
+/* Mobile */
+@media(max-width:680px){
+  nav{padding:.9rem 1.2rem}
+  .fw-hero{padding:6rem 1.2rem 3rem}
+  .fw-title{font-size:clamp(28px,8vw,48px)}
+  .fw-sub{font-size:15px}
+  .fw-body{padding:0 1rem}
+  .pillar{padding:1.8rem 1.2rem}
+  .pillar-header{flex-direction:column;gap:.6rem}
+  .pillar-num{font-size:32px}
+  .pillar-title{font-size:clamp(20px,5vw,28px)}
+  .techniques-grid{grid-template-columns:1fr}
+  .contexts-grid{grid-template-columns:1fr 1fr}
+  .assessment-section{padding:1.8rem 1.2rem}
+  .ap-row{padding:1.2rem}
+  .contents-grid{grid-template-columns:1fr 1fr}
+  .fw-cta{padding:4rem 1.2rem}
+}
 ::selection{background:rgba(200,146,42,0.3);color:#fff}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--gold)}
@@ -182,7 +210,7 @@ nav{position:fixed;top:2px;left:0;right:0;z-index:200;padding:1.1rem 3rem;displa
 
 <nav>
   <a class="nav-logo" href="/">ENGAGENEERING™</a>
-  <div class="nav-right">
+  <div class="nav-right" id="navRight">
     <a class="nav-link" href="/engageneering_manifesto.html">Manifesto</a>
     <a class="nav-link" href="/">← Back to Site</a>
   </div>
@@ -762,5 +790,140 @@ function resetAudit(){
   document.getElementById('auditForm').scrollIntoView({behavior:'smooth'});
 }
 </script>
+
+<!-- AUTH GATE OVERLAY -->
+<div id="authGate" style="display:none;position:fixed;inset:0;background:rgba(4,8,18,.92);z-index:600;align-items:center;justify-content:center;backdrop-filter:blur(10px)">
+  <div style="background:#0b1624;border:1px solid #2a4a7a;border-radius:14px;padding:2.5rem;max-width:440px;width:90%;text-align:center">
+    <svg width="52" height="60" viewBox="0 0 52 60" style="margin:0 auto 1.2rem;display:block">
+      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
+      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
+      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
+      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
+      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
+      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
+      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
+      <circle cx="26" cy="30" r="6" fill="#f5d060"/>
+      <circle cx="26" cy="30" r="3.5" fill="#0b1624"/>
+      <circle cx="26" cy="30" r="1.6" fill="#f5d060"/>
+    </svg>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#f0c040;margin-bottom:.6rem;font-weight:600">Sign in to take the Audit</div>
+    <div style="font-size:14px;color:#7a9ab8;line-height:1.7;margin-bottom:1.6rem">Your assessment scores are saved to your profile and tracked over time. Sign in or create a free account to continue.</div>
+    <div style="display:flex;flex-direction:column;gap:.7rem">
+      <button onclick="gateOAuth('google')" style="display:flex;align-items:center;gap:.8rem;width:100%;padding:.85rem 1.1rem;background:#0f1e36;border:1px solid #2a4a7a;border-radius:6px;cursor:pointer;font-size:13px;color:#b8cce8;font-family:'EB Garamond',serif;transition:border-color .2s" onmouseover="this.style.borderColor='#c8922a'" onmouseout="this.style.borderColor='#2a4a7a'">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <div style="display:flex;align-items:center;gap:.8rem;margin:.2rem 0;font-size:10px;color:#3a5070"><div style="flex:1;height:1px;background:#1e3a6a"></div>or email<div style="flex:1;height:1px;background:#1e3a6a"></div></div>
+      <input id="gateEmail" type="email" placeholder="your@email.com" style="width:100%;background:#080f1c;border:1px solid #1e3a6a;border-radius:6px;padding:10px 14px;color:#e8f0fc;font-family:'EB Garamond',serif;font-size:14px;outline:none"/>
+      <input id="gatePwd" type="password" placeholder="Password" style="width:100%;background:#080f1c;border:1px solid #1e3a6a;border-radius:6px;padding:10px 14px;color:#e8f0fc;font-family:'EB Garamond',serif;font-size:14px;outline:none"/>
+      <div id="gateError" style="font-size:11px;color:#f09595;min-height:14px"></div>
+      <button onclick="gateEmailLogin()" style="width:100%;padding:11px;background:#c8922a;color:#040c18;border:none;border-radius:6px;font-size:11px;letter-spacing:2px;font-family:'Cormorant Garamond',serif;text-transform:uppercase;cursor:pointer;font-weight:700">Log In / Create Account</button>
+    </div>
+    <div style="font-size:11px;color:#3a5070;margin-top:1rem;cursor:pointer" onclick="closeGate()">Skip for now — browse without saving</div>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE ──────────────────────────────────────────
+const SUPA_URL  = 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRicW5rY2pmdHhmYnh1anhzcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDE2OTgsImV4cCI6MjA5MTgxNzY5OH0.Y7R7MKo9mu5T4CMUAjAK1vMxnW_VqJKrieIi4MnCSeY';
+const supa = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+
+let currentUser = null;
+
+async function initAuth(){
+  const { data:{session} } = await supa.auth.getSession();
+  if(session) handleUser(session.user);
+  supa.auth.onAuthStateChange((_,session)=>{
+    if(session) handleUser(session.user);
+    else { currentUser=null; updateNav(null); }
+  });
+}
+
+function handleUser(user){
+  currentUser = user;
+  updateNav(user);
+  closeGate();
+}
+
+function updateNav(user){
+  const nr = document.getElementById('navRight');
+  if(!nr) return;
+  if(user){
+    const initials = (user.user_metadata?.full_name||user.email||'U').charAt(0).toUpperCase();
+    nr.innerHTML = `
+      <a href="platform.html" class="nav-link">Platform</a>
+      <a href="index.html" class="nav-link">Home</a>
+      <div style="width:28px;height:28px;border-radius:50%;background:#0f1e36;border:1px solid #2a4a7a;display:flex;align-items:center;justify-content:center;font-size:11px;color:#f0c040;font-weight:700;cursor:default">${initials}</div>
+      <button onclick="supa.auth.signOut()" style="font-size:10px;letter-spacing:1.5px;color:#4a6a8a;background:none;border:none;cursor:pointer;text-transform:uppercase">Sign out</button>`;
+  } else {
+    nr.innerHTML = `
+      <a href="platform.html" class="nav-link">Platform</a>
+      <a href="index.html" class="nav-link">Home</a>
+      <button onclick="showGate()" style="font-size:10px;letter-spacing:1.5px;padding:6px 16px;border-radius:4px;background:transparent;color:#c8922a;border:1px solid rgba(200,146,42,.5);cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .2s" onmouseover="this.style.background='rgba(200,146,42,.1)'" onmouseout="this.style.background='transparent'">Sign In</button>
+      <button onclick="showGate()" style="font-size:10px;letter-spacing:1.5px;padding:7px 18px;border-radius:4px;background:#c8922a;color:#040c18;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;font-weight:700">Join Free</button>`;
+  }
+}
+
+function showGate(){ document.getElementById('authGate').style.display='flex'; }
+function closeGate(){ document.getElementById('authGate').style.display='none'; }
+
+async function gateOAuth(provider){
+  const {error} = await supa.auth.signInWithOAuth({provider, options:{redirectTo: window.location.href}});
+  if(error) document.getElementById('gateError').textContent = error.message;
+}
+
+async function gateEmailLogin(){
+  const email = document.getElementById('gateEmail').value.trim();
+  const pwd   = document.getElementById('gatePwd').value;
+  const errEl = document.getElementById('gateError');
+  errEl.textContent='';
+  if(!email||!pwd){errEl.textContent='Please enter email and password.';return;}
+  // Try login first, then signup
+  let {error} = await supa.auth.signInWithPassword({email,password:pwd});
+  if(error && error.message.includes('Invalid')){
+    const res = await supa.auth.signUp({email,password:pwd});
+    if(res.error){errEl.textContent=res.error.message;return;}
+    errEl.style.color='#5dcaa5';
+    errEl.textContent='Account created — check your email to confirm.';
+    return;
+  }
+  if(error){errEl.textContent=error.message;}
+}
+
+// ── SAVE ASSESSMENT TO DB ─────────────────────────────
+async function saveAssessmentToDB(scores, total, bandLabel){
+  if(!currentUser) return;
+  const payload = {
+    user_id: currentUser.id,
+    week_of: new Date().toISOString().split('T')[0],
+    strengths: bandLabel,
+    index_delta: {
+      p1:scores[0],p2:scores[1],p3:scores[2],
+      p4:scores[3],p5:scores[4],p6:scores[5],
+      total
+    },
+    full_report: `Self-assessment completed. Score: ${total}/60. Band: ${bandLabel}.`,
+    delivered: true
+  };
+  await supa.from('insight_reports').upsert(payload, {onConflict:'user_id,week_of'});
+}
+
+// ── PATCH calculateScore TO SAVE ──────────────────────
+const _origCalc = window.calculateScore;
+window.calculateScore = function(){
+  if(!currentUser){ showGate(); return; }
+  _origCalc && _origCalc();
+  // Save after original runs
+  const scores = pillars.map(p=>parseInt(document.getElementById('sl_'+p.id).value));
+  const total = scores.reduce((a,b)=>a+b,0);
+  const band = bands.find(b=>total>=b.min&&total<=b.max);
+  saveAssessmentToDB(scores, total, band?.label||'');
+};
+
+// ── INIT ──────────────────────────────────────────────
+initAuth();
+</script>
+
 </body>
 </html>
