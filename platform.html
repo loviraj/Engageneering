@@ -298,21 +298,16 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 
       <!-- Content type selector -->
       <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem">Format</div>
-      <div class="type-select" id="typeSelect">
+      <div class="type-select" id="typeSelect" style="grid-template-columns:1fr 1fr">
         <div class="type-opt on" id="type-text" onclick="setType('text')">
           <div class="type-opt-icon">✍️</div>
-          <div class="type-opt-name">Text</div>
-          <div class="type-opt-desc">Write your question</div>
+          <div class="type-opt-name">Text Question</div>
+          <div class="type-opt-desc">Write your question — can receive video answers</div>
         </div>
         <div class="type-opt" id="type-video" onclick="setType('video')">
           <div class="type-opt-icon">🎥</div>
-          <div class="type-opt-name">Video</div>
-          <div class="type-opt-desc">Record or upload</div>
-        </div>
-        <div class="type-opt" id="type-both" onclick="setType('both')">
-          <div class="type-opt-icon">⚡</div>
-          <div class="type-opt-name">Both</div>
-          <div class="type-opt-desc">Text + video</div>
+          <div class="type-opt-name">Video Question</div>
+          <div class="type-opt-desc">Record or upload — can receive text answers</div>
         </div>
       </div>
 
@@ -781,17 +776,16 @@ function qCard(q,force=false){
     </div>
     <div class="ans-panel" id="${pid}">
       <div class="ap-title">Your answer — text, video, or both</div>
-      <!-- Answer type toggle -->
+      <!-- Answer type toggle — Text OR Video -->
       <div class="ans-type-toggle">
         <button class="att on" id="att-text-${q.id}" onclick="setAnsType('${q.id}','text')">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h6M2 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          Text
+          Text Answer
         </button>
         <button class="att" id="att-video-${q.id}" onclick="setAnsType('${q.id}','video')">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
-          Video
+          Video Answer
         </button>
-        <button class="att" id="att-both-${q.id}" onclick="setAnsType('${q.id}','both')">⚡ Both</button>
       </div>
 
       <!-- Text answer -->
@@ -849,11 +843,11 @@ function togglePanel(id){document.getElementById(id)?.classList.toggle('open');}
 const ansTypes={};
 function setAnsType(qid,type){
   ansTypes[qid]=type;
-  ['text','video','both'].forEach(t=>{
+  ['text','video'].forEach(t=>{
     document.getElementById(`att-${t}-${qid}`)?.classList.toggle('on',t===type);
   });
-  document.getElementById(`atw-${qid}`)?.classList.toggle('show',type==='text'||type==='both');
-  document.getElementById(`avw-${qid}`)?.classList.toggle('show',type==='video'||type==='both');
+  document.getElementById(`atw-${qid}`)?.classList.toggle('show',type==='text');
+  document.getElementById(`avw-${qid}`)?.classList.toggle('show',type==='video');
 }
 
 // ══ SAMPLE FEED ══
@@ -909,9 +903,12 @@ function resetModal(){
 // ══ CONTENT TYPE ══
 function setType(t){
   contentType=t;
-  ['text','video','both'].forEach(k=>{document.getElementById('type-'+k).classList.toggle('on',k===t);});
-  document.getElementById('textSection').style.display=(t==='text'||t==='both')?'block':'none';
-  document.getElementById('videoSection').style.display=(t==='video'||t==='both')?'block':'none';
+  ['text','video'].forEach(k=>{
+    const el=document.getElementById('type-'+k);
+    if(el)el.classList.toggle('on',k===t);
+  });
+  document.getElementById('textSection').style.display=t==='text'?'block':'none';
+  document.getElementById('videoSection').style.display=t==='video'?'block':'none';
 }
 
 // ══ VIDEO TAB ══
@@ -937,11 +934,11 @@ async function startRec(){
     // Clear status once camera is confirmed working
     if(statusEl){statusEl.textContent='';statusEl.style.color='';}
     recChunks=[];recSeconds=0;
-    const mime=getSupportedMime();
-    mediaRecorder=new MediaRecorder(mediaStream,mime?{mimeType:mime}:{});
+    // No mimeType — browser picks the best supported format automatically
+    mediaRecorder=new MediaRecorder(mediaStream);
     mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
     mediaRecorder.onstop=()=>{
-      recBlob=new Blob(recChunks,{type:mediaRecorder.mimeType||getSupportedMime()});
+      recBlob=new Blob(recChunks,{type:mediaRecorder.mimeType||'video/webm'});
       const url=URL.createObjectURL(recBlob);
       const pb=document.getElementById('recPlayback');
       pb.src=url;pb.style.display='block';
@@ -1025,23 +1022,11 @@ function setUploadFile(f){
 }
 
 function getSupportedMime(){
-  // Test combinations in order of preference
-  // Separate video+audio codec combinations to avoid mismatch errors
-  const types=[
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm;codecs=h264,opus',
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8',
-    'video/webm',
-    'video/mp4;codecs=h264,aac',
-    'video/mp4',
-    ''
-  ];
-  const supported = types.find(t => {
-    try { return MediaRecorder.isTypeSupported(t); } catch(e) { return false; }
-  });
-  return supported || '';
+  // Do NOT specify mimeType — let the browser choose its own default.
+  // isTypeSupported() is unreliable across browsers and causes the exact
+  // "unsupported codec" error we see. Returning '' means we pass no mimeType
+  // option to MediaRecorder, which always works.
+  return '';
 }
 
 // ══ RECORDER — ANSWER PANELS (per card) ══
@@ -1057,8 +1042,8 @@ async function startAnsRec(qid){
     cam.srcObject=stream;cam.style.display='block';
     document.getElementById(`av-ph-${qid}`).style.display='none';
     document.getElementById(`av-play-${qid}`).style.display='none';
-    const mime2=getSupportedMime();
-    const mr=new MediaRecorder(stream,mime2?{mimeType:mime2}:{});
+    // No mimeType — browser picks automatically
+    const mr=new MediaRecorder(stream);
     ansRecState[qid].recorder=mr;
     mr.ondataavailable=e=>{if(e.data.size>0)ansRecState[qid].chunks.push(e.data);};
     mr.onstop=()=>{
