@@ -861,39 +861,78 @@ const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
 
 // ── SESSION & UI STATE ─────────────────────────────────
 let currentUser = null;
+
+// NOTE: If profiles insert fails, run this in Supabase SQL Editor:
+// CREATE POLICY "profiles: insert own" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+// CREATE POLICY "profile_roles: system insert" ON profile_roles FOR INSERT WITH CHECK (true);
 let currentProfile = null;
 
 async function initAuth() {
-  const { data: { session } } = await supa.auth.getSession();
-  if (session) await handleSession(session);
-
-  supa.auth.onAuthStateChange(async (_event, session) => {
+  try {
+    const { data: { session } } = await supa.auth.getSession();
     if (session) await handleSession(session);
-    else handleSignout();
-  });
+    supa.auth.onAuthStateChange(async (_event, session) => {
+      if (session) await handleSession(session);
+      else handleSignout();
+    });
+  } catch(err) {
+    console.error('Auth init error:', err);
+  }
 }
 
 async function handleSession(session) {
-  hidePlatformGate();
-  currentUser = session.user;
-  // Load profile
-  const { data: profile } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
-  currentProfile = profile;
-  // Load role
-  const { data: role } = await supa.from('profile_roles').select('*').eq('user_id', currentUser.id).single();
-  updateNavUI(profile, role);
-  closeAuth();
-  // If no role yet → show role selection (first login)
-  if (!role) await createDefaultRole();
+  try {
+    hidePlatformGate();
+    closeAuth();
+    currentUser = session.user;
+
+    // Load or create profile
+    let { data: profile, error: pErr } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (pErr || !profile) {
+      // Profile not created by trigger yet — create it manually
+      const { data: newProfile } = await supa.from('profiles').upsert({
+        id: currentUser.id,
+        display_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Engageneer',
+        avatar_url: currentUser.user_metadata?.avatar_url || null,
+        status: 'active'
+      }, {onConflict:'id'}).select().single();
+      profile = newProfile;
+    }
+    currentProfile = profile;
+
+    // Load or create role
+    let { data: role, error: rErr } = await supa.from('profile_roles').select('*').eq('user_id', currentUser.id).single();
+    if (rErr || !role) {
+      const { data: newRole } = await supa.from('profile_roles').upsert({
+        user_id: currentUser.id,
+        role: 'both',
+        seeker_tier: 1,
+        answerer_tier: 1,
+        pts_total: 0
+      }, {onConflict:'user_id'}).select().single();
+      role = newRole;
+    }
+
+    updateNavUI(profile, role);
+    console.log('Session active:', currentUser.email);
+  } catch(err) {
+    console.error('Session handling error:', err);
+    hidePlatformGate();
+  }
 }
 
 async function createDefaultRole() {
-  await supa.from('profile_roles').insert({
-    user_id: currentUser.id,
-    role: 'both',
-    seeker_tier: 1,
-    answerer_tier: 1
-  });
+  try {
+    await supa.from('profile_roles').upsert({
+      user_id: currentUser.id,
+      role: 'both',
+      seeker_tier: 1,
+      answerer_tier: 1,
+      pts_total: 0
+    }, {onConflict:'user_id'});
+  } catch(err) {
+    console.error('Role creation error:', err);
+  }
 }
 
 function handleSignout() {
@@ -959,10 +998,24 @@ async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pwd   = document.getElementById('loginPwd').value;
   const errEl = document.getElementById('loginError');
+  const btn   = document.querySelector('#sectionLogin .btn-primary');
   errEl.textContent = '';
   if (!email || !pwd) { errEl.textContent = 'Please enter email and password.'; return; }
-  const { error } = await supa.auth.signInWithPassword({ email, password: pwd });
-  if (error) errEl.textContent = error.message;
+  if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
+  try {
+    const { data, error } = await supa.auth.signInWithPassword({ email, password: pwd });
+    if (error) {
+      errEl.textContent = error.message === 'Invalid login credentials'
+        ? 'Email or password incorrect. Try signing up if you are new.'
+        : error.message;
+    } else if (data?.session) {
+      await handleSession(data.session);
+    }
+  } catch(err) {
+    errEl.textContent = 'Connection error. Check your internet and try again.';
+  } finally {
+    if (btn) { btn.textContent = 'Log In'; btn.disabled = false; }
+  }
 }
 
 // ── SIGNUP ─────────────────────────────────────────────
@@ -972,15 +1025,33 @@ async function doSignup() {
   const pwd   = document.getElementById('signupPwd').value;
   const errEl = document.getElementById('signupError');
   const okEl  = document.getElementById('signupSuccess');
+  const btn   = document.querySelector('#sectionSignup .btn-primary');
   errEl.textContent=''; okEl.textContent='';
   if (!name || !email || !pwd) { errEl.textContent='All fields required.'; return; }
   if (pwd.length < 8) { errEl.textContent='Password must be at least 8 characters.'; return; }
-  const { error } = await supa.auth.signUp({
-    email, password: pwd,
-    options: { data: { full_name: name } }
-  });
-  if (error) errEl.textContent = error.message;
-  else okEl.textContent = 'Account created — check your email to confirm, then log in.';
+  if (btn) { btn.textContent = 'Creating account...'; btn.disabled = true; }
+  try {
+    const { data, error } = await supa.auth.signUp({
+      email, password: pwd,
+      options: {
+        data: { full_name: name },
+        emailRedirectTo: window.location.href
+      }
+    });
+    if (error) {
+      errEl.textContent = error.message;
+    } else if (data?.session) {
+      // Email confirmation disabled — logged in immediately
+      await handleSession(data.session);
+    } else {
+      // Email confirmation enabled — show message
+      okEl.textContent = 'Account created! Check your email for a confirmation link, then log in.';
+    }
+  } catch(err) {
+    errEl.textContent = 'Connection error. Check your internet and try again.';
+  } finally {
+    if (btn) { btn.textContent = 'Create Account'; btn.disabled = false; }
+  }
 }
 
 // ── OAUTH ──────────────────────────────────────────────
