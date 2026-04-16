@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='%23060c1a' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='26,2 50,15 26,30' fill='%23fff0a0' opacity='.97'/%3E%3Cpolygon points='50,15 50,45 26,30' fill='%23c88010' opacity='.95'/%3E%3Cpolygon points='50,45 26,58 26,30' fill='%231a3c6a' opacity='.95'/%3E%3Cpolygon points='26,58 2,45 26,30' fill='%23060e20' opacity='.97'/%3E%3Cpolygon points='2,45 2,15 26,30' fill='%231e4070' opacity='.95'/%3E%3Cpolygon points='2,15 26,2 26,30' fill='%23d4a020' opacity='.95'/%3E%3Ccircle cx='26' cy='30' r='6' fill='%23f5d060'/%3E%3Ccircle cx='26' cy='30' r='3.5' fill='%23060c1a'/%3E%3Ccircle cx='26' cy='30' r='1.6' fill='%23f5d060'/%3E%3C/svg%3E"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Engageneering™ — Crowd Learning Platform</title>
@@ -1151,7 +1150,7 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script>
-const API="https://api.anthropic.com/v1/messages";
+// Agent calls now route through Supabase Edge Function aria-agent
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 function setLog(t){document.getElementById('ariaLog').innerHTML=`<span class="kw">ARIA</span> · ${t}`}
@@ -1164,9 +1163,20 @@ function setTab(b){document.querySelectorAll('.ftab').forEach(x=>x.classList.rem
 function toggleTag(e){e.classList.toggle('sel')}
 function togglePanel(id){document.getElementById(id).classList.toggle('open')}
 
-async function callClaude(sys,usr,tok=350){
-  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:tok,system:sys,messages:[{role:'user',content:usr}]})});
-  const d=await r.json();return d.content?.[0]?.text||'';
+async function callAgent(agent, payload){
+  // Calls Supabase Edge Function — no CORS, API key stays server-side
+  try {
+    const r = await fetch(`${SUPA_URL}/functions/v1/aria-agent`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPA_ANON}`},
+      body: JSON.stringify({agent, ...payload})
+    });
+    const text = await r.text();
+    try { return JSON.parse(text); } catch(e) { return {}; }
+  } catch(err) {
+    console.warn('Agent call failed, using fallback:', err);
+    return {};
+  }
 }
 
 async function submitQuestion(){
@@ -1181,12 +1191,8 @@ async function submitQuestion(){
   // Agent 01 — Gatekeeper
   setPip('gk','pulse');setDot('gk','run');setSt('gk','Screening...');
   setLog('Agent 01 Gatekeeper · Screening for content policy...');
-  const gkR=await callClaude(
-    'You are the Gatekeeper for Engageneering™ crowd learning platform. Screen questions for harmful, obnoxious, or bad-faith content. Return ONLY JSON: {"verdict":"approve"|"revise"|"reject","reason":"one sentence"}. Be generous — genuine curiosity about any subject should be approved.',
-    `Question: "${q}" | Tags: ${tags}`
-  );
-  let gk={verdict:'approve',reason:'Genuine curiosity question.'};
-  try{gk=JSON.parse(gkR.replace(/```json|```/g,'').trim())}catch(e){}
+  let gk = await callAgent('gatekeeper', {question:q, tags});
+  if(!gk.verdict) gk = {verdict:'approve',reason:'Genuine curiosity question.'};
   setDot('gk','ready');setPip('gk','blue');setSt('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
   if(gk.verdict==='reject'){setLog(`Gatekeeper: Rejected · ${gk.reason}`);ariaOff();setDot('aria','idle');setSt('aria','Standby');alert(`Not approved:\n${gk.reason}`);return;}
   await sleep(400);
@@ -1194,12 +1200,8 @@ async function submitQuestion(){
   // Agent 02 — Question Rater
   setPip('qr','pulse');setDot('qr','run');setSt('qr','Scoring...');
   setLog('Agent 02 Question Rater · Scoring clarity, depth, originality, engagement potential...');
-  const qrR=await callClaude(
-    'You are the Question Rater for Engageneering™. Score this question on four axes (0-25 each). Return ONLY JSON: {"clarity":N,"depth":N,"originality":N,"engagement_potential":N,"total":N,"feedback":"one sentence"}.',
-    `Question: "${q}" | Tags: ${tags}`
-  );
-  let qr={clarity:18,depth:17,originality:16,engagement_potential:19,total:70,feedback:'Good question with strong engagement potential.'};
-  try{qr=JSON.parse(qrR.replace(/```json|```/g,'').trim())}catch(e){}
+  let qr = await callAgent('question_rater', {question:q, tags});
+  if(!qr.total) qr = {clarity:18,depth:17,originality:16,engagement_potential:19,total:70,feedback:'Good question with strong engagement potential.'};
   setDot('qr','ready');setPip('qr','blue');setSt('qr',`Quality ${qr.total}`);
   setLog(`Question Rater: Quality ${qr.total}/100 · ${qr.feedback}`);
   await sleep(400);
@@ -1207,12 +1209,8 @@ async function submitQuestion(){
   // Agent 03 — Smart Matcher
   setPip('sm','pulse');setDot('sm','run');setSt('sm','Matching...');
   setLog('Agent 03 Smart Matcher · Scanning community expertise, answer history, and subject tags...');
-  const smR=await callClaude(
-    'You are the Smart Matcher for Engageneering™. Identify best-fit answerers. Return ONLY JSON: {"matched":["Name — Tier","Name — Tier","Name — Tier"],"invite":"one sentence personalised invitation"}.',
-    `Question: "${q}" | Tags: ${tags} | Quality: ${qr.total}`
-  );
-  let sm={matched:['David O. — Illuminator','Sarah K. — Illuminator','Fatima A. — Challenger'],invite:'Your expertise is exactly what this question needs.'};
-  try{sm=JSON.parse(smR.replace(/```json|```/g,'').trim())}catch(e){}
+  let sm = await callAgent('smart_matcher', {question:q, tags});
+  if(!sm.matched) sm = {matched:['David O. — Illuminator','Sarah K. — Illuminator','Fatima A. — Challenger'],invite:'Your expertise is exactly what this question needs.'};
   setDot('sm','ready');setPip('sm','blue');setSt('sm',`${(sm.matched||[]).length} matched`);
   setLog(`Smart Matcher: Invited ${(sm.matched||[]).slice(0,2).join(', ')} and ${Math.max(0,(sm.matched||[]).length-2)} others`);
   await sleep(350);
@@ -1383,11 +1381,10 @@ async function submitAnswer(inpId,listId,hintId,scoreId){
 
 async function refreshInsight(cds){
   setDot('in','run');setSt('in','Narrating...');
-  const r=await callClaude(
-    'You are the Insight Narrator for Engageneering™. Write a warm, specific 2-sentence insight for an educator based on their answer score. Second person. Vary the opening — never start with "Your answer". Focus on one specific growth edge.',
-    `CDS scored ${cds}/100.`
-  );
-  if(r){const el=document.getElementById('insightBody');if(el)el.textContent=r;}
+  // Insight narrative — use edge function
+  const ins = await callAgent('engagement_indexer', {question:'Generate an insight', answer:`CDS ${cds}/100, AG ${ag}/100`});
+  const insText = ins.note || `CDS ${cds}/100 recorded. Your answer has been scored and saved to your profile.`;
+  const el=document.getElementById('insightBody');if(el)el.textContent=insText;
   setDot('in','done-p');setSt('in','Updated ✓');
   setTimeout(()=>{setDot('in','idle');setSt('in','Next: Sunday');},3500);
 }
