@@ -937,10 +937,11 @@ async function startRec(){
     // Clear status once camera is confirmed working
     if(statusEl){statusEl.textContent='';statusEl.style.color='';}
     recChunks=[];recSeconds=0;
-    mediaRecorder=new MediaRecorder(mediaStream,{mimeType:getSupportedMime()});
+    const mime=getSupportedMime();
+    mediaRecorder=new MediaRecorder(mediaStream,mime?{mimeType:mime}:{});
     mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
     mediaRecorder.onstop=()=>{
-      recBlob=new Blob(recChunks,{type:getSupportedMime()});
+      recBlob=new Blob(recChunks,{type:mediaRecorder.mimeType||getSupportedMime()});
       const url=URL.createObjectURL(recBlob);
       const pb=document.getElementById('recPlayback');
       pb.src=url;pb.style.display='block';
@@ -1024,8 +1025,23 @@ function setUploadFile(f){
 }
 
 function getSupportedMime(){
-  const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];
-  return types.find(t=>MediaRecorder.isTypeSupported(t))||'video/webm';
+  // Test combinations in order of preference
+  // Separate video+audio codec combinations to avoid mismatch errors
+  const types=[
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm;codecs=h264,opus',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+    'video/mp4;codecs=h264,aac',
+    'video/mp4',
+    ''
+  ];
+  const supported = types.find(t => {
+    try { return MediaRecorder.isTypeSupported(t); } catch(e) { return false; }
+  });
+  return supported || '';
 }
 
 // ══ RECORDER — ANSWER PANELS (per card) ══
@@ -1041,7 +1057,8 @@ async function startAnsRec(qid){
     cam.srcObject=stream;cam.style.display='block';
     document.getElementById(`av-ph-${qid}`).style.display='none';
     document.getElementById(`av-play-${qid}`).style.display='none';
-    const mr=new MediaRecorder(stream,{mimeType:getSupportedMime()});
+    const mime2=getSupportedMime();
+    const mr=new MediaRecorder(stream,mime2?{mimeType:mime2}:{});
     ansRecState[qid].recorder=mr;
     mr.ondataavailable=e=>{if(e.data.size>0)ansRecState[qid].chunks.push(e.data);};
     mr.onstop=()=>{
