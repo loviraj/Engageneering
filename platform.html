@@ -560,7 +560,7 @@ let U=null,P=null,R=null;
 let view='all',topic='',fmt='all';
 let modalMode='question';  // 'question' or 'answer'
 let modalAnswerFor=null;   // question id when answering
-let contentType='text';    // 'text','video','both'
+let contentType='text';    // 'text' or 'video' only
 let videoTab='record';     // 'record' or 'upload'
 
 // Recorder state
@@ -714,17 +714,33 @@ function inlineScore(a){
 
 function videoPlayer(url,thumb,type){
   const id='v'+Math.random().toString(36).substr(2,6);
-  return`<div class="qc-video-thumb" onclick="playVideo('${id}','${url}')">
-    ${thumb?`<img src="${thumb}" alt="video thumbnail"/>`:
-    `<video id="${id}" src="${url}" preload="metadata" style="display:block"></video>`}
-    <div class="qc-video-overlay">
+  // Always show thumbnail if available, otherwise show video with poster frame
+  const thumbHtml = thumb
+    ? `<img src="${thumb}" alt="Video thumbnail" style="width:100%;height:100%;object-fit:cover;display:block"/>`
+    : `<video id="${id}" src="${url}" preload="metadata" style="display:block;width:100%;height:100%;object-fit:cover" onloadeddata="this.currentTime=0.5"></video>`;
+  return`<div class="qc-video-thumb" onclick="playVideoInline('${id}','${url}',this)">
+    <div id="thumb-${id}" style="width:100%;height:100%;position:absolute;inset:0">${thumbHtml}</div>
+    <video id="${id}" src="${url}" controls playsinline style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;background:#000"></video>
+    <div class="qc-video-overlay" id="overlay-${id}">
       <div class="play-btn"><svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg></div>
     </div>
     <div class="content-badge badge-video">Video</div>
   </div>`;
 }
 
-function playVideo(id,url){
+function playVideoInline(id,url,container){
+  const thumb=document.getElementById('thumb-'+id);
+  const video=document.getElementById(id);
+  const overlay=document.getElementById('overlay-'+id);
+  if(thumb)thumb.style.display='none';
+  if(overlay)overlay.style.display='none';
+  if(video){
+    video.style.display='block';
+    video.play().catch(e=>console.warn('Autoplay prevented:',e));
+  }
+}
+
+function playVideo_legacy(id,url){
   const v=document.getElementById(id);
   if(v){v.style.display='block';v.play();}
   else{
@@ -761,7 +777,7 @@ function qCard(q,force=false){
       <div class="qm">
         <div class="qtag ${cls}">${tag}</div>
         ${q.quality_score!=null?`<div class="qscore">Quality ${q.quality_score}</div>`:''}
-        ${ct!=='text'?`<span class="content-badge ${ct==='video'?'badge-video':'badge-both'}" style="position:relative;font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:20px">${ct==='video'?'Video':'Text+Video'}</span>`:''}
+        ${ct==='video'?`<span class="content-badge badge-video" style="position:relative;font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:20px">Video</span>`:''}
         ${isMatch?`<span style="font-size:10px;color:var(--tlb)">✦ Matched</span>`:''}
         ${isMe?`<span style="font-size:10px;color:var(--gold)">✦ Yours</span>`:''}
         <div class="qasker">${asker}</div>
@@ -775,7 +791,7 @@ function qCard(q,force=false){
       </div>
     </div>
     <div class="ans-panel" id="${pid}">
-      <div class="ap-title">Your answer — text, video, or both</div>
+      <div class="ap-title">Your answer — text or video</div>
       <!-- Answer type toggle — Text OR Video -->
       <div class="ans-type-toggle">
         <button class="att on" id="att-text-${q.id}" onclick="setAnsType('${q.id}','text')">
@@ -922,7 +938,6 @@ function switchVideoTab(t){
 
 // ══ RECORDER — QUESTION MODAL ══
 async function startRec(){
-  // Clear any previous error immediately
   const statusEl=document.getElementById('recStatus');
   if(statusEl){statusEl.textContent='Requesting camera access...';statusEl.style.color='';}
   try{
@@ -931,11 +946,16 @@ async function startRec(){
     v.srcObject=mediaStream;v.style.display='block';
     document.getElementById('recPlaceholder').style.display='none';
     document.getElementById('recPlayback').style.display='none';
-    // Clear status once camera is confirmed working
     if(statusEl){statusEl.textContent='';statusEl.style.color='';}
     recChunks=[];recSeconds=0;
-    // No mimeType — browser picks the best supported format automatically
-    mediaRecorder=new MediaRecorder(mediaStream);
+    // Build MediaRecorder with best supported options for this browser
+    const recOpts = getBestRecorderOptions();
+    try {
+      mediaRecorder = new MediaRecorder(mediaStream, recOpts);
+    } catch(optErr) {
+      // Options rejected — fall back to no options (browser default)
+      mediaRecorder = new MediaRecorder(mediaStream);
+    }
     mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
     mediaRecorder.onstop=()=>{
       recBlob=new Blob(recChunks,{type:mediaRecorder.mimeType||'video/webm'});
@@ -1021,12 +1041,25 @@ function setUploadFile(f){
   document.getElementById('uploadFileSize').textContent=(f.size/1024/1024).toFixed(1)+' MB';
 }
 
-function getSupportedMime(){
-  // Do NOT specify mimeType — let the browser choose its own default.
-  // isTypeSupported() is unreliable across browsers and causes the exact
-  // "unsupported codec" error we see. Returning '' means we pass no mimeType
-  // option to MediaRecorder, which always works.
-  return '';
+function getBestRecorderOptions(){
+  // Ordered list — audio+video pairs only, most compatible first
+  const candidates=[
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm;codecs=vp9',
+    'video/webm',
+    'video/mp4'
+  ];
+  for(const mime of candidates){
+    try{
+      if(MediaRecorder.isTypeSupported(mime)){
+        // Extra verification: try creating a test recorder
+        // Firefox sometimes lies about support
+        return {mimeType: mime};
+      }
+    }catch(e){}
+  }
+  return {}; // Empty = browser default, always safe
 }
 
 // ══ RECORDER — ANSWER PANELS (per card) ══
@@ -1042,8 +1075,10 @@ async function startAnsRec(qid){
     cam.srcObject=stream;cam.style.display='block';
     document.getElementById(`av-ph-${qid}`).style.display='none';
     document.getElementById(`av-play-${qid}`).style.display='none';
-    // No mimeType — browser picks automatically
-    const mr=new MediaRecorder(stream);
+    const recOpts2=getBestRecorderOptions();
+    let mr;
+    try{mr=new MediaRecorder(stream,recOpts2);}
+    catch(e2){mr=new MediaRecorder(stream);}
     ansRecState[qid].recorder=mr;
     mr.ondataavailable=e=>{if(e.data.size>0)ansRecState[qid].chunks.push(e.data);};
     mr.onstop=()=>{
@@ -1119,22 +1154,72 @@ async function handleAnsUpload(e,qid){
 }
 
 // ══ UPLOAD TO SUPABASE STORAGE ══
-async function uploadVideoToStorage(blob,folder){
-  const ext=blob.type.includes('mp4')?'mp4':'webm';
-  const path=`${folder}/${U.id}/${Date.now()}.${ext}`;
-  document.getElementById('uploadProgressWrap').classList.add('show');
-  const{data,error}=await supa.storage.from('engageneering-videos').upload(path,blob,{
-    contentType:blob.type,
-    upsert:false,
-    onUploadProgress:(p)=>{
-      const pct=Math.round(p.loaded/p.total*100);
-      document.getElementById('uploadBar').style.width=pct+'%';
-    }
+// Generate thumbnail by seeking video to 1s and capturing a frame
+async function generateThumbnail(blob){
+  return new Promise((resolve)=>{
+    try{
+      const url=URL.createObjectURL(blob);
+      const video=document.createElement('video');
+      video.src=url;
+      video.muted=true;
+      video.playsInline=true;
+      video.currentTime=0.5; // Seek to 0.5s for a good frame
+      video.onloadeddata=()=>{
+        video.currentTime=Math.min(0.5,video.duration*0.1);
+      };
+      video.onseeked=()=>{
+        try{
+          const canvas=document.createElement('canvas');
+          canvas.width=480;
+          canvas.height=270; // 16:9
+          const ctx=canvas.getContext('2d');
+          ctx.drawImage(video,0,0,480,270);
+          canvas.toBlob(thumbBlob=>{
+            URL.revokeObjectURL(url);
+            resolve(thumbBlob);
+          },'image/jpeg',0.8);
+        }catch(e){URL.revokeObjectURL(url);resolve(null);}
+      };
+      video.onerror=()=>{URL.revokeObjectURL(url);resolve(null);};
+      // Timeout fallback
+      setTimeout(()=>resolve(null),5000);
+      video.load();
+    }catch(e){resolve(null);}
   });
-  document.getElementById('uploadProgressWrap').classList.remove('show');
-  if(error){console.error('Upload error:',error);return null;}
+}
+
+async function uploadVideoToStorage(blob,folder){
+  const ts=Date.now();
+  const ext=blob.type.includes('mp4')?'mp4':(blob.type.includes('ogg')?'ogg':'webm');
+  const path=`${folder}/${U.id}/${ts}.${ext}`;
+  const pw=document.getElementById('uploadProgressWrap');
+  const pb=document.getElementById('uploadBar');
+  if(pw)pw.classList.add('show');
+
+  // Generate thumbnail before uploading
+  let thumbUrl=null;
+  try{
+    const thumbBlob=await generateThumbnail(blob);
+    if(thumbBlob){
+      const thumbPath=`${folder}/${U.id}/${ts}_thumb.jpg`;
+      const{error:te}=await supa.storage.from('engageneering-videos').upload(thumbPath,thumbBlob,{contentType:'image/jpeg',upsert:false});
+      if(!te){
+        const{data:td}=supa.storage.from('engageneering-videos').getPublicUrl(thumbPath);
+        thumbUrl=td?.publicUrl||null;
+      }
+    }
+  }catch(e){console.warn('Thumbnail generation failed:',e.message);}
+
+  // Upload main video
+  const{data,error}=await supa.storage.from('engageneering-videos').upload(path,blob,{
+    contentType:blob.type||'video/webm',
+    upsert:false
+  });
+  if(pw)pw.classList.remove('show');
+  if(pb)pb.style.width='0%';
+  if(error){console.error('Video upload error:',error.message);return{url:null,thumb:null};}
   const{data:urlData}=supa.storage.from('engageneering-videos').getPublicUrl(path);
-  return urlData?.publicUrl||null;
+  return{url:urlData?.publicUrl||null,thumb:thumbUrl};
 }
 
 // ══ ARIA HELPERS ══
@@ -1161,8 +1246,8 @@ async function callAgent(name,payload){
 async function submitQuestion(){
   const q=document.getElementById('qText').value.trim();
   const tags=[...document.querySelectorAll('#submitModal .tag-chip.on')].map(t=>t.textContent);
-  const needsText=contentType==='text'||contentType==='both';
-  const needsVideo=contentType==='video'||contentType==='both';
+  const needsText=contentType==='text';
+  const needsVideo=contentType==='video';
   const err=document.getElementById('modalErr');
   err.textContent='';
 
@@ -1181,7 +1266,9 @@ async function submitQuestion(){
     const blob=recBlob||uploadFile;
     log('Uploading video to Supabase Storage...');
     btn.textContent='Uploading video...';
-    videoUrl=await uploadVideoToStorage(blob,'questions');
+    const uploadResult=await uploadVideoToStorage(blob,'questions');
+    videoUrl=uploadResult?.url||null;
+    let thumbUrl=uploadResult?.thumb||null;
     if(!videoUrl){err.textContent='Video upload failed. Please try again.';btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
   }
 
@@ -1214,25 +1301,41 @@ async function submitQuestion(){
   // Save to DB
   let dbId=null;
   try{
-    const{data:sq}=await supa.from('questions').insert({
+    const insertPayload={
       asker_id:U.id,
-      text:needsText?q:null,
-      video_url:videoUrl,
-      content_type:contentType,
+      text:needsText&&q?q:null,
+      video_url:videoUrl||null,
+      video_thumbnail:thumbUrl||null,
+      content_type:needsVideo?'video':'text',
       tags:tags.length?tags:['General'],
       quality_score:qr.total,
       gatekeeper_verdict:gk.verdict,
       status:'published',
       published_at:new Date().toISOString()
-    }).select().single();
+    };
+    console.log('Inserting question:', insertPayload);
+    const{data:sq,error:qErr}=await supa.from('questions').insert(insertPayload).select().single();
+    if(qErr){
+      console.error('Question insert error:', qErr.message, qErr.details, qErr.hint);
+      // Still show the card even if DB save failed
+    }
     if(sq){
       dbId=sq.id;
+      console.log('Question saved to DB:', dbId);
       const pts=Math.round(qr.total*.5);
-      await supa.from('score_history').insert({user_id:U.id,action_type:'question',ref_id:sq.id,quality_score:qr.total,pts_awarded:pts});
-      await supa.from('profile_roles').update({pts_total:(R?.pts_total||0)+pts,seeker_pts:(R?.seeker_pts||0)+pts,updated_at:new Date().toISOString()}).eq('user_id',U.id);
+      const{error:shErr}=await supa.from('score_history').insert({
+        user_id:U.id,action_type:'question',ref_id:sq.id,
+        quality_score:qr.total,pts_awarded:pts
+      });
+      if(shErr)console.error('Score history error:',shErr.message);
+      await supa.from('profile_roles').update({
+        pts_total:(R?.pts_total||0)+pts,
+        seeker_pts:(R?.seeker_pts||0)+pts,
+        updated_at:new Date().toISOString()
+      }).eq('user_id',U.id);
       if(R){R.pts_total=(R.pts_total||0)+pts;R.seeker_pts=(R.seeker_pts||0)+pts;}
     }
-  }catch(e){console.warn(e);}
+  }catch(e){console.error('DB save exception:',e.message);}
 
   dot('te','run');st('te','Awarding pts...');
   await sleep(350);
@@ -1245,7 +1348,7 @@ async function submitQuestion(){
   document.getElementById('evtCount').textContent=parseInt(document.getElementById('evtCount').textContent||0)+1;
 
   // Prepend new card
-  const newQ={id:dbId||'new-'+Date.now(),text:needsText?q:null,video_url:videoUrl,content_type:contentType,tags:tags.length?tags:['General'],quality_score:qr.total,answer_count:0,views:0,bounty_pts:0,profiles:{display_name:P?.display_name||'You'},asker_id:U.id,matched_uids:[]};
+  const newQ={id:dbId||'new-'+Date.now(),text:needsText&&q?q:null,video_url:videoUrl,video_thumbnail:typeof thumbUrl!=='undefined'?thumbUrl:null,content_type:needsVideo?'video':'text',tags:tags.length?tags:['General'],quality_score:qr.total,answer_count:0,views:0,bounty_pts:0,profiles:{display_name:P?.display_name||'You'},asker_id:U.id,matched_uids:[]};
   document.getElementById('qFeed').insertAdjacentHTML('afterbegin',qCard(newQ));
 }
 
@@ -1255,8 +1358,8 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   const textAns=document.getElementById(aid)?.value?.trim();
   const recState=ansRecState[qid];
   const ansBlob=recState?.blob||null;
-  const needText=ansType==='text'||ansType==='both';
-  const needVideo=ansType==='video'||ansType==='both';
+  const needText=ansType==='text';
+  const needVideo=ansType==='video';
 
   if(needText&&(!textAns||textAns.length<15)){alert('Please write a more complete text answer (at least 15 characters).');return;}
   if(needVideo&&!ansBlob){alert('Please record or upload a video before submitting.');return;}
@@ -1274,7 +1377,9 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   let videoUrl=null;
   if(needVideo&&ansBlob){
     log('Uploading answer video...');
-    videoUrl=await uploadVideoToStorage(ansBlob,'answers');
+    const ansUpload=await uploadVideoToStorage(ansBlob,'answers');
+    videoUrl=ansUpload?.url||null;
+    let ansThumbUrl=ansUpload?.thumb||null;
     if(!videoUrl){alert('Video upload failed. Please try again.');if(btn){btn.textContent='Submit Answer';btn.disabled=false;}ariaOff();return;}
   }
 
@@ -1312,7 +1417,8 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
       question_id:realQId,answerer_id:U.id,
       text:needText?textAns:null,
       video_url:videoUrl,
-      content_type:ansType,
+      video_thumbnail:ansThumbUrl||null,
+      content_type:ansType==='video'?'video':'text',
       ei_score:ei.score,ri_score:ri.score,rai_score:rai.score,coi_score:coi.score,ai_score:ai.score,
       integrity_pass:true,ag,pg,cds,status:'published',
       scored_at:new Date().toISOString()
@@ -1345,7 +1451,7 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   const lst=document.getElementById(lid);
   if(lst){lst.insertAdjacentHTML('beforeend',`
     <div class="ac ${cds>=85?'top':''}">
-      ${videoUrl?`<div class="ac-video"><div class="qc-video-thumb" onclick="playVideo('ava${Date.now()}','${videoUrl}')"><video src="${videoUrl}" preload="metadata" style="display:block"></video><div class="qc-video-overlay"><div class="play-btn"><svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg></div></div></div>`:''}
+      ${videoUrl?`<div class="ac-video"><div class="qc-video-thumb" onclick="playVideoInline('ava${Date.now()}','${videoUrl}')"><video src="${videoUrl}" preload="metadata" style="display:block"></video><div class="qc-video-overlay"><div class="play-btn"><svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg></div></div></div>`:''}
       <div class="ac-body-wrap">
         <div class="ac-hdr"><div class="ac-name">${P?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">${ATIERS[R?.answerer_tier||1]}</div>${cds>=85?'<div class="top-badge">Top Answer</div>':''}<div class="ac-cds">CDS ${cds}</div></div>
         ${textAns?`<div class="ac-text">${textAns}</div>`:''}
