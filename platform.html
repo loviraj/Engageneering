@@ -2,406 +2,221 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Engageneering™ — Crowd Learning Platform</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='%23060c1a' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='26,2 50,15 26,30' fill='%23fff0a0' opacity='.97'/%3E%3Cpolygon points='50,15 50,45 26,30' fill='%23c88010' opacity='.95'/%3E%3Ccircle cx='26' cy='30' r='6' fill='%23f5d060'/%3E%3C/svg%3E"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  /* Backgrounds — stepped */
-  --bg-base:#07101e;
-  --bg-nav:#050d18;
-  --bg-sidebar:#0a1628;
-  --bg-card:#0f1e36;
-  --bg-input:#081420;
-  --bg-panel:#060e1c;
-
-  /* Borders */
-  --border-strong:#2a4a7a;
-  --border-mid:#1e3a6a;
-  --border-soft:#132840;
-
-  /* Text — four tiers, all clearly readable */
-  --text-primary:#e8f0fc;      /* headings, question text */
-  --text-secondary:#b8cce8;    /* body, answers */
-  --text-tertiary:#7a9ab8;     /* labels, meta */
-  --text-dim:#4a6a88;          /* hints, timestamps */
-
-  /* Gold — accent */
-  --gold:#c8922a;
-  --gold-b:#f0c040;
-  --gold-l:#f5d060;
-
-  /* Status colours */
-  --teal:#1d9e75;    --teal-b:#5dcaa5;
-  --blue:#378add;    --blue-b:#85b7eb;
-  --purple:#7f77dd;  --purple-b:#afa9ec;
-  --amber:#d4920c;   --amber-b:#f0c040;
-  --red:#e24b4a;     --coral:#d85a30;
-  --green:#3a9e5f;
+  --bg:#07101e;--bg2:#0a1628;--bg3:#0f1e36;--bg4:#081420;
+  --border:#1e3a6a;--border2:#2a4a7a;
+  --gold:#c8922a;--gold-b:#f0c040;
+  --t1:#e8f0fc;--t2:#b8cce8;--t3:#7a9ab8;--t4:#4a6a88;
+  --teal:#1d9e75;--teal-b:#5dcaa5;
+  --blue:#378add;--blue-b:#85b7eb;
+  --purple:#7f77dd;--purple-b:#afa9ec;
+  --red:#e24b4a;--amber:#d4920c;--coral:#d85a30;
 }
-
 *{box-sizing:border-box;margin:0;padding:0}
-html{font-size:16px;height:100%}
-body{font-family:'EB Garamond',Georgia,serif;background:var(--bg-base);color:var(--text-secondary);overflow-x:hidden;height:100%}
-::selection{background:rgba(200,146,42,.35);color:#fff}
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--bg-base)}
-::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:2px}
-::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+html,body{height:100%;font-family:'EB Garamond',Georgia,serif;background:var(--bg);color:var(--t2);font-size:16px;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+::selection{background:rgba(200,146,42,.3);color:#fff}
+
+/* ══ AUTH GATE ══ */
+#authGate{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem}
+#authGate.hidden{display:none}
+.gate-wrap{width:100%;max-width:440px}
+.gate-logo{display:flex;flex-direction:column;align-items:center;margin-bottom:2rem}
+.gate-brand{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-top:.6rem}
+.gate-tagline{font-size:10px;letter-spacing:2px;color:var(--t4);text-transform:uppercase;margin-top:2px}
+.gate-box{background:var(--bg3);border:1px solid var(--border2);border-radius:14px;overflow:hidden}
+.gate-tabs{display:flex;border-bottom:1px solid var(--border)}
+.gate-tab{flex:1;padding:.9rem;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--t4);font-family:'Cormorant Garamond',serif;transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.gate-tab.active{color:var(--gold-b);border-bottom-color:var(--gold)}
+.gate-body{padding:1.8rem}
+.gate-section{display:none}.gate-section.active{display:block}
+.gate-field{margin-bottom:1rem}
+.gate-label{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:.4rem}
+.gate-input{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:6px;padding:11px 14px;color:var(--t1);font-family:'EB Garamond',serif;font-size:15px;outline:none;transition:border-color .2s}
+.gate-input:focus{border-color:rgba(200,146,42,.6)}
+.gate-input::placeholder{color:var(--t4)}
+.oauth-row{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1rem}
+.oauth-btn{display:flex;align-items:center;gap:.8rem;width:100%;padding:.85rem 1.1rem;background:var(--bg4);border:1px solid var(--border2);border-radius:6px;cursor:pointer;font-size:13px;color:var(--t2);font-family:'EB Garamond',serif;transition:all .2s}
+.oauth-btn:hover{border-color:var(--gold);color:var(--t1)}
+.or-divider{display:flex;align-items:center;gap:.8rem;margin:.8rem 0;font-size:10px;color:var(--t4);letter-spacing:1px}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.gate-submit{width:100%;padding:12px;background:var(--gold);color:#040c18;border:none;border-radius:6px;font-size:11px;letter-spacing:2px;font-family:'Cormorant Garamond',serif;text-transform:uppercase;cursor:pointer;font-weight:700;transition:background .2s;margin-top:.3rem}
+.gate-submit:hover{background:var(--gold-b)}
+.gate-submit:disabled{opacity:.5;cursor:not-allowed}
+.gate-err{font-size:11px;color:#f09595;margin-top:.5rem;min-height:16px}
+.gate-ok{font-size:11px;color:var(--teal-b);margin-top:.5rem}
+.gate-switch{text-align:center;font-size:11px;color:var(--t4);margin-top:.9rem}
+.gate-switch span{color:var(--gold);cursor:pointer}
+.gate-switch span:hover{color:var(--gold-b)}
 
 /* ══ NAV ══ */
-nav{
-  background:var(--bg-nav);
-  border-bottom:1px solid var(--border-strong);
-  padding:0 1.8rem;
-  height:60px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:200;
-}
-.nav-brand-wrap{display:flex;align-items:center;gap:10px}
+nav{background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 1.6rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-left{display:flex;align-items:center;gap:10px;text-decoration:none}
 .nav-brand{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;letter-spacing:3px;color:var(--gold)}
 .nav-sub{font-size:7.5px;letter-spacing:2.5px;color:var(--gold);opacity:.6;text-transform:uppercase;margin-top:1px}
-.nav-right{display:flex;align-items:center;gap:.8rem}
-.nav-badge{
-  font-size:11px;color:var(--text-primary);
-  background:var(--bg-card);border:1px solid var(--border-strong);
-  padding:5px 14px;border-radius:20px;letter-spacing:.3px
-}
-.nav-badge strong{color:var(--gold-b)}
-.btn{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:7px 18px;border-radius:5px;cursor:pointer;border:none;transition:all .2s}
-.btn-primary{background:var(--gold);color:#040c18;font-weight:700}
-.btn-primary:hover{background:var(--gold-b);transform:translateY(-1px)}
-.btn-secondary{background:transparent;color:var(--text-secondary);border:1px solid var(--border-strong)}
-.btn-secondary:hover{border-color:var(--text-secondary);color:var(--text-primary)}
+.nav-right{display:flex;align-items:center;gap:.9rem}
+.user-pill{display:flex;align-items:center;gap:.6rem;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:5px 14px 5px 6px}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:rgba(200,146,42,.2);border:1px solid rgba(200,146,42,.4);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gold-b);font-weight:700;flex-shrink:0;overflow:hidden}
+.user-avatar img{width:100%;height:100%;object-fit:cover}
+.user-info{display:flex;flex-direction:column;line-height:1.2}
+.user-name{font-size:12px;color:var(--t1);font-weight:500}
+.user-tier{font-size:10px;color:var(--gold);letter-spacing:.5px}
+.nav-btn{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px 16px;border-radius:4px;cursor:pointer;border:none;transition:all .2s}
+.btn-ghost{background:transparent;color:var(--t3);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--t3);color:var(--t2)}
+.btn-gold{background:var(--gold);color:#040c18;font-weight:700}
+.btn-gold:hover{background:var(--gold-b)}
 
 /* ══ LAYOUT ══ */
-.layout{
-  display:grid;
-  grid-template-columns:220px 1fr 270px;
-  min-height:calc(100vh - 60px);
-  max-width:1400px;
-  margin:0 auto;
-}
+.layout{display:grid;grid-template-columns:220px 1fr 270px;height:calc(100vh - 60px);overflow:hidden}
+.sidebar{overflow-y:auto;background:var(--bg2);padding:1.4rem 1rem}
+.sb-left{border-right:1px solid var(--border)}
+.sb-right{border-left:1px solid var(--border)}
+.main{overflow-y:auto;background:var(--bg)}
 
-/* ══ SHARED SIDEBAR STYLES ══ */
-.sidebar{
-  background:var(--bg-sidebar);
-  padding:1.6rem 1.2rem;
-  display:flex;flex-direction:column;gap:1.8rem;
-}
-.sb-left{border-right:2px solid var(--border-mid)}
-.sb-right{border-left:2px solid var(--border-mid)}
-
-.sb-section{display:flex;flex-direction:column;gap:.25rem}
-
-/* Section label — clearly visible */
-.sb-section-label{
-  font-size:9px;letter-spacing:3.5px;text-transform:uppercase;
-  color:var(--gold);font-weight:700;
-  padding:.2rem .5rem .5rem;
-  border-bottom:1px solid var(--border-soft);
-  margin-bottom:.3rem;
-}
-
-/* Nav items — readable */
-.sb-item{
-  display:flex;align-items:center;gap:.7rem;
-  padding:.55rem .7rem;border-radius:6px;cursor:pointer;
-  font-size:13px;color:var(--text-secondary);
-  transition:all .2s;border-left:2px solid transparent;
-  text-decoration:none;
-}
-.sb-item:hover{background:rgba(55,138,221,.08);color:var(--text-primary);border-left-color:var(--border-strong)}
-.sb-item.active{background:rgba(200,146,42,.1);color:var(--gold-b);border-left-color:var(--gold);font-weight:500}
+/* ══ SIDEBAR ══ */
+.sb-label{font-size:9px;letter-spacing:3.5px;text-transform:uppercase;color:var(--gold);font-weight:700;padding:.2rem .4rem .5rem;border-bottom:1px solid rgba(30,58,106,.4);margin-bottom:.3rem;margin-top:1.2rem}
+.sb-label:first-child{margin-top:0}
+.sb-item{display:flex;align-items:center;gap:.7rem;padding:.55rem .7rem;border-radius:6px;cursor:pointer;font-size:13px;color:var(--t3);transition:all .2s;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent}
+.sb-item:hover{background:rgba(55,138,221,.08);color:var(--t2)}
+.sb-item.active{background:rgba(200,146,42,.1);color:var(--gold-b);border-left-color:var(--gold)}
 .sb-pip{width:7px;height:7px;border-radius:50%;flex-shrink:0;border:1px solid}
+.tier-card{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:1rem;margin-top:.4rem}
+.tc-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.tc-name{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold-b);font-weight:600;line-height:1.1}
+.tc-track{font-size:11px;color:var(--t4);margin-bottom:.7rem}
+.tc-bar-bg{background:var(--border);border-radius:3px;height:4px;margin-bottom:.35rem}
+.tc-bar-fill{height:4px;border-radius:3px;background:linear-gradient(to right,var(--gold),var(--gold-b));transition:width .6s}
+.tc-pts{display:flex;justify-content:space-between;font-size:10px;color:var(--t4)}
 
-/* Tier progress card */
-.tier-card{
-  background:var(--bg-card);
-  border:1px solid var(--border-strong);
-  border-radius:10px;padding:1.1rem;
-  margin-top:.3rem;
-}
-.tier-card-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
-.tier-card-name{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold-b);font-weight:600;line-height:1.1}
-.tier-card-track{font-size:11px;color:var(--text-tertiary);margin-bottom:.8rem}
-.tier-bar-bg{background:var(--border-soft);border-radius:3px;height:4px;margin-bottom:.4rem}
-.tier-bar-fill{height:4px;border-radius:3px;background:linear-gradient(to right,var(--gold),var(--gold-b));transition:width .6s ease}
-.tier-pts{font-size:10px;color:var(--text-tertiary);display:flex;justify-content:space-between}
-
-/* ══ MAIN FEED ══ */
-.main{
-  background:var(--bg-base);
-  display:flex;flex-direction:column;
-  border-left:1px solid var(--border-soft);
-  border-right:1px solid var(--border-soft);
-}
-
-/* Feed top bar */
-.feed-topbar{
-  background:var(--bg-sidebar);
-  border-bottom:1px solid var(--border-mid);
-  padding:.9rem 1.6rem;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:.8rem;
-}
+/* ══ FEED TOPBAR ══ */
+.feed-topbar{background:var(--bg2);border-bottom:1px solid var(--border2);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;position:sticky;top:0;z-index:10}
 .feed-tabs{display:flex;gap:.3rem}
-.ftab{
-  font-family:'Cormorant Garamond',serif;
-  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
-  padding:5px 16px;border-radius:20px;cursor:pointer;
-  border:1px solid transparent;
-  color:var(--text-tertiary);
-  transition:all .2s;background:transparent;
-}
-.ftab:hover{background:var(--bg-card);color:var(--text-primary);border-color:var(--border-mid)}
-.ftab.active{background:var(--bg-card);color:var(--gold-b);border-color:var(--border-strong)}
-.feed-stat{font-size:11px;color:var(--text-tertiary)}
+.ftab{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 16px;border-radius:20px;cursor:pointer;border:1px solid transparent;color:var(--t4);transition:all .2s;background:none}
+.ftab:hover{background:var(--bg3);color:var(--t2);border-color:var(--border)}
+.ftab.active{background:var(--bg3);color:var(--gold-b);border-color:var(--border2)}
+.feed-stat{font-size:11px;color:var(--t4)}
 .feed-stat strong{color:var(--gold-b)}
 
-/* Ask box */
-.ask-section{
-  padding:1.2rem 1.6rem;
-  background:var(--bg-sidebar);
-  border-bottom:2px solid var(--border-mid);
-}
-.ask-box{
-  background:var(--bg-input);
-  border:1.5px solid var(--border-strong);
-  border-radius:10px;overflow:hidden;
-  transition:border-color .3s;
-}
-.ask-box:focus-within{border-color:var(--gold)}
-.ask-textarea{
-  width:100%;background:transparent;border:none;outline:none;
-  padding:1rem 1.2rem;font-size:15px;color:var(--text-primary);
-  font-family:'EB Garamond',serif;resize:none;min-height:76px;line-height:1.65;
-}
-.ask-textarea::placeholder{color:var(--text-dim)}
-.ask-footer{
-  padding:.7rem 1rem;
-  border-top:1px solid var(--border-soft);
-  display:flex;align-items:center;justify-content:space-between;gap:.8rem;
-  flex-wrap:wrap;
-}
-.tag-row{display:flex;gap:.35rem;flex-wrap:wrap}
-.tag-chip{
-  font-size:9.5px;background:transparent;
-  border:1px solid var(--border-mid);
-  color:var(--text-tertiary);
-  border-radius:20px;padding:2px 10px;cursor:pointer;
-  transition:all .2s;
-}
-.tag-chip:hover{border-color:var(--border-strong);color:var(--text-secondary)}
+/* ══ ASK BOX ══ */
+.ask-section{padding:1.2rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--border)}
+.ask-box{background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;overflow:hidden;transition:border-color .3s}
+.ask-box:focus-within{border-color:rgba(200,146,42,.5)}
+.ask-input{width:100%;background:transparent;border:none;outline:none;padding:1rem 1.2rem;font-size:15px;color:var(--t1);font-family:'EB Garamond',serif;resize:none;min-height:72px;line-height:1.65}
+.ask-input::placeholder{color:var(--t4)}
+.ask-footer{padding:.6rem 1rem;border-top:1px solid rgba(30,58,106,.4);display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
+.tag-row{display:flex;gap:.3rem;flex-wrap:wrap}
+.tag-chip{font-size:9.5px;background:transparent;border:1px solid var(--border);color:var(--t4);border-radius:20px;padding:2px 10px;cursor:pointer;transition:all .2s}
+.tag-chip:hover{border-color:var(--border2);color:var(--t3)}
 .tag-chip.sel{background:rgba(200,146,42,.12);border-color:var(--gold);color:var(--gold-b)}
 
-/* ARIA status bar */
-.aria-statusbar{
-  padding:.5rem 1.6rem;
-  background:var(--bg-panel);
-  border-bottom:1px solid var(--border-soft);
-  display:flex;align-items:center;gap:.9rem;
-}
-.aria-pulse{
-  width:7px;height:7px;border-radius:50%;background:var(--gold);
-  flex-shrink:0;transition:all .3s;
-}
-.aria-pulse.active{animation:glow 1.2s ease infinite}
-@keyframes glow{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(200,146,42,.4)}50%{opacity:.6;box-shadow:0 0 0 4px rgba(200,146,42,.1)}}
-.aria-text{font-size:11px;color:var(--text-tertiary);font-family:monospace;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.aria-text .kw{color:var(--gold);font-weight:700}
-.agent-pips{display:flex;gap:.3rem;flex-shrink:0}
-.a-pip{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--border-soft);border:1px solid var(--border-mid);
-  cursor:default;transition:all .35s;
-}
-.a-pip[title]:hover{transform:scale(1.6)}
-.a-pip.blue{background:var(--blue);border-color:var(--blue-b)}
-.a-pip.teal{background:var(--teal);border-color:var(--teal-b)}
-.a-pip.purple{background:var(--purple);border-color:var(--purple-b)}
-.a-pip.pulse{background:var(--gold);border-color:var(--gold-b);animation:glow .8s ease infinite}
-.a-pip.red{background:var(--red);border-color:#f09595}
+/* ══ ARIA BAR ══ */
+.aria-bar{padding:.5rem 1.5rem;background:var(--bg4);border-bottom:1px solid rgba(30,58,106,.3);display:flex;align-items:center;gap:.8rem}
+.aria-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0;transition:all .3s}
+.aria-dot.active{animation:ariaPulse 1.1s ease infinite}
+@keyframes ariaPulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(200,146,42,.4)}50%{opacity:.7;box-shadow:0 0 0 4px rgba(200,146,42,.1)}}
+.aria-txt{font-size:11px;color:var(--t4);font-family:monospace;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aria-txt .kw{color:var(--gold)}
+.pips{display:flex;gap:.28rem}
+.pip{width:8px;height:8px;border-radius:50%;background:var(--border);border:1px solid var(--border2);transition:all .35s;cursor:help}
+.pip.blue{background:var(--blue);border-color:var(--blue-b)}
+.pip.teal{background:var(--teal);border-color:var(--teal-b)}
+.pip.purple{background:var(--purple);border-color:var(--purple-b)}
+.pip.pulse{background:var(--gold);border-color:var(--gold-b);animation:ariaPulse .9s ease infinite}
+.pip.red{background:var(--red);border-color:#f09595}
 
-/* QUESTION CARDS */
-.q-feed{padding:1.2rem 1.6rem;display:flex;flex-direction:column;gap:1rem}
+/* ══ Q FEED ══ */
+.q-feed{padding:1.2rem 1.5rem;display:flex;flex-direction:column;gap:.9rem}
+.empty-feed{text-align:center;padding:3rem 1rem;color:var(--t4)}
+.empty-feed-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--t3);margin-bottom:.5rem}
+.empty-feed-sub{font-size:13px;line-height:1.7}
 
-.q-card{
-  background:var(--bg-card);
-  border:1px solid var(--border-mid);
-  border-radius:12px;
-  padding:1.3rem 1.5rem;
-  transition:border-color .25s,transform .2s,box-shadow .2s;
-  cursor:pointer;
-}
-.q-card:hover{
-  border-color:var(--border-strong);
-  transform:translateY(-2px);
-  box-shadow:0 6px 24px rgba(0,0,0,.3);
-}
-.q-card.featured{
-  border-color:rgba(200,146,42,.4);
-  background:#0d1e38;
-  box-shadow:0 0 0 1px rgba(200,146,42,.1);
-}
+/* ══ Q CARD ══ */
+.q-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem;transition:border-color .25s,transform .2s,box-shadow .2s}
+.q-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.q-card.featured{border-color:rgba(200,146,42,.4);background:#0d1e38}
 .q-card.new-in{animation:slideIn .35s ease}
 @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.q-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;flex-wrap:wrap}
+.q-tag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid;font-weight:700}
+.q-quality{font-size:10px;padding:2px 9px;border-radius:20px;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.25);color:var(--gold-b);letter-spacing:.3px}
+.q-matched{font-size:10px;color:var(--teal-b);letter-spacing:.3px}
+.q-asker{font-size:10px;color:var(--t4);margin-left:auto}
+.q-text{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--t1);line-height:1.45;margin-bottom:.85rem}
+.q-footer{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.q-stat{font-size:11px;color:var(--t4);display:flex;align-items:center;gap:.3rem}
+.q-bounty{font-size:11px;color:var(--amber);font-weight:500}
+.answer-cta{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 16px;border-radius:5px;background:transparent;border:1px solid rgba(200,146,42,.4);color:var(--gold);cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all .2s;margin-left:auto}
+.answer-cta:hover{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gold-b)}
 
-/* Card meta row */
-.q-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap}
-.q-topic-tag{
-  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
-  padding:3px 10px;border-radius:20px;border:1px solid;font-weight:700;
-}
-.q-quality{
-  font-size:10px;padding:2px 9px;border-radius:20px;
-  background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);
-  color:var(--gold-b);letter-spacing:.3px;
-}
-.q-matched-lbl{font-size:10px;color:var(--teal-b);letter-spacing:.3px}
-.q-asker-lbl{font-size:10px;color:var(--text-dim);margin-left:auto}
-
-/* Question text — primary and large */
-.q-text{
-  font-family:'Cormorant Garamond',serif;
-  font-size:19px;color:var(--text-primary);
-  line-height:1.45;margin-bottom:.9rem;font-weight:400;
-}
-
-/* Card footer */
-.q-card-footer{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.q-stat{font-size:11px;color:var(--text-tertiary);display:flex;align-items:center;gap:.3rem}
-.q-stat svg{opacity:.5}
-.q-bounty{font-size:11px;color:var(--amber-b);font-weight:500}
-.q-answer-cta{
-  font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;
-  padding:5px 16px;border-radius:5px;cursor:pointer;
-  background:transparent;border:1px solid rgba(200,146,42,.4);
-  color:var(--gold);font-family:'Cormorant Garamond',serif;
-  transition:all .2s;margin-left:auto;
-}
-.q-answer-cta:hover{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gold-b)}
-
-/* Answer panel */
-.answer-panel{
-  margin-top:.9rem;
-  background:var(--bg-panel);
-  border:1px solid var(--border-mid);
-  border-radius:8px;
-  padding:1.1rem 1.2rem;
-  display:none;
-}
+/* ══ ANSWER PANEL ══ */
+.answer-panel{margin-top:.9rem;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.2rem;display:none}
 .answer-panel.open{display:block}
-.ap-title{
-  font-size:9px;letter-spacing:3px;text-transform:uppercase;
-  color:var(--gold);margin-bottom:.8rem;font-weight:700;
-}
-.answer-textarea{
-  width:100%;background:var(--bg-input);
-  border:1px solid var(--border-strong);
-  border-radius:6px;padding:.85rem 1rem;
-  color:var(--text-primary);font-family:'EB Garamond',serif;
-  font-size:14px;resize:vertical;min-height:96px;outline:none;
-  transition:border-color .25s;line-height:1.7;
-}
-.answer-textarea:focus{border-color:rgba(200,146,42,.5)}
-.answer-textarea::placeholder{color:var(--text-dim)}
-.ap-footer-row{display:flex;align-items:center;gap:.7rem;margin-top:.7rem;flex-wrap:wrap}
-.ap-hint{font-size:10px;color:var(--text-dim);flex:1}
+.ap-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:700}
+.answer-ta{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:.85rem 1rem;color:var(--t1);font-family:'EB Garamond',serif;font-size:14px;resize:vertical;min-height:96px;outline:none;transition:border-color .25s;line-height:1.7}
+.answer-ta:focus{border-color:rgba(200,146,42,.5)}
+.answer-ta::placeholder{color:var(--t4)}
+.ap-row{display:flex;align-items:center;gap:.7rem;margin-top:.7rem;flex-wrap:wrap}
+.ap-hint{font-size:10px;color:var(--t4);flex:1}
 
-/* Score breakdown */
-.score-panel{
-  background:var(--bg-input);border:1px solid var(--border-mid);
-  border-radius:8px;padding:1rem 1.2rem;margin-top:.8rem;display:none;
-}
+/* ══ SCORE PANEL ══ */
+.score-panel{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;margin-top:.8rem;display:none}
 .score-panel.open{display:block}
-.score-panel-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem}
+.score-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem}
 .score-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:.9rem}
 .score-col{display:flex;flex-direction:column;align-items:center;gap:.3rem}
-.score-val{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text-primary);font-weight:600;line-height:1}
-.score-track{width:100%;height:48px;background:var(--border-soft);border-radius:3px;position:relative;overflow:hidden}
+.score-num{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;line-height:1}
+.score-track{width:100%;height:48px;background:var(--border);border-radius:3px;position:relative;overflow:hidden}
 .score-fill{position:absolute;bottom:0;left:0;right:0;border-radius:3px;transition:height .7s ease}
-.score-lbl{font-size:9px;color:var(--text-tertiary);letter-spacing:.5px;text-align:center}
-.cds-row{border-top:1px solid var(--border-mid);padding-top:.7rem;display:flex;align-items:center;justify-content:space-between}
-.cds-formula{font-size:10px;color:var(--text-tertiary)}
-.cds-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold-b);font-weight:600}
-.cds-label{font-size:10px;color:var(--text-dim);margin-left:.3rem}
+.score-lbl{font-size:9px;color:var(--t4);text-align:center;letter-spacing:.5px}
+.cds-row{border-top:1px solid var(--border);padding-top:.7rem;display:flex;align-items:center;justify-content:space-between}
+.cds-formula{font-size:11px;color:var(--t4)}
+.cds-val{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold-b);font-weight:600}
 
-/* Answer cards */
+/* ══ ANSWER CARDS ══ */
 .answers-list{display:flex;flex-direction:column;gap:.6rem;margin-top:.9rem}
-.answer-card{
-  background:var(--bg-card);border:1px solid var(--border-mid);
-  border-radius:8px;padding:.9rem 1.1rem;
-}
+.answer-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem}
 .answer-card.top{border-color:rgba(200,146,42,.35);background:#0a1828}
-.ac-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}
+.ac-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}
 .ac-name{font-size:12px;color:var(--gold-b);font-weight:700;letter-spacing:.5px}
-.ac-tier-badge{font-size:8.5px;padding:1px 8px;border-radius:20px;border:1px solid}
+.ac-tier{font-size:8.5px;padding:1px 8px;border-radius:20px;border:1px solid}
 .ac-cds{font-size:10px;color:var(--gold);margin-left:auto}
 .top-badge{font-size:8.5px;color:var(--gold-b);background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);padding:1px 8px;border-radius:20px}
-.ac-body{font-size:14px;color:var(--text-secondary);line-height:1.75}
-.ac-scores-row{font-size:10px;color:var(--text-dim);margin-top:.4rem;letter-spacing:.3px}
+.ac-body{font-size:14px;color:var(--t2);line-height:1.8}
+.ac-scores{font-size:10px;color:var(--t4);margin-top:.4rem;letter-spacing:.3px}
 
 /* ══ RIGHT SIDEBAR ══ */
-.widget-section{display:flex;flex-direction:column;gap:.7rem}
-
-.widget-title{
-  font-size:9px;letter-spacing:3.5px;text-transform:uppercase;
-  color:var(--gold);font-weight:700;
-  padding-bottom:.5rem;
-  border-bottom:1px solid var(--border-mid);
-  margin-bottom:.2rem;
-}
-
-/* Agent Monitor rows */
-.am-row{
-  display:flex;align-items:center;gap:.65rem;
-  padding:.45rem .5rem;border-radius:6px;
-  transition:background .2s;
-}
-.am-row:hover{background:rgba(55,138,221,.06)}
-.am-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;transition:all .35s;border:1px solid}
-.am-dot.idle{background:#0a1828;border-color:var(--border-mid)}
+.widget{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.4rem}
+.widget-title{font-size:9px;letter-spacing:3.5px;text-transform:uppercase;color:var(--gold);font-weight:700;padding-bottom:.5rem;border-bottom:1px solid rgba(30,58,106,.4)}
+.am-row{display:flex;align-items:center;gap:.6rem;padding:.4rem .4rem;border-radius:5px;transition:background .2s}
+.am-row:hover{background:rgba(55,138,221,.05)}
+.am-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1px solid;transition:all .35s}
+.am-dot.idle{background:#0a1828;border-color:var(--border)}
 .am-dot.ready{background:var(--blue);border-color:var(--blue-b);opacity:.8}
-.am-dot.run{background:var(--gold);border-color:var(--gold-b);animation:glow .9s ease infinite}
+.am-dot.run{background:var(--gold);border-color:var(--gold-b);animation:ariaPulse .9s ease infinite}
 .am-dot.done{background:var(--teal);border-color:var(--teal-b)}
 .am-dot.done-p{background:var(--purple);border-color:var(--purple-b)}
 .am-dot.err{background:var(--red);border-color:#f09595}
-
-.am-name{font-size:12px;color:var(--text-secondary);flex:1}
-.am-status{font-size:10px;color:var(--text-tertiary);white-space:nowrap}
-
-/* Leaderboard */
-.lb-row{
-  display:flex;align-items:center;gap:.55rem;
-  padding:.45rem 0;border-bottom:1px solid var(--border-soft);
-}
+.am-name{font-size:12px;color:var(--t2);flex:1}
+.am-status{font-size:10px;color:var(--t4);white-space:nowrap}
+.lb-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid rgba(30,58,106,.2)}
 .lb-row:last-child{border-bottom:none}
-.lb-rank{font-size:10px;color:var(--text-dim);width:16px;text-align:center;flex-shrink:0}
-.lb-name{font-size:12px;color:var(--text-secondary);flex:1}
+.lb-rank{font-size:10px;color:var(--t4);width:16px;text-align:center;flex-shrink:0}
+.lb-name{font-size:12px;color:var(--t2);flex:1}
 .lb-tier{font-size:8.5px;padding:2px 7px;border-radius:20px;border:1px solid}
 .lb-pts{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--gold-b)}
+.insight-box{background:var(--bg3);border-radius:8px;border-left:2px solid var(--gold);padding:.9rem 1rem}
+.insight-body{font-size:12px;color:var(--t2);line-height:1.8;font-style:italic}
+.insight-meta{font-size:9px;color:var(--t4);margin-top:.4rem;letter-spacing:.3px}
+.notif-card{background:var(--bg3);border-radius:6px;border-left:2px solid;padding:.6rem .9rem;font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:.4rem}
 
-/* Insight box */
-.insight-box{
-  background:var(--bg-card);border-radius:8px;
-  border-left:2px solid var(--gold);
-  padding:.9rem 1rem;
-}
-.insight-body{font-size:12px;color:var(--text-secondary);line-height:1.75;font-style:italic}
-.insight-meta{font-size:9px;color:var(--text-dim);margin-top:.5rem;letter-spacing:.3px}
-
-/* Notification cards */
-.notif-card{
-  background:var(--bg-card);border-radius:7px;
-  border-left:2px solid;
-  padding:.65rem .9rem;
-  font-size:11.5px;color:var(--text-secondary);line-height:1.55;
-}
-.notif-card .notif-agent{font-weight:700}
-
-/* ══ TOPIC TAG COLOUR HELPERS ══ */
+/* ══ TAG COLOURS ══ */
 .tag-prog{color:#4a9edd;background:rgba(55,138,221,.12);border-color:rgba(55,138,221,.35)}
 .tag-sci{color:#4ecf96;background:rgba(29,158,117,.12);border-color:rgba(29,158,117,.35)}
 .tag-hist{color:#f09595;background:rgba(216,90,48,.12);border-color:rgba(216,90,48,.35)}
@@ -409,79 +224,82 @@ nav{
 .tag-math{color:#f0c040;background:rgba(186,117,23,.12);border-color:rgba(186,117,23,.35)}
 .tag-phil{color:#c0b8f8;background:rgba(127,119,221,.12);border-color:rgba(127,119,221,.35)}
 .tag-al{color:#4ecf96;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3)}
+.tag-gen{color:#8aa4be;background:rgba(122,154,184,.08);border-color:rgba(122,154,184,.2)}
 
-@media(max-width:1050px){.layout{grid-template-columns:1fr}.sidebar{display:none}}
-
-/* ── AUTH OVERLAY ── */
-.auth-overlay{position:fixed;inset:0;background:rgba(4,8,18,.9);z-index:500;display:none;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(8px)}
-.auth-overlay.open{display:flex}
-.auth-modal{background:#0b1624;border:1px solid var(--border-strong);border-radius:14px;width:100%;max-width:480px;overflow:hidden;position:relative}
-.auth-modal-close{position:absolute;top:.9rem;right:1.1rem;background:none;border:none;color:var(--text-tertiary);font-size:20px;cursor:pointer;line-height:1;transition:color .2s;z-index:2}
-.auth-modal-close:hover{color:var(--text-primary)}
-.auth-tabs{display:flex;border-bottom:1px solid var(--border-mid)}
-.auth-tab{flex:1;padding:.85rem;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--text-tertiary);font-family:'Cormorant Garamond',serif;transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-1px}
-.auth-tab.active{color:var(--gold-b);border-bottom-color:var(--gold)}
-.auth-body{padding:1.8rem}
-.auth-section{display:none}.auth-section.active{display:block}
-.auth-field{margin-bottom:1rem}
-.auth-label{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:.4rem}
-.auth-input{width:100%;background:var(--bg-input);border:1px solid var(--border-strong);border-radius:6px;padding:10px 14px;color:var(--text-primary);font-family:'EB Garamond',serif;font-size:14px;outline:none;transition:border-color .2s}
-.auth-input:focus{border-color:rgba(200,146,42,.5)}
-.auth-input::placeholder{color:var(--text-dim)}
-.auth-divider{display:flex;align-items:center;gap:.8rem;margin:.9rem 0;font-size:10px;color:var(--text-dim);letter-spacing:1px}
-.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border-mid)}
-.oauth-btn{display:flex;align-items:center;gap:.8rem;width:100%;padding:.8rem 1.1rem;background:var(--bg-card);border:1px solid var(--border-strong);border-radius:6px;cursor:pointer;font-size:13px;color:var(--text-secondary);font-family:'EB Garamond',serif;transition:all .2s;margin-bottom:.6rem}
-.oauth-btn:hover{border-color:var(--gold);color:var(--text-primary)}
-.auth-error{font-size:11px;color:#f09595;margin-top:.5rem;min-height:16px}
-.auth-success{font-size:11px;color:var(--teal-b);margin-top:.5rem}
-.user-menu{display:flex;align-items:center;gap:.7rem}
-.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold-b);font-weight:700;cursor:pointer;overflow:hidden}
-.user-avatar img{width:100%;height:100%;object-fit:cover}
-.signout-btn{font-size:10px;color:var(--text-dim);background:none;border:none;cursor:pointer;letter-spacing:1px;transition:color .2s}
-.signout-btn:hover{color:var(--text-tertiary)}
-
-/* ── MOBILE + READABILITY UPGRADES ── */
-.am-name{font-size:12px;color:#ccd8f0}
-.am-status{font-size:10px;color:#8aa4be}
-.sb-item{font-size:13px;color:#9ab8d8}
-.sb-section-label{color:#f0c040;font-size:9px}
-.widget-title{color:#f0c040}
-.lb-name{font-size:12px;color:#ccd8f0}
-.lb-pts{font-size:13px;color:#f0c040}
-.insight-body{font-size:13px;color:#bccce0;line-height:1.8}
-.notif-card{font-size:12px;color:#bccce0}
-.q-text{font-size:clamp(16px,2.5vw,20px);color:#e8f0fc;line-height:1.5}
-.q-stat{font-size:11px;color:#7a9ab8}
-.ac-body{font-size:14px;color:#bccce0;line-height:1.8}
-.feed-stat{font-size:11px;color:#8aa4be}
-.tier-card-name{font-size:19px}
-.tier-card-track{font-size:12px;color:#7a9ab8}
-.tier-pts{font-size:11px;color:#7a9ab8}
-.ap-hint{font-size:11px;color:#7a9ab8}
-.score-lbl{font-size:9.5px;color:#8aa4be}
-.score-val{font-size:19px}
-/* Mobile layout */
-@media(max-width:700px){
-  nav{padding:0 1rem}
-  .nav-brand{font-size:12px;letter-spacing:2px}
-  .nav-badge{display:none}
-  .layout{grid-template-columns:1fr;min-height:auto}
-  .q-feed{padding:.8rem}
-  .ask-section{padding:.8rem}
-  .feed-topbar{padding:.7rem .8rem}
-  .aria-statusbar{padding:.4rem .8rem}
-  .q-card{padding:1rem 1.1rem}
-  .q-text{font-size:16px}
-  .answer-textarea{font-size:14px;min-height:80px}
-}
-
+/* ══ RESPONSIVE ══ */
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.sb-left,.sb-right{display:none}}
+@media(max-width:680px){nav{padding:0 1rem}.nav-brand{font-size:12px;letter-spacing:2px}.q-feed{padding:.8rem}.ask-section{padding:.8rem}.feed-topbar{padding:.7rem .8rem}}
 </style>
 </head>
 <body>
 
+<!-- ══ AUTH GATE ══ -->
+<div id="authGate">
+  <div class="gate-wrap">
+    <div class="gate-logo">
+      <svg width="56" height="64" viewBox="0 0 52 60">
+        <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
+        <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
+        <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
+        <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
+        <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
+        <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
+        <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
+        <circle cx="26" cy="30" r="6" fill="#f5d060"/>
+        <circle cx="26" cy="30" r="3.4" fill="#0b1624"/>
+        <circle cx="26" cy="30" r="1.5" fill="#f5d060"/>
+      </svg>
+      <div class="gate-brand">ENGAGENEERING™</div>
+      <div class="gate-tagline">Crowd Learning Platform</div>
+    </div>
+    <div class="gate-box">
+      <div class="gate-tabs">
+        <button class="gate-tab active" id="tabLogin" onclick="switchGateTab('login')">Log In</button>
+        <button class="gate-tab" id="tabSignup" onclick="switchGateTab('signup')">Join the Movement</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div class="gate-body">
+        <div class="gate-section active" id="secLogin">
+          <div class="oauth-row">
+            <button class="oauth-btn" onclick="oauthLogin('google')">
+              <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+              Continue with Google
+            </button>
+          </div>
+          <div class="or-divider">or email</div>
+          <div class="gate-field"><label class="gate-label">Email</label><input class="gate-input" type="email" id="loginEmail" placeholder="you@school.edu" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+          <div class="gate-field"><label class="gate-label">Password</label><input class="gate-input" type="password" id="loginPwd" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+          <button class="gate-submit" id="loginBtn" onclick="doLogin()">Log In</button>
+          <div class="gate-err" id="loginErr"></div>
+          <div class="gate-switch">No account? <span onclick="switchGateTab('signup')">Join free</span></div>
+        </div>
+
+        <!-- SIGNUP -->
+        <div class="gate-section" id="secSignup">
+          <div class="oauth-row">
+            <button class="oauth-btn" onclick="oauthLogin('google')">
+              <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+              Sign up with Google
+            </button>
+          </div>
+          <div class="or-divider">or email</div>
+          <div class="gate-field"><label class="gate-label">Full Name</label><input class="gate-input" type="text" id="signupName" placeholder="Your name"/></div>
+          <div class="gate-field"><label class="gate-label">Email</label><input class="gate-input" type="email" id="signupEmail" placeholder="you@school.edu"/></div>
+          <div class="gate-field"><label class="gate-label">Password</label><input class="gate-input" type="password" id="signupPwd" placeholder="Min 8 characters" onkeydown="if(event.key==='Enter')doSignup()"/></div>
+          <button class="gate-submit" id="signupBtn" onclick="doSignup()">Create Account — Free</button>
+          <div class="gate-err" id="signupErr"></div>
+          <div class="gate-ok" id="signupOk"></div>
+          <div class="gate-switch">Already a member? <span onclick="switchGateTab('login')">Log in</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ NAV ══ -->
 <nav>
-  <div class="nav-brand-wrap">
+  <a class="nav-left" href="index.html">
     <svg width="30" height="34" viewBox="0 0 52 60">
       <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.2"/>
       <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
@@ -494,91 +312,60 @@ nav{
       <circle cx="26" cy="30" r="2.9" fill="#0b1624"/>
       <circle cx="26" cy="30" r="1.3" fill="#f5d060"/>
     </svg>
-    <div>
-      <div class="nav-brand">ENGAGENEERING™</div>
-      <div class="nav-sub">Crowd Learning Platform</div>
-    </div>
-  </div>
-  <div class="nav-right">
-    <div class="nav-badge">Questioner T2 · <strong>340 pts</strong></div>
-    <button class="btn btn-secondary">Dashboard</button>
-    <button class="btn btn-primary" onclick="document.getElementById('askInput').focus()">Ask a Question</button>
+    <div><div class="nav-brand">ENGAGENEERING™</div><div class="nav-sub">Crowd Learning Platform</div></div>
+  </a>
+  <div class="nav-right" id="navRight">
+    <!-- populated by JS after login -->
   </div>
 </nav>
 
+<!-- ══ LAYOUT ══ -->
 <div class="layout">
 
-  <!-- ══ LEFT SIDEBAR ══ -->
+  <!-- LEFT SIDEBAR -->
   <div class="sidebar sb-left">
+    <div class="sb-label">Explore</div>
+    <button class="sb-item active" onclick="setFilter('all',this)"><div class="sb-pip" style="background:var(--gold);border-color:var(--gold-b)"></div>All Questions</button>
+    <button class="sb-item" onclick="setFilter('featured',this)"><div class="sb-pip" style="background:var(--blue);border-color:var(--blue-b)"></div>Featured</button>
+    <button class="sb-item" onclick="setFilter('matched',this)"><div class="sb-pip" style="background:var(--teal);border-color:var(--teal-b)"></div>Matched for Me</button>
+    <button class="sb-item" onclick="setFilter('mine',this)"><div class="sb-pip" style="background:var(--amber);border-color:var(--gold-b)"></div>My Questions</button>
+    <button class="sb-item" onclick="setFilter('answered',this)"><div class="sb-pip" style="background:var(--purple);border-color:var(--purple-b)"></div>Answered</button>
 
-    <div class="sb-section">
-      <div class="sb-section-label">Explore</div>
-      <div class="sb-item active">
-        <div class="sb-pip" style="background:var(--gold);border-color:var(--gold-b)"></div>All Questions
-      </div>
-      <div class="sb-item">
-        <div class="sb-pip" style="background:var(--blue);border-color:var(--blue-b)"></div>Matched for Me
-      </div>
-      <div class="sb-item">
-        <div class="sb-pip" style="background:var(--teal);border-color:var(--teal-b)"></div>Top Rated
-      </div>
-      <div class="sb-item">
-        <div class="sb-pip" style="background:var(--purple);border-color:var(--purple-b)"></div>Awaiting Answers
-      </div>
-      <div class="sb-item">
-        <div class="sb-pip" style="background:var(--amber-b);border-color:var(--amber)"></div>My Questions
-      </div>
+    <div class="sb-label">Topics</div>
+    <button class="sb-item" onclick="setTopic('Programming',this)">Programming &amp; CS</button>
+    <button class="sb-item" onclick="setTopic('Science',this)">Science &amp; Physics</button>
+    <button class="sb-item" onclick="setTopic('History',this)">History &amp; Geography</button>
+    <button class="sb-item" onclick="setTopic('Mathematics',this)">Mathematics</button>
+    <button class="sb-item" onclick="setTopic('Philosophy',this)">Philosophy</button>
+    <button class="sb-item" onclick="setTopic('Active Learning',this)">Active Learning</button>
+    <button class="sb-item" onclick="setTopic('',this)">All Topics</button>
+
+    <div class="sb-label">My Journey</div>
+    <div class="tier-card" id="tierCard">
+      <div class="tc-label">Seeker Track</div>
+      <div class="tc-name" id="tcName">Curious</div>
+      <div class="tc-track" id="tcTrack">Tier 1 of 5</div>
+      <div class="tc-bar-bg"><div class="tc-bar-fill" id="tcBar" style="width:10%"></div></div>
+      <div class="tc-pts"><span id="tcPts">0 pts</span><span id="tcNext">500 to Questioner</span></div>
     </div>
-
-    <div class="sb-section">
-      <div class="sb-section-label">Topics</div>
-      <div class="sb-item">Programming &amp; CS</div>
-      <div class="sb-item">Science &amp; Physics</div>
-      <div class="sb-item">History &amp; Geography</div>
-      <div class="sb-item">Mathematics</div>
-      <div class="sb-item">Philosophy</div>
-      <div class="sb-item">Active Learning</div>
-      <div class="sb-item">Curiosity Design</div>
-      <div class="sb-item">Attention Science</div>
-    </div>
-
-    <div class="sb-section">
-      <div class="sb-section-label">My Journey</div>
-      <div class="tier-card">
-        <div class="tier-card-label">Seeker Track</div>
-        <div class="tier-card-name">Questioner</div>
-        <div class="tier-card-track">Tier 2 of 5</div>
-        <div class="tier-bar-bg">
-          <div class="tier-bar-fill" id="seekerBar" style="width:68%"></div>
-        </div>
-        <div class="tier-pts">
-          <span>340 pts</span>
-          <span>500 to Challenger</span>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- ══ MAIN FEED ══ -->
+  <!-- MAIN -->
   <div class="main">
-
-    <!-- Top bar -->
     <div class="feed-topbar">
       <div class="feed-tabs">
-        <button class="ftab active" onclick="setTab(this)">All</button>
-        <button class="ftab" onclick="setTab(this)">Featured</button>
-        <button class="ftab" onclick="setTab(this)">Matched</button>
-        <button class="ftab" onclick="setTab(this)">Answered</button>
+        <button class="ftab active" id="ftab-all" onclick="setFilter('all',this,true)">All</button>
+        <button class="ftab" id="ftab-featured" onclick="setFilter('featured',this,true)">Featured</button>
+        <button class="ftab" id="ftab-matched" onclick="setFilter('matched',this,true)">Matched</button>
+        <button class="ftab" id="ftab-mine" onclick="setFilter('mine',this,true)">My Questions</button>
+        <button class="ftab" id="ftab-answered" onclick="setFilter('answered',this,true)">Answered</button>
       </div>
-      <div class="feed-stat">ARIA processed <strong id="evtCount">247</strong> events today</div>
+      <div class="feed-stat">ARIA processed <strong id="evtCount">0</strong> events today</div>
     </div>
 
-    <!-- Ask section -->
     <div class="ask-section">
       <div class="ask-box">
-        <textarea class="ask-textarea" id="askInput" rows="3"
-          placeholder="Ask an engaging question — programming, science, history, philosophy, mathematics, geography. What do you genuinely want to understand?"></textarea>
+        <textarea class="ask-input" id="askInput" rows="3" placeholder="Ask an engaging question — programming, science, history, mathematics, philosophy, geography..."></textarea>
         <div class="ask-footer">
           <div class="tag-row">
             <div class="tag-chip" onclick="toggleTag(this)">Programming</div>
@@ -589,1059 +376,647 @@ nav{
             <div class="tag-chip" onclick="toggleTag(this)">Philosophy</div>
             <div class="tag-chip" onclick="toggleTag(this)">Active Learning</div>
           </div>
-          <button class="btn btn-primary" onclick="submitQuestion()">Submit to ARIA</button>
+          <button class="nav-btn btn-gold" onclick="submitQuestion()">Submit to ARIA</button>
         </div>
       </div>
     </div>
 
-    <!-- ARIA bar -->
-    <div class="aria-statusbar">
-      <div class="aria-pulse" id="ariaPulse"></div>
-      <div class="aria-text" id="ariaLog"><span class="kw">ARIA</span> · System ready · 12 agents online · Awaiting events</div>
-      <div class="agent-pips">
-        <div class="a-pip blue" id="pp-gk" title="Gatekeeper"></div>
-        <div class="a-pip blue" id="pp-qr" title="Question Rater"></div>
-        <div class="a-pip blue" id="pp-sm" title="Smart Matcher"></div>
-        <div class="a-pip teal" id="pp-ei" title="Engagement Indexer"></div>
-        <div class="a-pip teal" id="pp-ri" title="Retention Indexer"></div>
-        <div class="a-pip teal" id="pp-rai" title="Applicability Indexer"></div>
-        <div class="a-pip teal" id="pp-coi" title="Creativity Indexer"></div>
-        <div class="a-pip teal" id="pp-ai" title="Accuracy Verifier"></div>
-        <div class="a-pip teal" id="pp-ig" title="Integrity Guard"></div>
-        <div class="a-pip teal" id="pp-arb" title="Grade Arbiter"></div>
-        <div class="a-pip purple" id="pp-te" title="Tier Engine"></div>
-        <div class="a-pip" id="pp-in" title="Insight Narrator"></div>
+    <div class="aria-bar">
+      <div class="aria-dot" id="ariaDot"></div>
+      <div class="aria-txt" id="ariaLog"><span class="kw">ARIA</span> · System ready · 12 agents online · Awaiting events</div>
+      <div class="pips">
+        <div class="pip blue" id="pp-gk" title="Gatekeeper"></div>
+        <div class="pip blue" id="pp-qr" title="Question Rater"></div>
+        <div class="pip blue" id="pp-sm" title="Smart Matcher"></div>
+        <div class="pip teal" id="pp-ei" title="Engagement Indexer"></div>
+        <div class="pip teal" id="pp-ri" title="Retention Indexer"></div>
+        <div class="pip teal" id="pp-rai" title="Applicability Indexer"></div>
+        <div class="pip teal" id="pp-coi" title="Creativity Indexer"></div>
+        <div class="pip teal" id="pp-ai" title="Accuracy Verifier"></div>
+        <div class="pip teal" id="pp-ig" title="Integrity Guard"></div>
+        <div class="pip teal" id="pp-arb" title="Grade Arbiter"></div>
+        <div class="pip purple" id="pp-te" title="Tier Engine"></div>
+        <div class="pip" id="pp-in" title="Insight Narrator"></div>
       </div>
     </div>
 
-    <!-- Questions -->
     <div class="q-feed" id="qFeed">
-
-      <!-- Q1: Programming -->
-      <div class="q-card featured">
-        <div class="q-meta">
-          <div class="q-topic-tag tag-prog">Programming</div>
-          <div class="q-quality">Quality 94</div>
-          <div class="q-matched-lbl">✦ Matched to you by Smart Matcher</div>
-          <div class="q-asker-lbl">Arjun M. · Questioner T2</div>
-        </div>
-        <div class="q-text">What is the most engaging way to explain variables to a 12-year-old who has never seen code before — without using technical jargon?</div>
-        <div class="q-card-footer">
-          <div class="q-stat">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1"/><path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
-            3 answers
-          </div>
-          <div class="q-stat">187 views</div>
-          <div class="q-bounty">Bounty +50 pts</div>
-          <button class="q-answer-cta" onclick="togglePanel('p1')">Answer</button>
-        </div>
-        <div class="answer-panel" id="p1">
-          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
-          <textarea class="answer-textarea" id="a1" placeholder="Give an engaging, specific answer. Use examples, analogies, real-world steps. ARIA scores on Engagement (25%), Retention (20%), Applicability (25%), Creativity (15%), and Accuracy (15%)..."></textarea>
-          <div class="ap-footer-row">
-            <div class="ap-hint" id="h1">CDS = AG×0.6 + PG×0.4 · 6 indices scored in parallel</div>
-            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p1')">Cancel</button>
-            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a1','l1','h1','sc1')">Submit Answer</button>
-          </div>
-          <div class="score-panel" id="sc1"></div>
-          <div class="answers-list" id="l1">
-            <div class="answer-card top">
-              <div class="ac-header">
-                <div class="ac-name">Sarah K.</div>
-                <div class="ac-tier-badge" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator T3</div>
-                <div class="top-badge">Best Answer</div>
-                <div class="ac-cds">CDS 91</div>
-              </div>
-              <div class="ac-body">Think of a variable like a labelled box. You write "score" on the outside, and whatever number is inside can change — but the box always answers to its name. When a player earns points, you don't make a new box, you just swap what's inside the old one. That single image does more work than three paragraphs of definition.</div>
-            </div>
-          </div>
-        </div>
+      <div class="empty-feed">
+        <div class="empty-feed-title">Loading questions...</div>
       </div>
-
-      <!-- Q2: Science -->
-      <div class="q-card">
-        <div class="q-meta">
-          <div class="q-topic-tag tag-sci">Science</div>
-          <div class="q-quality">Quality 89</div>
-          <div class="q-asker-lbl">Fatima A. · Challenger T3</div>
-        </div>
-        <div class="q-text">Why does time slow down near a black hole — and can you explain it in a way that makes a curious 15-year-old feel the actual strangeness of it?</div>
-        <div class="q-card-footer">
-          <div class="q-stat">2 answers</div>
-          <div class="q-stat">134 views</div>
-          <button class="q-answer-cta" onclick="togglePanel('p2')">Answer</button>
-        </div>
-        <div class="answer-panel" id="p2">
-          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
-          <textarea class="answer-textarea" id="a2" placeholder="Your engaging answer here..."></textarea>
-          <div class="ap-footer-row">
-            <div class="ap-hint" id="h2">6 indices scored in parallel once submitted</div>
-            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p2')">Cancel</button>
-            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a2','l2','h2','sc2')">Submit Answer</button>
-          </div>
-          <div class="score-panel" id="sc2"></div>
-          <div class="answers-list" id="l2"></div>
-        </div>
-      </div>
-
-      <!-- Q3: History -->
-      <div class="q-card">
-        <div class="q-meta">
-          <div class="q-topic-tag tag-hist">History</div>
-          <div class="q-quality">Quality 85</div>
-          <div class="q-asker-lbl">Marcus T. · Explainer T2</div>
-        </div>
-        <div class="q-text">How would you explain the fall of the Roman Empire to someone who thinks history is boring — using only things they already care about?</div>
-        <div class="q-card-footer">
-          <div class="q-stat">1 answer</div>
-          <div class="q-stat">98 views</div>
-          <div class="q-bounty">Bounty +30 pts</div>
-          <button class="q-answer-cta" onclick="togglePanel('p3')">Answer</button>
-        </div>
-        <div class="answer-panel" id="p3">
-          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
-          <textarea class="answer-textarea" id="a3" placeholder="Your engaging answer here..."></textarea>
-          <div class="ap-footer-row">
-            <div class="ap-hint" id="h3">6 indices scored in parallel once submitted</div>
-            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p3')">Cancel</button>
-            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a3','l3','h3','sc3')">Submit Answer</button>
-          </div>
-          <div class="score-panel" id="sc3"></div>
-          <div class="answers-list" id="l3"></div>
-        </div>
-      </div>
-
-      <!-- Q4: Geography -->
-      <div class="q-card">
-        <div class="q-meta">
-          <div class="q-topic-tag tag-geo">Geography</div>
-          <div class="q-quality">Quality 81</div>
-          <div class="q-asker-lbl">Yuki T. · Questioner T2</div>
-        </div>
-        <div class="q-text">Why do countries near the equator tend to be less economically developed? Explain the geography, climate, and colonial history together — not separately.</div>
-        <div class="q-card-footer">
-          <div class="q-stat">0 answers</div>
-          <div class="q-stat">57 views</div>
-          <button class="q-answer-cta" onclick="togglePanel('p4')">Answer</button>
-        </div>
-        <div class="answer-panel" id="p4">
-          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
-          <textarea class="answer-textarea" id="a4" placeholder="Your engaging answer here..."></textarea>
-          <div class="ap-footer-row">
-            <div class="ap-hint" id="h4">6 indices scored in parallel once submitted</div>
-            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p4')">Cancel</button>
-            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a4','l4','h4','sc4')">Submit Answer</button>
-          </div>
-          <div class="score-panel" id="sc4"></div>
-          <div class="answers-list" id="l4"></div>
-        </div>
-      </div>
-
-      <!-- Q5: Philosophy -->
-      <div class="q-card">
-        <div class="q-meta">
-          <div class="q-topic-tag tag-phil">Philosophy</div>
-          <div class="q-quality">Quality 88</div>
-          <div class="q-asker-lbl">Priya N. · Knowledge Architect T5</div>
-        </div>
-        <div class="q-text">Explain Occam's Razor in a way that someone could actually use tomorrow — with a concrete example from everyday decision-making, not textbook philosophy.</div>
-        <div class="q-card-footer">
-          <div class="q-stat">4 answers</div>
-          <div class="q-stat">213 views</div>
-          <button class="q-answer-cta" onclick="togglePanel('p5')">Answer</button>
-        </div>
-        <div class="answer-panel" id="p5">
-          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
-          <textarea class="answer-textarea" id="a5" placeholder="Your engaging answer here..."></textarea>
-          <div class="ap-footer-row">
-            <div class="ap-hint" id="h5">6 indices scored in parallel once submitted</div>
-            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p5')">Cancel</button>
-            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a5','l5','h5','sc5')">Submit Answer</button>
-          </div>
-          <div class="score-panel" id="sc5"></div>
-          <div class="answers-list" id="l5"></div>
-        </div>
-      </div>
-
-      <!-- Q6: Mathematics -->
-      <div class="q-card">
-        <div class="q-meta">
-          <div class="q-topic-tag tag-math">Mathematics</div>
-          <div class="q-quality">Quality 79</div>
-          <div class="q-asker-lbl">Lena V. · Responder T1</div>
-        </div>
-        <div class="q-text">Why does 0.999… equal 1 exactly — not approximately — and how would you convince a committed sceptic without resorting to algebra?</div>
-        <div class="q-card-footer">
-          <div class="q-stat">0 answers</div>
-          <div class="q-stat">44 views</div>
-          <div class="q-bounty">Bounty +40 pts</div>
-          <button class="q-answer-cta" onclick="togglePanel('p6')">Answer</button>
-        </div>
-        <div class="answer-panel" id="p6">
-          <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
-          <textarea class="answer-textarea" id="a6" placeholder="Your engaging answer here..."></textarea>
-          <div class="ap-footer-row">
-            <div class="ap-hint" id="h6">6 indices scored in parallel once submitted</div>
-            <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('p6')">Cancel</button>
-            <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('a6','l6','h6','sc6')">Submit Answer</button>
-          </div>
-          <div class="score-panel" id="sc6"></div>
-          <div class="answers-list" id="l6"></div>
-        </div>
-      </div>
-
     </div>
   </div>
 
-  <!-- ══ RIGHT SIDEBAR ══ -->
+  <!-- RIGHT SIDEBAR -->
   <div class="sidebar sb-right">
-
-    <!-- Agent Monitor -->
-    <div class="widget-section">
+    <div class="widget">
       <div class="widget-title">Agent Monitor</div>
       <div class="am-row"><div class="am-dot idle" id="d-aria"></div><div class="am-name">ARIA Orchestrator</div><div class="am-status" id="s-aria">Standby</div></div>
       <div class="am-row"><div class="am-dot ready" id="d-gk"></div><div class="am-name">Gatekeeper</div><div class="am-status" id="s-gk">Ready</div></div>
       <div class="am-row"><div class="am-dot ready" id="d-qr"></div><div class="am-name">Question Rater</div><div class="am-status" id="s-qr">Ready</div></div>
       <div class="am-row"><div class="am-dot ready" id="d-sm"></div><div class="am-name">Smart Matcher</div><div class="am-status" id="s-sm">Ready</div></div>
-      <div class="am-row"><div class="am-dot done" id="d-ei"></div><div class="am-name">Engagement Indexer</div><div class="am-status" id="s-ei">3 scored</div></div>
-      <div class="am-row"><div class="am-dot done" id="d-ri"></div><div class="am-name">Retention Indexer</div><div class="am-status" id="s-ri">3 scored</div></div>
-      <div class="am-row"><div class="am-dot done" id="d-rai"></div><div class="am-name">Applicability Indexer</div><div class="am-status" id="s-rai">3 scored</div></div>
-      <div class="am-row"><div class="am-dot done" id="d-coi"></div><div class="am-name">Creativity Indexer</div><div class="am-status" id="s-coi">3 scored</div></div>
-      <div class="am-row"><div class="am-dot done" id="d-ai"></div><div class="am-name">Accuracy Verifier</div><div class="am-status" id="s-ai">3 scored</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ei"></div><div class="am-name">Engagement Indexer</div><div class="am-status" id="s-ei">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ri"></div><div class="am-name">Retention Indexer</div><div class="am-status" id="s-ri">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-rai"></div><div class="am-name">Applicability Indexer</div><div class="am-status" id="s-rai">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-coi"></div><div class="am-name">Creativity Indexer</div><div class="am-status" id="s-coi">Ready</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ai"></div><div class="am-name">Accuracy Verifier</div><div class="am-status" id="s-ai">Ready</div></div>
       <div class="am-row"><div class="am-dot done" id="d-ig"></div><div class="am-name">Integrity Guard</div><div class="am-status" id="s-ig">0 flags</div></div>
-      <div class="am-row"><div class="am-dot done" id="d-arb"></div><div class="am-name">Grade Arbiter</div><div class="am-status" id="s-arb">3 CDS issued</div></div>
-      <div class="am-row"><div class="am-dot done-p" id="d-te"></div><div class="am-name">Tier Engine</div><div class="am-status" id="s-te">2 updated</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-arb"></div><div class="am-name">Grade Arbiter</div><div class="am-status" id="s-arb">Ready</div></div>
+      <div class="am-row"><div class="am-dot done-p" id="d-te"></div><div class="am-name">Tier Engine</div><div class="am-status" id="s-te">Active</div></div>
       <div class="am-row"><div class="am-dot idle" id="d-in"></div><div class="am-name">Insight Narrator</div><div class="am-status" id="s-in">Next: Sunday</div></div>
     </div>
 
-    <!-- Leaderboard -->
-    <div class="widget-section">
+    <div class="widget">
       <div class="widget-title">Top Engagedneers™ This Week</div>
-      <div class="lb-row"><div class="lb-rank">1</div><div class="lb-name">David O.</div><div class="lb-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator</div><div class="lb-pts">940</div></div>
-      <div class="lb-row"><div class="lb-rank">2</div><div class="lb-name">Fatima A.</div><div class="lb-tier" style="background:#e1f5ee;color:#085041;border-color:#5dcaa5">Challenger</div><div class="lb-pts">780</div></div>
-      <div class="lb-row"><div class="lb-rank">3</div><div class="lb-name">Sarah K.</div><div class="lb-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator</div><div class="lb-pts">720</div></div>
-      <div class="lb-row"><div class="lb-rank">4</div><div class="lb-name">Marcus T.</div><div class="lb-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Explainer</div><div class="lb-pts">615</div></div>
-      <div class="lb-row"><div class="lb-rank">5</div><div class="lb-name">You</div><div class="lb-tier" style="background:rgba(200,146,42,.12);color:#c8922a;border-color:rgba(200,146,42,.4)">Questioner</div><div class="lb-pts">340</div></div>
+      <div id="lbRows">
+        <div class="lb-row"><div class="lb-rank">—</div><div class="lb-name" style="color:var(--t4)">Loading...</div></div>
+      </div>
     </div>
 
-    <!-- Insight Narrator -->
-    <div class="widget-section">
+    <div class="widget">
       <div class="widget-title">Your Weekly Insight</div>
-      <div class="insight-box">
-        <div class="insight-body" id="insightBody">Your programming question earned Quality 94 — your highest yet. The Illuminator-level responses it attracted confirm you're asking at the right depth. Push further into the why next time.</div>
-        <div class="insight-meta">Agent 12 · Insight Narrator · Generated Sunday</div>
-      </div>
+      <div class="insight-box"><div class="insight-body" id="insightBody">Submit your first question or answer to receive your personalised weekly insight from the Insight Narrator.</div><div class="insight-meta">Agent 12 · Insight Narrator</div></div>
     </div>
 
-    <!-- Activity -->
-    <div class="widget-section">
+    <div class="widget">
       <div class="widget-title">Activity</div>
-      <div style="display:flex;flex-direction:column;gap:.5rem">
-        <div class="notif-card" style="border-color:var(--gold)">
-          <span class="notif-agent" style="color:var(--gold-b)">Smart Matcher</span> selected you for 2 new questions matching your Programming expertise.
-        </div>
-        <div class="notif-card" style="border-color:var(--teal)">
-          <span class="notif-agent" style="color:var(--teal-b)">Tier Engine</span> · 160 pts to Challenger. Last 3 questions averaged Quality 86.
-        </div>
-        <div class="notif-card" style="border-color:var(--purple)">
-          <span class="notif-agent" style="color:var(--purple-b)">Grade Arbiter</span> · CDS 76 on last answer. Growth edge: add concrete real-world examples.
-        </div>
+      <div id="notifArea">
+        <div class="notif-card" style="border-color:var(--gold)"><span style="color:var(--gold-b);font-weight:700">Welcome</span> to Engageneering™. Ask a question or answer one to begin your journey.</div>
       </div>
     </div>
-
   </div>
 </div>
 
-
 <script>
-// ── SUPABASE INIT ──────────────────────────────────────
+// ══ CONFIG ══
 const SUPA_URL  = 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRicW5rY2pmdHhmYnh1anhzcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDE2OTgsImV4cCI6MjA5MTgxNzY5OH0.Y7R7MKo9mu5T4CMUAjAK1vMxnW_VqJKrieIi4MnCSeY';
 const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
 
-// ── SESSION & UI STATE ─────────────────────────────────
+// ══ STATE ══
 let currentUser = null;
-
-// NOTE: If profiles insert fails, run this in Supabase SQL Editor:
-// CREATE POLICY "profiles: insert own" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
-// CREATE POLICY "profile_roles: system insert" ON profile_roles FOR INSERT WITH CHECK (true);
 let currentProfile = null;
+let currentRole = null;
+let currentFilter = 'all';
+let currentTopic = '';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function initAuth() {
-  try {
-    const { data: { session } } = await supa.auth.getSession();
-    if (session) await handleSession(session);
-    supa.auth.onAuthStateChange(async (_event, session) => {
-      if (session) await handleSession(session);
-      else handleSignout();
-    });
-  } catch(err) {
-    console.error('Auth init error:', err);
-  }
-}
+// ══ TIER CONFIG ══
+const SEEKER_TIERS = {1:'Curious',2:'Questioner',3:'Challenger',4:'Pro Challenger',5:'Knowledge Architect'};
+const ANSWERER_TIERS = {1:'Responder',2:'Explainer',3:'Illuminator',4:'Teacher',5:'Master Teacher'};
+const TIER_THRESHOLDS = [0,500,1200,2500,5000];
 
-async function handleSession(session) {
-  try {
-    hidePlatformGate();
-    closeAuth();
-    currentUser = session.user;
-
-    // Load or create profile
-    let { data: profile, error: pErr } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
-    if (pErr || !profile) {
-      // Profile not created by trigger yet — create it manually
-      const { data: newProfile } = await supa.from('profiles').upsert({
-        id: currentUser.id,
-        display_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Engageneer',
-        avatar_url: currentUser.user_metadata?.avatar_url || null,
-        status: 'active'
-      }, {onConflict:'id'}).select().single();
-      profile = newProfile;
-    }
-    currentProfile = profile;
-
-    // Load or create role
-    let { data: role, error: rErr } = await supa.from('profile_roles').select('*').eq('user_id', currentUser.id).single();
-    if (rErr || !role) {
-      const { data: newRole } = await supa.from('profile_roles').upsert({
-        user_id: currentUser.id,
-        role: 'both',
-        seeker_tier: 1,
-        answerer_tier: 1,
-        pts_total: 0
-      }, {onConflict:'user_id'}).select().single();
-      role = newRole;
-    }
-
-    updateNavUI(profile, role);
-    console.log('Session active:', currentUser.email);
-  } catch(err) {
-    console.error('Session handling error:', err);
-    hidePlatformGate();
-  }
-}
-
-async function createDefaultRole() {
-  try {
-    await supa.from('profile_roles').upsert({
-      user_id: currentUser.id,
-      role: 'both',
-      seeker_tier: 1,
-      answerer_tier: 1,
-      pts_total: 0
-    }, {onConflict:'user_id'});
-  } catch(err) {
-    console.error('Role creation error:', err);
-  }
-}
-
-function handleSignout() {
-  currentUser = null;
-  currentProfile = null;
-  updateNavUI(null, null);
-  showPlatformGate();
-}
-
-function showPlatformGate() {
-  const gate = document.getElementById('platformGate');
-  if (gate) gate.style.display = 'flex';
-}
-function hidePlatformGate() {
-  const gate = document.getElementById('platformGate');
-  if (gate) gate.style.display = 'none';
-}
-
-function updateNavUI(profile, role) {
-  const navR = document.querySelector('.nav-right');
-  if (!navR) return;
-  if (profile) {
-    const initials = (profile.display_name || 'U').charAt(0).toUpperCase();
-    const tierLabel = role ? `T${role.seeker_tier}` : 'T1';
-    const pts = role ? role.pts_total : 0;
-    navR.innerHTML = `
-      <div class="nav-badge">Questioner ${tierLabel} · <strong>${pts} pts</strong></div>
-      <div class="user-avatar" title="${profile.display_name || 'Profile'}">${profile.avatar_url ? `<img src="${profile.avatar_url}"/>` : initials}</div>
-      <button class="signout-btn" onclick="doSignout()">Sign out</button>`;
-  } else {
-    navR.innerHTML = `
-      <div class="nav-badge">Guest</div>
-      <button class="btn btn-secondary" onclick="openAuth('login')">Log In</button>
-      <button class="btn btn-primary" onclick="openAuth('signup')">Join</button>`;
-  }
-}
-
-// ── AUTH MODAL CONTROLS ────────────────────────────────
-function openAuth(tab='login') {
-  document.getElementById('authOverlay').classList.add('open');
-  switchAuthTab(tab);
-  document.body.style.overflow='hidden';
-}
-function closeAuth() {
-  document.getElementById('authOverlay').classList.remove('open');
-  document.body.style.overflow='';
-}
-function switchAuthTab(tab) {
+// ══ AUTH GATE ══
+function switchGateTab(tab) {
   document.getElementById('tabLogin').classList.toggle('active', tab==='login');
   document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
-  document.getElementById('sectionLogin').classList.toggle('active', tab==='login');
-  document.getElementById('sectionSignup').classList.toggle('active', tab==='signup');
-  document.getElementById('loginError').textContent='';
-  document.getElementById('signupError').textContent='';
-  document.getElementById('signupSuccess').textContent='';
+  document.getElementById('secLogin').classList.toggle('active', tab==='login');
+  document.getElementById('secSignup').classList.toggle('active', tab==='signup');
+  document.getElementById('loginErr').textContent='';
+  document.getElementById('signupErr').textContent='';
+  document.getElementById('signupOk').textContent='';
 }
-document.getElementById('authOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('authOverlay')) closeAuth();
-});
 
-// ── LOGIN ──────────────────────────────────────────────
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pwd   = document.getElementById('loginPwd').value;
-  const errEl = document.getElementById('loginError');
-  const btn   = document.querySelector('#sectionLogin .btn-primary');
-  errEl.textContent = '';
-  if (!email || !pwd) { errEl.textContent = 'Please enter email and password.'; return; }
-  if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
+  const errEl = document.getElementById('loginErr');
+  const btn   = document.getElementById('loginBtn');
+  errEl.textContent='';
+  if(!email||!pwd){errEl.textContent='Please enter email and password.';return;}
+  btn.textContent='Signing in...';btn.disabled=true;
   try {
-    const { data, error } = await supa.auth.signInWithPassword({ email, password: pwd });
-    if (error) {
-      errEl.textContent = error.message === 'Invalid login credentials'
-        ? 'Email or password incorrect. Try signing up if you are new.'
-        : error.message;
-    } else if (data?.session) {
+    const {data,error} = await supa.auth.signInWithPassword({email,password:pwd});
+    if(error){
+      errEl.textContent = error.message==='Invalid login credentials'
+        ? 'Email or password incorrect. Try signing up if you are new.' : error.message;
+    } else if(data?.session) {
       await handleSession(data.session);
     }
-  } catch(err) {
-    errEl.textContent = 'Connection error. Check your internet and try again.';
-  } finally {
-    if (btn) { btn.textContent = 'Log In'; btn.disabled = false; }
-  }
+  } catch(e){errEl.textContent='Connection error. Try again.';}
+  finally{btn.textContent='Log In';btn.disabled=false;}
 }
 
-// ── SIGNUP ─────────────────────────────────────────────
 async function doSignup() {
   const name  = document.getElementById('signupName').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
   const pwd   = document.getElementById('signupPwd').value;
-  const errEl = document.getElementById('signupError');
-  const okEl  = document.getElementById('signupSuccess');
-  const btn   = document.querySelector('#sectionSignup .btn-primary');
-  errEl.textContent=''; okEl.textContent='';
-  if (!name || !email || !pwd) { errEl.textContent='All fields required.'; return; }
-  if (pwd.length < 8) { errEl.textContent='Password must be at least 8 characters.'; return; }
-  if (btn) { btn.textContent = 'Creating account...'; btn.disabled = true; }
+  const errEl = document.getElementById('signupErr');
+  const okEl  = document.getElementById('signupOk');
+  const btn   = document.getElementById('signupBtn');
+  errEl.textContent='';okEl.textContent='';
+  if(!name||!email||!pwd){errEl.textContent='All fields required.';return;}
+  if(pwd.length<8){errEl.textContent='Password must be at least 8 characters.';return;}
+  btn.textContent='Creating account...';btn.disabled=true;
   try {
-    const { data, error } = await supa.auth.signUp({
-      email, password: pwd,
-      options: {
-        data: { full_name: name },
-        emailRedirectTo: window.location.href
-      }
+    const {data,error} = await supa.auth.signUp({
+      email,password:pwd,
+      options:{data:{full_name:name},emailRedirectTo:window.location.href}
     });
-    if (error) {
-      errEl.textContent = error.message;
-    } else if (data?.session) {
-      // Email confirmation disabled — logged in immediately
-      await handleSession(data.session);
-    } else {
-      // Email confirmation enabled — show message
-      okEl.textContent = 'Account created! Check your email for a confirmation link, then log in.';
-    }
-  } catch(err) {
-    errEl.textContent = 'Connection error. Check your internet and try again.';
-  } finally {
-    if (btn) { btn.textContent = 'Create Account'; btn.disabled = false; }
-  }
+    if(error){errEl.textContent=error.message;}
+    else if(data?.session){await handleSession(data.session);}
+    else{okEl.textContent='Account created! Check your email to confirm, then log in.';}
+  } catch(e){errEl.textContent='Connection error. Try again.';}
+  finally{btn.textContent='Create Account — Free';btn.disabled=false;}
 }
 
-// ── OAUTH ──────────────────────────────────────────────
 async function oauthLogin(provider) {
-  const { error } = await supa.auth.signInWithOAuth({
+  const {error} = await supa.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: window.location.origin + '/platform.html' }
+    options:{redirectTo:window.location.href}
   });
-  if (error) alert(error.message);
+  if(error) alert(error.message);
 }
 
-// ── SIGNOUT ────────────────────────────────────────────
 async function doSignout() {
   await supa.auth.signOut();
+  currentUser=null;currentProfile=null;currentRole=null;
+  document.getElementById('authGate').classList.remove('hidden');
 }
 
-// ── SAVE QUESTION TO DB ────────────────────────────────
-async function saveQuestion(text, tags, qualityScore, matchedUids) {
-  if (!currentUser) return null;
-  const { data, error } = await supa.from('questions').insert({
-    asker_id: currentUser.id,
-    text,
-    tags,
-    quality_score: qualityScore,
-    gatekeeper_verdict: 'approved',
-    status: 'published',
-    matched_uids: matchedUids,
-    published_at: new Date().toISOString()
-  }).select().single();
-  if (error) { console.error('Question save error:', error); return null; }
-  // Log to score_history
-  await supa.from('score_history').insert({
-    user_id: currentUser.id,
-    action_type: 'question',
-    ref_id: data.id,
-    quality_score: qualityScore,
-    pts_awarded: Math.round(qualityScore * 0.5)
-  });
-  // Update pts
-  await supa.from('profile_roles').update({
-    pts_total: (currentProfile?.pts_total || 0) + Math.round(qualityScore * 0.5),
-    seeker_pts: (currentProfile?.seeker_pts || 0) + Math.round(qualityScore * 0.5),
-    updated_at: new Date().toISOString()
-  }).eq('user_id', currentUser.id);
-  return data;
-}
+// ══ SESSION HANDLING ══
+async function handleSession(session) {
+  currentUser = session.user;
 
-// ── SAVE ANSWER TO DB ──────────────────────────────────
-async function saveAnswer(questionId, text, scores) {
-  if (!currentUser) return null;
-  const { ei, ri, rai, coi, ai, ag, pg, cds } = scores;
-  const { data, error } = await supa.from('answers').insert({
-    question_id: questionId,
-    answerer_id: currentUser.id,
-    text,
-    ei_score: ei, ri_score: ri, rai_score: rai,
-    coi_score: coi, ai_score: ai,
-    ag, pg, cds,
-    integrity_pass: true,
-    status: 'published',
-    scored_at: new Date().toISOString()
-  }).select().single();
-  if (error) { console.error('Answer save error:', error); return null; }
-  // Log to score_history
-  await supa.from('score_history').insert({
-    user_id: currentUser.id,
-    action_type: 'answer',
-    ref_id: data.id,
-    ei, ri, rai, coi, ai, ag, pg, cds,
-    pts_awarded: Math.round(cds * 0.8)
-  });
-  // Update pts + run tier check
-  await supa.from('profile_roles').update({
-    pts_total: (currentProfile?.pts_total || 0) + Math.round(cds * 0.8),
-    answerer_pts: (currentProfile?.answerer_pts || 0) + Math.round(cds * 0.8),
-    updated_at: new Date().toISOString()
-  }).eq('user_id', currentUser.id);
-  await checkTierThreshold();
-  return data;
-}
+  // Ensure profile exists
+  let {data:profile} = await supa.from('profiles').select('*').eq('id',currentUser.id).single();
+  if(!profile) {
+    const {data:np} = await supa.from('profiles').upsert({
+      id: currentUser.id,
+      display_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Engageneer',
+      avatar_url: currentUser.user_metadata?.avatar_url || null,
+      status: 'active'
+    },{onConflict:'id'}).select().single();
+    profile = np;
+  }
+  currentProfile = profile;
 
-// ── TIER THRESHOLD CHECK ───────────────────────────────
-async function checkTierThreshold() {
-  if (!currentUser) return;
-  const { data: history } = await supa.from('score_history')
-    .select('cds,created_at')
-    .eq('user_id', currentUser.id)
-    .eq('action_type', 'answer')
-    .order('created_at', { ascending: false })
-    .limit(10);
-  if (!history || history.length < 3) return;
-  const avg = history.slice(0,5).reduce((s,r)=>s+(r.cds||0),0) / Math.min(history.length,5);
-  const { data: role } = await supa.from('profile_roles').select('*').eq('user_id', currentUser.id).single();
-  if (!role) return;
-  // Thresholds: T1→T2 avg≥60, T2→T3 avg≥70, T3→T4 avg≥78, T4→T5 avg≥86
-  const thresholds = {1:60, 2:70, 3:78, 4:86};
-  const currentTier = role.answerer_tier;
-  if (currentTier < 5 && avg >= (thresholds[currentTier] || 999)) {
-    const newTier = currentTier + 1;
-    await supa.from('profile_roles').update({ answerer_tier: newTier }).eq('user_id', currentUser.id);
-    await supa.from('tier_events').insert({
+  // Ensure role exists
+  let {data:role} = await supa.from('profile_roles').select('*').eq('user_id',currentUser.id).single();
+  if(!role) {
+    const {data:nr} = await supa.from('profile_roles').upsert({
       user_id: currentUser.id,
-      track: 'answerer',
-      from_tier: currentTier,
-      to_tier: newTier,
-      direction: 'promotion',
-      evidence: { avg_cds: avg, actions_counted: Math.min(history.length,5) }
-    });
-    // Notify user
-    await supa.from('notifications').insert({
-      user_id: currentUser.id,
-      type: 'tier_promotion',
-      title: `Promoted to Tier ${newTier}`,
-      body: `Your average CDS of ${Math.round(avg)} earned you a tier promotion on the Answerer track.`
-    });
-    setLog(`Tier Engine: promoted to Answerer T${newTier} · avg CDS ${Math.round(avg)}`);
+      role: 'both',
+      seeker_tier: 1,
+      answerer_tier: 1,
+      pts_total: 0,
+      seeker_pts: 0,
+      answerer_pts: 0
+    },{onConflict:'user_id'}).select().single();
+    role = nr;
+  }
+  currentRole = role;
+
+  // Hide gate, show platform
+  document.getElementById('authGate').classList.add('hidden');
+  updateNavUI();
+  updateTierCard();
+  loadFeed();
+  loadLeaderboard();
+  loadNotifications();
+  loadEvtCount();
+}
+
+function updateNavUI() {
+  const nr = document.getElementById('navRight');
+  if(!currentProfile){nr.innerHTML='';return;}
+  const initials = (currentProfile.display_name||'E').charAt(0).toUpperCase();
+  const tier = currentRole ? `${SEEKER_TIERS[currentRole.seeker_tier]||'Curious'} T${currentRole.seeker_tier||1}` : 'Curious T1';
+  const pts = currentRole?.pts_total||0;
+  nr.innerHTML = `
+    <div class="user-pill">
+      <div class="user-avatar">${currentProfile.avatar_url?`<img src="${currentProfile.avatar_url}" alt="avatar"/>`:`${initials}`}</div>
+      <div class="user-info">
+        <div class="user-name">${currentProfile.display_name||'Engageneer'}</div>
+        <div class="user-tier">${tier} · ${pts} pts</div>
+      </div>
+    </div>
+    <button class="nav-btn btn-ghost" onclick="doSignout()">Sign Out</button>`;
+}
+
+function updateTierCard() {
+  if(!currentRole) return;
+  const t = currentRole.seeker_tier||1;
+  const pts = currentRole.seeker_pts||0;
+  const nextPts = TIER_THRESHOLDS[t]||5000;
+  const pct = Math.min(Math.round((pts/nextPts)*100),100);
+  const nextName = SEEKER_TIERS[t+1]||'Engageneer™';
+  document.getElementById('tcName').textContent = SEEKER_TIERS[t]||'Curious';
+  document.getElementById('tcTrack').textContent = `Seeker Track · Tier ${t} of 5`;
+  document.getElementById('tcBar').style.width = pct+'%';
+  document.getElementById('tcPts').textContent = `${pts} pts`;
+  document.getElementById('tcNext').textContent = `${Math.max(0,nextPts-pts)} to ${nextName}`;
+}
+
+// ══ FILTER + TOPIC ══
+let activeFilter='all';
+let activeTopic='';
+
+function setFilter(filter, btn, fromTab=false) {
+  activeFilter = filter;
+  // Sync sidebar and top tabs
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const tabEl = document.getElementById('ftab-'+filter);
+  if(tabEl) tabEl.classList.add('active');
+  const sbMap={all:0,featured:1,matched:2,mine:3,answered:4};
+  const sbItems = document.querySelectorAll('.sb-item');
+  if(sbMap[filter]!==undefined) sbItems[sbMap[filter]]?.classList.add('active');
+  loadFeed();
+}
+
+function setTopic(topic, btn) {
+  activeTopic = topic;
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  loadFeed();
+}
+
+// ══ LOAD FEED FROM SUPABASE ══
+async function loadFeed() {
+  const feed = document.getElementById('qFeed');
+  feed.innerHTML = '<div class="empty-feed"><div class="empty-feed-title">Loading...</div></div>';
+
+  try {
+    let query = supa.from('questions')
+      .select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)')
+      .eq('status','published')
+      .order('created_at',{ascending:false})
+      .limit(30);
+
+    if(activeTopic) query = query.contains('tags',[activeTopic]);
+    if(activeFilter==='mine' && currentUser) query = supa.from('questions').select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)').eq('asker_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
+    if(activeFilter==='featured') query = supa.from('questions').select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)').eq('status','published').gte('quality_score',80).order('quality_score',{ascending:false}).limit(20);
+    if(activeFilter==='matched' && currentUser) query = supa.from('questions').select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)').eq('status','published').contains('matched_uids',[currentUser.id]).order('created_at',{ascending:false}).limit(20);
+    if(activeFilter==='answered') query = supa.from('questions').select('id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,profiles!questions_asker_id_fkey(display_name)').eq('status','published').gt('answer_count',0).order('answer_count',{ascending:false}).limit(20);
+
+    const {data:questions, error} = await query;
+
+    if(error) throw error;
+
+    if(!questions||questions.length===0){
+      // Show sample questions if DB is empty
+      feed.innerHTML = renderSampleQuestions();
+      return;
+    }
+
+    feed.innerHTML = questions.map(q=>renderQCard(q)).join('');
+  } catch(err) {
+    console.warn('Feed load error:', err.message);
+    feed.innerHTML = renderSampleQuestions();
   }
 }
 
-// ── LOAD REAL QUESTIONS FROM DB ────────────────────────
-async function loadQuestions() {
-  const { data } = await supa.from('questions')
-    .select('*, profiles(display_name)')
-    .eq('status','published')
-    .order('created_at', { ascending: false })
-    .limit(20);
-  return data || [];
+function renderSampleQuestions() {
+  const samples = [
+    {id:'s1',text:'What is the most engaging way to explain variables to a 12-year-old who has never seen code before — without using technical jargon?',tags:['Programming'],quality_score:94,answer_count:3,views:187,bounty_pts:50,profiles:{display_name:'Arjun M.'},asker_id:'',matched_uids:[],featured:true},
+    {id:'s2',text:'Why does time slow down near a black hole — and can you explain it in a way that makes a curious 15-year-old feel the actual strangeness of it?',tags:['Science'],quality_score:89,answer_count:2,views:134,bounty_pts:0,profiles:{display_name:'Fatima A.'},asker_id:'',matched_uids:[]},
+    {id:'s3',text:'How would you explain the fall of the Roman Empire to someone who thinks history is boring — using only things they already care about?',tags:['History'],quality_score:85,answer_count:1,views:98,bounty_pts:30,profiles:{display_name:'Marcus T.'},asker_id:'',matched_uids:[]},
+    {id:'s4',text:'Why do countries near the equator tend to be less economically developed? Explain the geography, climate, and colonial history together — not separately.',tags:['Geography'],quality_score:81,answer_count:0,views:57,bounty_pts:0,profiles:{display_name:'Yuki T.'},asker_id:'',matched_uids:[]},
+    {id:'s5',text:'Explain Occam\'s Razor in a way that someone could actually use tomorrow — with a concrete example from everyday decision-making.',tags:['Philosophy'],quality_score:88,answer_count:4,views:213,bounty_pts:0,profiles:{display_name:'Priya N.'},asker_id:'',matched_uids:[]},
+    {id:'s6',text:'Why does 0.999… equal 1 exactly — not approximately — and how would you convince a committed sceptic without resorting to algebra?',tags:['Mathematics'],quality_score:79,answer_count:0,views:44,bounty_pts:40,profiles:{display_name:'Lena V.'},asker_id:'',matched_uids:[]}
+  ];
+  return samples.map((q,i)=>renderQCard(q,i===0)).join('');
 }
 
-// ── LOAD LEADERBOARD ───────────────────────────────────
-async function loadLeaderboard() {
-  const { data } = await supa.from('leaderboard').select('*').limit(5);
-  if (!data) return;
-  const lb = document.querySelector('.widget-section:nth-child(2)');
-  if (!lb) return;
-  const tierNames = {1:'Curious/Responder',2:'Questioner/Explainer',3:'Challenger/Illuminator',4:'Pro Challenger/Teacher',5:'KA/Master Teacher'};
-  const rows = data.map((u,i) => `
-    <div class="lb-row">
-      <div class="lb-rank">${i+1}</div>
-      <div class="lb-name">${u.display_name||'Anon'}</div>
-      <div class="lb-tier" style="background:rgba(200,146,42,.1);color:#c8922a;border:1px solid rgba(200,146,42,.3)">T${u.seeker_tier||1}</div>
-      <div class="lb-pts">${u.pts_total||0}</div>
-    </div>`).join('');
-  lb.querySelector('.widget-title').insertAdjacentHTML('afterend', `<div id="lbRows">${rows}</div>`);
-  document.querySelector('#lbRows')?.previousElementSibling?.nextElementSibling?.remove();
+function renderQCard(q, forceFeature=false) {
+  const tag = (q.tags||[])[0]||'General';
+  const tagCls = tagClass(tag);
+  const isMatched = currentUser && (q.matched_uids||[]).includes(currentUser.id);
+  const isOwn = currentUser && q.asker_id===currentUser.id;
+  const featured = forceFeature || (q.quality_score>=85);
+  const askerName = q.profiles?.display_name || 'Community';
+  const panelId = 'panel-'+q.id;
+  const inputId = 'input-'+q.id;
+  const listId  = 'list-'+q.id;
+  const hintId  = 'hint-'+q.id;
+  const scoreId = 'score-'+q.id;
+
+  return `<div class="q-card ${featured?'featured':''}" data-question-id="${q.id}">
+    <div class="q-meta">
+      <div class="q-tag ${tagCls}">${tag}</div>
+      ${q.quality_score!=null?`<div class="q-quality">Quality ${q.quality_score}</div>`:''}
+      ${isMatched?`<div class="q-matched">✦ Matched to you</div>`:''}
+      ${isOwn?`<div class="q-matched" style="color:var(--gold)">✦ Your question</div>`:''}
+      <div class="q-asker">${askerName}</div>
+    </div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-footer">
+      <div class="q-stat">${q.answer_count||0} answers</div>
+      <div class="q-stat">${q.views||0} views</div>
+      ${q.bounty_pts>0?`<div class="q-bounty">Bounty +${q.bounty_pts} pts</div>`:''}
+      <button class="answer-cta" onclick="togglePanel('${panelId}')">Answer</button>
+    </div>
+    <div class="answer-panel" id="${panelId}">
+      <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
+      <textarea class="answer-ta" id="${inputId}" placeholder="Give an engaging, specific answer. Use examples, analogies, and real-world steps. ARIA scores on Engagement (25%), Retention (20%), Applicability (25%), Creativity (15%), Accuracy (15%)..."></textarea>
+      <div class="ap-row">
+        <div class="ap-hint" id="${hintId}">CDS = AG × 0.60 + PG × 0.40 · 6 indices scored in parallel</div>
+        <button class="nav-btn btn-ghost" style="padding:5px 14px;font-size:10px" onclick="togglePanel('${panelId}')">Cancel</button>
+        <button class="nav-btn btn-gold" style="padding:7px 22px" onclick="submitAnswer('${q.id}','${inputId}','${listId}','${hintId}','${scoreId}','${q.text?.replace(/'/g,"\\'")||'this question'}')">Submit Answer</button>
+      </div>
+      <div class="score-panel" id="${scoreId}"></div>
+      <div class="answers-list" id="${listId}">
+        ${q.id?.startsWith('s1')?`<div class="answer-card top">
+          <div class="ac-hdr"><div class="ac-name">Sarah K.</div><div class="ac-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator T3</div><div class="top-badge">Best Answer</div><div class="ac-cds">CDS 91</div></div>
+          <div class="ac-body">Think of a variable like a labelled box. You write "score" on the outside, and whatever number is inside can change — but the box always answers to its name. That single image does more work than three paragraphs of definition.</div>
+        </div>`:''}
+      </div>
+    </div>
+  </div>`;
 }
 
-// ── INIT ───────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  // Hard auth gate — show immediately, hide only when session confirmed
-  showPlatformGate();
-  initAuth().then(() => {
-    // If after 2.5s still no session, keep gate up
-    setTimeout(() => {
-      if (!currentUser) showPlatformGate();
-    }, 2500);
-  });
-  loadLeaderboard();
-  // Patch Ask button to require login
-  const origSubmit = window.submitQuestion;
-  window.submitQuestion = async function() {
-    if (!currentUser) { openAuth('signup'); return; }
-    const qText = document.getElementById('askInput').value.trim();
-    if (!qText) { alert('Please type a question.'); return; }
-    // Run existing ARIA pipeline, then save to DB
-    await origSubmit?.call(this);
-  };
-});
-</script>
+function tagClass(tag) {
+  const map={Programming:'tag-prog',Science:'tag-sci',History:'tag-hist',Geography:'tag-geo',Mathematics:'tag-math',Philosophy:'tag-phil','Active Learning':'tag-al'};
+  return map[tag]||'tag-gen';
+}
 
-<script>
-// Agent calls now route through Supabase Edge Function aria-agent
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function togglePanel(id) {
+  document.getElementById(id)?.classList.toggle('open');
+}
 
-function setLog(t){document.getElementById('ariaLog').innerHTML=`<span class="kw">ARIA</span> · ${t}`}
-function setPip(id,cls){const e=document.getElementById('pp-'+id);if(e)e.className='a-pip '+cls}
+function toggleTag(el){el.classList.toggle('sel')}
+
+// ══ ARIA UTILS ══
+function setLog(msg){document.getElementById('ariaLog').innerHTML=`<span class="kw">ARIA</span> · ${msg}`}
+function ariaOn(){document.getElementById('ariaDot').classList.add('active')}
+function ariaOff(){document.getElementById('ariaDot').classList.remove('active')}
+function setPip(id,cls){const e=document.getElementById('pp-'+id);if(e)e.className='pip '+cls}
 function setDot(id,cls){const e=document.getElementById('d-'+id);if(e)e.className='am-dot '+cls}
-function setSt(id,t){const e=document.getElementById('s-'+id);if(e)e.textContent=t}
-function ariaOn(){document.getElementById('ariaPulse').classList.add('active')}
-function ariaOff(){document.getElementById('ariaPulse').classList.remove('active')}
-function setTab(b){document.querySelectorAll('.ftab').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
-function toggleTag(e){e.classList.toggle('sel')}
-function togglePanel(id){document.getElementById(id).classList.toggle('open')}
+function setSt(id,txt){const e=document.getElementById('s-'+id);if(e)e.textContent=txt}
 
-async function callAgent(agent, payload){
-  // Calls Supabase Edge Function — no CORS, API key stays server-side
+// ══ EDGE FUNCTION CALL ══
+async function callAgent(agent,payload){
   try {
-    const r = await fetch(`${SUPA_URL}/functions/v1/aria-agent`, {
+    const r = await fetch(`${SUPA_URL}/functions/v1/aria-agent`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPA_ANON}`},
-      body: JSON.stringify({agent, ...payload})
+      body:JSON.stringify({agent,...payload})
     });
     const text = await r.text();
-    try { return JSON.parse(text); } catch(e) { return {}; }
-  } catch(err) {
-    console.warn('Agent call failed, using fallback:', err);
+    try{return JSON.parse(text);}catch{return {};}
+  } catch(err){
+    console.warn('Agent call failed:',err.message);
     return {};
   }
 }
 
+// ══ SUBMIT QUESTION ══
 async function submitQuestion(){
-  const q=document.getElementById('askInput').value.trim();
+  if(!currentUser){document.getElementById('authGate').classList.remove('hidden');return;}
+  const q = document.getElementById('askInput').value.trim();
   if(!q){alert('Please type a question first.');return;}
-  const tags=[...document.querySelectorAll('.tag-chip.sel')].map(t=>t.textContent).join(', ')||'General';
+  const tags = [...document.querySelectorAll('.tag-chip.sel')].map(t=>t.textContent);
+  const tagStr = tags.join(', ')||'General';
+
   ariaOn();setLog('Question received → routing to Gatekeeper');
   setDot('aria','run');setSt('aria','Processing');
 
-  await sleep(400);
+  await sleep(300);
 
-  // Agent 01 — Gatekeeper
+  // Agent 01: Gatekeeper
   setPip('gk','pulse');setDot('gk','run');setSt('gk','Screening...');
   setLog('Agent 01 Gatekeeper · Screening for content policy...');
-  let gk = await callAgent('gatekeeper', {question:q, tags});
-  if(!gk.verdict) gk = {verdict:'approve',reason:'Genuine curiosity question.'};
+  let gk = await callAgent('gatekeeper',{question:q,tags:tagStr});
+  if(!gk.verdict) gk={verdict:'approve',reason:'Genuine question.'};
   setDot('gk','ready');setPip('gk','blue');setSt('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
-  if(gk.verdict==='reject'){setLog(`Gatekeeper: Rejected · ${gk.reason}`);ariaOff();setDot('aria','idle');setSt('aria','Standby');alert(`Not approved:\n${gk.reason}`);return;}
-  await sleep(400);
+  if(gk.verdict==='reject'){setLog(`Gatekeeper: ${gk.reason}`);ariaOff();setDot('aria','idle');setSt('aria','Standby');alert(`Not approved:\n${gk.reason}`);return;}
+  await sleep(300);
 
-  // Agent 02 — Question Rater
+  // Agent 02: Question Rater
   setPip('qr','pulse');setDot('qr','run');setSt('qr','Scoring...');
   setLog('Agent 02 Question Rater · Scoring clarity, depth, originality, engagement potential...');
-  let qr = await callAgent('question_rater', {question:q, tags});
-  if(!qr.total) qr = {clarity:18,depth:17,originality:16,engagement_potential:19,total:70,feedback:'Good question with strong engagement potential.'};
+  let qr = await callAgent('question_rater',{question:q,tags:tagStr});
+  if(!qr.total) qr={clarity:18,depth:16,originality:16,engagement_potential:18,total:68,feedback:'Good question.'};
   setDot('qr','ready');setPip('qr','blue');setSt('qr',`Quality ${qr.total}`);
   setLog(`Question Rater: Quality ${qr.total}/100 · ${qr.feedback}`);
-  await sleep(400);
+  await sleep(300);
 
-  // Agent 03 — Smart Matcher
+  // Agent 03: Smart Matcher
   setPip('sm','pulse');setDot('sm','run');setSt('sm','Matching...');
-  setLog('Agent 03 Smart Matcher · Scanning community expertise, answer history, and subject tags...');
-  let sm = await callAgent('smart_matcher', {question:q, tags});
-  if(!sm.matched) sm = {matched:['David O. — Illuminator','Sarah K. — Illuminator','Fatima A. — Challenger'],invite:'Your expertise is exactly what this question needs.'};
+  setLog('Agent 03 Smart Matcher · Scanning community expertise and tags...');
+  let sm = await callAgent('smart_matcher',{question:q,tags:tagStr});
+  if(!sm.matched) sm={matched:['Top experts invited'],invite:'Your expertise is needed here.'};
   setDot('sm','ready');setPip('sm','blue');setSt('sm',`${(sm.matched||[]).length} matched`);
-  setLog(`Smart Matcher: Invited ${(sm.matched||[]).slice(0,2).join(', ')} and ${Math.max(0,(sm.matched||[]).length-2)} others`);
-  await sleep(350);
+  setLog(`Smart Matcher: ${(sm.matched||[]).length} experts invited`);
+  await sleep(300);
 
-  // Tier Engine pts
-  setDot('te','run');setSt('te','Awarding pts...');
-  await sleep(450);
+  // Save to Supabase
+  let dbQId = null;
+  try {
+    const {data:savedQ,error} = await supa.from('questions').insert({
+      asker_id: currentUser.id,
+      text: q,
+      tags: tags.length?tags:['General'],
+      quality_score: qr.total,
+      gatekeeper_verdict: gk.verdict,
+      status:'published',
+      published_at: new Date().toISOString()
+    }).select().single();
+    if(!error && savedQ){
+      dbQId = savedQ.id;
+      await supa.from('score_history').insert({user_id:currentUser.id,action_type:'question',ref_id:savedQ.id,quality_score:qr.total,pts_awarded:Math.round(qr.total*.5)});
+      await supa.from('profile_roles').update({
+        pts_total: supa.rpc ? undefined : (currentRole?.pts_total||0)+Math.round(qr.total*.5),
+        seeker_pts: (currentRole?.seeker_pts||0)+Math.round(qr.total*.5),
+        updated_at: new Date().toISOString()
+      }).eq('user_id',currentUser.id);
+      if(currentRole){currentRole.pts_total=(currentRole.pts_total||0)+Math.round(qr.total*.5);currentRole.seeker_pts=(currentRole.seeker_pts||0)+Math.round(qr.total*.5);}
+    }
+  } catch(e){console.warn('Q save:',e.message);}
+
+  setDot('te','run');setSt('te','Updating...');
+  await sleep(400);
   setDot('te','done-p');setSt('te','Points awarded ✓');
-
   setLog(`Published · Quality ${qr.total} · ${(sm.matched||[]).length} experts invited · Points awarded`);
   setDot('aria','idle');setSt('aria','Standby');ariaOff();
 
-  // Colour map
-  const colMap={
-    'Programming':'tag-prog','Science':'tag-sci','History':'tag-hist',
-    'Geography':'tag-geo','Mathematics':'tag-math','Philosophy':'tag-phil','Active Learning':'tag-al'
-  };
-  const firstTag=tags.split(',')[0].trim();
-  const tagCls=colMap[firstTag]||'tag-phil';
-  const uid='q'+Date.now();
+  updateNavUI();
+  updateTierCard();
+  document.getElementById('evtCount').textContent = parseInt(document.getElementById('evtCount').textContent||0)+1;
 
-  // Save question to Supabase
-  let dbQuestionId = null;
-  if(currentUser){
-    try{
-      const {data:savedQ,error:qErr} = await supa.from('questions').insert({
-        asker_id: currentUser.id,
-        text: q,
-        tags: tags.split(',').map(t=>t.trim()).filter(Boolean),
-        quality_score: qr.total,
-        gatekeeper_verdict: gk.verdict,
-        status: 'published',
-        matched_uids: [],
-        published_at: new Date().toISOString()
-      }).select().single();
-      if(!qErr && savedQ){
-        dbQuestionId = savedQ.id;
-        // Log to score_history
-        await supa.from('score_history').insert({
-          user_id: currentUser.id,
-          action_type: 'question',
-          ref_id: savedQ.id,
-          quality_score: qr.total,
-          pts_awarded: Math.round(qr.total * 0.5)
-        });
-        // Update pts
-        const {data:rData} = await supa.from('profile_roles').select('pts_total,seeker_pts').eq('user_id',currentUser.id).single();
-        if(rData){
-          await supa.from('profile_roles').update({
-            pts_total:(rData.pts_total||0)+Math.round(qr.total*0.5),
-            seeker_pts:(rData.seeker_pts||0)+Math.round(qr.total*0.5),
-            updated_at:new Date().toISOString()
-          }).eq('user_id',currentUser.id);
-        }
-      }
-    }catch(e){console.warn('Question save failed:',e.message);}
-  }
-
-  document.getElementById('qFeed').insertAdjacentHTML('afterbegin',`
-    <div class="q-card featured new-in" id="${uid}" data-question-id="${dbQuestionId||''}">
-      <div class="q-meta">
-        <div class="q-topic-tag ${tagCls}">${firstTag}</div>
-        <div class="q-quality">Quality ${qr.total}</div>
-        <div class="q-matched-lbl">✦ ${(sm.matched||[]).length} experts invited</div>
-        <div class="q-asker-lbl">You · Questioner T2</div>
-      </div>
-      <div class="q-text">${q}</div>
-      <div class="q-card-footer">
-        <div class="q-stat">0 answers</div>
-        <div class="q-stat">Just published</div>
-        <button class="q-answer-cta" onclick="togglePanel('np${uid}')">Answer</button>
-      </div>
-      <div class="answer-panel" id="np${uid}">
-        <div class="ap-title">Your answer — evaluated by 6 atomic agents + Engageneer™ peer grade</div>
-        <textarea class="answer-textarea" id="na${uid}" placeholder="Your engaging answer here..."></textarea>
-        <div class="ap-footer-row">
-          <div class="ap-hint" id="nh${uid}">6 indices scored in parallel</div>
-          <button class="btn btn-secondary" style="padding:5px 14px;font-size:10px" onclick="togglePanel('np${uid}')">Cancel</button>
-          <button class="btn btn-primary" style="padding:7px 20px" onclick="submitAnswer('na${uid}','nl${uid}','nh${uid}','ns${uid}')">Submit Answer</button>
-        </div>
-        <div class="score-panel" id="ns${uid}"></div>
-        <div class="answers-list" id="nl${uid}"></div>
-      </div>
-    </div>`);
+  // Add card to feed
+  const uid = dbQId||'new-'+Date.now();
+  const newQ = {id:uid,text:q,tags:tags.length?tags:['General'],quality_score:qr.total,answer_count:0,views:0,bounty_pts:0,profiles:{display_name:'You'},asker_id:currentUser.id,matched_uids:[]};
+  document.getElementById('qFeed').insertAdjacentHTML('afterbegin',renderQCard(newQ));
 
   document.getElementById('askInput').value='';
   document.querySelectorAll('.tag-chip').forEach(t=>t.classList.remove('sel'));
-  document.getElementById('evtCount').textContent=parseInt(document.getElementById('evtCount').textContent)+1;
-  const bar=document.getElementById('seekerBar');
-  bar.style.width=Math.min(parseInt(bar.style.width)+6,100)+'%';
 }
 
-async function submitAnswer(inpId,listId,hintId,scoreId){
-  if(!currentUser){openAuth('signup');return;}
-  const ans=document.getElementById(inpId)?.value?.trim();
-  if(!ans||ans.length<15){alert('Please write a more complete answer — at least 15 characters.');return;}
-  const qCard=document.getElementById(inpId)?.closest('.q-card');
-  const q=qCard?.querySelector('.q-text')?.textContent||'this question';
+// ══ SUBMIT ANSWER ══
+async function submitAnswer(questionId,inputId,listId,hintId,scoreId,questionText){
+  if(!currentUser){document.getElementById('authGate').classList.remove('hidden');return;}
+  const ans = document.getElementById(inputId)?.value?.trim();
+  if(!ans||ans.length<15){alert('Please write a more complete answer (at least 15 characters).');return;}
+
+  const btn = document.querySelector(`#panel-${questionId} .btn-gold`)||document.querySelector(`[onclick*="${inputId}"].btn-gold`);
+  if(btn){btn.textContent='Evaluating...';btn.disabled=true;}
 
   ariaOn();
   setLog('Answer received → 6 atomic eval agents + Integrity Guard firing in parallel...');
   setDot('aria','run');setSt('aria','Evaluating');
-
-  const agents=['ei','ri','rai','coi','ai','ig'];
-  agents.forEach(a=>{setPip(a,'pulse');setDot(a,'run');setSt(a,'Scoring...')});
+  ['ei','ri','rai','coi','ai','ig'].forEach(a=>{setPip(a,'pulse');setDot(a,'run');setSt(a,'Scoring...')});
   setPip('arb','pulse');setDot('arb','run');setSt('arb','Waiting...');
 
-  // Run all 6 eval agents in parallel via Edge Function
-  const payload = {question:q, answer:ans};
+  const payload = {question:questionText,answer:ans};
   let [ei,ri,rai,coi,ai,ig] = await Promise.all([
-    callAgent('engagement_indexer', payload),
-    callAgent('retention_indexer', payload),
-    callAgent('applicability_indexer', payload),
-    callAgent('creativity_indexer', payload),
-    callAgent('accuracy_verifier', payload),
-    callAgent('integrity_guard', payload)
+    callAgent('engagement_indexer',payload),
+    callAgent('retention_indexer',payload),
+    callAgent('applicability_indexer',payload),
+    callAgent('creativity_indexer',payload),
+    callAgent('accuracy_verifier',payload),
+    callAgent('integrity_guard',payload)
   ]);
 
-  // Apply fallbacks if edge function returns empty
-  if(!ei?.score) ei={score:72,note:'Good engagement.'};
-  if(!ri?.score) ri={score:68,note:'Reasonably memorable.'};
-  if(!rai?.score) rai={score:74,note:'Applicable with effort.'};
-  if(!coi?.score) coi={score:65,note:'Some originality.'};
-  if(!ai?.score) ai={score:78,note:'Factually sound.'};
+  if(!ei?.score)  ei  ={score:72,note:'Good engagement.'};
+  if(!ri?.score)  ri  ={score:68,note:'Reasonably memorable.'};
+  if(!rai?.score) rai ={score:74,note:'Applicable with effort.'};
+  if(!coi?.score) coi ={score:65,note:'Some originality.'};
+  if(!ai?.score)  ai  ={score:78,note:'Factually sound.'};
   if(ig?.pass===undefined) ig={pass:true,note:'No concerns.'};
 
-  ['ei','ri','rai','coi','ai'].forEach(a=>{setDot(a,'done');setPip(a,'teal')});
-  setSt('ei',`EI ${ei.score}`);setSt('ri',`RI ${ri.score}`);setSt('rai',`RAI ${rai.score}`);
-  setSt('coi',`COI ${coi.score}`);setSt('ai',`AI ${ai.score}`);
-  setDot('ig',ig.pass?'done':'err');setPip('ig',ig.pass?'teal':'red');
-  setSt('ig',ig.pass?'Pass ✓':'Flagged!');
+  ['ei','ri','rai','coi','ai'].forEach(a=>{setDot(a,'done');setPip(a,'teal');});
+  setSt('ei',`EI ${ei.score}`);setSt('ri',`RI ${ri.score}`);setSt('rai',`RAI ${rai.score}`);setSt('coi',`COI ${coi.score}`);setSt('ai',`AI ${ai.score}`);
+  setDot('ig',ig.pass?'done':'err');setPip('ig',ig.pass?'teal':'red');setSt('ig',ig.pass?'Pass ✓':'Flagged!');
 
   if(!ig.pass){
-    setLog(`Integrity Guard: ${ig.note}`);ariaOff();setDot('aria','idle');setSt('aria','Standby');
-    alert(`Integrity Guard flagged:\n${ig.note}\n\nPlease revise and resubmit.`);return;
+    setLog(`Integrity Guard flagged: ${ig.note}`);ariaOff();setDot('aria','idle');setSt('aria','Standby');
+    if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+    alert(`Integrity Guard:\n${ig.note}\n\nPlease revise and resubmit.`);return;
   }
 
-  // Compute scores
-  const ag=Math.round(ei.score*.25+ri.score*.20+rai.score*.25+coi.score*.15+ai.score*.15);
-  const pg=Math.min(100,Math.max(0,ag+Math.round(Math.random()*16-8)));
-  const cds=Math.round(ag*.6+pg*.4);
+  const ag  = Math.round(ei.score*.25+ri.score*.20+rai.score*.25+coi.score*.15+ai.score*.15);
+  const pg  = Math.min(100,Math.max(0,ag+Math.round(Math.random()*16-8)));
+  const cds = Math.round(ag*.6+pg*.4);
+  const pts = Math.round(cds*.8);
 
   setDot('arb','done');setPip('arb','teal');setSt('arb',`CDS ${cds} issued`);
   setDot('te','run');setSt('te','Recalculating...');
 
-  // Save answer to Supabase — find question_id from card data attribute or use null
-  const qCard2 = document.getElementById(inpId)?.closest('.q-card');
-  const questionId = qCard2?.dataset?.questionId || null;
-  if(currentUser){
-    try {
-      const {data:savedAns, error:ansErr} = await supa.from('answers').insert({
-        question_id: questionId,
-        answerer_id: currentUser.id,
-        text: ans,
-        ei_score: ei.score, ri_score: ri.score, rai_score: rai.score,
-        coi_score: coi.score, ai_score: ai.score,
-        integrity_pass: ig.pass,
-        ag, pg, cds,
-        status: 'published',
-        scored_at: new Date().toISOString()
-      }).select().single();
-
-      if(!ansErr && savedAns){
-        // Log to score_history
-        await supa.from('score_history').insert({
-          user_id: currentUser.id,
-          action_type: 'answer',
-          ref_id: savedAns.id,
-          ei: ei.score, ri: ri.score, rai: rai.score,
-          coi: coi.score, ai: ai.score,
-          ag, pg, cds,
-          pts_awarded: Math.round(cds * 0.8)
-        });
-        // Update pts
-        const {data:roleData} = await supa.from('profile_roles').select('pts_total,answerer_pts').eq('user_id',currentUser.id).single();
-        if(roleData){
-          await supa.from('profile_roles').update({
-            pts_total: (roleData.pts_total||0) + Math.round(cds*0.8),
-            answerer_pts: (roleData.answerer_pts||0) + Math.round(cds*0.8),
-            updated_at: new Date().toISOString()
-          }).eq('user_id',currentUser.id);
-        }
-        console.log('Answer saved to DB:', savedAns.id);
-      } else {
-        console.warn('Answer save error:', ansErr?.message);
+  // Save to Supabase
+  try {
+    const qIdToUse = questionId.startsWith('s')||questionId.startsWith('new') ? null : questionId;
+    const {data:savedA,error:aErr} = await supa.from('answers').insert({
+      question_id: qIdToUse||null,
+      answerer_id: currentUser.id,
+      text: ans,
+      ei_score:ei.score,ri_score:ri.score,rai_score:rai.score,coi_score:coi.score,ai_score:ai.score,
+      integrity_pass:true,ag,pg,cds,status:'published',
+      scored_at:new Date().toISOString()
+    }).select().single();
+    if(!aErr && savedA){
+      await supa.from('score_history').insert({user_id:currentUser.id,action_type:'answer',ref_id:savedA.id,ei:ei.score,ri:ri.score,rai:rai.score,coi:coi.score,ai:ai.score,ag,pg,cds,pts_awarded:pts});
+      const {data:roleNow} = await supa.from('profile_roles').select('pts_total,answerer_pts').eq('user_id',currentUser.id).single();
+      if(roleNow){
+        await supa.from('profile_roles').update({pts_total:(roleNow.pts_total||0)+pts,answerer_pts:(roleNow.answerer_pts||0)+pts,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
+        if(currentRole){currentRole.pts_total=(roleNow.pts_total||0)+pts;currentRole.answerer_pts=(roleNow.answerer_pts||0)+pts;}
       }
-    } catch(dbErr){
-      console.warn('DB save failed (non-critical):', dbErr.message);
+      // Update answer count on question
+      if(qIdToUse) await supa.rpc('increment_answer_count',{q_id:qIdToUse}).catch(()=>{});
     }
-  }
+  } catch(e){console.warn('Answer save:',e.message);}
 
   await sleep(450);
   setDot('te','done-p');setSt('te','Points awarded ✓');
-  setLog(`CDS ${cds}/100 · AG ${ag} + PG ${pg} · Tier Engine updated · Insight Narrator queued`);
+  setLog(`CDS ${cds}/100 · AG ${ag} + PG ${pg} · +${pts} pts · Tier Engine updated`);
   setDot('aria','idle');setSt('aria','Standby');ariaOff();
 
   // Update hint
   const hint=document.getElementById(hintId);
-  if(hint){hint.textContent=`CDS ${cds}/100 · AG ${ag} (AI) + PG ${pg} (Engageneer™ peer grade)`;hint.style.color=cds>=80?'#5dcaa5':cds>=60?'#f0c040':'#e24b4a';}
+  if(hint){hint.textContent=`CDS ${cds}/100 · AG ${ag} (AI) + PG ${pg} (Engageneer™ peer) · +${pts} pts`;hint.style.color=cds>=80?'#5dcaa5':cds>=60?'#f0c040':'#f09595';}
 
-  // Score panel
+  // Score breakdown
   const sp=document.getElementById(scoreId);
   if(sp){
-    const idxs=[
-      {l:'EI',v:ei.score,c:'#378add',n:ei.note,w:'25%'},
-      {l:'RI',v:ri.score,c:'#1d9e75',n:ri.note,w:'20%'},
-      {l:'RAI',v:rai.score,c:'#d4920c',n:rai.note,w:'25%'},
-      {l:'COI',v:coi.score,c:'#7f77dd',n:coi.note,w:'15%'},
-      {l:'AI',v:ai.score,c:'#d85a30',n:ai.note,w:'15%'}
-    ];
-    sp.innerHTML=`
-      <div class="score-panel-title">Composite Defended Score — Full Breakdown</div>
-      <div class="score-grid">
-        ${idxs.map(x=>`<div class="score-col">
-          <div class="score-val" style="color:${x.c}">${x.v}</div>
-          <div class="score-track"><div class="score-fill" style="height:${x.v}%;background:${x.c};opacity:.75"></div></div>
-          <div class="score-lbl">${x.l} · ${x.w}</div>
-        </div>`).join('')}
-      </div>
-      <div class="cds-row">
-        <div class="cds-formula">AG ${ag} × 0.60 &nbsp;+&nbsp; PG ${pg} × 0.40</div>
-        <div style="display:flex;align-items:baseline;gap:.3rem">
-          <span style="font-size:11px;color:var(--text-dim)">CDS</span>
-          <span class="cds-val">${cds}</span>
-          <span class="cds-label">/100</span>
-        </div>
-      </div>`;
+    const idxs=[{l:'EI',v:ei.score,c:'#378add',w:'25%'},{l:'RI',v:ri.score,c:'#1d9e75',w:'20%'},{l:'RAI',v:rai.score,c:'#d4920c',w:'25%'},{l:'COI',v:coi.score,c:'#7f77dd',w:'15%'},{l:'AI',v:ai.score,c:'#d85a30',w:'15%'}];
+    sp.innerHTML=`<div class="score-title">Composite Defended Score — Full Breakdown</div>
+      <div class="score-grid">${idxs.map(x=>`<div class="score-col"><div class="score-num" style="color:${x.c}">${x.v}</div><div class="score-track"><div class="score-fill" style="height:${x.v}%;background:${x.c};opacity:.8"></div></div><div class="score-lbl">${x.l} · ${x.w}</div></div>`).join('')}</div>
+      <div class="cds-row"><div class="cds-formula">AG ${ag} × 0.60 + PG ${pg} × 0.40</div><div style="display:flex;align-items:baseline;gap:.3rem"><span style="font-size:11px;color:var(--t4)">CDS</span><span class="cds-val">${cds}</span><span style="font-size:11px;color:var(--t4)">/100</span></div></div>`;
     sp.classList.add('open');
   }
 
-  // Answer card
+  // Add answer card
   const list=document.getElementById(listId);
-  if(list){list.insertAdjacentHTML('beforeend',`
-    <div class="answer-card ${cds>=85?'top':''}">
-      <div class="ac-header">
-        <div class="ac-name">You</div>
-        <div class="ac-tier-badge" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Questioner T2</div>
-        ${cds>=85?'<div class="top-badge">Top Answer</div>':''}
-        <div class="ac-cds">CDS ${cds}</div>
-      </div>
-      <div class="ac-body">${ans}</div>
-      <div class="ac-scores-row">EI ${ei.score} · RI ${ri.score} · RAI ${rai.score} · COI ${coi.score} · AI ${ai.score}</div>
-    </div>`);}
+  if(list){list.insertAdjacentHTML('beforeend',`<div class="answer-card ${cds>=85?'top':''}"><div class="ac-hdr"><div class="ac-name">${currentProfile?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">${ANSWERER_TIERS[currentRole?.answerer_tier||1]||'Responder'}</div>${cds>=85?'<div class="top-badge">Top Answer</div>':''}<div class="ac-cds">CDS ${cds}</div></div><div class="ac-body">${ans}</div><div class="ac-scores">EI ${ei.score} · RI ${ri.score} · RAI ${rai.score} · COI ${coi.score} · AI ${ai.score}</div></div>`);}
 
-  if(document.getElementById(inpId))document.getElementById(inpId).value='';
-  document.getElementById('evtCount').textContent=parseInt(document.getElementById('evtCount').textContent)+1;
-  const bar=document.getElementById('seekerBar');
-  bar.style.width=Math.min(parseInt(bar.style.width)+4,100)+'%';
-  refreshInsight(cds);
+  if(document.getElementById(inputId)) document.getElementById(inputId).value='';
+  if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+  document.getElementById('evtCount').textContent = parseInt(document.getElementById('evtCount').textContent||0)+1;
+  updateNavUI();updateTierCard();
+  checkTierPromotion();
 }
 
-async function refreshInsight(cds){
-  setDot('in','run');setSt('in','Narrating...');
-  // Insight narrative — use edge function
-  const ins = await callAgent('engagement_indexer', {question:'Generate an insight', answer:`CDS ${cds}/100, AG ${ag}/100`});
-  const insText = ins.note || `CDS ${cds}/100 recorded. Your answer has been scored and saved to your profile.`;
-  const el=document.getElementById('insightBody');if(el)el.textContent=insText;
-  setDot('in','done-p');setSt('in','Updated ✓');
-  setTimeout(()=>{setDot('in','idle');setSt('in','Next: Sunday');},3500);
+// ══ TIER CHECK ══
+async function checkTierPromotion(){
+  if(!currentUser||!currentRole) return;
+  const {data:hist} = await supa.from('score_history').select('cds').eq('user_id',currentUser.id).eq('action_type','answer').order('created_at',{ascending:false}).limit(5);
+  if(!hist||hist.length<3) return;
+  const avg = hist.reduce((s,r)=>s+(r.cds||0),0)/hist.length;
+  const t = currentRole.answerer_tier||1;
+  const thresholds={1:60,2:70,3:78,4:86};
+  if(t<5 && avg>=(thresholds[t]||999)){
+    const newT = t+1;
+    await supa.from('profile_roles').update({answerer_tier:newT}).eq('user_id',currentUser.id);
+    await supa.from('tier_events').insert({user_id:currentUser.id,track:'answerer',from_tier:t,to_tier:newT,direction:'promotion',evidence:{avg_cds:Math.round(avg),actions:hist.length}});
+    currentRole.answerer_tier=newT;
+    setLog(`Tier Engine: promoted to ${ANSWERER_TIERS[newT]} T${newT} · avg CDS ${Math.round(avg)}`);
+    addNotif(`Tier promotion!`,`You are now ${ANSWERER_TIERS[newT]} T${newT} on the Answerer track.`,'purple');
+    updateNavUI();updateTierCard();
+  }
 }
+
+// ══ LEADERBOARD ══
+async function loadLeaderboard(){
+  const {data} = await supa.from('profiles').select('display_name,avatar_url,profile_roles(pts_total,seeker_tier,answerer_tier,is_engageneer)').order('created_at',{ascending:false}).limit(8);
+  if(!data||data.length===0){document.getElementById('lbRows').innerHTML='<div class="lb-row"><div class="lb-name" style="color:var(--t4)">No users yet — be first!</div></div>';return;}
+  const sorted = data.filter(u=>u.profile_roles).sort((a,b)=>(b.profile_roles?.pts_total||0)-(a.profile_roles?.pts_total||0));
+  document.getElementById('lbRows').innerHTML = sorted.slice(0,5).map((u,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank">${i+1}</div>
+      <div class="lb-name">${u.display_name||'Engageneer'}</div>
+      <div class="lb-tier" style="background:rgba(200,146,42,.1);color:#c8922a;border-color:rgba(200,146,42,.3)">T${u.profile_roles?.seeker_tier||1}</div>
+      <div class="lb-pts">${u.profile_roles?.pts_total||0}</div>
+    </div>`).join('');
+}
+
+// ══ NOTIFICATIONS ══
+async function loadNotifications(){
+  if(!currentUser) return;
+  const {data} = await supa.from('notifications').select('*').eq('user_id',currentUser.id).eq('read',false).order('created_at',{ascending:false}).limit(5);
+  if(!data||data.length===0) return;
+  const area = document.getElementById('notifArea');
+  area.innerHTML = data.map(n=>`<div class="notif-card" style="border-color:var(--gold)"><span style="color:var(--gold-b);font-weight:700">${n.title}</span> ${n.body||''}</div>`).join('');
+  // Mark as read
+  await supa.from('notifications').update({read:true}).eq('user_id',currentUser.id).eq('read',false);
+}
+
+function addNotif(title,body,color='gold'){
+  const area=document.getElementById('notifArea');
+  const colorMap={gold:'var(--gold)',purple:'var(--purple)',teal:'var(--teal)'};
+  area.insertAdjacentHTML('afterbegin',`<div class="notif-card" style="border-color:${colorMap[color]||'var(--gold)'}"><span style="color:var(--gold-b);font-weight:700">${title}</span> ${body}</div>`);
+}
+
+// ══ EVT COUNT ══
+async function loadEvtCount(){
+  const {count} = await supa.from('score_history').select('*',{count:'exact',head:true}).eq('user_id',currentUser?.id||'');
+  document.getElementById('evtCount').textContent = count||0;
+}
+
+// ══ INIT ══
+window.addEventListener('DOMContentLoaded', async () => {
+  const {data:{session}} = await supa.auth.getSession();
+  if(session) await handleSession(session);
+
+  supa.auth.onAuthStateChange(async(_,session)=>{
+    if(session) await handleSession(session);
+    else {
+      currentUser=null;currentProfile=null;currentRole=null;
+      document.getElementById('authGate').classList.remove('hidden');
+    }
+  });
+});
 </script>
-
-
-<!-- ── PLATFORM GATE ── -->
-<div id="platformGate" style="display:none;position:fixed;inset:0;background:rgba(4,8,18,.96);z-index:600;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(12px)">
-  <div style="background:#0b1624;border:1px solid #2a4a7a;border-radius:14px;padding:2.5rem;max-width:460px;width:100%;text-align:center">
-    <svg width="52" height="60" viewBox="0 0 52 60" style="margin:0 auto 1.2rem;display:block">
-      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
-      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
-      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
-      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
-      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
-      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
-      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
-      <circle cx="26" cy="30" r="6" fill="#f5d060"/>
-      <circle cx="26" cy="30" r="3.5" fill="#0b1624"/>
-      <circle cx="26" cy="30" r="1.6" fill="#f5d060"/>
-    </svg>
-    <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#f0c040;margin-bottom:.5rem;font-weight:600">Welcome to Engageneering™</div>
-    <div style="font-size:14px;color:#7a9ab8;line-height:1.75;margin-bottom:1.6rem">The Crowd Learning Platform requires an account. Sign in or join free to ask questions, give answers, earn your CDS, and climb the tiers.</div>
-    <div style="display:flex;flex-direction:column;gap:.7rem">
-      <button onclick="openAuth('signup')" style="width:100%;padding:12px;background:#c8922a;color:#040c18;border:none;border-radius:6px;font-size:11px;letter-spacing:2px;font-family:'Cormorant Garamond',serif;text-transform:uppercase;cursor:pointer;font-weight:700;transition:background .2s" onmouseover="this.style.background='#f0c040'" onmouseout="this.style.background='#c8922a'">Join the Movement — Free</button>
-      <button onclick="openAuth('login')" style="width:100%;padding:11px;background:transparent;color:#c8922a;border:1px solid rgba(200,146,42,.5);border-radius:6px;font-size:11px;letter-spacing:2px;font-family:'Cormorant Garamond',serif;text-transform:uppercase;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(200,146,42,.08)'" onmouseout="this.style.background='transparent'">Log In</button>
-      <a href="index.html" style="font-size:11px;color:#3a5070;text-decoration:none;margin-top:.4rem;display:block">← Back to Engageneering.org</a>
-    </div>
-  </div>
-</div>
-
-<!-- ── AUTH MODAL ── -->
-<div class="auth-overlay" id="authOverlay">
-  <div class="auth-modal">
-    <button class="auth-modal-close" onclick="closeAuth()">×</button>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Log In</button>
-      <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Join</button>
-    </div>
-    <div class="auth-body">
-
-      <!-- LOGIN -->
-      <div class="auth-section active" id="sectionLogin">
-        <div class="oauth-btn" onclick="oauthLogin('google')">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-          Continue with Google
-        </div>
-        <div class="oauth-btn" onclick="oauthLogin('linkedin_oidc')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-          Continue with LinkedIn
-        </div>
-        <div class="auth-divider">or email</div>
-        <div class="auth-field">
-          <label class="auth-label">Email</label>
-          <input class="auth-input" type="email" id="loginEmail" placeholder="you@school.edu"/>
-        </div>
-        <div class="auth-field">
-          <label class="auth-label">Password</label>
-          <input class="auth-input" type="password" id="loginPwd" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/>
-        </div>
-        <button class="btn btn-primary" style="width:100%;margin-top:.3rem" onclick="doLogin()">Log In</button>
-        <div class="auth-error" id="loginError"></div>
-        <div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:.8rem">
-          No account? <span style="color:var(--gold);cursor:pointer" onclick="switchAuthTab('signup')">Join the movement</span>
-        </div>
-      </div>
-
-      <!-- SIGNUP -->
-      <div class="auth-section" id="sectionSignup">
-        <div class="oauth-btn" onclick="oauthLogin('google')">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-          Sign up with Google
-        </div>
-        <div class="oauth-btn" onclick="oauthLogin('linkedin_oidc')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-          Sign up with LinkedIn
-        </div>
-        <div class="auth-divider">or email</div>
-        <div class="auth-field">
-          <label class="auth-label">Full Name</label>
-          <input class="auth-input" type="text" id="signupName" placeholder="Your name"/>
-        </div>
-        <div class="auth-field">
-          <label class="auth-label">Email</label>
-          <input class="auth-input" type="email" id="signupEmail" placeholder="you@school.edu"/>
-        </div>
-        <div class="auth-field">
-          <label class="auth-label">Password</label>
-          <input class="auth-input" type="password" id="signupPwd" placeholder="Min 8 characters" onkeydown="if(event.key==='Enter')doSignup()"/>
-        </div>
-        <button class="btn btn-primary" style="width:100%;margin-top:.3rem" onclick="doSignup()">Create Account</button>
-        <div class="auth-error" id="signupError"></div>
-        <div class="auth-success" id="signupSuccess"></div>
-        <div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:.8rem">
-          Already a member? <span style="color:var(--gold);cursor:pointer" onclick="switchAuthTab('login')">Log in</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
