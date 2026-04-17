@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="description" content="Engageneering™ — Stop Teaching. Start Engaging. A global movement and crowd learning platform redefining the philosophy of education through engineered engagement."/>
 <title>Engageneering™ — Engineer the Engagement</title>
@@ -474,7 +473,7 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
 <!-- MARQUEE -->
 <div class="marquee-bar">
   <div class="marquee-inner">
-    <span>Stop Teaching. Start Engaging.</span><span>✦</span><span>Ask it. Film it. Earn it.</span><span>✦</span><span>Engineer the Engagement.</span><span>✦</span><span>The World's First Video Crowd Learning Platform.</span><span>✦</span><span>Curiosity is the Curriculum.</span><span>✦</span><span>60 Seconds to Ask. 180 to Illuminate.</span><span>✦</span><span>Not a Reel. A Real Answer.</span><span>✦</span><span>Turn Attention into Intention.</span><span>✦</span><span>Ignite the Room.</span><span>✦</span><span>Your Question. The World Answers.</span><span>✦</span>
+    <span>Stop Teaching. Start Engaging.</span><span>✦</span><span>Ask it. Film it. Earn it.</span><span>✦</span><span>Engineer the Engagement.</span><span>✦</span><span>The World&#39;s First Video Crowd Learning Platform.</span><span>✦</span><span>Curiosity is the Curriculum.</span><span>✦</span><span>60 Seconds to Ask. 180 to Illuminate.</span><span>✦</span><span>Not a Reel. A Real Answer.</span><span>✦</span><span>Turn Attention into Intention.</span><span>✦</span><span>Ignite the Room.</span><span>✦</span><span>Your Question. The World Answers.</span><span>✦</span>
   </div>
 </div>
 
@@ -912,7 +911,7 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
       <div><div class="fc-title">Connect</div><ul class="fc-links"><li><a href="#">Twitter / X</a></li><li><a href="#">LinkedIn</a></li><li><a href="#">Instagram</a></li><li><a href="#">Newsletter</a></li></ul></div>
     </div>
     <div class="footer-bottom">
-      <div class="footer-copy">© 2025 Engageneering™ · All rights reserved · Section 41 Trademark</div>
+      <div class="footer-copy">© 2025 Engageneering™ · All rights reserved · Section 41 Trademark · YOM Private Limited</div>
       <div class="footer-hex">⬡ Ignite the Room</div>
     </div>
   </div>
@@ -1110,7 +1109,7 @@ const credos=[
   {pre:'Stop Teaching.',        main:'Start Engaging.'},
   {pre:'',                      main:'Engineer the Engagement.'},
   {pre:'Ask it.',               main:'Film it. Earn it.'},
-  {pre:'The world's first',    main:'Video Crowd Learning Platform.'},
+  {pre:"The world's first",  main:"Video Crowd Learning Platform."},
   {pre:'Curiosity is',          main:'the Curriculum.'},
   {pre:'60 seconds to ask.',    main:'180 to illuminate.'},
   {pre:'Turn Attention',        main:'into Intention.'},
@@ -1151,13 +1150,16 @@ function handleContact(){
   document.getElementById('cname').value='';document.getElementById('cemail').value='';document.getElementById('cmsg').value='';
 }
 
-// ── SUPABASE — reads from config.js ──────────────────
-const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
-const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
+// ── SUPABASE — loaded after SDK and config.js ────────
+// SDK and config.js load just before </body> so both are ready here
+const SUPA_URL  = (typeof window !== 'undefined' && window.ENG_CONFIG?.SUPA_URL)  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
+const SUPA_ANON = (typeof window !== 'undefined' && window.ENG_CONFIG?.SUPA_ANON) || '';
 let supa = null;
 try {
-  if(SUPA_ANON) supa = supabase.createClient(SUPA_URL, SUPA_ANON);
-} catch(e) { console.warn('Supabase init failed:', e.message); }
+  if(typeof supabase !== 'undefined' && SUPA_ANON) {
+    supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+  }
+} catch(e) { console.warn('Supabase init:', e.message); }
 
 let _user = null;
 const TIER_NAMES = {1:'Curious',2:'Questioner',3:'Challenger',4:'Pro Challenger',5:'Knowledge Architect'};
@@ -1354,7 +1356,7 @@ function resetSignup(){
 
 // ── CHECK SESSION — show user in nav if already logged in ──
 (async()=>{
-  if(!supa)return; // uses the shared supa instance from config.js
+  if(!supa) return;
   try{
     const sb=supa;
     const{data:{session}}=await sb.auth.getSession();
@@ -1377,5 +1379,7 @@ function resetSignup(){
 })();
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 </body>
 </html>
