@@ -1325,7 +1325,7 @@ async function submitQuestion(){
   let gk=await callAgent('gatekeeper',{question:q||'Video question',tags:tags.join(', ')||'General'});
   if(!gk.verdict)gk={verdict:'approve',reason:'Content approved.'};
   dot('gk','ready');pip('gk','blue');st('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
-  if(gk.verdict==='reject'){err.textContent=`Not approved: ${gk.reason}`;btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
+  if(gk.verdict==='reject'||gk.verdict==='rejected'){err.textContent=`Not approved: ${gk.reason}`;btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
   await sleep(300);
 
   // Agent 02: Question Rater
@@ -1364,7 +1364,7 @@ async function submitQuestion(){
       content_type:needsVideo?'video':'text',
       tags:tags.length?tags:['General'],
       quality_score:qr.total,
-      gatekeeper_verdict:gk.verdict||'approve',
+      gatekeeper_verdict:({'approve':'approved','approved':'approved','reject':'rejected','rejected':'rejected','revise':'revise'}[gk.verdict])||'approved',
       status:'published',
       published_at:new Date().toISOString()
     };
