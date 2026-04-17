@@ -1151,22 +1151,28 @@ function handleContact(){
   document.getElementById('cname').value='';document.getElementById('cemail').value='';document.getElementById('cmsg').value='';
 }
 
-// ── SUPABASE ──────────────────────────────────────────
-const SUPA_URL  = 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
-const SUPA_ANON = 'PASTE_YOUR_SUPABASE_ANON_KEY_HERE';
-const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+// ── SUPABASE — reads from config.js ──────────────────
+const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
+const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
+let supa = null;
+try {
+  if(SUPA_ANON) supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+} catch(e) { console.warn('Supabase init failed:', e.message); }
 
 let _user = null;
 const TIER_NAMES = {1:'Curious',2:'Questioner',3:'Challenger',4:'Pro Challenger',5:'Knowledge Architect'};
 
 // ── SESSION CHECK ON LOAD ────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
-  const {data:{session}} = await supa.auth.getSession();
-  if(session) handleIndexSession(session.user);
-  supa.auth.onAuthStateChange((_,session)=>{
+  if(!supa) return; // No key set — skip auth, page still renders fully
+  try {
+    const {data:{session}} = await supa.auth.getSession();
     if(session) handleIndexSession(session.user);
-    else handleIndexSignout();
-  });
+    supa.auth.onAuthStateChange((_,session)=>{
+      if(session) handleIndexSession(session.user);
+      else handleIndexSignout();
+    });
+  } catch(e) { console.warn('Auth check failed:', e.message); }
 });
 
 async function handleIndexSession(user) {
@@ -1348,9 +1354,9 @@ function resetSignup(){
 
 // ── CHECK SESSION — show user in nav if already logged in ──
 (async()=>{
-  if(!window.supabase||!window.ENG_CONFIG?.SUPA_ANON)return;
+  if(!supa)return; // uses the shared supa instance from config.js
   try{
-    const sb=supabase.createClient(window.ENG_CONFIG.SUPA_URL,window.ENG_CONFIG.SUPA_ANON);
+    const sb=supa;
     const{data:{session}}=await sb.auth.getSession();
     if(!session)return;
     const{data:profile}=await sb.from('profiles').select('display_name').eq('id',session.user.id).single();
