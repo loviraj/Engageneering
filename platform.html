@@ -1189,37 +1189,79 @@ async function generateThumbnail(blob){
 }
 
 async function uploadVideoToStorage(blob,folder){
+  if(!blob){showToast('No video blob to upload');return{url:null,thumb:null};}
+  
+  // Determine extension from actual blob type
+  let ext='webm';
+  const mime=blob.type||'';
+  if(mime.includes('mp4'))ext='mp4';
+  else if(mime.includes('ogg'))ext='ogg';
+  else if(mime.includes('quicktime'))ext='mov';
+  
   const ts=Date.now();
-  const ext=blob.type.includes('mp4')?'mp4':(blob.type.includes('ogg')?'ogg':'webm');
   const path=`${folder}/${U.id}/${ts}.${ext}`;
   const pw=document.getElementById('uploadProgressWrap');
   const pb=document.getElementById('uploadBar');
   if(pw)pw.classList.add('show');
+  if(pb)pb.style.width='10%';
 
-  // Generate thumbnail before uploading
+  log(`Uploading video (${(blob.size/1024/1024).toFixed(1)}MB)...`);
+
+  // Check bucket exists by trying a small test first
+  // Generate thumbnail
   let thumbUrl=null;
   try{
     const thumbBlob=await generateThumbnail(blob);
     if(thumbBlob){
       const thumbPath=`${folder}/${U.id}/${ts}_thumb.jpg`;
-      const{error:te}=await supa.storage.from('engageneering-videos').upload(thumbPath,thumbBlob,{contentType:'image/jpeg',upsert:false});
-      if(!te){
+      const{error:te}=await supa.storage.from('engageneering-videos').upload(
+        thumbPath,thumbBlob,{contentType:'image/jpeg',upsert:true}
+      );
+      if(te){
+        console.warn('Thumbnail upload failed:',te.message);
+        showToast(`Thumbnail upload failed: ${te.message} — continuing without thumbnail`,'warn');
+      } else {
         const{data:td}=supa.storage.from('engageneering-videos').getPublicUrl(thumbPath);
         thumbUrl=td?.publicUrl||null;
       }
     }
-  }catch(e){console.warn('Thumbnail generation failed:',e.message);}
+  }catch(e){console.warn('Thumbnail error:',e.message);}
 
-  // Upload main video
-  const{data,error}=await supa.storage.from('engageneering-videos').upload(path,blob,{
-    contentType:blob.type||'video/webm',
-    upsert:false
-  });
+  if(pb)pb.style.width='40%';
+
+  // Upload main video — use upsert:true to avoid duplicate key errors
+  const{data:vidData,error:vidErr}=await supa.storage.from('engageneering-videos').upload(
+    path, blob,
+    { contentType: mime||'video/webm', upsert:true, duplex:'half' }
+  );
+  
   if(pw)pw.classList.remove('show');
   if(pb)pb.style.width='0%';
-  if(error){console.error('Video upload error:',error.message);return{url:null,thumb:null};}
+  
+  if(vidErr){
+    console.error('Video upload error:',vidErr);
+    showToast(`Video upload failed: ${vidErr.message}. Check: 1) Storage bucket "engageneering-videos" exists 2) Upload policy is set 3) File size < 50MB`);
+    return{url:null,thumb:null};
+  }
+
+  if(pb)pb.style.width='100%';
   const{data:urlData}=supa.storage.from('engageneering-videos').getPublicUrl(path);
-  return{url:urlData?.publicUrl||null,thumb:thumbUrl};
+  const publicUrl=urlData?.publicUrl||null;
+  console.log('Video uploaded successfully:',publicUrl);
+  log('Video uploaded ✓');
+  return{url:publicUrl,thumb:thumbUrl};
+}
+
+// ══ ERROR TOAST ══
+function showToast(msg, type='error'){
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;padding:.8rem 1.2rem;border-radius:8px;font-size:12px;font-family:monospace;max-width:420px;line-height:1.5;box-shadow:0 4px 20px rgba(0,0,0,.4);`;
+  t.style.background=type==='error'?'#3a0a0a':'#0a2a1a';
+  t.style.border=`1px solid ${type==='error'?'#e24b4a':'#1d9e75'}`;
+  t.style.color=type==='error'?'#f09595':'#5dcaa5';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),7000);
 }
 
 // ══ ARIA HELPERS ══
@@ -1298,44 +1340,75 @@ async function submitQuestion(){
   if(!sm.matched)sm={matched:['Top experts invited']};
   dot('sm','ready');pip('sm','blue');st('sm',`${(sm.matched||[]).length} matched`);
 
-  // Save to DB
+  // ── SAVE QUESTION TO DB ──────────────────────────────
   let dbId=null;
   try{
+    // First ensure profile_roles exists for this user
+    const{data:existingRole}=await supa.from('profile_roles').select('user_id').eq('user_id',U.id).single();
+    if(!existingRole){
+      const{error:roleErr}=await supa.from('profile_roles').insert({
+        user_id:U.id,role:'both',seeker_tier:1,answerer_tier:1,
+        pts_total:0,seeker_pts:0,answerer_pts:0,expertise_tags:[]
+      });
+      if(roleErr) console.warn('Role create error:',roleErr.message);
+      else { R={user_id:U.id,role:'both',seeker_tier:1,answerer_tier:1,pts_total:0,seeker_pts:0,answerer_pts:0}; }
+    }
+
     const insertPayload={
       asker_id:U.id,
       text:needsText&&q?q:null,
       video_url:videoUrl||null,
-      video_thumbnail:thumbUrl||null,
+      video_thumbnail:(typeof thumbUrl!=='undefined'?thumbUrl:null),
       content_type:needsVideo?'video':'text',
       tags:tags.length?tags:['General'],
       quality_score:qr.total,
-      gatekeeper_verdict:gk.verdict,
+      gatekeeper_verdict:gk.verdict||'approve',
       status:'published',
       published_at:new Date().toISOString()
     };
-    console.log('Inserting question:', insertPayload);
+
     const{data:sq,error:qErr}=await supa.from('questions').insert(insertPayload).select().single();
+    
     if(qErr){
-      console.error('Question insert error:', qErr.message, qErr.details, qErr.hint);
-      // Still show the card even if DB save failed
-    }
-    if(sq){
+      console.error('Question insert error:',qErr.message,qErr.details,qErr.hint,qErr.code);
+      showToast(`Question save failed: ${qErr.message} (code: ${qErr.code})`);
+    } else if(sq){
       dbId=sq.id;
-      console.log('Question saved to DB:', dbId);
+      console.log('✓ Question saved:',dbId);
+      
+      // Score history
       const pts=Math.round(qr.total*.5);
       const{error:shErr}=await supa.from('score_history').insert({
         user_id:U.id,action_type:'question',ref_id:sq.id,
         quality_score:qr.total,pts_awarded:pts
       });
-      if(shErr)console.error('Score history error:',shErr.message);
-      await supa.from('profile_roles').update({
-        pts_total:(R?.pts_total||0)+pts,
-        seeker_pts:(R?.seeker_pts||0)+pts,
+      if(shErr){
+        console.error('Score history error:',shErr.message);
+        showToast(`Score history failed: ${shErr.message}`);
+      } else {
+        console.log('✓ Score history saved');
+      }
+      
+      // Update pts
+      const curPts=R?.pts_total||0;
+      const curSeekerPts=R?.seeker_pts||0;
+      const{error:ptErr}=await supa.from('profile_roles').update({
+        pts_total:curPts+pts,
+        seeker_pts:curSeekerPts+pts,
         updated_at:new Date().toISOString()
       }).eq('user_id',U.id);
-      if(R){R.pts_total=(R.pts_total||0)+pts;R.seeker_pts=(R.seeker_pts||0)+pts;}
+      if(ptErr){
+        console.error('Pts update error:',ptErr.message);
+        showToast(`Points update failed: ${ptErr.message}`);
+      } else {
+        if(R){R.pts_total=curPts+pts;R.seeker_pts=curSeekerPts+pts;}
+        console.log('✓ Points updated:',curPts+pts);
+      }
     }
-  }catch(e){console.error('DB save exception:',e.message);}
+  }catch(e){
+    console.error('DB save exception:',e);
+    showToast(`Database error: ${e.message}`);
+  }
 
   dot('te','run');st('te','Awarding pts...');
   await sleep(350);
