@@ -154,15 +154,15 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 @keyframes si{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 
 /* Video thumbnail in card */
-.qc-video-thumb{width:100%;aspect-ratio:16/9;background:#000;position:relative;cursor:pointer;overflow:hidden}
+.qc-video-thumb{width:180px;height:102px;background:#000;position:relative;cursor:pointer;overflow:hidden;border-radius:6px;flex-shrink:0}
 .qc-video-thumb video{width:100%;height:100%;object-fit:cover;display:block}
 .qc-video-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.qc-video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.qc-video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;transition:background .2s}
 .qc-video-thumb:hover .qc-video-overlay{background:rgba(0,0,0,.2)}
-.play-btn{width:54px;height:54px;border-radius:50%;background:rgba(200,146,42,.9);display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s}
+.play-btn{width:36px;height:36px;border-radius:50%;background:rgba(200,146,42,.9);display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s}
 .qc-video-thumb:hover .play-btn{transform:scale(1.1);background:var(--gold)}
-.play-btn svg{width:22px;height:22px;margin-left:3px}
-.video-dur{position:absolute;bottom:.5rem;right:.6rem;background:rgba(0,0,0,.75);color:#fff;font-size:10px;font-family:monospace;padding:2px 6px;border-radius:3px}
+.play-btn svg{width:14px;height:14px;margin-left:2px}
+.video-dur{position:absolute;bottom:.3rem;right:.4rem;background:rgba(0,0,0,.75);color:#fff;font-size:9px;font-family:monospace;padding:1px 5px;border-radius:3px}
 .content-badge{position:absolute;top:.5rem;left:.6rem;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:20px;font-weight:700}
 .badge-video{background:rgba(226,75,74,.85);color:#fff}
 .badge-text{background:rgba(55,138,221,.85);color:#fff}
@@ -202,7 +202,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .al{display:flex;flex-direction:column;gap:.7rem;margin-top:.9rem}
 .ac{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;overflow:hidden}
 .ac.top{border-color:rgba(200,146,42,.35)}
-.ac-video{width:100%;aspect-ratio:16/9;background:#000;position:relative;cursor:pointer}
+.ac-video{width:140px;height:80px;background:#000;position:relative;cursor:pointer;border-radius:5px;overflow:hidden;flex-shrink:0}
 .ac-video video{width:100%;height:100%;object-fit:cover;display:block}
 .ac-body-wrap{padding:.9rem 1.1rem}
 .ac-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}
@@ -772,8 +772,9 @@ function qCard(q,force=false){
   const hasVid=ct==='video'||ct==='both';
 
   return`<div class="qc ${feat?'feat':''}" data-qid="${q.id}">
+    <div style="display:flex;gap:1rem;align-items:flex-start;${hasVid&&q.video_url?'':''}">
     ${hasVid&&q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):''}
-    <div class="qc-body">
+    <div class="qc-body" style="flex:1;min-width:0">
       <div class="qm">
         <div class="qtag ${cls}">${tag}</div>
         ${q.quality_score!=null?`<div class="qscore">Quality ${q.quality_score}</div>`:''}
@@ -789,6 +790,7 @@ function qCard(q,force=false){
         ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">Bounty +${q.bounty_pts} pts</div>`:''}
         <button class="ans-btn" onclick="togglePanel('${pid}')">Answer</button>
       </div>
+    </div>
     </div>
     <div class="ans-panel" id="${pid}">
       <div class="ap-title">Your answer — text or video</div>
@@ -846,8 +848,8 @@ function qCard(q,force=false){
       <div class="sc-panel" id="${sid}"></div>
       <div class="al" id="${lid}">
         ${ma?`<div class="ac top">${ma.video_url?`<div class="ac-video">${videoPlayer(ma.video_url,ma.video_thumbnail,'answer')}</div>`:''}
-          <div class="ac-body-wrap"><div class="ac-hdr"><div class="ac-name">${P?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Your Answer</div><div class="top-badge">CDS ${ma.cds}</div><div class="ac-cds">${new Date(ma.created_at).toLocaleDateString()}</div></div>${ma.text?`<div class="ac-text">${ma.text}</div>`:''}${inlineScore(ma)}</div></div>`:''}
-        ${q.id==='s1'?`<div class="ac top"><div class="ac-body-wrap"><div class="ac-hdr"><div class="ac-name">Sarah K.</div><div class="ac-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator T3</div><div class="top-badge">Best Answer</div><div class="ac-cds">CDS 91</div></div><div class="ac-text">Think of a variable like a labelled box. You write "score" on the outside, and whatever number is inside can change — but the box always answers to its name. That single image does more work than three paragraphs of definition.</div></div></div>`:''}
+          <div class="ac-body-wrap" style="flex:1;min-width:0"><div class="ac-hdr"><div class="ac-name">${P?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">Your Answer</div><div class="top-badge">CDS ${ma.cds}</div><div class="ac-cds">${new Date(ma.created_at).toLocaleDateString()}</div></div>${ma.text?`<div class="ac-text">${ma.text}</div>`:''}${inlineScore(ma)}</div></div>`:''}
+        ${q.id==='s1'?`<div class="ac top"><div class="ac-body-wrap" style="flex:1;min-width:0"><div class="ac-hdr"><div class="ac-name">Sarah K.</div><div class="ac-tier" style="background:#eeedfe;color:#3c3489;border-color:#afa9ec">Illuminator T3</div><div class="top-badge">Best Answer</div><div class="ac-cds">CDS 91</div></div><div class="ac-text">Think of a variable like a labelled box. You write "score" on the outside, and whatever number is inside can change — but the box always answers to its name. That single image does more work than three paragraphs of definition.</div></div></div>`:''}
       </div>
     </div>
   </div>`;
@@ -1356,7 +1358,7 @@ async function submitQuestion(){
 
     const insertPayload={
       asker_id:U.id,
-      text:needsText&&q?q:null,
+      text:(needsText&&q)?q:(videoUrl?'[Video question]':''),
       video_url:videoUrl||null,
       video_thumbnail:(typeof thumbUrl!=='undefined'?thumbUrl:null),
       content_type:needsVideo?'video':'text',
@@ -1524,8 +1526,9 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   const lst=document.getElementById(lid);
   if(lst){lst.insertAdjacentHTML('beforeend',`
     <div class="ac ${cds>=85?'top':''}">
-      ${videoUrl?`<div class="ac-video"><div class="qc-video-thumb" onclick="playVideoInline('ava${Date.now()}','${videoUrl}')"><video src="${videoUrl}" preload="metadata" style="display:block"></video><div class="qc-video-overlay"><div class="play-btn"><svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg></div></div></div>`:''}
-      <div class="ac-body-wrap">
+      <div style="display:flex;gap:.8rem;align-items:flex-start">
+      ${videoUrl?`<div class="ac-video"><div class="qc-video-thumb" onclick="playVideoInline('ava${Date.now()}','${videoUrl}')"><video src="${videoUrl}" preload="metadata" style="display:block;width:100%;height:100%;object-fit:cover"></video><div class="qc-video-overlay"><div class="play-btn"><svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg></div></div></div>`:''}
+      <div class="ac-body-wrap" style="flex:1;min-width:0">
         <div class="ac-hdr"><div class="ac-name">${P?.display_name||'You'}</div><div class="ac-tier" style="background:#e6f1fb;color:#0c447c;border-color:#85b7eb">${ATIERS[R?.answerer_tier||1]}</div>${cds>=85?'<div class="top-badge">Top Answer</div>':''}<div class="ac-cds">CDS ${cds}</div></div>
         ${textAns?`<div class="ac-text">${textAns}</div>`:''}
         <div class="ac-scores">EI ${ei.score} · RI ${ri.score} · RAI ${rai.score} · COI ${coi.score} · AI ${ai.score}</div>
