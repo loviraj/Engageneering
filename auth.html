@@ -394,7 +394,11 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#f0c040;margin-bottom:.5rem;font-weight:600">Welcome to the Movement</div>
         <div id="successTier" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);border-radius:20px;padding:.35rem 1.1rem;font-size:12px;color:#f0c040;margin-bottom:1rem;letter-spacing:.5px"></div>
         <div id="successMsg" style="font-size:14px;color:#8a9ab8;line-height:1.8;margin-bottom:1.5rem;max-width:360px;margin-left:auto;margin-right:auto"></div>
-        <button class="submit-btn" onclick="window.location.href='assessment.html?new=1'" style="max-width:280px;margin:0 auto;display:block">Take the Entry Assessment →</button>
+        <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:.5rem">
+          <button class="submit-btn" onclick="window.location.href='assessment.html?new=1'" style="flex:1;max-width:240px;padding:12px 18px;font-size:11px;letter-spacing:1.5px">Take Assessment Now →</button>
+          <button class="submit-btn" onclick="window.location.href='platform.html'" style="flex:1;max-width:240px;padding:12px 18px;font-size:11px;letter-spacing:1.5px;background:transparent;color:var(--gold);border:1px solid rgba(200,146,42,.5)">Explore Platform First →</button>
+        </div>
+        <div style="font-size:11px;color:#4a6a88;margin-top:.8rem;text-align:center">Assessment takes 5 minutes · Sets your entry tier badge · Can be taken anytime</div>
       </div>
 
     </div>
@@ -605,8 +609,6 @@ async function doSignup() {
       const uid = data.session.user.id;
       await createProfile(uid, fullName, data.session.user.user_metadata, tags);
       showSuccess(fullName, selectedRole, true);
-      // Redirect to assessment for new registrants
-      setTimeout(()=>{ window.location.href='assessment.html?new=1'; }, 1800);
       return;
     }
 

@@ -73,10 +73,7 @@ nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.5rem;h
 .q-txt{font-family:'Cormorant Garamond',serif;font-size:clamp(15px,2.5vw,20px);color:var(--t1);line-height:1.5;margin-bottom:1.2rem}
 
 /* Video scenario box */
-.vscene{background:var(--bg4);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem;position:relative}
-.vscene-tag{font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:var(--rd);font-weight:700;margin-bottom:.5rem}
-.vscene-txt{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--t2);line-height:1.75;font-style:italic}
-.vscene-note{font-size:10px;color:var(--t4);margin-top:.5rem}
+.vscene-anim{border-radius:8px;overflow:hidden;margin-bottom:1rem;background:var(--bg4);border:1px solid var(--bdr2)}
 
 /* Options */
 .opts{display:flex;flex-direction:column;gap:.5rem}
@@ -262,38 +259,193 @@ const PILLARS={
 
 // ── SEEKER QUESTIONS ───────────────────────────────────
 const SQ=[
-  {p:'p1',type:'text',q:'When you encounter a confusing concept, which approach produces deepest understanding?',opts:['Read the explanation three times until it feels familiar','Watch an expert solve a similar problem first','Attempt the problem yourself before reading the explanation — even if you fail','Copy a worked example and memorise the steps'],correct:2,ex:'Desirable difficulty — struggling before instruction — activates deeper encoding. Failure before explanation dramatically improves retention over reception-first learning.'},
-  {p:'p1',type:'video',scene:'[Scenario] A teacher writes the answer on the board, then explains the steps. "Today we solve for x. The answer is 7. Here is how we get there…" Students copy the working.',q:'What is the most likely consequence of this teaching approach?',opts:['Learners understand more quickly by seeing where they are going','Learners can reproduce the steps but are unlikely to transfer the skill to a new problem','It makes no measurable difference to learning outcomes','Learners become dependent on being given answers before attempting'],correct:1,ex:'Providing answers before struggle removes the productive cognitive resistance required for transfer. Learners follow steps without building the reasoning independently.'},
-  {p:'p1',type:'text',q:'Which learning combination produces the strongest long-term retention?',opts:['Read → Highlight → Review','Listen → Transcribe → Re-read','Attempt → Receive feedback → Revise → Attempt again','Watch demonstration → Copy → Repeat'],correct:2,ex:'The retrieve-feedback-revise cycle consistently outperforms passive reception. Each retrieval attempt strengthens the memory trace and surfaces gaps.'},
-  {p:'p2',type:'text',q:'Which question on Engageneering™ is most likely to attract high-quality, engaged answers?',opts:['What is formative assessment?','Can someone explain project-based learning?','If you had to teach calculus using only objects in the room right now — what single object would you choose, and why?','What are the pros and cons of homework?'],correct:2,ex:'Specific, constrained, imaginative questions create curiosity in answerers. They force creative problem-solving rather than information retrieval, producing richer responses.'},
-  {p:'p2',type:'video',scene:'[Teacher A] "Good morning. Today we cover Chapter 7 — cell division. Open to page 84." | [Teacher B] "What if I told you 25 million cells in your body just divided in the last second, each copying 3 billion characters of code without error? How?"',q:'Which opening is more likely to retain learner attention for the full lesson?',opts:['Teacher A — clear structure helps learners know what to expect','Teacher B — the anomaly creates immediate curiosity that pulls attention forward','It depends on age group — older learners prefer structure','Both are equally effective — content matters more than opening'],correct:1,ex:'Teacher B deploys the anomaly hook — the Engageneering™ Curiosity Principle. A fact contradicting learner expectations opens a curiosity gap the brain is compelled to close.'},
-  {p:'p2',type:'text',q:'"Never answer a question the student has not yet asked." For you as a Seeker, this means:',opts:['Wait until you have fully thought through your question before posting','Only ask questions you genuinely do not know the answer to — not performative curiosity','Ask before you have researched it at all','Never ask follow-up questions once an answer has been given'],correct:1,ex:'Authentic curiosity is the engine of platform quality. ARIA\'s Question Rater measures this authenticity. A question asked to learn differs fundamentally from one asked to appear engaged.'},
-  {p:'p3',type:'text',q:'A T2 Seeker asks about quantum mechanics. You studied physics but consider yourself intermediate. Should you answer?',opts:['No — only answer where you are an undisputed expert','Yes, but only if no expert has answered first','Yes — intermediate perspective is often more relatable and useful than expert explanation','Only if you can guarantee 100% accuracy'],correct:2,ex:'Someone who recently learned something explains it more accessibly than an expert who forgot what confusion felt like. Intermediate answers often score highest on Engagement and Applicability.'},
-  {p:'p3',type:'text',q:'Your question receives answers from an expert, a peer at your level, and a recent learner. Whose answer is most likely most useful?',opts:['The expert — they know the most','It depends entirely on how well each person communicates','The recent learner — they remember the confusion you are in','The peer — shared level means shared understanding'],correct:1,ex:'Communication quality matters more than expertise level. ARIA evaluates engagement, retention, and applicability — not credentials. A gifted recent learner can outscore a poor communicating expert.'},
-  {p:'p4',type:'video',scene:'[45 minutes into a lecture] A learner appears to take notes but is scrolling their phone under the desk. Eyes glazing. Pen moving without engagement. Nodding occasionally.',q:'What is most accurately happening?',opts:['The learner is multi-tasking effectively — modern learners handle parallel inputs','The learner is experiencing cognitive saturation — attention has collapsed after the natural 10-15 minute window','The content is not interesting enough — a better topic would fix this','The learner needs to try harder — attention is a choice'],correct:1,ex:'Cognitive science shows sustained focused attention begins failing after 8-15 minutes without a reset. This is not a character flaw — it is working memory functioning as designed. Attention Architecture addresses this through chunking and novelty.'},
-  {p:'p4',type:'text',q:'You plan a 2-hour self-study session. Which structure produces highest long-term retention?',opts:['2 continuous hours — deep focus produces depth','4 × 30-minute sessions across 4 consecutive days','2 × 50-minute sessions with a 20-minute break','8 × 15-minute sessions spread across 8 days'],correct:3,ex:'Extreme spacing produces the highest long-term retention — the spacing effect is one of the most replicated findings in cognitive science. Very short, very distributed sessions outperform long focused blocks.'},
-  {p:'p5',type:'text',q:'Your Engageneering™ question receives a quality score of 38/100 from ARIA. What is the most productive response?',opts:['Delete it and try a different topic','Ignore it — AI cannot assess question quality reliably','Read the specific dimension-by-dimension feedback, identify what weakened the question, revise it','Accept it — not every question can be strong'],correct:2,ex:'Specific feedback is a learning signal, not a verdict. The Question Rater breaks down clarity, depth, originality, and engagement potential — four separate improvable dimensions.'},
-  {p:'p5',type:'text',q:'Three months after posting a question, someone contacts you saying it led to a breakthrough in how they teach fractions. This is evidence of:',opts:['Luck — your question happened to match their needs','Transfer — your question created a learning moment that applied in a completely different context','Good timing — they were ready to learn it anyway','Community effect — the platform creates these connections naturally'],correct:1,ex:'Transfer is the gold standard of learning impact — when something learned here applies in a completely different context later. A question creating this is scoring at the highest level of impact measurement.'},
-  {p:'p6',type:'text',q:'Which is the strongest evidence of genuine understanding?',opts:['Scoring 92% on a multiple-choice test','Recalling key points without notes','Using it to solve a problem in a completely unrelated domain','Explaining it clearly to a friend who is also learning it'],correct:2,ex:'Transfer to a novel domain is the highest level of understanding. Multiple-choice recall is the floor. Creating in a different field is the ceiling — Bloom\'s taxonomy made operational.'},
-  {p:'p6',type:'self_record',q:'Record a 30-second video or write your answer: What is one thing you genuinely want to understand better — and why does it matter to you?',prompt:'This is not scored for correctness. ARIA notes whether you engage via video or text. Both are valid. Your choice is itself a signal about your engagement style.',ex:'Your willingness to record — or preference for text — is information. The platform supports both. This question gauges your relationship with video learning.'},
+  // P1: Active Learning Design
+  {p:'p1',type:'text',
+   q:'When you encounter a confusing concept, which approach produces the deepest understanding?',
+   opts:['Read the explanation three times until it feels familiar',
+         'Watch an expert solve a similar problem first',
+         'Attempt the problem yourself before reading — even if you fail',
+         'Copy a worked example and memorise the steps'],
+   correct:2,
+   ex:'Desirable difficulty — struggling before instruction — activates deeper encoding. Failure before explanation dramatically improves retention over passive reception.'},
+
+  {p:'p1',type:'video',
+   anim:'teacher_answer_first',
+   q:'Watch this classroom moment. A teacher writes the answer on the board before students attempt the problem. What is the most likely consequence?',
+   opts:['Learners understand it more quickly by seeing where they are going',
+         'Learners can copy the steps but are unlikely to transfer the skill independently',
+         'It makes no measurable difference to learning outcomes',
+         'Learners become more confident because they know the answer'],
+   correct:1,
+   ex:'Providing answers before struggle removes the productive cognitive resistance required for transfer. Learners follow steps without building the reasoning independently.'},
+
+  // P2: Curiosity Engineering
+  {p:'p2',type:'text',
+   q:'Two teachers open their lessons differently. Teacher A says: "Today we cover cell division — open to page 84." Teacher B asks: "What if I told you 25 million cells in your body just divided in the last second?" Which opening is more likely to hold attention?',
+   opts:['Teacher A — clear structure sets expectations','Teacher B — the anomaly creates immediate curiosity','Depends on the age group','Both are equally effective'],
+   correct:1,
+   ex:'Teacher B deploys the anomaly hook — the Engageneering™ Curiosity Principle. A fact contradicting expectations opens a curiosity gap the brain is compelled to close.'},
+
+  // P3: Peer Connection
+  {p:'p3',type:'video',
+   anim:'two_answers',
+   q:'A question on the platform gets two responses. One is from a professor with 20 years of expertise. One is from someone who learned it six months ago. ARIA scores both equally. Why does the platform treat them the same?',
+   opts:['It is a bug — expert answers should always rank higher',
+         'Because credentials signal knowledge, not communication quality',
+         'Because ARIA scores engagement, retention, and applicability — not credentials. A recent learner often communicates more accessibly.',
+         'Because the community votes override expert status'],
+   correct:2,
+   ex:'The peer learning research is clear: someone who recently learned something explains it more accessibly than an expert who forgot what confusion felt like. ARIA measures impact, not authority.'},
+
+  {p:'p3',type:'text',
+   q:'Your question receives three answers — from an expert, a peer, and someone who learned it recently. Whose answer is most likely most useful?',
+   opts:['The expert — they know the most',
+         'It depends entirely on how well each person communicates',
+         'The recent learner — they remember the confusion you are currently in',
+         'The peer — shared level means shared understanding'],
+   correct:1,
+   ex:'Communication quality matters more than expertise level. ARIA evaluates engagement, retention, and applicability — not credentials. A gifted recent learner can outscore a poor-communicating expert.'},
+
+  // P4: Attention Architecture
+  {p:'p4',type:'video',
+   anim:'learner_distracted',
+   q:'Watch this learner 45 minutes into a lecture. What is most accurately happening?',
+   opts:['The learner is multi-tasking — modern learners handle parallel inputs',
+         'Cognitive saturation — attention collapses after the natural 10-15 minute window',
+         'The content is not interesting enough',
+         'The learner needs to try harder — attention is a choice'],
+   correct:1,
+   ex:'Cognitive science shows focused attention begins failing after 8-15 minutes without a reset. This is not a character flaw — it is working memory functioning as designed.'},
+
+  // P5: Feedback Loops
+  {p:'p5',type:'video',
+   anim:'viewer_scrubbing',
+   q:'Watch this learner receive their question score: 38/100. They close the tab immediately. What opportunity have they missed?',
+   opts:['Nothing — a 38 means the question was poor and should be abandoned',
+         'The chance to read the dimension-by-dimension breakdown that shows exactly what to improve',
+         'The peer comments that might have rescued the score',
+         'The ability to delete the question before others see the score'],
+   correct:1,
+   ex:'A score without feedback is just a verdict. A score with specific dimension breakdowns — clarity, depth, originality, engagement potential — is a precise growth instruction. Closing the tab is refusing the lesson.'},
+
+  {p:'p5',type:'text',
+   q:'Your question receives a quality score of 38/100 from ARIA. What is the most productive response?',
+   opts:['Delete it and try a different topic',
+         'Ignore it — AI cannot assess question quality reliably',
+         'Read the specific feedback across each dimension, identify what weakened it, revise',
+         'Accept it — not every question can be strong'],
+   correct:2,
+   ex:'Specific feedback is a learning signal, not a verdict. The Question Rater breaks down clarity, depth, originality, and engagement potential — four separate improvable dimensions.'},
+
+  // P6: Impact Measurement
+  {p:'p6',type:'text',
+   q:'Which is the strongest evidence that you have genuinely understood something?',
+   opts:['Scoring 92% on a multiple-choice test about it',
+         'Being able to recall key points without notes',
+         'Using it to solve a problem in a completely unrelated domain',
+         'Explaining it clearly to a friend who is also learning'],
+   correct:2,
+   ex:'Transfer to a novel domain is the highest level of understanding — Bloom's ceiling. Multiple-choice recall is the floor. Creating in a different field proves the knowledge is truly owned.'},
+
+  {p:'p6',type:'self_record',
+   q:'Record a 30-second video or write your answer: What is one thing you genuinely want to understand better — and why does it matter to you?',
+   prompt:'Not scored for correctness. ARIA notes whether you engage via video or text. Both are valid. Your choice is a signal about your learning style.',
+   ex:'Your willingness to record — or preference for text — is information about how you engage. The platform supports both formats equally.'},
 ];
 
 // ── ANSWERER QUESTIONS ─────────────────────────────────
 const AQ=[
-  {p:'p1',type:'text',q:'Recording a video answer about WWI causes. Which opening scores highest on ARIA\'s Engagement Index?',opts:['"WWI had four main causes: militarism, alliances, imperialism, nationalism — MAIN."','"Today I\'m going to explain the causes of World War One."','"In June 1914, a 19-year-old student fired two shots that killed 20 million people. Here is how a teenager started history\'s deadliest war to that point."','"The causes of WWI are complex and historians still debate them."'],correct:2,ex:'The narrative hook — specific person, specific action, startling consequence — creates immediate engagement. Storytelling activates the brain\'s prediction system and keeps attention forward.'},
-  {p:'p1',type:'video',scene:'[Answer A] "Photosynthesis is the process by which plants use sunlight to synthesise food. The equation is 6CO2 + 6H2O + light = C6H12O6 + 6O2." | [Answer B] "Plants are secretly solar panels. But instead of powering your phone, they power everything alive on Earth. Here is how a leaf turns sunlight into a sandwich."',q:'Which answer would you rather continue watching?',opts:['Answer A — scientifically precise and complete','Answer B — the metaphor makes it instantly memorable and I want to hear more','Depends on the audience — A for students, B for general public','Both are equivalent — content quality is all that matters'],correct:1,ex:'Answer B scores higher on Engagement and Retention because the solar panel metaphor creates an immediate mental model. Answer A is accurate but forgettable — no anchor for information to attach to.'},
-  {p:'p1',type:'text',q:'Your answer scores EI:71 RI:82 RAI:44 COI:68 AI:79. Which dimension should you focus on first?',opts:['Engagement Index — lowest among engagement-related scores','Retention Index — even though high, it is most important','Applicability Index — at 44 it is your biggest gap and weighs 25% of your CDS','Accuracy — even at 79, errors are most damaging'],correct:2,ex:'RAI at 44 is the largest gap. Weighing 25% — joint highest with EI — improving it produces the biggest CDS gain. Ask: does my answer show learners how to use this tomorrow, or just explain what it is?'},
-  {p:'p2',type:'text',q:'You are about to record a 3-minute answer. How do you open?',opts:['Introduce yourself and credentials so the viewer trusts you','Summarise what you will cover so the viewer knows what to expect','Start with a question the learner did not know they had — then answer it','Open with a disclaimer: "This is my perspective and others may disagree"'],correct:2,ex:'Opening with an unasked question deploys the Curiosity Principle. Introductions and summaries consume the critical first 8 seconds without creating any reason to keep watching.'},
-  {p:'p2',type:'video',scene:'[Answerer reading from notes] "The water cycle has four stages: evaporation, condensation, precipitation, and collection. Each stage is important for maintaining the earth\'s water supply. Let me go through each one in turn…"',q:'Why is this answer likely to score low on ARIA\'s Creativity Index?',opts:['The answer is too long — shorter answers score higher on creativity','The answer is accurate but gives no hook, anomaly, or reason to wonder further','The answer lacks personal examples and stories','The scoring system penalises structured answers'],correct:1,ex:'Creativity in an answer means leaving the learner wanting to know more — not just completing the explanation. High COI answers make the learner ask a follow-up. This answer closes every door it opens.'},
-  {p:'p3',type:'text',q:'A learner replies: "I watched this twice and still do not understand the part about X." Your response:',opts:['Explain that your answer was clear and they should watch more carefully','Record a follow-up video specifically addressing the point of confusion','Refer them to a textbook that covers it more thoroughly','Ask them exactly what they do not understand before responding'],correct:3,ex:'Diagnosis before prescription is the mark of a Teacher (T4). A follow-up without diagnosis might still miss the issue. The best answerers ask before they answer.'},
-  {p:'p3',type:'text',q:'Your answer scores AG:76 but receives a Peer Grade of 48. CDS = AG×0.60 + PG×0.40. What does this gap most likely mean?',opts:['The peer was unfair or did not understand','The AI scoring is more reliable than peer opinion','The answer was technically correct but failed to engage or resonate with a real human learner','The question was too niche for fair peer assessment'],correct:2,ex:'AG-PG divergence — high AI score, low peer grade — is the most important signal in the system. The answer passed the technical tests but failed the human test. Engagement and applicability are felt before they are measured.'},
-  {p:'p4',type:'video',scene:'[Learner 90 seconds into a video answer]: Scrubs the timeline forward. Rewinds to same point. Checks their watch. Scrubs forward again. Closes the tab.',q:'What does this behaviour most indicate?',opts:['The internet connection was poor','The content became confusing at the point where they scrubbed — the answer lost structure','The learner had limited time available','Video answers naturally lose attention after 90 seconds'],correct:1,ex:'The scrub-rewind-abandon pattern means the learner hit a wall — a point where the explanation lost them. Attention Architecture in video answers means each 60-90s segment has its own hook, content, and consolidation.'},
-  {p:'p4',type:'text',q:'You are structuring a 3-minute video answer on a complex topic. Which structure best retains attention?',opts:['Build from foundations to advanced — always cover basics first','Start with your most impressive insight to establish credibility','Hook (0-15s) → Core insight (15s-2m) → Real-world application (2m-2m40s) → Memorable close (2m40-3m)','Cover as many sub-points as possible — more information means more value'],correct:2,ex:'The Hook-Core-Apply-Close structure maps to how attention and encoding work. The hook activates interest, the core builds understanding, the application creates transfer, the close creates a memory anchor.'},
-  {p:'p5',type:'text',q:'ARIA reports your Retention Index is consistently low across your last five answers. Most likely cause?',opts:['Your answers are factually incorrect — research more thoroughly','Your answers are too short for proper understanding','Your answers explain accurately but lack analogies, metaphors, or anchors that make information stick','The RI scoring is biased against your topic area'],correct:2,ex:'High accuracy + low retention is the classic signal of factually correct but memorable-free explaining. The RI measures: will this be in the learner\'s mind in 24 hours? Analogies, stories, and counterintuitive framings raise RI.'},
-  {p:'p5',type:'text',q:'Six months after your answer, a learner uses your explanation about feedback loops in a completely different professional context. This is the highest form of:',opts:['Coincidence — they would have figured it out anyway','Transfer — the mark of an answer that produced genuine lasting understanding','Community effect — the platform creates these connections','Retention — they remembered what you said'],correct:1,ex:'Transfer to a new domain six months later is the gold standard of teaching impact. Retention is remembering. Transfer is using. An answer enabling transfer is a Master Teacher™ answer.'},
-  {p:'p6',type:'text',q:'Your average CDS across 20 answers over 6 months is 68, ranging 52–84. What does this pattern tell you?',opts:['Your performance is inconsistent — find your best format and stick to it','Average 68 with range 52-84 shows genuine growth — highs show what is possible, lows show where to focus','The scoring is inconsistent — trust your own judgement more','You are performing solidly and should maintain this approach'],correct:1,ex:'Performance range is more informative than average. Your 84s show your ceiling when conditions align. Your 52s show your floor under pressure. The goal is raising the floor — understand what differed between your worst and best answers.'},
-  {p:'p6',type:'self_record',q:'Record a 45-second video explaining one thing you know genuinely well — as if to a curious 12-year-old who has never heard of it.',prompt:'This is your actual answer sample. ARIA reads your willingness to engage via video, your structure, and your opening hook. Text response is equally valid.',ex:'The ability to explain simply is the Feynman test — the surest indicator of deep understanding. This question gauges your natural communication style and instinct for audience-appropriate delivery.'},
-  {p:'p6',type:'text',q:'Which best indicates you are ready to move from Explainer (T2) to Illuminator (T3) on the Answerer track?',opts:['You have answered more than 50 questions','Multiple learners have thanked you in comments','Your average CDS is consistently above 65 across at least 5 recent answers on different topics','Your Engagement Index is above 75'],correct:2,ex:'Sustained CDS above 65 across multiple topics and formats proves consistent quality, not a one-off. Single metric highs can be optimised. Composite quality across diverse content cannot be faked.'},
+  // P1: Active Learning Design
+  {p:'p1',type:'video',
+   anim:'two_answers',
+   q:'Watch these two 10-second answer openings on the same topic. Which would you rather continue watching?',
+   opts:['Answer A — scientifically precise and structured',
+         'Answer B — the metaphor makes it instantly memorable and I want to hear more',
+         'Depends on the audience level',
+         'Both are equivalent — content quality is all that matters'],
+   correct:1,
+   ex:'Answer B scores higher on Engagement and Retention because the metaphor creates an immediate mental model. Answer A is accurate but forgettable — no anchor for information to attach to.'},
+
+  {p:'p1',type:'text',
+   q:'Your answer scores EI:71  RI:82  RAI:44  COI:68  AI:79. Which dimension should you improve first?',
+   opts:['EI — it is the lowest engagement score',
+         'RI — even though high, retention matters most',
+         'RAI — at 44 it is your biggest gap and weighs 25% of your CDS',
+         'AI — even at 79, errors are most damaging'],
+   correct:2,
+   ex:'RAI at 44 is the largest gap. Weighing 25% — joint highest with EI — improving it produces the biggest CDS gain. Ask: does my answer show learners how to use this tomorrow?'},
+
+  // P2: Curiosity Engineering
+  {p:'p2',type:'video',
+   anim:'teacher_answer_first',
+   q:'A video answer opens with: "Hi, I am going to explain the water cycle today. It has four stages." The Engagement Index comes back low. What is the most likely reason?',
+   opts:['The topic is not interesting enough to engage viewers',
+         'The opening consumed the first 8 seconds without creating any reason to keep watching',
+         'The answer needed better production quality',
+         'Four stages is too simple — the content needs more depth'],
+   correct:1,
+   ex:'The first 8 seconds determine whether a viewer stays. An introduction and a contents summary give zero curiosity — there is no gap to close, no anomaly to resolve. The hook must precede the explanation.'},
+
+  {p:'p2',type:'text',
+   q:'You are about to record a 3-minute answer. How do you open?',
+   opts:['Introduce yourself and credentials so the viewer trusts you',
+         'Summarise what you will cover so they know what to expect',
+         'Start with a question the learner did not know they had — then answer it',
+         'Open with a disclaimer about your perspective'],
+   correct:2,
+   ex:'Opening with an unasked question deploys the Curiosity Principle. Introductions consume the critical first 8 seconds without creating any reason to keep watching.'},
+
+  // P3: Peer Connection
+  {p:'p3',type:'text',
+   q:'A learner replies: "I watched your answer twice and still do not understand the part about X." Your response:',
+   opts:['Explain your answer was clear — they should watch again carefully',
+         'Record a follow-up video addressing that specific point',
+         'Refer them to a textbook that covers it more thoroughly',
+         'Ask them exactly what they do not understand before responding'],
+   correct:3,
+   ex:'Diagnosis before prescription is the mark of a Teacher (T4). A follow-up without diagnosis might still miss the issue. The best answerers ask before they answer again.'},
+
+  // P4: Attention Architecture
+  {p:'p4',type:'video',
+   anim:'viewer_scrubbing',
+   q:'Watch this viewer 90 seconds into a video answer. What does this behaviour most indicate?',
+   opts:['The internet connection was poor',
+         'The content became confusing at that point — the answer lost structure',
+         'The learner had limited time available',
+         'Video answers naturally lose attention after 90 seconds'],
+   correct:1,
+   ex:'The scrub-rewind-abandon pattern means the learner hit a wall. Attention Architecture means each 60-90 second segment has its own hook, content, and consolidation moment.'},
+
+  {p:'p4',type:'text',
+   q:'Which 3-minute answer structure best retains attention throughout?',
+   opts:['Build continuously from basics to advanced',
+         'Start with your most impressive insight to establish credibility',
+         'Hook (0-15s) → Core insight (15s-2m) → Real-world application (2m-2m40s) → Memorable close',
+         'Cover as many sub-points as possible — more information means more value'],
+   correct:2,
+   ex:'The Hook-Core-Apply-Close structure maps to how attention and encoding work. Each phase serves a distinct cognitive function.'},
+
+  // P5: Feedback Loops
+  {p:'p5',type:'text',
+   q:'ARIA reports your Retention Index is consistently low across your last five answers. Most likely cause?',
+   opts:['Your answers are factually incorrect',
+         'Your answers are too short',
+         'Your answers explain accurately but lack analogies, metaphors, or anchors that make information stick',
+         'The RI scoring is biased against your topic area'],
+   correct:2,
+   ex:'High accuracy + low retention means factually correct but forgettable. The RI asks: will this still be in the learner's mind in 24 hours? Analogies and counterintuitive framings raise RI.'},
+
+  // P6: Impact Measurement
+  {p:'p6',type:'text',
+   q:'Six months after your answer, a learner uses your explanation in a completely different professional context they never mentioned. This is the highest form of:',
+   opts:['Coincidence','Transfer — the mark of an answer that produced genuine lasting understanding','Community effect','Retention — they remembered what you said'],
+   correct:1,
+   ex:'Transfer to a new domain months later is the gold standard of teaching impact. Retention is remembering. Transfer is using. An answer enabling transfer is a Master Teacher™ answer.'},
+
+  {p:'p6',type:'self_record',
+   q:'Record a 30-second video explaining one thing you know genuinely well — as if to a curious 12-year-old who has never heard of it.',
+   prompt:'ARIA reads your willingness to engage via video, your opening hook, and your structure. Text response is equally valid. This is your actual answer sample.',
+   ex:'The ability to explain simply is the Feynman test — the surest indicator of deep understanding.'},
 ];
 
 // ── TIER DATA ──────────────────────────────────────────
@@ -418,7 +570,7 @@ function selectTrack(t){
   document.querySelectorAll('.track-card').forEach(c=>c.className='track-card');
   document.getElementById('card-'+t).classList.add('track-card','sel-'+t);
   const btn=document.getElementById('startBtn');
-  btn.disabled=false;btn.textContent=`Begin ${t==='seeker'?'Seeker':'Answerer'} Assessment →`;
+  btn.disabled=false;btn.textContent=`Begin ${t==='seeker'?'Seeker':'Answerer'} Assessment — 10 Questions →`;
 }
 
 // ── START ──────────────────────────────────────────────
@@ -435,7 +587,7 @@ function startAssessment(){
 function renderQ(){
   const q=Qs[curQ];
   document.getElementById('progFill').style.width=Math.round((curQ/Qs.length)*100)+'%';
-  document.getElementById('qCtr').textContent=`Question ${curQ+1} of ${Qs.length}`;
+  document.getElementById('qCtr').textContent=`Question ${curQ+1} of 10`;
   const pl=PILLARS[q.p];
   const pt=document.getElementById('pTag');
   pt.textContent=pl.short;pt.style.color=pl.color;pt.style.borderColor=pl.color;
@@ -448,11 +600,7 @@ function renderQ(){
 
   let sceneHtml='';
   if(q.type==='video'){
-    sceneHtml=`<div class="vscene">
-      <div class="vscene-tag">📹 Video Scenario — imagine this</div>
-      <div class="vscene-txt">${q.scene}</div>
-      <div class="vscene-note">Read the scenario carefully, then select the best response below</div>
-    </div>`;
+    sceneHtml=`<div class="vscene-anim" style="border-radius:8px;overflow:hidden;margin-bottom:1rem;background:var(--bg4);border:1px solid var(--bdr2)">${getAnimScene(q.anim)}</div>`;
   }
 
   let srHtml='';
