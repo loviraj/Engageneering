@@ -449,6 +449,16 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
       <div class="tc-bg"><div class="tc-fill" id="tcFill" style="width:5%"></div></div>
       <div class="tc-pts"><span id="tcPts">0 pts</span><span id="tcNext">500 to Questioner</span></div>
     </div>
+    <!-- Profile Badge -->
+    <div class="profile-badge-wrap" id="profileBadgeWrap" style="display:none">
+      <div class="pb-badge" id="profileBadgeSvg"></div>
+      <div class="pb-info">
+        <div class="pb-tier-name" id="pbTierName">Curious</div>
+        <div class="pb-track" id="pbTrack">Seeker Track</div>
+        <div class="pb-cds" id="pbCds"></div>
+        <div class="pb-take" onclick="window.location.href='assessment.html'">Retake Assessment →</div>
+      </div>
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -621,6 +631,57 @@ function buildNav(){
     <button class="nbtn nbtn-ghost" onclick="doSignout()">Sign Out</button>`;
 }
 
+// Badge colour + shape map
+const BADGE_SHAPES={
+  seeker:{
+    1:{c:'#888780',shape:'circle'},
+    2:{c:'#378ADD',shape:'rrect'},
+    3:{c:'#1D9E75',shape:'shield'},
+    4:{c:'#C8922A',shape:'diamond'},
+    5:{c:'#F0C040',shape:'hex'},
+  },
+  answerer:{
+    1:{c:'#888780',shape:'circle'},
+    2:{c:'#F0997B',shape:'rrect'},
+    3:{c:'#D85A30',shape:'shield'},
+    4:{c:'#7F77DD',shape:'diamond'},
+    5:{c:'#F0C040',shape:'hex'},
+  }
+};
+
+function mkBadgeSVG(t,tr){
+  const cfg=BADGE_SHAPES[tr]?.[t]||{c:'#888780',shape:'circle'};
+  const c=cfg.c;
+  const shapes={
+    circle:`<circle cx="50" cy="50" r="36" fill="#060C1A" stroke="${c}" stroke-width="2"/>
+            <circle cx="50" cy="50" r="27" fill="#0F1E36" stroke="${c}" stroke-width="0.5" opacity="0.4"/>`,
+    rrect:`<rect x="8" y="8" width="84" height="84" rx="12" fill="#060C1A" stroke="${c}" stroke-width="2"/>
+           <rect x="15" y="15" width="70" height="70" rx="8" fill="#0F1E36" stroke="${c}" stroke-width="0.4" opacity="0.4"/>
+           <circle cx="14" cy="14" r="3" fill="${c}" opacity="0.5"/>
+           <circle cx="86" cy="14" r="3" fill="${c}" opacity="0.5"/>
+           <circle cx="14" cy="86" r="3" fill="${c}" opacity="0.5"/>
+           <circle cx="86" cy="86" r="3" fill="${c}" opacity="0.5"/>`,
+    shield:`<path d="M50,96 L10,74 L10,24 L50,10 L90,24 L90,74 Z" fill="#060C1A" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M50,88 L18,68 L18,30 L50,18 L82,30 L82,68 Z" fill="#0F1E36" stroke="${c}" stroke-width="0.5" opacity="0.35" stroke-linejoin="round"/>`,
+    diamond:`<polygon points="50,8 92,50 50,92 8,50" fill="#060C1A" stroke="${c}" stroke-width="2"/>
+             <polygon points="50,18 82,50 50,82 18,50" fill="#0F1E36" stroke="${c}" stroke-width="0.5" opacity="0.35"/>`,
+    hex:`<polygon points="50,8 86,28 86,72 50,92 14,72 14,28" fill="#060C1A" stroke="${c}" stroke-width="2"/>
+         <polygon points="50,18 78,34 78,66 50,82 22,66 22,34" fill="#0F1E36" stroke="${c}" stroke-width="0.5" opacity="0.35"/>`,
+  };
+  const tNum=t<=5?t:5;
+  const dots=Array.from({length:tNum},(_,i)=>{
+    const x=50+(i-(tNum-1)/2)*9;
+    return `<circle cx="${x}" cy="108" r="3" fill="${c}" opacity="0.8"/>`;
+  }).join('');
+  return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+    <defs><radialGradient id="pbg${t}${tr[0]}" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="${c}" stop-opacity="0.15"/><stop offset="100%" stop-color="${c}" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="50" cy="50" r="48" fill="url(#pbg${t}${tr[0]})"/>
+    ${shapes[cfg.shape]||shapes.circle}
+    <text x="50" y="55" font-family="Georgia,serif" font-size="20" font-weight="700" fill="${c}" text-anchor="middle" dominant-baseline="central">T${tNum}</text>
+    ${dots}
+  </svg>`;
+}
+
 function buildTierCard(){
   if(!R)return;
   const t=R.seeker_tier||1,pts=R.seeker_pts||0,next=TPTS[t]||5000;
@@ -629,6 +690,26 @@ function buildTierCard(){
   document.getElementById('tcFill').style.width=Math.min(Math.round(pts/next*100),100)+'%';
   document.getElementById('tcPts').textContent=`${pts} pts`;
   document.getElementById('tcNext').textContent=`${Math.max(0,next-pts)} to ${STIERS[t+1]||'Engageneer™'}`;
+
+  // Build and show profile badge
+  const badgeWrap=document.getElementById('profileBadgeWrap');
+  const badgeSvg=document.getElementById('profileBadgeSvg');
+  const pbTier=document.getElementById('pbTierName');
+  const pbTrack=document.getElementById('pbTrack');
+  const pbCds=document.getElementById('pbCds');
+  if(badgeWrap&&badgeSvg){
+    const seekerT=R.seeker_tier||1;
+    const answererT=R.answerer_tier||1;
+    // Show the higher tier badge, or seeker by default
+    const showTrack=answererT>seekerT?'answerer':'seeker';
+    const showT=Math.max(seekerT,answererT);
+    badgeSvg.innerHTML=mkBadgeSVG(showT,showTrack);
+    pbTier.textContent=showTrack==='seeker'?(STIERS[seekerT]||'Curious'):(ATIERS[answererT]||'Responder');
+    pbTier.style.color=BADGE_SHAPES[showTrack]?.[showT]?.c||'var(--gold)';
+    pbTrack.textContent=(showTrack==='seeker'?'Seeker':'Answerer')+' Track · T'+showT;
+    pbCds.textContent=`${R.pts_total||0} pts total`;
+    badgeWrap.style.display='flex';
+  }
 }
 
 // ══ VIEW + FORMAT ══
