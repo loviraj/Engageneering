@@ -394,7 +394,7 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#f0c040;margin-bottom:.5rem;font-weight:600">Welcome to the Movement</div>
         <div id="successTier" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);border-radius:20px;padding:.35rem 1.1rem;font-size:12px;color:#f0c040;margin-bottom:1rem;letter-spacing:.5px"></div>
         <div id="successMsg" style="font-size:14px;color:#8a9ab8;line-height:1.8;margin-bottom:1.5rem;max-width:360px;margin-left:auto;margin-right:auto"></div>
-        <button class="submit-btn" onclick="window.location.href='platform.html'" style="max-width:280px;margin:0 auto;display:block">Enter the Platform →</button>
+        <button class="submit-btn" onclick="window.location.href='assessment.html?new=1'" style="max-width:280px;margin:0 auto;display:block">Take the Entry Assessment →</button>
       </div>
 
     </div>
@@ -587,7 +587,7 @@ async function doSignup() {
           role: selectedRole,
           expertise_tags: tags
         },
-        emailRedirectTo: window.location.origin + '/platform.html'
+        emailRedirectTo: window.location.origin + '/assessment.html?new=1'
       }
     });
 
@@ -605,6 +605,8 @@ async function doSignup() {
       const uid = data.session.user.id;
       await createProfile(uid, fullName, data.session.user.user_metadata, tags);
       showSuccess(fullName, selectedRole, true);
+      // Redirect to assessment for new registrants
+      setTimeout(()=>{ window.location.href='assessment.html?new=1'; }, 1800);
       return;
     }
 
@@ -643,6 +645,7 @@ function showSuccess(name, role, loggedIn) {
   // Hide all steps
   [1,2,3].forEach(i => { const el = document.getElementById('step' + i); if(el) el.style.display='none'; });
   document.getElementById('successBox').classList.add('show');
+  // Update success copy to mention assessment
   const TIER_LABELS = {
     both: '✦ Curious · T1 · Seeker + Answerer Track',
     seeker: '✦ Curious · T1 · Seeker Track',
