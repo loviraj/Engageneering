@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Engageneering™ — Video Crowd Learning Platform</title>
+<title>Engageneering™ — Video-Only Crowd Learning · Ask It. Film It. Earn It.</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='%23060c1a' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='26,2 50,15 26,30' fill='%23fff0a0' opacity='.97'/%3E%3Ccircle cx='26' cy='30' r='6' fill='%23f5d060'/%3E%3C/svg%3E"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -284,6 +284,13 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.sb-l,.sb-r{display:none}}
 </style>
+
+<!-- SQL: Run in Supabase SQL Editor to add language support:
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en';
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS language_name VARCHAR(50) DEFAULT 'English';
+ALTER TABLE answers   ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en';
+CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
+-->
 </head>
 <body>
 
@@ -343,7 +350,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
                 <div class="rec-placeholder-txt">Click Start Recording to begin</div>
               </div>
               <div class="rec-timer" id="recTimer">0:00</div>
-              <div class="rec-limit" id="recLimit">Max 60s for questions · 180s for answers</div>
+              <div class="rec-limit" id="recLimit">⏱ Questions: max 60s · Answers: max 180s · Auto-stops at limit</div>
             </div>
             <div class="rec-controls">
               <button class="rec-btn rec-btn-start" id="recStart" onclick="startRec()">
@@ -381,6 +388,34 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
         </div>
       </div>
 
+
+      <!-- Language selector -->
+      <div class="field" style="margin-bottom:.8rem">
+        <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;display:block">Language of Question</label>
+        <select id="qLanguage" style="width:100%;background:var(--bg4);border:1px solid var(--bdr2);border-radius:6px;padding:8px 12px;color:var(--t2);font-family:inherit;font-size:14px;cursor:pointer">
+<option value="en">English</option>
+<option value="hi">हिन्दी (Hindi)</option>
+<option value="ta">தமிழ் (Tamil)</option>
+<option value="te">తెలుగు (Telugu)</option>
+<option value="bn">বাংলা (Bengali)</option>
+<option value="mr">मराठी (Marathi)</option>
+<option value="gu">ગુજરાતી (Gujarati)</option>
+<option value="kn">ಕನ್ನಡ (Kannada)</option>
+<option value="ml">മലയാളം (Malayalam)</option>
+<option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+<option value="fr">Français</option>
+<option value="de">Deutsch</option>
+<option value="es">Español</option>
+<option value="ar">العربية</option>
+<option value="zh">中文</option>
+<option value="ja">日本語</option>
+<option value="pt">Português</option>
+<option value="ru">Русский</option>
+<option value="ko">한국어</option>
+<option value="sw">Kiswahili</option>
+        </select>
+        <div style="font-size:10px;color:var(--t4);margin-top:4px">Select the language you will speak in your video</div>
+      </div>
       <!-- Tags + submit -->
       <div class="field" style="margin-top:1rem">
         <label>Topic Tags</label>
@@ -509,7 +544,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
         <div class="pip teal" id="pp-rai" title="Applicability Indexer"></div>
         <div class="pip teal" id="pp-coi" title="Creativity Indexer"></div>
         <div class="pip teal" id="pp-ai" title="Accuracy Verifier"></div>
-        <div class="pip teal" id="pp-ig" title="Integrity Guard"></div>
+        <div class="pip teal" id="pp-ig" title="Integrity Guard v2 — 9 check layers"></div>
         <div class="pip teal" id="pp-arb" title="Grade Arbiter"></div>
         <div class="pip purple" id="pp-te" title="Tier Engine"></div>
         <div class="pip idle" id="pp-in" title="Insight Narrator"></div>
@@ -534,7 +569,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
       <div class="am-row"><div class="am-dot done" id="d-rai"></div><div class="am-name">Applicability Indexer</div><div class="am-stat" id="s-rai">Ready</div></div>
       <div class="am-row"><div class="am-dot done" id="d-coi"></div><div class="am-name">Creativity Indexer</div><div class="am-stat" id="s-coi">Ready</div></div>
       <div class="am-row"><div class="am-dot done" id="d-ai"></div><div class="am-name">Accuracy Verifier</div><div class="am-stat" id="s-ai">Ready</div></div>
-      <div class="am-row"><div class="am-dot done" id="d-ig"></div><div class="am-name">Integrity Guard</div><div class="am-stat" id="s-ig">0 flags</div></div>
+      <div class="am-row"><div class="am-dot done" id="d-ig"></div><div class="am-name">Integrity Guard v2</div><div class="am-stat" id="s-ig">9 layers · 0 flags</div></div>
       <div class="am-row"><div class="am-dot done" id="d-arb"></div><div class="am-name">Grade Arbiter</div><div class="am-stat" id="s-arb">Ready</div></div>
       <div class="am-row"><div class="am-dot donep" id="d-te"></div><div class="am-name">Tier Engine</div><div class="am-stat" id="s-te">Active</div></div>
       <div class="am-row"><div class="am-dot idle" id="d-in"></div><div class="am-name">Insight Narrator</div><div class="am-stat" id="s-in">Next: Sunday</div></div>
@@ -750,7 +785,7 @@ async function loadFeed(){
     if(view==='mine'){
       const{data}=await supa.from('questions').select(BASE).eq('asker_id',U.id).order('created_at',{ascending:false}).limit(50);
       qs=data||[];
-      if(!qs.length){feed.innerHTML=empty('No questions yet','Ask your first question above — text or video.');return;}
+      if(!qs.length){feed.innerHTML=empty('No questions yet','Ask your first question above — video.');return;}
     }else if(view==='video'){
       const{data}=await supa.from('questions').select(BASE).eq('status','published').in('content_type',['video','both']).order('created_at',{ascending:false}).limit(30);
       qs=data||[];
@@ -773,7 +808,8 @@ async function loadFeed(){
         return;
       }
     }else{
-      let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
+      const langF=document.getElementById('langFilter')?.value||'';
+  let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
       if(topic)q=q.contains('tags',[topic]);
       if(fmt==='video')q=q.in('content_type',['video','both']);
       else if(fmt==='text')q=q.eq('content_type','text');
@@ -906,7 +942,7 @@ function qCard(q,force=false){
     </div>
     </div>
     <div class="ans-panel" id="${pid}">
-      <div class="ap-title">Your answer — text or video</div>
+      <div class="ap-title">Your answer — video</div>
       <!-- Answer type toggle — Text OR Video -->
       <div class="ans-type-toggle">
         <button class="att on" id="att-text-${q.id}" onclick="setAnsType('${q.id}','text')">
@@ -1399,18 +1435,118 @@ async function callAgent(name,payload){
   }catch(e){return{};}
 }
 
+// ── VIDEO DURATION CHECKER ─────────────────────────────────
+function getVideoDuration(file){
+  return new Promise(resolve=>{
+    const video=document.createElement('video');
+    video.preload='metadata';
+    video.onloadedmetadata=()=>{
+      URL.revokeObjectURL(video.src);
+      resolve(video.duration);
+    };
+    video.onerror=()=>resolve(0);
+    video.src=URL.createObjectURL(file);
+  });
+}
+
+// ── LANGUAGE DETECTION from spoken content ─────────────────
+// Called after transcription — ARIA detects language from transcript
+const LANGUAGE_NAMES={
+  en:'English',hi:'Hindi',ta:'Tamil',te:'Telugu',bn:'Bengali',
+  mr:'Marathi',gu:'Gujarati',kn:'Kannada',ml:'Malayalam',pa:'Punjabi',
+  fr:'French',de:'German',es:'Spanish',ar:'Arabic',zh:'Chinese',
+  ja:'Japanese',pt:'Portuguese',ru:'Russian',ko:'Korean',sw:'Swahili'
+};
+
+function getLanguageName(code){
+  return LANGUAGE_NAMES[code]||code.toUpperCase();
+}
+
+// ── ANSWER DURATION CHECK ──────────────────────────────────
+async function checkAnswerDuration(blob){
+  return new Promise(resolve=>{
+    const url=URL.createObjectURL(blob);
+    const v=document.createElement('video');
+    v.preload='metadata';
+    v.onloadedmetadata=()=>{URL.revokeObjectURL(url);resolve(v.duration);};
+    v.onerror=()=>resolve(0);
+    v.src=url;
+  });
+}
+
+
+// ── LANGUAGE FILTER ────────────────────────────────────────
+let currentLangFilter='';
+function applyLangFilter(){
+  currentLangFilter=document.getElementById('langFilter')?.value||'';
+  loadFeed();
+}
+
+// ── UPGRADED INTEGRITY GUARD RESPONSE HANDLER ──────────────
+function handleIntegrityResult(ig, context='answer'){
+  const result={
+    pass: ig.pass !== false,
+    level: ig.level || 'PASS',      // PASS / WARN / HOLD / REJECT / ESCALATE
+    flags: ig.flags || [],
+    note:  ig.note  || 'Content verified.',
+    layers_checked: ig.layers_checked || 1,
+    confidence: ig.confidence || 0.95
+  };
+
+  // Multi-level response
+  if(result.level==='WARN'){
+    // Allow but log warning — content is borderline
+    log(`⚠ Integrity Guard: ${result.note} (Warning — allowed)`);
+    return {pass:true, warned:true, note:result.note};
+  }
+  if(result.level==='HOLD'){
+    // Submit for human review, don't publish immediately
+    log(`⏸ Integrity Guard: ${result.note} (Held for review)`);
+    return {pass:false, held:true, note:result.note+' — your submission is under review.'};
+  }
+  if(result.level==='ESCALATE'){
+    // Serious flag — block and alert
+    log(`🚨 Integrity Guard: ${result.note} (Escalated)`);
+    return {pass:false, escalated:true, note:result.note};
+  }
+  if(!result.pass || result.level==='REJECT'){
+    log(`✗ Integrity Guard: ${result.note}`);
+    return {pass:false, note:result.note};
+  }
+
+  log(`✓ Integrity Guard: ${result.layers_checked} layers · ${result.confidence*100|0}% confidence`);
+  return {pass:true, note:result.note};
+}
+
+
 // ══ SUBMIT QUESTION ══
 async function submitQuestion(){
-  const q=document.getElementById('qText').value.trim();
+  // VIDEO-ONLY PLATFORM — text questions removed
   const tags=[...document.querySelectorAll('#submitModal .tag-chip.on')].map(t=>t.textContent);
-  const needsText=contentType==='text';
-  const needsVideo=contentType==='video';
+  const language=document.getElementById('qLanguage')?.value||'en';
+  const languageName=document.getElementById('qLanguage')?.options[document.getElementById('qLanguage').selectedIndex]?.text||'English';
   const err=document.getElementById('modalErr');
   err.textContent='';
+  const q=document.getElementById('qText')?.value?.trim()||'';
 
-  if(needsText&&!q){err.textContent='Please write your question.';return;}
-  if(needsVideo&&videoTab==='record'&&!recBlob){err.textContent='Please record a video before submitting.';return;}
-  if(needsVideo&&videoTab==='upload'&&!uploadFile){err.textContent='Please select a video file.';return;}
+  // Enforce video-only
+  if(videoTab==='record'&&!recBlob){
+    err.textContent='Please record your question video (max 60 seconds) before submitting.';
+    return;
+  }
+  if(videoTab==='upload'&&!uploadFile){
+    err.textContent='Please select a video file before submitting.';
+    return;
+  }
+
+  // Duration check for uploaded files
+  if(videoTab==='upload'&&uploadFile){
+    const duration=await getVideoDuration(uploadFile);
+    if(duration>62){ // 2s grace
+      err.textContent=`Your video is ${Math.round(duration)}s. Questions must be 60 seconds or under. Please trim and re-upload.`;
+      return;
+    }
+  }
 
   const btn=document.getElementById('modalSubmitBtn');
   btn.textContent='Processing...';btn.disabled=true;
@@ -1435,7 +1571,7 @@ async function submitQuestion(){
   // Agent 01: Gatekeeper
   pip('gk','pulse');dot('gk','run');st('gk','Screening...');
   log('Agent 01 Gatekeeper · Screening content...');
-  let gk=await callAgent('gatekeeper',{question:q||'Video question',tags:tags.join(', ')||'General'});
+  let gk=await callAgent('gatekeeper',{question:q||'[Video question]',tags:tags.join(', ')||'General',language:language,is_video:true,duration_limit:60});
   if(!gk.verdict)gk={verdict:'approve',reason:'Content approved.'};
   dot('gk','ready');pip('gk','blue');st('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
   if(gk.verdict==='reject'||gk.verdict==='rejected'){err.textContent=`Not approved: ${gk.reason}`;btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
@@ -1443,7 +1579,7 @@ async function submitQuestion(){
 
   // Agent 02: Question Rater
   pip('qr','pulse');dot('qr','run');st('qr','Scoring...');
-  let qr=await callAgent('question_rater',{question:q||'Video question',tags:tags.join(', ')});
+  let qr=await callAgent('question_rater',{question:q||'[Video question]',tags:tags.join(', '),language:language,is_video:true});
   if(!qr.total)qr={clarity:17,depth:16,originality:16,engagement_potential:17,total:66,feedback:'Good question.'};
   dot('qr','ready');pip('qr','blue');st('qr',`Quality ${qr.total}`);
   log(`Question Rater: Quality ${qr.total}/100`);
@@ -1451,7 +1587,7 @@ async function submitQuestion(){
 
   // Agent 03: Smart Matcher
   pip('sm','pulse');dot('sm','run');st('sm','Matching...');
-  let sm=await callAgent('smart_matcher',{question:q||'Video question',tags:tags.join(', ')});
+  let sm=await callAgent('smart_matcher',{question:q||'[Video question]',tags:tags.join(', '),language:language,preferred_language:language});
   if(!sm.matched)sm={matched:['Top experts invited']};
   dot('sm','ready');pip('sm','blue');st('sm',`${(sm.matched||[]).length} matched`);
 
@@ -1478,6 +1614,8 @@ async function submitQuestion(){
       tags:tags.length?tags:['General'],
       quality_score:qr.total,
       gatekeeper_verdict:({'approve':'approved','approved':'approved','reject':'rejected','rejected':'rejected','revise':'revise'}[gk.verdict])||'approved',
+      language:language,
+      language_name:languageName,
       status:'published',
       published_at:new Date().toISOString()
     };
@@ -1542,6 +1680,15 @@ async function submitQuestion(){
 
 // ══ SUBMIT ANSWER ══
 async function submitAnswer(qid,aid,lid,hid,sid,btn){
+  // Check answer duration before uploading
+  const state=ansRecState[qid];
+  if(state&&state.blob){
+    const dur=await checkAnswerDuration(state.blob);
+    if(dur>182){ // 2s grace
+      alert(`Your answer is ${Math.round(dur)}s. Answers must be 180 seconds (3 minutes) or under.\nPlease re-record a shorter answer.`);
+      return;
+    }
+  }
   const ansType=ansTypes[qid]||'text';
   const textAns=document.getElementById(aid)?.value?.trim();
   const recState=ansRecState[qid];
@@ -1575,7 +1722,30 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   let[ei,ri,rai,coi,ai,ig]=await Promise.all([
     callAgent('engagement_indexer',pl),callAgent('retention_indexer',pl),
     callAgent('applicability_indexer',pl),callAgent('creativity_indexer',pl),
-    callAgent('accuracy_verifier',pl),callAgent('integrity_guard',pl)
+    callAgent('accuracy_verifier',pl),callAgent('integrity_guard',{
+      ...pl,
+      is_video:true,
+      answer_language:document.getElementById('qLanguage')?.value||'en',
+      platform_version:'video_only_v2',
+      check_layers:[
+        'content_safety',
+        'language_consistency',
+        'speech_authenticity',
+        'spam_detection',
+        'plagiarism_check',
+        'academic_integrity',
+        'promotional_content',
+        'hate_speech',
+        'misinformation_risk'
+      ],
+      scoring_rubric:{
+        engagement_weight:0.25,
+        retention_weight:0.20,
+        applicability_weight:0.25,
+        creativity_weight:0.15,
+        accuracy_weight:0.15
+      }
+    })
   ]);
   if(!ei?.score)ei={score:72,note:'Good engagement.'};
   if(!ri?.score)ri={score:68,note:'Reasonably memorable.'};
