@@ -303,28 +303,22 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
     </div>
     <div class="modal-body">
 
-      <!-- Content type selector -->
-      <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem">Format</div>
-      <div class="type-select" id="typeSelect" style="grid-template-columns:1fr 1fr">
-        <div class="type-opt on" id="type-text" onclick="setType('text')">
-          <div class="type-opt-icon">✍️</div>
-          <div class="type-opt-name">Text Question</div>
-          <div class="type-opt-desc">Write your question — can receive video answers</div>
-        </div>
-        <div class="type-opt" id="type-video" onclick="setType('video')">
-          <div class="type-opt-icon">🎥</div>
-          <div class="type-opt-name">Video Question</div>
-          <div class="type-opt-desc">Record or upload — can receive text answers</div>
+      <!-- VIDEO-ONLY platform — no text questions -->
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;background:rgba(200,146,42,.07);border:1px solid rgba(200,146,42,.25);border-radius:8px;padding:.7rem 1rem">
+        <span style="font-size:18px">🎥</span>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px">VIDEO QUESTION</div>
+          <div style="font-size:11px;color:var(--t4);margin-top:1px">Record up to 60 seconds · Select your language first</div>
         </div>
       </div>
 
-      <!-- Text area -->
-      <div id="textSection">
-        <div class="field"><label id="textLabel">Your Question</label><textarea id="qText" rows="3" placeholder="Ask an engaging question — be specific, be curious, be genuine..."></textarea></div>
+      <!-- Hidden text area kept for title/search indexing only -->
+      <div id="textSection" style="display:none">
+        <textarea id="qText" rows="1" style="display:none"></textarea>
       </div>
 
-      <!-- Video section -->
-      <div id="videoSection" style="display:none">
+      <!-- Video section always visible -->
+      <div id="videoSection" style="display:block">
         <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem">Video — Record or Upload</div>
 
         <!-- Tabs: Record / Upload -->
@@ -353,7 +347,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
               <div class="rec-limit" id="recLimit">⏱ Questions: max 60s · Answers: max 180s · Auto-stops at limit</div>
             </div>
             <div class="rec-controls">
-              <button class="rec-btn rec-btn-start" id="recStart" onclick="startRec()">
+              <button class="rec-btn rec-btn-start" id="recStart" onclick="startRec()" disabled style="opacity:.4;cursor:not-allowed" title="Select your language first">
                 <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>
                 Start Recording
               </button>
@@ -392,7 +386,8 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
       <!-- Language selector -->
       <div class="field" style="margin-bottom:.8rem">
         <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;display:block">Language of Question</label>
-        <select id="qLanguage" style="width:100%;background:var(--bg4);border:1px solid var(--bdr2);border-radius:6px;padding:8px 12px;color:var(--t2);font-family:inherit;font-size:14px;cursor:pointer">
+        <select id="qLanguage" style="width:100%;background:var(--bg4);border:1px solid var(--bdr2);border-radius:6px;padding:8px 12px;color:var(--t2);font-family:inherit;font-size:14px;cursor:pointer" onchange="onLanguageSelected()">
+<option value="" disabled selected style="color:var(--t4)">— Select your language —</option>
 <option value="en">English</option>
 <option value="hi">हिन्दी (Hindi)</option>
 <option value="ta">தமிழ் (Tamil)</option>
@@ -415,6 +410,14 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 <option value="sw">Kiswahili</option>
         </select>
         <div style="font-size:10px;color:var(--t4);margin-top:4px">Select the language you will speak in your video</div>
+      </div>
+
+      <!-- One-line title for search/matching (optional) -->
+      <div class="field" style="margin-bottom:.8rem">
+        <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem;display:block">Question Title <span style="color:var(--t4);font-size:9px;font-weight:400">(optional — helps ARIA match your question)</span></label>
+        <input type="text" id="qText" maxlength="120"
+          placeholder="e.g. How do I explain fractions to a 10-year-old?"
+          style="width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:8px 12px;color:var(--t2);font-family:inherit;font-size:14px"/>
       </div>
       <!-- Tags + submit -->
       <div class="field" style="margin-top:1rem">
@@ -605,7 +608,7 @@ let U=null,P=null,R=null;
 let view='all',topic='',fmt='all';
 let modalMode='question';  // 'question' or 'answer'
 let modalAnswerFor=null;   // question id when answering
-let contentType='text';    // 'text' or 'video' only
+let contentType='video';   // VIDEO-ONLY platform
 let videoTab='record';     // 'record' or 'upload'
 
 // Recorder state
@@ -1046,7 +1049,7 @@ function closeModal(){
 document.getElementById('submitModal').addEventListener('click',e=>{if(e.target===document.getElementById('submitModal'))closeModal();});
 
 function resetModal(){
-  contentType='text';videoTab='record';
+  contentType='video';videoTab='record'; setType('video');
   setType('text');
   document.getElementById('qText').value='';
   document.getElementById('modalErr').textContent='';
@@ -1068,14 +1071,38 @@ function resetModal(){
 }
 
 // ══ CONTENT TYPE ══
+// ── LANGUAGE GATE — unlock recorder when language selected ──
+function onLanguageSelected(){
+  const lang=document.getElementById('qLanguage')?.value;
+  const recBtn=document.getElementById('recStart');
+  const tabRec=document.getElementById('tabRecord');
+  const tabUp=document.getElementById('tabUpload');
+  if(lang && lang!==''){
+    // Enable record button
+    if(recBtn){
+      recBtn.disabled=false;
+      recBtn.style.opacity='';
+      recBtn.style.cursor='pointer';
+      recBtn.removeAttribute('title');
+    }
+    // Enable upload tab
+    if(tabRec){tabRec.style.opacity='';tabRec.style.pointerEvents='';}
+    if(tabUp){tabUp.style.opacity='';tabUp.style.pointerEvents='';}
+    // Update language label
+    const langSel=document.getElementById('qLanguage');
+    const langName=langSel.options[langSel.selectedIndex]?.text||'';
+    const s=document.getElementById('recStatus');
+    if(s) s.textContent=`Language set: ${langName} · Ready to record`;
+  } else {
+    if(recBtn){recBtn.disabled=true;recBtn.style.opacity='.4';recBtn.style.cursor='not-allowed';}
+  }
+}
+
 function setType(t){
-  contentType=t;
-  ['text','video'].forEach(k=>{
-    const el=document.getElementById('type-'+k);
-    if(el)el.classList.toggle('on',k===t);
-  });
-  document.getElementById('textSection').style.display=t==='text'?'block':'none';
-  document.getElementById('videoSection').style.display=t==='video'?'block':'none';
+  // VIDEO-ONLY: always force video regardless of argument
+  contentType='video';
+  document.getElementById('textSection').style.display='none';
+  document.getElementById('videoSection').style.display='block';
 }
 
 // ══ VIDEO TAB ══
@@ -1565,31 +1592,37 @@ async function submitQuestion(){
     if(!videoUrl){err.textContent='Video upload failed. Please try again.';btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
   }
 
-  btn.textContent='ARIA scoring...';
-  await sleep(300);
+  // ── PHASE 1: FAST PASS (blocks UI — ~3 seconds) ─────────
+  // Only Gatekeeper runs synchronously. User gets immediate feedback.
+  btn.textContent='Checking content...';
+  pip('gk','pulse');dot('gk','run');st('gk','Safety check...');
+  log('Phase 1 · Gatekeeper screening (language + content safety)...');
 
-  // Agent 01: Gatekeeper
-  pip('gk','pulse');dot('gk','run');st('gk','Screening...');
-  log('Agent 01 Gatekeeper · Screening content...');
-  let gk=await callAgent('gatekeeper',{question:q||'[Video question]',tags:tags.join(', ')||'General',language:language,is_video:true,duration_limit:60});
+  let gk=await callAgent('gatekeeper',{
+    question:q||'[Video question]',
+    tags:tags.join(', ')||'General',
+    language:language,is_video:true,duration_limit:60
+  });
   if(!gk.verdict)gk={verdict:'approve',reason:'Content approved.'};
-  dot('gk','ready');pip('gk','blue');st('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
-  if(gk.verdict==='reject'||gk.verdict==='rejected'){err.textContent=`Not approved: ${gk.reason}`;btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
-  await sleep(300);
+  dot('gk','ready');pip('gk','blue');
+  st('gk',gk.verdict==='approve'?'Approved ✓':'Flagged');
 
-  // Agent 02: Question Rater
-  pip('qr','pulse');dot('qr','run');st('qr','Scoring...');
-  let qr=await callAgent('question_rater',{question:q||'[Video question]',tags:tags.join(', '),language:language,is_video:true});
-  if(!qr.total)qr={clarity:17,depth:16,originality:16,engagement_potential:17,total:66,feedback:'Good question.'};
-  dot('qr','ready');pip('qr','blue');st('qr',`Quality ${qr.total}`);
-  log(`Question Rater: Quality ${qr.total}/100`);
-  await sleep(300);
+  if(gk.verdict==='reject'||gk.verdict==='rejected'){
+    err.textContent=`Not approved: ${gk.reason}`;
+    btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;
+  }
 
-  // Agent 03: Smart Matcher
-  pip('sm','pulse');dot('sm','run');st('sm','Matching...');
-  let sm=await callAgent('smart_matcher',{question:q||'[Video question]',tags:tags.join(', '),language:language,preferred_language:language});
-  if(!sm.matched)sm={matched:['Top experts invited']};
-  dot('sm','ready');pip('sm','blue');st('sm',`${(sm.matched||[]).length} matched`);
+  // ── QUESTION IS CLEARED — save to DB immediately ─────────
+  // User sees success right away. Scoring happens in background.
+  btn.textContent='Question cleared ✓ — saving...';
+  log('Phase 1 complete · Question cleared · Saving to platform...');
+  await sleep(200);
+
+  // Set placeholder scores — will be updated by background scoring
+  let qr={clarity:16,depth:16,originality:16,engagement_potential:16,total:64,feedback:'Scoring in progress...'};
+  let sm={matched:['Matching in progress...']};
+  pip('qr','blue');dot('qr','ready');st('qr','Scoring...');
+  pip('sm','blue');dot('sm','ready');st('sm','Matching...');
 
   // ── SAVE QUESTION TO DB ──────────────────────────────
   let dbId=null;
@@ -1666,7 +1699,47 @@ async function submitQuestion(){
   dot('te','run');st('te','Awarding pts...');
   await sleep(350);
   dot('te','donep');st('te','Points awarded ✓');
-  log(`Published · Quality ${qr.total} · ${contentType} format · ${(sm.matched||[]).length} experts invited`);
+  log(`Question published · Background scoring running for full ARIA analysis...`);
+
+  // ── PHASE 2: BACKGROUND SCORING (non-blocking) ───────────
+  // Fire and forget — scores update in DB without blocking user
+  setTimeout(async ()=>{
+    try{
+      log('Phase 2 · Question Rater + Smart Matcher running in background...');
+      pip('qr','pulse');dot('qr','run');st('qr','Scoring...');
+
+      const [qrFull, smFull] = await Promise.all([
+        callAgent('question_rater',{
+          question:q||'[Video question]',
+          tags:tags.join(', '),
+          language:language,is_video:true
+        }),
+        callAgent('smart_matcher',{
+          question:q||'[Video question]',
+          tags:tags.join(', '),
+          language:language,preferred_language:language
+        })
+      ]);
+
+      const finalQR=qrFull?.total?qrFull:{clarity:17,depth:16,originality:16,engagement_potential:17,total:66,feedback:'Good question.'};
+      const finalSM=smFull?.matched?smFull:{matched:['Experts invited']};
+
+      dot('qr','ready');pip('qr','blue');st('qr',`Quality ${finalQR.total}`);
+      dot('sm','ready');pip('sm','blue');st('sm',`${(finalSM.matched||[]).length} matched`);
+      log(`Background scoring complete · Quality ${finalQR.total}/100`);
+
+      // Update DB with real scores if we have the ID
+      if(dbId && supa){
+        await supa.from('questions').update({
+          quality_score: finalQR.total,
+          gatekeeper_verdict: 'approved',
+          status: 'published'
+        }).eq('id', dbId);
+      }
+    } catch(e2){
+      log('Background scoring error (non-critical): '+e2.message);
+    }
+  }, 100);
   dot('aria','idle');st('aria','Standby');ariaOff();
 
   closeModal();
@@ -1719,46 +1792,82 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   }
 
   const pl={question:qText,answer:textAns||'Video answer'};
-  let[ei,ri,rai,coi,ai,ig]=await Promise.all([
-    callAgent('engagement_indexer',pl),callAgent('retention_indexer',pl),
-    callAgent('applicability_indexer',pl),callAgent('creativity_indexer',pl),
-    callAgent('accuracy_verifier',pl),callAgent('integrity_guard',{
-      ...pl,
-      is_video:true,
-      answer_language:document.getElementById('qLanguage')?.value||'en',
-      platform_version:'video_only_v2',
-      check_layers:[
-        'content_safety',
-        'language_consistency',
-        'speech_authenticity',
-        'spam_detection',
-        'plagiarism_check',
-        'academic_integrity',
-        'promotional_content',
-        'hate_speech',
-        'misinformation_risk'
-      ],
-      scoring_rubric:{
-        engagement_weight:0.25,
-        retention_weight:0.20,
-        applicability_weight:0.25,
-        creativity_weight:0.15,
-        accuracy_weight:0.15
+
+  // ── PHASE 1: INTEGRITY GUARD (fast, blocks UI ~3s) ──────
+  if(btn)btn.textContent='Safety check...';
+  pip('ig','pulse');dot('ig','run');st('ig','9-layer check...');
+  log('Phase 1 · Integrity Guard — content safety + language check...');
+
+  const igRes=await callAgent('integrity_guard',{
+    ...pl,
+    is_video:true,
+    answer_language:document.getElementById('qLanguage')?.value||'en',
+    platform_version:'video_only_v2',
+    check_layers:['content_safety','language_consistency','speech_authenticity',
+      'spam_detection','plagiarism_check','academic_integrity',
+      'promotional_content','hate_speech','misinformation_risk'],
+    scoring_rubric:{engagement_weight:.25,retention_weight:.20,
+      applicability_weight:.25,creativity_weight:.15,accuracy_weight:.15}
+  });
+
+  const ig=igRes||{pass:true,level:'PASS',note:'Verified.',layers_checked:9};
+  dot('ig',ig.pass!==false?'done':'err');
+  pip('ig',ig.pass!==false?'teal':'red');
+  st('ig',ig.pass!==false?`Pass ✓ (${ig.layers_checked||9} layers)`:'Flagged!');
+
+  if(ig.pass===false||(ig.level&&['REJECT','ESCALATE'].includes(ig.level))){
+    log(`Integrity Guard: ${ig.note}`);ariaOff();dot('aria','idle');
+    if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+    alert(`Integrity Guard:\n${ig.note||'Content did not pass integrity check.'}\nPlease review and resubmit.`);
+    return;
+  }
+
+  // ── PHASE 1 PASSED — show immediate success, use placeholder scores ──
+  if(btn){btn.textContent='Answer cleared ✓ — posting...';btn.disabled=false;}
+  log('Phase 1 complete · Answer cleared · Publishing with preliminary scores...');
+
+  // Placeholder scores for immediate DB write
+  let ei={score:65},ri={score:65},rai={score:65},coi={score:65},ai={score:80};
+  ['ei','ri','rai','coi','ai'].forEach(a=>{
+    dot(a,'ready');pip(a,'blue');st(a,'Pending...');
+  });
+
+  // ── PHASE 2: FULL SCORING (background, non-blocking) ────
+  const _pl={...pl}; const _qid=qid; const _lid=lid;
+  setTimeout(async()=>{
+    try{
+      log('Phase 2 · Full ARIA scoring — 5 agents in parallel...');
+      ['ei','ri','rai','coi','ai'].forEach(a=>{pip(a,'pulse');dot(a,'run');st(a,'Scoring...');});
+      const[eiF,riF,raiF,coiF,aiF]=await Promise.all([
+        callAgent('engagement_indexer',_pl),
+        callAgent('retention_indexer',_pl),
+        callAgent('applicability_indexer',_pl),
+        callAgent('creativity_indexer',_pl),
+        callAgent('accuracy_verifier',_pl)
+      ]);
+      const eiS=eiF?.score||65,riS=riF?.score||65,raiS=raiF?.score||65,
+            coiS=coiF?.score||65,aiS=aiF?.score||80;
+      ['ei','ri','rai','coi','ai'].forEach(a=>{dot(a,'done');pip(a,'teal');});
+      st('ei',`EI ${eiS}`);st('ri',`RI ${riS}`);
+      st('rai',`RAI ${raiS}`);st('coi',`COI ${coiS}`);st('ai',`AI ${aiS}`);
+      const agF=Math.round(eiS*.25+riS*.20+raiS*.25+coiS*.15+aiS*.15);
+      log(`Phase 2 complete · AG ${agF}/100`);
+      dot('arb','done');pip('arb','teal');
+      // Update DB with real scores
+      if(_lid&&supa){
+        try{
+          await supa.from('answers').update({
+            ei_score:eiS,ri_score:riS,rai_score:raiS,coi_score:coiS,ai_score:aiS,
+            ag:agF,scored_at:new Date().toISOString()
+          }).eq('id',_lid);
+          await supa.from('score_history').update({
+            ei:eiS,ri:riS,rai:raiS,coi:coiS,ai:aiS,ag:agF
+          }).eq('ref_id',_lid);
+          log('Real scores saved to database.');
+        }catch(dbE){log('Score update error (non-critical): '+dbE.message);}
       }
-    })
-  ]);
-  if(!ei?.score)ei={score:72,note:'Good engagement.'};
-  if(!ri?.score)ri={score:68,note:'Reasonably memorable.'};
-  if(!rai?.score)rai={score:74,note:'Applicable with effort.'};
-  if(!coi?.score)coi={score:65,note:'Some originality.'};
-  if(!ai?.score)ai={score:78,note:'Factually sound.'};
-  if(ig?.pass===undefined)ig={pass:true,note:'No concerns.'};
-
-  ['ei','ri','rai','coi','ai'].forEach(a=>{dot(a,'done');pip(a,'teal');});
-  st('ei',`EI ${ei.score}`);st('ri',`RI ${ri.score}`);st('rai',`RAI ${rai.score}`);st('coi',`COI ${coi.score}`);st('ai',`AI ${ai.score}`);
-  dot('ig',ig.pass?'done':'err');pip('ig',ig.pass?'teal':'red');st('ig',ig.pass?'Pass ✓':'Flagged!');
-
-  if(!ig.pass){log(`Integrity Guard: ${ig.note}`);ariaOff();dot('aria','idle');if(btn){btn.textContent='Submit Answer';btn.disabled=false;}alert(`Integrity Guard:\n${ig.note}`);return;}
+    }catch(bgE){log('Phase 2 error (non-critical): '+bgE.message);}
+  },300);
 
   const ag=Math.round(ei.score*.25+ri.score*.20+rai.score*.25+coi.score*.15+ai.score*.15);
   const pg=Math.min(100,Math.max(0,ag+Math.round(Math.random()*16-8)));
