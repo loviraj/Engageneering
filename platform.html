@@ -815,7 +815,7 @@ async function loadFeed(){
   let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
       if(topic)q=q.contains('tags',[topic]);
       if(fmt==='video')q=q.in('content_type',['video','both']);
-      else if(fmt==='text')q=q.eq('content_type','text');
+      // text format removed — video only
       const{data}=await q;
       qs=data||[];
       if(!qs.length){feed.innerHTML=sampleFeed();return;}
@@ -914,7 +914,7 @@ function qCard(q,force=false){
   const isMatch=U&&(q.matched_uids||[]).includes(U.id);
   const feat=force||(q.quality_score>=85);
   const asker=q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
-  const ct=q.content_type||'text';
+  const ct='video'; // video-only platform
   const pid='panel-'+q.id;
   const aid='ans-'+q.id;
   const lid='list-'+q.id;
@@ -1023,11 +1023,11 @@ function setAnsType(qid,type){
 // ══ SAMPLE FEED ══
 function sampleFeed(){
   const s=[
-    {id:'s1',text:'What is the most engaging way to explain variables to a 12-year-old who has never seen code before?',tags:['Programming'],quality_score:94,answer_count:3,views:187,bounty_pts:50,profiles:{display_name:'Arjun M.'},asker_id:'',matched_uids:[],content_type:'text'},
-    {id:'s2',text:'Why does time slow down near a black hole — explained in a way that makes a 15-year-old feel the actual strangeness?',tags:['Science'],quality_score:89,answer_count:2,views:134,bounty_pts:0,profiles:{display_name:'Fatima A.'},asker_id:'',matched_uids:[],content_type:'text'},
-    {id:'s3',text:'How would you explain the fall of the Roman Empire to someone who thinks history is boring?',tags:['History'],quality_score:85,answer_count:1,views:98,bounty_pts:30,profiles:{display_name:'Marcus T.'},asker_id:'',matched_uids:[],content_type:'text'},
-    {id:'s4',text:"Explain Occam's Razor with a concrete example from everyday decision-making.",tags:['Philosophy'],quality_score:88,answer_count:4,views:213,bounty_pts:0,profiles:{display_name:'Priya N.'},asker_id:'',matched_uids:[],content_type:'text'},
-    {id:'s5',text:'Why does 0.999… equal 1 exactly — and how would you convince a sceptic without algebra?',tags:['Mathematics'],quality_score:79,answer_count:0,views:44,bounty_pts:40,profiles:{display_name:'Lena V.'},asker_id:'',matched_uids:[],content_type:'text'}
+    {id:'s1',text:'What is the most engaging way to explain variables to a 12-year-old who has never seen code before?',tags:['Programming'],quality_score:94,answer_count:3,views:187,bounty_pts:50,profiles:{display_name:'Arjun M.'},asker_id:'',matched_uids:[],content_type:'video'},
+    {id:'s2',text:'Why does time slow down near a black hole — explained in a way that makes a 15-year-old feel the actual strangeness?',tags:['Science'],quality_score:89,answer_count:2,views:134,bounty_pts:0,profiles:{display_name:'Fatima A.'},asker_id:'',matched_uids:[],content_type:'video'},
+    {id:'s3',text:'How would you explain the fall of the Roman Empire to someone who thinks history is boring?',tags:['History'],quality_score:85,answer_count:1,views:98,bounty_pts:30,profiles:{display_name:'Marcus T.'},asker_id:'',matched_uids:[],content_type:'video'},
+    {id:'s4',text:"Explain Occam's Razor with a concrete example from everyday decision-making.",tags:['Philosophy'],quality_score:88,answer_count:4,views:213,bounty_pts:0,profiles:{display_name:'Priya N.'},asker_id:'',matched_uids:[],content_type:'video'},
+    {id:'s5',text:'Why does 0.999… equal 1 exactly — and how would you convince a sceptic without algebra?',tags:['Mathematics'],quality_score:79,answer_count:0,views:44,bounty_pts:40,profiles:{display_name:'Lena V.'},asker_id:'',matched_uids:[],content_type:'video'}
   ];
   return s.map((q,i)=>qCard(q,i===0)).join('');
 }
@@ -1050,7 +1050,6 @@ document.getElementById('submitModal').addEventListener('click',e=>{if(e.target=
 
 function resetModal(){
   contentType='video';videoTab='record'; setType('video');
-  setType('text');
   document.getElementById('qText').value='';
   document.getElementById('modalErr').textContent='';
   recBlob=null;uploadFile=null;
@@ -1548,13 +1547,16 @@ function handleIntegrityResult(ig, context='answer'){
 
 // ══ SUBMIT QUESTION ══
 async function submitQuestion(){
-  // VIDEO-ONLY PLATFORM — text questions removed
+  // VIDEO-ONLY PLATFORM
+  const needsText = false;
+  const needsVideo = true;
+  let thumbUrl = null; // hoisted — used in upload block and insert payload
   const tags=[...document.querySelectorAll('#submitModal .tag-chip.on')].map(t=>t.textContent);
   const language=document.getElementById('qLanguage')?.value||'en';
   const languageName=document.getElementById('qLanguage')?.options[document.getElementById('qLanguage').selectedIndex]?.text||'English';
   const err=document.getElementById('modalErr');
   err.textContent='';
-  const q=document.getElementById('qText')?.value?.trim()||'';
+  const q=document.getElementById('qText')?.value?.trim()||''; // optional title
 
   // Enforce video-only
   if(videoTab==='record'&&!recBlob){
@@ -1580,15 +1582,15 @@ async function submitQuestion(){
   ariaOn();log('Question received → routing to Gatekeeper');
   dot('aria','run');st('aria','Processing');
 
-  // Upload video if needed
+  // Upload video (always — video-only platform)
   let videoUrl=null;
-  if(needsVideo){
+  {
     const blob=recBlob||uploadFile;
     log('Uploading video to Supabase Storage...');
     btn.textContent='Uploading video...';
     const uploadResult=await uploadVideoToStorage(blob,'questions');
     videoUrl=uploadResult?.url||null;
-    let thumbUrl=uploadResult?.thumb||null;
+    thumbUrl=uploadResult?.thumb||null; // assign to hoisted var
     if(!videoUrl){err.textContent='Video upload failed. Please try again.';btn.textContent='Submit to ARIA';btn.disabled=false;ariaOff();return;}
   }
 
@@ -1640,10 +1642,10 @@ async function submitQuestion(){
 
     const insertPayload={
       asker_id:U.id,
-      text:(needsText&&q)?q:(videoUrl?'[Video question]':''),
+      text:q||'[Video question]',
       video_url:videoUrl||null,
-      video_thumbnail:(typeof thumbUrl!=='undefined'?thumbUrl:null),
-      content_type:needsVideo?'video':'text',
+      video_thumbnail:thumbUrl||null,
+      content_type:'video',
       tags:tags.length?tags:['General'],
       quality_score:qr.total,
       gatekeeper_verdict:({'approve':'approved','approved':'approved','reject':'rejected','rejected':'rejected','revise':'revise'}[gk.verdict])||'approved',
@@ -1747,7 +1749,7 @@ async function submitQuestion(){
   document.getElementById('evtCount').textContent=parseInt(document.getElementById('evtCount').textContent||0)+1;
 
   // Prepend new card
-  const newQ={id:dbId||'new-'+Date.now(),text:needsText&&q?q:null,video_url:videoUrl,video_thumbnail:typeof thumbUrl!=='undefined'?thumbUrl:null,content_type:needsVideo?'video':'text',tags:tags.length?tags:['General'],quality_score:qr.total,answer_count:0,views:0,bounty_pts:0,profiles:{display_name:P?.display_name||'You'},asker_id:U.id,matched_uids:[]};
+  const newQ={id:dbId||'new-'+Date.now(),text:needsText&&q?q:null,video_url:videoUrl,video_thumbnail:typeof thumbUrl!=='undefined'?thumbUrl:null,content_type:'video',tags:tags.length?tags:['General'],quality_score:qr.total,answer_count:0,views:0,bounty_pts:0,profiles:{display_name:P?.display_name||'You'},asker_id:U.id,matched_uids:[]};
   document.getElementById('qFeed').insertAdjacentHTML('afterbegin',qCard(newQ));
 }
 
@@ -1766,7 +1768,7 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   const textAns=document.getElementById(aid)?.value?.trim();
   const recState=ansRecState[qid];
   const ansBlob=recState?.blob||null;
-  const needText=ansType==='text';
+  const needText=false; // video-only platform
   const needVideo=ansType==='video';
 
   if(needText&&(!textAns||textAns.length<15)){alert('Please write a more complete text answer (at least 15 characters).');return;}
@@ -1882,10 +1884,10 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
     const realQId=qid.startsWith('s')||qid.startsWith('new')?null:qid;
     const{data:sa}=await supa.from('answers').insert({
       question_id:realQId,answerer_id:U.id,
-      text:needText?textAns:null,
+      text:null, // video-only platform
       video_url:videoUrl,
       video_thumbnail:ansThumbUrl||null,
-      content_type:ansType==='video'?'video':'text',
+      content_type:'video',
       ei_score:ei.score,ri_score:ri.score,rai_score:rai.score,coi_score:coi.score,ai_score:ai.score,
       integrity_pass:true,ag,pg,cds,status:'published',
       scored_at:new Date().toISOString()
