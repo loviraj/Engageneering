@@ -520,17 +520,36 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 
     <!-- Format filter -->
     <div class="format-bar">
-      <div class="fmt-label">Show</div>
+      <div class="fmt-label">Filter</div>
       <div class="fmt-btns">
-        <button class="fmt-btn on" id="fmt-all" onclick="setFormat('all',this)">All formats</button>
+        <button class="fmt-btn on" id="fmt-all" onclick="setFormat('all',this)">All</button>
         <button class="fmt-btn" id="fmt-video" onclick="setFormat('video',this)">
           <svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
           Video
         </button>
-        <button class="fmt-btn" id="fmt-text" onclick="setFormat('text',this)">
-          <svg viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h6M2 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          Text
-        </button>
+        <select id="langFilter" onchange="applyLangFilter()" style="font-size:10px;background:transparent;border:1px solid var(--bdr);border-radius:20px;padding:3px 10px;color:var(--t4);cursor:pointer;font-family:inherit">
+          <option value="">All Languages</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="ta">Tamil</option>
+          <option value="te">Telugu</option>
+          <option value="bn">Bengali</option>
+          <option value="mr">Marathi</option>
+          <option value="gu">Gujarati</option>
+          <option value="kn">Kannada</option>
+          <option value="ml">Malayalam</option>
+          <option value="pa">Punjabi</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="es">Spanish</option>
+          <option value="ar">Arabic</option>
+          <option value="zh">Chinese</option>
+          <option value="ja">Japanese</option>
+          <option value="pt">Portuguese</option>
+          <option value="ru">Russian</option>
+          <option value="ko">Korean</option>
+          <option value="sw">Swahili</option>
+        </select>
       </div>
       <button class="nbtn nbtn-gold" style="margin-left:auto;padding:6px 18px;font-size:10px" onclick="openModal('question')">+ Ask a Question</button>
     </div>
@@ -778,7 +797,7 @@ function setFormat(f,btn){
 }
 
 // ══ LOAD FEED ══
-const BASE='id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,content_type,video_url,video_thumbnail,video_duration,profiles!questions_asker_id_fkey(display_name)';
+const BASE='id,text,tags,quality_score,status,views,answer_count,bounty_pts,asker_id,created_at,matched_uids,content_type,video_url,video_thumbnail,video_duration,language,language_name,profiles!questions_asker_id_fkey(display_name)';
 
 async function loadFeed(){
   const feed=document.getElementById('qFeed');
@@ -814,6 +833,7 @@ async function loadFeed(){
       const langF=document.getElementById('langFilter')?.value||'';
   let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
       if(topic)q=q.contains('tags',[topic]);
+    if(currentLangFilter)q=q.eq('language',currentLangFilter);
       if(fmt==='video')q=q.in('content_type',['video','both']);
       // text format removed — video only
       const{data}=await q;
@@ -908,7 +928,8 @@ function fmtDur(s){if(!s)return'';const m=Math.floor(s/60),sec=s%60;return`${m}:
 
 // ══ Q CARD ══
 function qCard(q,force=false){
-  const tag=(q.tags||[])[0]||'General';
+  const tags=q.tags||['General'];
+  const tag=tags[0]||'General';
   const cls=tc(tag);
   const isMe=U&&q.asker_id===U.id;
   const isMatch=U&&(q.matched_uids||[]).includes(U.id);
@@ -921,25 +942,29 @@ function qCard(q,force=false){
   const hid='hint-'+q.id;
   const sid='sc-'+q.id;
   const ma=q.myAnswer;
-  const hasVid=ct==='video'||ct==='both';
+  const hasVid=true; // always video
+  const langCode=q.language||'en';
+  const langName=q.language_name||getLanguageName(langCode);
+  const showLangBadge=langCode&&langCode!=='en';
 
   return`<div class="qc ${feat?'feat':''}" data-qid="${q.id}">
-    <div style="display:flex;gap:1rem;align-items:flex-start;${hasVid&&q.video_url?'':''}">
-    ${hasVid&&q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):''}
+    <div style="display:flex;gap:1rem;align-items:flex-start">
+    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):'<div style="width:160px;min-width:160px;height:90px;background:var(--bg4);border-radius:8px;border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;color:var(--t4);font-size:22px">🎙️</div>'}
     <div class="qc-body" style="flex:1;min-width:0">
-      <div class="qm">
-        <div class="qtag ${cls}">${tag}</div>
-        ${q.quality_score!=null?`<div class="qscore">Quality ${q.quality_score}</div>`:''}
-        ${ct==='video'?`<span class="content-badge badge-video" style="position:relative;font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:20px">Video</span>`:''}
+      <div class="qm" style="flex-wrap:wrap;gap:.3rem">
+        ${tags.map(t=>`<div class="qtag ${tc(t)}">${t}</div>`).join('')}
+        ${q.quality_score!=null?`<div class="qscore">Q ${q.quality_score}</div>`:''}
+        <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(226,75,74,.12);color:#e24b4a;border:1px solid rgba(226,75,74,.3);font-weight:700">🎥 Video</span>
+        ${showLangBadge?`<span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(127,119,221,.12);color:#afa9ec;border:1px solid rgba(127,119,221,.3);font-weight:600">${langName}</span>`:''}
         ${isMatch?`<span style="font-size:10px;color:var(--tlb)">✦ Matched</span>`:''}
         ${isMe?`<span style="font-size:10px;color:var(--gold)">✦ Yours</span>`:''}
         <div class="qasker">${asker}</div>
       </div>
-      ${q.text?`<div class="qtext">${q.text}</div>`:''}
+      ${q.text&&q.text!=='[Video question]'?`<div class="qtext">${q.text}</div>`:''}
       <div class="qfoot">
         <div class="qstat">${q.answer_count||0} answers</div>
         <div class="qstat">${q.views||0} views</div>
-        ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">Bounty +${q.bounty_pts} pts</div>`:''}
+        ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">+${q.bounty_pts} pts bounty</div>`:''}
         <button class="ans-btn" onclick="togglePanel('${pid}')">Answer</button>
       </div>
     </div>
@@ -1507,6 +1532,10 @@ function applyLangFilter(){
   currentLangFilter=document.getElementById('langFilter')?.value||'';
   loadFeed();
 }
+
+// Make applyLangFilter also fire from modal language select
+// (separate from feed filter — shares same function name but different element)
+
 
 // ── UPGRADED INTEGRITY GUARD RESPONSE HANDLER ──────────────
 function handleIntegrityResult(ig, context='answer'){
