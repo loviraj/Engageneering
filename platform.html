@@ -821,14 +821,36 @@ async function loadFeed(){
       qs=data||[];
       if(!qs.length){feed.innerHTML=empty('No matched questions yet','ARIA will route personalised questions here as you build your profile.');return;}
     }else if(view==='answered'){
-      const{data:myAns}=await supa.from('answers').select('id,question_id,text,video_url,video_thumbnail,ei_score,ri_score,rai_score,coi_score,ai_score,ag,pg,cds,content_type,created_at').eq('answerer_id',U.id).order('created_at',{ascending:false}).limit(50);
-      if(!myAns||!myAns.length){feed.innerHTML=empty('No answers yet','Answer questions from the feed and your history appears here.');return;}
+      const{data:myAns}=await supa.from('answers').select('id,question_id,text,video_url,video_thumbnail,ei_score,ri_score,rai_score,coi_score,ai_score,ag,pg,cds,content_type,created_at,language').eq('answerer_id',U.id).order('created_at',{ascending:false}).limit(50);
+      if(!myAns||!myAns.length){feed.innerHTML=empty('No answers yet','Record and submit a video answer from the feed — it will appear here.');return;}
       const qIds=[...new Set(myAns.map(a=>a.question_id).filter(Boolean))];
-      if(qIds.length){const{data:lq}=await supa.from('questions').select(BASE).in('id',qIds);qs=(lq||[]).map(q=>({...q,myAnswer:myAns.find(a=>a.question_id===q.id)}));}
-      if(!qs.length){
-        feed.innerHTML=myAns.map(a=>`<div class="qc"><div class="qc-body"><div class="qm"><div class="qtag tgen">Your Answer</div><div class="qasker">${new Date(a.created_at).toLocaleDateString()}</div></div>${a.video_url?videoPlayer(a.video_url,a.video_thumbnail,'answer'):`<div class="qtext" style="font-size:15px">${a.text||''}</div>`}${inlineScore(a)}</div></div>`).join('');
-        return;
+      // Fetch questions for answers that have question_id
+      let qMap={};
+      if(qIds.length){
+        const{data:lq}=await supa.from('questions').select(BASE).in('id',qIds);
+        if(lq)lq.forEach(q=>{qMap[q.id]=q;});
       }
+      // Show all answers regardless of whether question is found
+      feed.innerHTML=myAns.map(a=>{
+        const q=qMap[a.question_id];
+        const qTitle=q?.text||'Video question';
+        const dt=new Date(a.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        return`<div class="qc">
+          <div style="display:flex;gap:.8rem;align-items:flex-start">
+            ${a.video_url?videoPlayer(a.video_url,a.video_thumbnail,'answer'):'<div style="width:160px;min-width:160px;height:90px;background:var(--bg4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px">🎥</div>'}
+            <div style="flex:1;min-width:0">
+              <div class="qm" style="flex-wrap:wrap;gap:.3rem;margin-bottom:.4rem">
+                <div class="qtag tgen">Your Answer</div>
+                <div class="qasker">${dt}</div>
+                ${a.cds?`<div class="qscore" style="background:rgba(29,158,117,.12);color:#5dcaa5;border-color:#1d9e75">CDS ${a.cds}</div>`:''}
+              </div>
+              <div class="qtext" style="font-size:12px;color:var(--t4);margin-bottom:.4rem">In response to: ${qTitle}</div>
+              ${inlineScore(a)}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+      return; // My Answers rendered above
     }else{
       const langF=document.getElementById('langFilter')?.value||'';
   let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
@@ -1030,13 +1052,18 @@ function qCard(q,force=false){
   </div>`;
 }
 
-function togglePanel(id){document.getElementById(id)?.classList.toggle('open');}
+function togglePanel(id){
+  document.getElementById(id)?.classList.toggle('open');
+  // Ensure answer type is always video when panel opens
+  const qid=id.replace('panel-','');
+  if(qid && !ansTypes[qid]) ansTypes[qid]='video';
+}
 
 // Per-card answer type
 const ansTypes={};
 function setAnsType(qid,type){
   type='video'; // VIDEO-ONLY platform
-  ansTypes[qid]=type;
+  ansTypes[qid]='video';
   ['text','video'].forEach(t=>{
     document.getElementById(`att-${t}-${qid}`)?.classList.toggle('on',t===type);
   });
@@ -1885,15 +1912,19 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
       return;
     }
   }
-  const ansType=ansTypes[qid]||'text';
+  const ansType='video'; // VIDEO-ONLY platform — always video
   const textAns=document.getElementById(aid)?.value?.trim();
   const recState=ansRecState[qid];
   const ansBlob=recState?.blob||null;
-  const needText=false; // video-only platform
-  const needVideo=ansType==='video';
+  const needText=false;  // video-only platform
+  const needVideo=true;  // always video
 
-  if(needText&&(!textAns||textAns.length<15)){alert('Please write a more complete text answer (at least 15 characters).');return;}
-  if(needVideo&&!ansBlob){alert('Please record or upload a video before submitting.');return;}
+  // Must have a recorded or uploaded blob
+  if(!ansBlob){
+    alert('Please record your video answer first — tap the Record button, then Stop when done.');
+    if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+    return;
+  }
 
   const card=btn?.closest('.qc');
   const qText=card?.querySelector('.qtext')?.textContent||'this question';
@@ -1904,14 +1935,20 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   dot('aria','run');st('aria','Evaluating');
   ['ei','ri','rai','coi','ai','ig'].forEach(a=>{pip(a,'pulse');dot(a,'run');st(a,'Scoring...');});
 
-  // Upload video if needed
+  // Upload video — always required
   let videoUrl=null;
-  if(needVideo&&ansBlob){
+  let ansThumbUrl=null; // hoisted — used in DB insert below
+  {
     log('Uploading answer video...');
+    if(btn)btn.textContent='Uploading video...';
     const ansUpload=await uploadVideoToStorage(ansBlob,'answers');
     videoUrl=ansUpload?.url||null;
-    let ansThumbUrl=ansUpload?.thumb||null;
-    if(!videoUrl){alert('Video upload failed. Please try again.');if(btn){btn.textContent='Submit Answer';btn.disabled=false;}ariaOff();return;}
+    ansThumbUrl=ansUpload?.thumb||null;
+    if(!videoUrl){
+      alert('Video upload failed. Please try again.');
+      if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+      ariaOff();return;
+    }
   }
 
   const pl={question:qText,answer:textAns||'Video answer'};
