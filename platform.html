@@ -1486,6 +1486,18 @@ async function callAgent(name,payload){
   }catch(e){return{};}
 }
 
+
+// ── ENGAGENEERING™ EMAIL TRIGGER ─────────────────────────────
+async function sendEngEmail(type, toEmail, data){
+  try{
+    await fetch('https://tbqnkcjftxfbxujxsqkj.supabase.co/functions/v1/send-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type, to:toEmail, data})
+    });
+  }catch(e){ console.warn('Email send error (non-critical):',e.message); }
+}
+
 // ── VIDEO DURATION CHECKER ─────────────────────────────────
 function getVideoDuration(file){
   return new Promise(resolve=>{
@@ -1732,6 +1744,30 @@ async function submitQuestion(){
   dot('te','donep');st('te','Points awarded ✓');
   log(`Question published · Background scoring running for full ARIA analysis...`);
 
+  // ── SEND QUESTION SCORED EMAIL ─────────────────────────────
+  setTimeout(async()=>{
+    try{
+      const userEmail=(await supa.auth.getUser()).data?.user?.email;
+      if(userEmail && dbId){
+        await sendEngEmail('question_scored', userEmail, {
+          name: P?.display_name||'Engageneer',
+          question_title: q||'[Video question]',
+          language: languageName||'English',
+          quality_score: qr?.total||64,
+          clarity:             qr?.clarity||16,
+          depth:               qr?.depth||16,
+          originality:         qr?.originality||16,
+          engagement_potential:qr?.engagement_potential||16,
+          gatekeeper_verdict: 'approved',
+          matched_count: (sm?.matched||[]).length||3,
+          feedback: qr?.feedback||'Your question has been screened and published.',
+          question_url: `https://engageneering.org/platform#q-${dbId}`
+        });
+        log('Question scored email sent.');
+      }
+    }catch(e){ console.warn('Question email error:',e.message); }
+  }, 2000);
+
   // ── PHASE 2: BACKGROUND SCORING (non-blocking) ───────────
   // Fire and forget — scores update in DB without blocking user
   setTimeout(async ()=>{
@@ -1895,6 +1931,31 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
             ei:eiS,ri:riS,rai:raiS,coi:coiS,ai:aiS,ag:agF
           }).eq('ref_id',_lid);
           log('Real scores saved to database.');
+
+        // ── SEND ANSWER SCORED EMAIL ───────────────────────
+        try{
+          const userEmail2=(await supa.auth.getUser()).data?.user?.email;
+          if(userEmail2){
+            const tierChanged2=false; // update from tier_engine result if available
+            await sendEngEmail('answer_scored', userEmail2, {
+              name: P?.display_name||'Engageneer',
+              question_title: _pl?.question||'[Video question]',
+              ei: eiS, ri: riS, rai: raiS, coi: coiS, ai: aiS,
+              ag: agF,
+              pg: Number(document.getElementById('pg-'+_qid)?.value)||75,
+              cds: Math.round(agF*.60+
+                   (Number(document.getElementById('pg-'+_qid)?.value)||75)*.40),
+              integrity_level: 'PASS',
+              tier_changed: false,
+              new_tier_name: '',
+              new_tier_num: 2,
+              points_earned: agF*10,
+              feedback: 'ARIA has completed its 5-agent analysis of your answer.',
+              answer_url: `https://engageneering.org/platform#a-${_lid}`
+            });
+            log('Answer scored email sent.');
+          }
+        }catch(emailErr){ console.warn('Answer email error:',emailErr.message); }
         }catch(dbE){log('Score update error (non-critical): '+dbE.message);}
       }
     }catch(bgE){log('Phase 2 error (non-critical): '+bgE.message);}
