@@ -603,7 +603,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
     <div class="widget">
       <div class="wt">Your Weekly Insight</div>
       <div class="insight-box">
-        <div class="insight-body" id="insightBody">Submit your first video or text answer to receive your personalised weekly insight.</div>
+        <div class="insight-body" id="insightBody">Submit your first video answer to receive your personalised weekly insight.</div>
         <div class="insight-meta">Agent 12 · Insight Narrator</div>
       </div>
     </div>
@@ -970,26 +970,24 @@ function qCard(q,force=false){
     </div>
     </div>
     <div class="ans-panel" id="${pid}">
-      <div class="ap-title">Your answer — video</div>
-      <!-- Answer type toggle — Text OR Video -->
-      <div class="ans-type-toggle">
-        <button class="att on" id="att-text-${q.id}" onclick="setAnsType('${q.id}','text')">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h6M2 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          Text Answer
-        </button>
-        <button class="att" id="att-video-${q.id}" onclick="setAnsType('${q.id}','video')">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
-          Video Answer
-        </button>
+      <div class="ap-title">🎥 Your video answer</div>
+      <!-- VIDEO-ONLY answer platform -->
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem;
+                  background:rgba(226,75,74,.07);border:1px solid rgba(226,75,74,.2);
+                  border-radius:6px;padding:.5rem .8rem">
+        <span style="font-size:14px">🎥</span>
+        <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+                     color:#e24b4a;font-weight:700">Video Answer</span>
+        <span style="font-size:10px;color:var(--t4);margin-left:4px">· Max 3 minutes</span>
       </div>
 
       <!-- Text answer -->
-      <div class="ans-text-wrap show" id="atw-${q.id}">
+      <div class="ans-text-wrap" id="atw-${q.id}" style="display:none">
         <textarea class="ans-ta" id="${aid}" placeholder="Give an engaging, specific answer. Use examples, analogies, and real-world steps..."></textarea>
       </div>
 
       <!-- Video answer -->
-      <div class="ans-video-wrap" id="avw-${q.id}">
+      <div class="ans-video-wrap" id="avw-${q.id}" style="display:block">
         <div class="recorder-wrap" style="margin-bottom:.8rem">
           <div class="rec-preview" style="aspect-ratio:16/9">
             <video id="av-cam-${q.id}" autoplay muted playsinline style="display:none;width:100%;height:100%;object-fit:cover"></video>
@@ -1037,6 +1035,7 @@ function togglePanel(id){document.getElementById(id)?.classList.toggle('open');}
 // Per-card answer type
 const ansTypes={};
 function setAnsType(qid,type){
+  type='video'; // VIDEO-ONLY platform
   ansTypes[qid]=type;
   ['text','video'].forEach(t=>{
     document.getElementById(`att-${t}-${qid}`)?.classList.toggle('on',t===type);
@@ -1284,15 +1283,23 @@ async function startAnsRec(qid){
     ansRecState[qid].recorder=mr;
     mr.ondataavailable=e=>{if(e.data.size>0)ansRecState[qid].chunks.push(e.data);};
     mr.onstop=()=>{
+      // Stop all camera/mic tracks now that recording is complete
+      if(ansRecState[qid]?.stream){
+        ansRecState[qid].stream.getTracks().forEach(t=>t.stop());
+        ansRecState[qid].stream=null;
+      }
       const blob=new Blob(ansRecState[qid].chunks,{type:getSupportedMime()});
       ansRecState[qid].blob=blob;
       const url=URL.createObjectURL(blob);
       const pb=document.getElementById(`av-play-${qid}`);
-      pb.src=url;pb.style.display='block';cam.style.display='none';
+      pb.src=url;pb.style.display='block';
+      cam.style.display='none';
+      document.getElementById(`av-ph-${qid}`).style.display='none';
       document.getElementById(`av-retake-${qid}`).style.display='flex';
-      document.getElementById(`av-start-${qid}`).style.display='none';
+      document.getElementById(`av-start-${qid}`).style.display='flex';
       document.getElementById(`av-stop-${qid}`).style.display='none';
-      document.getElementById(`av-status-${qid}`).textContent=`Recorded ${fmtDur(ansRecState[qid].seconds)}`;
+      document.getElementById(`av-status-${qid}`).textContent=`Recorded ${fmtDur(ansRecState[qid].seconds)} · Ready to submit`;
+      document.getElementById(`av-status-${qid}`).style.color='var(--teal)';
     };
     mr.start(100);
     document.getElementById(`av-start-${qid}`).style.display='none';
@@ -1302,8 +1309,22 @@ async function startAnsRec(qid){
     timer.classList.add('show');
     ansRecState[qid].interval=setInterval(()=>{
       ansRecState[qid].seconds++;
-      timer.textContent=fmtDur(ansRecState[qid].seconds);
-      if(ansRecState[qid].seconds>=180)stopAnsRec(qid);
+      const secs=ansRecState[qid].seconds;
+      const remaining=180-secs;
+      if(remaining<=10&&remaining>0){
+        timer.textContent=fmtDur(secs)+' · STOP in '+remaining+'s';
+        timer.style.color='#e24b4a';
+        timer.style.fontWeight='700';
+      } else {
+        timer.textContent=fmtDur(secs);
+        timer.style.color='';
+        timer.style.fontWeight='';
+      }
+      if(secs>=180){
+        const st=document.getElementById(`av-status-${qid}`);
+        if(st)st.textContent='Maximum 3 minutes reached · Stopping...';
+        stopAnsRec(qid);
+      }
     },1000);
   }catch(e){
     const s=document.getElementById(`av-status-${qid}`);
@@ -1323,10 +1344,18 @@ async function startAnsRec(qid){
 
 function stopAnsRec(qid){
   const s=ansRecState[qid];if(!s)return;
+  // Stop the interval timer first
   if(s.interval){clearInterval(s.interval);s.interval=null;}
-  if(s.recorder&&s.recorder.state!=='inactive')s.recorder.stop();
-  if(s.stream){s.stream.getTracks().forEach(t=>t.stop());s.stream=null;}
   document.getElementById(`av-timer-${qid}`)?.classList.remove('show');
+  // Stop recorder — stream is killed inside onstop callback
+  // to ensure blob assembly completes before tracks are stopped
+  if(s.recorder&&s.recorder.state!=='inactive'){
+    s.recorder.stop();
+    // onstop fires async — stream cleanup happens there
+  } else {
+    // Recorder already stopped — just clean up stream
+    if(s.stream){s.stream.getTracks().forEach(t=>t.stop());s.stream=null;}
+  }
 }
 
 function retakeAnsRec(qid){
@@ -1356,37 +1385,64 @@ async function handleAnsUpload(e,qid){
 }
 
 // ══ UPLOAD TO SUPABASE STORAGE ══
-// Generate thumbnail by seeking video to 1s and capturing a frame
+// Generate thumbnail — robust multi-approach with silent fallback
 async function generateThumbnail(blob){
+  if(!blob) return null;
   return new Promise((resolve)=>{
+    let resolved=false;
+    const done=(result)=>{
+      if(resolved) return;
+      resolved=true;
+      if(url) try{URL.revokeObjectURL(url);}catch(_){}
+      resolve(result);
+    };
+
+    let url=null;
     try{
-      const url=URL.createObjectURL(blob);
+      url=URL.createObjectURL(blob);
       const video=document.createElement('video');
-      video.src=url;
       video.muted=true;
       video.playsInline=true;
-      video.currentTime=0.5; // Seek to 0.5s for a good frame
-      video.onloadeddata=()=>{
-        video.currentTime=Math.min(0.5,video.duration*0.1);
-      };
-      video.onseeked=()=>{
+      video.preload='metadata';
+      video.crossOrigin='anonymous';
+
+      const captureFrame=()=>{
         try{
           const canvas=document.createElement('canvas');
-          canvas.width=480;
-          canvas.height=270; // 16:9
+          canvas.width=480; canvas.height=270;
           const ctx=canvas.getContext('2d');
           ctx.drawImage(video,0,0,480,270);
-          canvas.toBlob(thumbBlob=>{
-            URL.revokeObjectURL(url);
-            resolve(thumbBlob);
-          },'image/jpeg',0.8);
-        }catch(e){URL.revokeObjectURL(url);resolve(null);}
+          canvas.toBlob(tb=>{
+            done(tb||null);
+          },'image/jpeg',0.82);
+        }catch(_){ done(null); }
       };
-      video.onerror=()=>{URL.revokeObjectURL(url);resolve(null);};
-      // Timeout fallback
-      setTimeout(()=>resolve(null),5000);
+
+      video.onseeked=captureFrame;
+
+      video.onloadedmetadata=()=>{
+        // Seek to 10% of duration or 0.5s, whichever is smaller
+        const seekTo=Math.min(0.5, (video.duration||0)*0.1);
+        try{ video.currentTime=seekTo>0?seekTo:0; }
+        catch(_){ captureFrame(); } // seek failed — capture at 0
+      };
+
+      video.onloadeddata=()=>{
+        // Some browsers fire loadeddata but not onseeked for webm
+        // If we already seeked, onseeked will fire. Otherwise capture now.
+        if(video.readyState>=2 && video.currentTime===0){
+          captureFrame();
+        }
+      };
+
+      video.onerror=()=>done(null);
+
+      // Hard timeout — 6 seconds, then give up silently
+      setTimeout(()=>done(null), 6000);
+
+      video.src=url;
       video.load();
-    }catch(e){resolve(null);}
+    }catch(e){ done(null); }
   });
 }
 
@@ -1420,14 +1476,14 @@ async function uploadVideoToStorage(blob,folder){
         thumbPath,thumbBlob,{contentType:'image/jpeg',upsert:true}
       );
       if(te){
-        console.warn('Thumbnail upload failed:',te.message);
-        showToast(`Thumbnail upload failed: ${te.message} — continuing without thumbnail`,'warn');
+        console.warn('Thumbnail upload skipped:',te.message);
+        // Non-critical — continue without thumbnail, no user-facing warning
       } else {
         const{data:td}=supa.storage.from('engageneering-videos').getPublicUrl(thumbPath);
         thumbUrl=td?.publicUrl||null;
       }
     }
-  }catch(e){console.warn('Thumbnail error:',e.message);}
+  }catch(e){console.warn('Thumbnail skipped (non-critical):',e.message);}
 
   if(pb)pb.style.width='40%';
 
@@ -1685,7 +1741,7 @@ async function submitQuestion(){
       asker_id:U.id,
       text:q||'[Video question]',
       video_url:videoUrl||null,
-      video_thumbnail:thumbUrl||null,
+      video_thumbnail:(thumbUrl&&typeof thumbUrl==='string'&&thumbUrl.length>0)?thumbUrl:null,
       content_type:'video',
       tags:tags.length?tags:['General'],
       quality_score:qr.total,
