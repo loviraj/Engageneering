@@ -622,6 +622,18 @@ async function doSignup() {
   }
 }
 
+
+// ── ENGAGENEERING™ EMAIL TRIGGER ─────────────────────────────
+async function sendEngEmail(type, toEmail, data){
+  try{
+    await fetch('https://tbqnkcjftxfbxujxsqkj.supabase.co/functions/v1/send-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type, to:toEmail, data})
+    });
+  }catch(e){ console.warn('Email send error (non-critical):',e.message); }
+}
+
 async function createProfile(uid, fullName, meta, tags) {
   // Profile
   await supa.from('profiles').upsert({
@@ -641,6 +653,25 @@ async function createProfile(uid, fullName, meta, tags) {
     answerer_pts: 0,
     expertise_tags: tags
   }, { onConflict: 'user_id' });
+
+  // ── SEND WELCOME EMAIL ──────────────────────────────────────
+  try{
+    const userEmail = (await supa.auth.getUser()).data?.user?.email;
+    if(userEmail){
+      const tierMap = {both:'Curious Mind',seeker:'Curious Mind',answerer:'Responder',institution:'Institution'};
+      const tierNumMap = {both:1,seeker:1,answerer:1,institution:1};
+      const trackMap = {both:'Both',seeker:'Seeker',answerer:'Answerer',institution:'Both'};
+      await sendEngEmail('welcome', userEmail, {
+        name: fullName,
+        tier_name: tierMap[selectedRole]||'Curious Mind',
+        tier_num: tierNumMap[selectedRole]||1,
+        track: trackMap[selectedRole]||'Both',
+        join_date: new Date().toLocaleDateString('en-GB',{
+          day:'numeric',month:'long',year:'numeric'
+        })
+      });
+    }
+  }catch(e){ console.warn('Welcome email error:',e.message); }
 }
 
 function showSuccess(name, role, loggedIn) {
