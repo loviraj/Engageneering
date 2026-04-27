@@ -1299,116 +1299,132 @@ async function startAnsRec(qid){
   if(statEl){statEl.textContent='Requesting camera access...';statEl.style.color='';}
   try{
     const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-    ansRecState[qid]={stream,chunks:[],seconds:0,blob:null};
+    // Initialise state — chunks accumulate via timesliced ondataavailable
+    ansRecState[qid]={stream,chunks:[],seconds:0,blob:null,recording:false};
     const cam=document.getElementById(`av-cam-${qid}`);
-    cam.srcObject=stream;cam.style.display='block';
+    cam.srcObject=stream; cam.style.display='block';
     document.getElementById(`av-ph-${qid}`).style.display='none';
     document.getElementById(`av-play-${qid}`).style.display='none';
+
+    // Build MediaRecorder with best options, fallback to bare constructor
     const recOpts2=getBestRecorderOptions();
     let mr;
     try{mr=new MediaRecorder(stream,recOpts2);}
     catch(e2){mr=new MediaRecorder(stream);}
     ansRecState[qid].recorder=mr;
-    mr.ondataavailable=e=>{if(e.data.size>0)ansRecState[qid].chunks.push(e.data);};
+
+    // ondataavailable fires every 250ms — chunks build up continuously
+    // This guarantees data exists when stop() is called
+    mr.ondataavailable=e=>{
+      if(e.data&&e.data.size>0) ansRecState[qid].chunks.push(e.data);
+    };
+
     mr.onstop=()=>{
-      ansRecState[qid].recording=false;
-      // Stop all camera/mic tracks after blob is assembled
+      // Kill camera/mic tracks immediately
       if(ansRecState[qid]?.stream){
         ansRecState[qid].stream.getTracks().forEach(t=>t.stop());
         ansRecState[qid].stream=null;
       }
+      // Hide live camera feed
+      cam.style.display='none';
+      document.getElementById(`av-ph-${qid}`).style.display='none';
+
       const chunks=ansRecState[qid].chunks||[];
       if(chunks.length===0){
-        // No data captured — show error, reset to start
+        // Edge case: no data at all (camera blocked mid-session)
         const st=document.getElementById(`av-status-${qid}`);
-        if(st){st.textContent='Recording was empty. Please try again.';st.style.color='#f09595';}
+        if(st){st.textContent='No video captured. Please try again.';st.style.color='#f09595';}
         document.getElementById(`av-start-${qid}`).style.display='flex';
         document.getElementById(`av-stop-${qid}`).style.display='none';
         document.getElementById(`av-ph-${qid}`).style.display='flex';
-        cam.style.display='none';
+        ansRecState[qid].recording=false;
         return;
       }
-      const blob=new Blob(chunks,{type:getSupportedMime()});
+
+      // Assemble blob from all accumulated chunks
+      const mimeType=chunks[0].type||getSupportedMime();
+      const blob=new Blob(chunks,{type:mimeType});
       ansRecState[qid].blob=blob;
+      ansRecState[qid].recording=false;
+
+      // Show playback preview
       const url=URL.createObjectURL(blob);
       const pb=document.getElementById(`av-play-${qid}`);
       pb.src=url; pb.style.display='block';
-      cam.style.display='none';
-      document.getElementById(`av-ph-${qid}`).style.display='none';
+
+      // Update UI to ready state
       document.getElementById(`av-retake-${qid}`).style.display='flex';
       document.getElementById(`av-start-${qid}`).style.display='flex';
       document.getElementById(`av-stop-${qid}`).style.display='none';
-      const recorded=fmtDur(ansRecState[qid].seconds);
-      document.getElementById(`av-status-${qid}`).textContent=`✓ Recorded ${recorded} · Ready to submit`;
-      document.getElementById(`av-status-${qid}`).style.color='var(--teal)';
+      const dur=fmtDur(ansRecState[qid].seconds);
+      const st2=document.getElementById(`av-status-${qid}`);
+      if(st2){st2.textContent=`✓ Recorded ${dur} · Ready to submit`;st2.style.color='var(--teal)';}
     };
-    mr.start();  // no timeslice — prevents partial chunk issues on mobile
-    ansRecState[qid].recording=true;  // explicit recording flag
+
+    // KEY FIX: timeslice=250ms — chunks accumulate every 250ms
+    // stop() can be called at any time and chunks will already exist
+    mr.start(250);
+    ansRecState[qid].recording=true;
+
+    // Update UI to recording state
     document.getElementById(`av-start-${qid}`).style.display='none';
     document.getElementById(`av-stop-${qid}`).style.display='flex';
-    document.getElementById(`av-status-${qid}`).innerHTML='<span class="rec-dot"></span> Recording...';
+    if(statEl){statEl.innerHTML='<span class="rec-dot"></span> Recording...';statEl.style.color='';}
+
+    // Start countdown timer
     const timer=document.getElementById(`av-timer-${qid}`);
-    timer.classList.add('show');
+    if(timer) timer.classList.add('show');
     ansRecState[qid].interval=setInterval(()=>{
       ansRecState[qid].seconds++;
       const secs=ansRecState[qid].seconds;
       const remaining=180-secs;
-      if(remaining<=10&&remaining>0){
-        timer.textContent=fmtDur(secs)+' · STOP in '+remaining+'s';
-        timer.style.color='#e24b4a';
-        timer.style.fontWeight='700';
-      } else {
-        timer.textContent=fmtDur(secs);
-        timer.style.color='';
-        timer.style.fontWeight='';
+      if(timer){
+        if(remaining<=10&&remaining>0){
+          timer.textContent=fmtDur(secs)+' · STOP in '+remaining+'s';
+          timer.style.color='#e24b4a'; timer.style.fontWeight='700';
+        } else {
+          timer.textContent=fmtDur(secs);
+          timer.style.color=''; timer.style.fontWeight='';
+        }
       }
-      if(secs>=180){
-        const st=document.getElementById(`av-status-${qid}`);
-        if(st)st.textContent='Maximum 3 minutes reached · Stopping...';
-        stopAnsRec(qid);
-      }
+      if(secs>=180) stopAnsRec(qid);
     },1000);
+
   }catch(e){
     const s=document.getElementById(`av-status-${qid}`);
     if(!s)return;
     s.style.color='#f09595';
     if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
-      s.textContent='Camera permission denied. Click the camera icon in your browser address bar to allow access.';
-    } else if(e.name==='NotFoundError'){
+      s.textContent='Camera permission denied — click the camera icon in your browser bar.';
+    }else if(e.name==='NotFoundError'){
       s.textContent='No camera found. Please connect a camera and try again.';
-    } else if(e.name==='NotReadableError'){
-      s.textContent='Camera is in use by another app. Close other apps and try again.';
-    } else {
+    }else if(e.name==='NotReadableError'){
+      s.textContent='Camera in use by another app. Close it and try again.';
+    }else{
       s.textContent='Camera error: '+e.message;
     }
   }
 }
 
 function stopAnsRec(qid){
-  const s=ansRecState[qid];if(!s)return;
-  // Clear countdown timer
+  const s=ansRecState[qid]; if(!s)return;
+
+  // 1. Clear interval immediately so timer stops
   if(s.interval){clearInterval(s.interval);s.interval=null;}
   document.getElementById(`av-timer-${qid}`)?.classList.remove('show');
-  // Update status to show stopping
-  const statEl=document.getElementById(`av-status-${qid}`);
-  if(statEl){statEl.textContent='Saving recording...';statEl.style.color='';}
-  if(s.recorder&&s.recorder.state==='recording'){
-    // requestData flushes any buffered data before stop
-    try{s.recorder.requestData();}catch(_){}
-    // Small delay then stop — ensures final chunk is captured
-    setTimeout(()=>{
-      try{
-        if(s.recorder&&s.recorder.state!=='inactive') s.recorder.stop();
-      }catch(_){}
-    },120);
-  } else if(s.recorder&&s.recorder.state==='paused'){
-    try{s.recorder.stop();}catch(_){}
+
+  // 2. Stop the recorder — onstop will fire automatically
+  //    By using timeslice=250ms, chunks are already accumulated
+  //    so onstop will find data immediately, no race condition
+  if(s.recorder&&s.recorder.state!=='inactive'){
+    try{ s.recorder.stop(); }catch(_){}
   } else {
-    // Already stopped — clean up stream manually
+    // Recorder already inactive — just clean up stream and reset UI
     if(s.stream){s.stream.getTracks().forEach(t=>t.stop());s.stream=null;}
-    // Ensure UI is reset
     document.getElementById(`av-start-${qid}`).style.display='flex';
     document.getElementById(`av-stop-${qid}`).style.display='none';
+    const cam=document.getElementById(`av-cam-${qid}`);
+    if(cam){cam.style.display='none';cam.srcObject=null;}
   }
 }
 
@@ -1935,7 +1951,7 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   if(state&&state.blob){
     const dur=await checkAnswerDuration(state.blob);
     if(dur>182){ // 2s grace
-      alert(`Your answer is ${Math.round(dur)}s. Answers must be 180 seconds (3 minutes) or under.\nPlease re-record a shorter answer.`);
+      showToast(`Answer is ${Math.round(dur)}s — must be under 3 minutes. Please re-record.`,'warn');
       return;
     }
   }
@@ -1946,18 +1962,17 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   const needText=false;  // video-only platform
   const needVideo=true;  // always video
 
-  // Check if still recording — stop it first
+  // If recorder still active, stop it and warn
   const recState2=ansRecState[qid];
   if(recState2?.recorder&&recState2.recorder.state==='recording'){
-    alert('Your recording is still in progress. Please tap STOP first, then submit.');
+    showToast('Still recording — tap STOP first, then Submit.','warn');
     if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
     return;
   }
-  // Must have a recorded or uploaded blob
+  // Must have a blob (from recording or file upload)
   if(!ansBlob){
-    // Give a clear actionable message
+    showToast('Record your answer first — tap Record, answer the question, tap Stop.','warn');
     if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
-    showToast('Please record your answer first — tap Record, speak your answer, then tap Stop.','warn');
     return;
   }
 
@@ -1980,7 +1995,7 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
     videoUrl=ansUpload?.url||null;
     ansThumbUrl=ansUpload?.thumb||null;
     if(!videoUrl){
-      alert('Video upload failed. Please try again.');
+      showToast('Video upload failed — please try again.','warn');
       if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
       ariaOff();return;
     }
@@ -2013,7 +2028,7 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   if(ig.pass===false||(ig.level&&['REJECT','ESCALATE'].includes(ig.level))){
     log(`Integrity Guard: ${ig.note}`);ariaOff();dot('aria','idle');
     if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
-    alert(`Integrity Guard:\n${ig.note||'Content did not pass integrity check.'}\nPlease review and resubmit.`);
+    showToast(`Integrity check: ${ig.note||'Content did not pass. Please review and resubmit.'}`, 'warn');
     return;
   }
 
