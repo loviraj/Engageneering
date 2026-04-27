@@ -1653,14 +1653,9 @@ function getLanguageName(code){
 
 // ── ANSWER DURATION CHECK ──────────────────────────────────
 async function checkAnswerDuration(blob){
-  return new Promise(resolve=>{
-    const url=URL.createObjectURL(blob);
-    const v=document.createElement('video');
-    v.preload='metadata';
-    v.onloadedmetadata=()=>{URL.revokeObjectURL(url);resolve(v.duration);};
-    v.onerror=()=>resolve(0);
-    v.src=url;
-  });
+  // WebM blobs from MediaRecorder have no duration metadata (returns Infinity)
+  // We rely on ansRecState seconds counter instead — see submitAnswer
+  return 0;
 }
 
 
@@ -1946,14 +1941,12 @@ async function submitQuestion(){
 
 // ══ SUBMIT ANSWER ══
 async function submitAnswer(qid,aid,lid,hid,sid,btn){
-  // Check answer duration before uploading
+  // Check answer duration using tracked seconds (blob metadata unreliable for WebM)
   const state=ansRecState[qid];
-  if(state&&state.blob){
-    const dur=await checkAnswerDuration(state.blob);
-    if(dur>182){ // 2s grace
-      showToast(`Answer is ${Math.round(dur)}s — must be under 3 minutes. Please re-record.`,'warn');
-      return;
-    }
+  if(state&&state.seconds&&state.seconds>182){
+    showToast(`Answer is ${fmtDur(state.seconds)} — must be under 3 minutes. Please re-record.`,'warn');
+    if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+    return;
   }
   const ansType='video'; // VIDEO-ONLY platform — always video
   const textAns=document.getElementById(aid)?.value?.trim();
