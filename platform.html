@@ -1311,25 +1311,39 @@ async function startAnsRec(qid){
     ansRecState[qid].recorder=mr;
     mr.ondataavailable=e=>{if(e.data.size>0)ansRecState[qid].chunks.push(e.data);};
     mr.onstop=()=>{
-      // Stop all camera/mic tracks now that recording is complete
+      ansRecState[qid].recording=false;
+      // Stop all camera/mic tracks after blob is assembled
       if(ansRecState[qid]?.stream){
         ansRecState[qid].stream.getTracks().forEach(t=>t.stop());
         ansRecState[qid].stream=null;
       }
-      const blob=new Blob(ansRecState[qid].chunks,{type:getSupportedMime()});
+      const chunks=ansRecState[qid].chunks||[];
+      if(chunks.length===0){
+        // No data captured — show error, reset to start
+        const st=document.getElementById(`av-status-${qid}`);
+        if(st){st.textContent='Recording was empty. Please try again.';st.style.color='#f09595';}
+        document.getElementById(`av-start-${qid}`).style.display='flex';
+        document.getElementById(`av-stop-${qid}`).style.display='none';
+        document.getElementById(`av-ph-${qid}`).style.display='flex';
+        cam.style.display='none';
+        return;
+      }
+      const blob=new Blob(chunks,{type:getSupportedMime()});
       ansRecState[qid].blob=blob;
       const url=URL.createObjectURL(blob);
       const pb=document.getElementById(`av-play-${qid}`);
-      pb.src=url;pb.style.display='block';
+      pb.src=url; pb.style.display='block';
       cam.style.display='none';
       document.getElementById(`av-ph-${qid}`).style.display='none';
       document.getElementById(`av-retake-${qid}`).style.display='flex';
       document.getElementById(`av-start-${qid}`).style.display='flex';
       document.getElementById(`av-stop-${qid}`).style.display='none';
-      document.getElementById(`av-status-${qid}`).textContent=`Recorded ${fmtDur(ansRecState[qid].seconds)} · Ready to submit`;
+      const recorded=fmtDur(ansRecState[qid].seconds);
+      document.getElementById(`av-status-${qid}`).textContent=`✓ Recorded ${recorded} · Ready to submit`;
       document.getElementById(`av-status-${qid}`).style.color='var(--teal)';
     };
-    mr.start(100);
+    mr.start();  // no timeslice — prevents partial chunk issues on mobile
+    ansRecState[qid].recording=true;  // explicit recording flag
     document.getElementById(`av-start-${qid}`).style.display='none';
     document.getElementById(`av-stop-${qid}`).style.display='flex';
     document.getElementById(`av-status-${qid}`).innerHTML='<span class="rec-dot"></span> Recording...';
@@ -1372,17 +1386,29 @@ async function startAnsRec(qid){
 
 function stopAnsRec(qid){
   const s=ansRecState[qid];if(!s)return;
-  // Stop the interval timer first
+  // Clear countdown timer
   if(s.interval){clearInterval(s.interval);s.interval=null;}
   document.getElementById(`av-timer-${qid}`)?.classList.remove('show');
-  // Stop recorder — stream is killed inside onstop callback
-  // to ensure blob assembly completes before tracks are stopped
-  if(s.recorder&&s.recorder.state!=='inactive'){
-    s.recorder.stop();
-    // onstop fires async — stream cleanup happens there
+  // Update status to show stopping
+  const statEl=document.getElementById(`av-status-${qid}`);
+  if(statEl){statEl.textContent='Saving recording...';statEl.style.color='';}
+  if(s.recorder&&s.recorder.state==='recording'){
+    // requestData flushes any buffered data before stop
+    try{s.recorder.requestData();}catch(_){}
+    // Small delay then stop — ensures final chunk is captured
+    setTimeout(()=>{
+      try{
+        if(s.recorder&&s.recorder.state!=='inactive') s.recorder.stop();
+      }catch(_){}
+    },120);
+  } else if(s.recorder&&s.recorder.state==='paused'){
+    try{s.recorder.stop();}catch(_){}
   } else {
-    // Recorder already stopped — just clean up stream
+    // Already stopped — clean up stream manually
     if(s.stream){s.stream.getTracks().forEach(t=>t.stop());s.stream=null;}
+    // Ensure UI is reset
+    document.getElementById(`av-start-${qid}`).style.display='flex';
+    document.getElementById(`av-stop-${qid}`).style.display='none';
   }
 }
 
@@ -1920,10 +1946,18 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   const needText=false;  // video-only platform
   const needVideo=true;  // always video
 
+  // Check if still recording — stop it first
+  const recState2=ansRecState[qid];
+  if(recState2?.recorder&&recState2.recorder.state==='recording'){
+    alert('Your recording is still in progress. Please tap STOP first, then submit.');
+    if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+    return;
+  }
   // Must have a recorded or uploaded blob
   if(!ansBlob){
-    alert('Please record your video answer first — tap the Record button, then Stop when done.');
+    // Give a clear actionable message
     if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+    showToast('Please record your answer first — tap Record, speak your answer, then tap Stop.','warn');
     return;
   }
 
