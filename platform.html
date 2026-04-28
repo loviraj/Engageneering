@@ -486,7 +486,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
       <div class="tc-name" id="tcName">Curious</div>
       <div class="tc-track" id="tcTrack">Tier 1 of 5</div>
       <div class="tc-bg"><div class="tc-fill" id="tcFill" style="width:5%"></div></div>
-      <div class="tc-pts"><span id="tcPts">0 pts</span><span id="tcNext">500 to Questioner</span></div>
+      <div class="tc-pts"><span id="tcPts">0 Ψ</span><span id="tcNext">500 to Questioner</span></div>
     </div>
     <!-- Profile Badge -->
     <div class="profile-badge-wrap" id="profileBadgeWrap" style="display:none">
@@ -684,7 +684,7 @@ function buildNav(){
   nr.innerHTML=`
     <div class="user-chip">
       <div class="user-av">${P.avatar_url?`<img src="${P.avatar_url}"/>`:`${init}`}</div>
-      <div><div class="user-info-name">${P.display_name||'Engageneer™'}</div><div class="user-info-tier">${tier} · ${pts} pts</div></div>
+      <div><div class="user-info-name">${P.display_name||'Engageneer™'}</div><div class="user-info-tier">${tier} · ${pts}  Ψ</div></div>
     </div>
     <button class="nbtn nbtn-ghost" onclick="doSignout()">Sign Out</button>`;
 }
@@ -746,7 +746,7 @@ function buildTierCard(){
   document.getElementById('tcName').textContent=STIERS[t]||'Curious';
   document.getElementById('tcTrack').textContent=`Seeker Track · Tier ${t} of 5`;
   document.getElementById('tcFill').style.width=Math.min(Math.round(pts/next*100),100)+'%';
-  document.getElementById('tcPts').textContent=`${pts} pts`;
+  document.getElementById('tcPts').textContent=`${pts} Ψ`;
   document.getElementById('tcNext').textContent=`${Math.max(0,next-pts)} to ${STIERS[t+1]||'Engageneer™'}`;
 
   // Build and show profile badge
@@ -765,10 +765,21 @@ function buildTierCard(){
     pbTier.textContent=showTrack==='seeker'?(STIERS[seekerT]||'Curious'):(ATIERS[answererT]||'Responder');
     pbTier.style.color=BADGE_SHAPES[showTrack]?.[showT]?.c||'var(--gold)';
     pbTrack.textContent=(showTrack==='seeker'?'Seeker':'Answerer')+' Track · T'+showT;
-    pbCds.textContent=`${R.pts_total||0} pts total`;
+    pbCds.textContent=`${R.pts_total||0} Ψ total`;
     badgeWrap.style.display='flex';
   }
 }
+
+// ==== YOM Wallet
+
+<div class="yom-wallet">
+  <div class="yom-total">Ψ <span id="yomTotal">0</span></div>
+  <div class="yom-breakup">
+    Q Ψ <span id="yomQ">0</span> · 
+    A Ψ <span id="yomA">0</span>
+  </div>
+</div>
+
 
 // ══ VIEW + FORMAT ══
 function setView(v,btn,fromTab=false){
@@ -976,7 +987,7 @@ function qCard(q,force=false){
     <div class="qc-body" style="flex:1;min-width:0">
       <div class="qm" style="flex-wrap:wrap;gap:.3rem">
         ${tags.map(t=>`<div class="qtag ${tc(t)}">${t}</div>`).join('')}
-        ${q.quality_score!=null?`<div class="qscore">Q ${q.quality_score}</div>`:''}
+        ${q.quality_score!=null?`<div class="qscore">Ψ ${q.quality_score}</div>`:''}
         <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(226,75,74,.12);color:#e24b4a;border:1px solid rgba(226,75,74,.3);font-weight:700">🎥 Video</span>
         ${showLangBadge?`<span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(127,119,221,.12);color:#afa9ec;border:1px solid rgba(127,119,221,.3);font-weight:600">${langName}</span>`:''}
         ${isMatch?`<span style="font-size:10px;color:var(--tlb)">✦ Matched</span>`:''}
@@ -987,7 +998,7 @@ function qCard(q,force=false){
       <div class="qfoot">
         <div class="qstat">${q.answer_count||0} answers</div>
         <div class="qstat">${q.views||0} views</div>
-        ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">+${q.bounty_pts} pts bounty</div>`:''}
+        ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">+${q.bounty_pts} Ψ YOM</div>`:''}
         <button class="ans-btn" onclick="togglePanel('${pid}')">Answer</button>
       </div>
     </div>
@@ -1852,7 +1863,7 @@ async function submitQuestion(){
         showToast(`Points update failed: ${ptErr.message}`);
       } else {
         if(R){R.pts_total=curPts+pts;R.seeker_pts=curSeekerPts+pts;}
-        console.log('✓ Points updated:',curPts+pts);
+        console.log('✓ YOM Ψ updated:',curPts+pts);
       }
     }
   }catch(e){
@@ -1860,7 +1871,7 @@ async function submitQuestion(){
     showToast(`Database error: ${e.message}`);
   }
 
-  dot('te','run');st('te','Awarding pts...');
+  dot('te','run');st('te','Awarding Ψ...');
   await sleep(350);
   dot('te','donep');st('te','Points awarded ✓');
   log(`Question published · Background scoring running for full ARIA analysis...`);
@@ -2128,11 +2139,11 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
 
   await sleep(400);
   dot('te','donep');st('te','Points awarded ✓');
-  log(`CDS ${cds}/100 · AG ${ag} + PG ${pg} · +${pts} pts`);
+  log(`CDS ${cds}/100 · AG ${ag} + PG ${pg} · +${pts} Ψ`);
   dot('aria','idle');st('aria','Standby');ariaOff();
 
   const h=document.getElementById(hid);
-  if(h){h.textContent=`CDS ${cds}/100 · AG ${ag} + PG ${pg} · +${pts} pts`;h.style.color=cds>=80?'#5dcaa5':cds>=60?'#f0c040':'#f09595';}
+  if(h){h.textContent=`CDS ${cds}/100 · AG ${ag} + PG ${pg} · +${pts} Ψ`;h.style.color=cds>=80?'#5dcaa5':cds>=60?'#f0c040':'#f09595';}
 
   const sp=document.getElementById(sid);
   if(sp){
@@ -2188,5 +2199,78 @@ async function loadEvtCount(){
   document.getElementById('evtCount').textContent=count||0;
 }
 </script>
+
+<!-- ================= YOM WALLET PATCH ================= -->
+
+<style>
+.yom-wallet{
+display:flex;
+flex-direction:column;
+align-items:flex-end;
+line-height:1.2;
+}
+
+.yom-total{
+color:#facc15;
+font-weight:700;
+font-size:16px;
+}
+
+.yom-breakup{
+font-size:11px;
+opacity:.7;
+}
+</style>
+
+<script>
+// ===== YOM WALLET ENGINE (uses existing points safely) =====
+
+// Initialize
+(function(){
+
+  let pts = 0;
+
+  // Try to read from existing system
+  if(window.user && user.points){
+    pts = user.points;
+  }else{
+    pts = parseFloat(localStorage.getItem("points") || 0);
+  }
+
+  // Split logic (TEMP — safe default)
+  let q = Math.round(pts * 0.6);
+  let a = Math.round(pts * 0.4);
+
+  // Store YOM wallet (frontend layer)
+  const wallet = {
+    total: pts,
+    q: q,
+    a: a
+  };
+
+  localStorage.setItem("yomWallet", JSON.stringify(wallet));
+
+  // Update UI
+  function updateYOMUI(){
+    const data = JSON.parse(localStorage.getItem("yomWallet"));
+
+    if(document.getElementById("yomTotal")){
+      document.getElementById("yomTotal").innerText = data.total;
+    }
+    if(document.getElementById("yomQ")){
+      document.getElementById("yomQ").innerText = data.q;
+    }
+    if(document.getElementById("yomA")){
+      document.getElementById("yomA").innerText = data.a;
+    }
+  }
+
+  window.addEventListener("load", updateYOMUI);
+
+})();
+</script>
+
+<!-- ================= END PATCH ================= -->
+
 </body>
 </html>
