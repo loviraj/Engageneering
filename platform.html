@@ -292,6 +292,15 @@ ALTER TABLE questions ADD COLUMN IF NOT EXISTS language_name VARCHAR(50) DEFAULT
 ALTER TABLE answers   ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en';
 CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 -->
+
+<div class="yom-wallet">
+  <div class="yom-total">Ψ <span id="yomTotal">0</span></div>
+  <div class="yom-breakup">
+    Q Ψ <span id="yomQ">0</span> · 
+    A Ψ <span id="yomA">0</span>
+  </div>
+</div>
+
 </head>
 <body>
 
@@ -2223,54 +2232,51 @@ opacity:.7;
 </style>
 
 <script>
-// ===== YOM WALLET ENGINE (uses existing points safely) =====
 
-// Initialize
+
+... your entire platform UI ...
+
+<!-- EXISTING PLATFORM SCRIPTS -->
+<script src="platform.js"></script>
+
+<!-- ✅ PLACE YOM SCRIPT HERE (AFTER EVERYTHING) -->
+<script>
 (function(){
 
-  let pts = 0;
-
-  // Try to read from existing system
-  if(window.user && user.points){
-    pts = user.points;
-  }else{
-    pts = parseFloat(localStorage.getItem("points") || 0);
+  function safeUpdate(id, value){
+    const el = document.getElementById(id);
+    if(el) el.innerText = value;
   }
 
-  // Split logic (TEMP — safe default)
-  let q = Math.round(pts * 0.6);
-  let a = Math.round(pts * 0.4);
+  function initYOM(){
 
-  // Store YOM wallet (frontend layer)
-  const wallet = {
-    total: pts,
-    q: q,
-    a: a
-  };
+    let pts = 0;
 
-  localStorage.setItem("yomWallet", JSON.stringify(wallet));
-
-  // Update UI
-  function updateYOMUI(){
-    const data = JSON.parse(localStorage.getItem("yomWallet"));
-
-    if(document.getElementById("yomTotal")){
-      document.getElementById("yomTotal").innerText = data.total;
+    if(window.user && user.points){
+      pts = user.points;
+    }else{
+      pts = parseFloat(localStorage.getItem("points") || 0);
     }
-    if(document.getElementById("yomQ")){
-      document.getElementById("yomQ").innerText = data.q;
-    }
-    if(document.getElementById("yomA")){
-      document.getElementById("yomA").innerText = data.a;
-    }
+
+    let q = Math.round(pts * 0.6);
+    let a = Math.round(pts * 0.4);
+
+    const wallet = { total: pts, q: q, a: a };
+
+    localStorage.setItem("yomWallet", JSON.stringify(wallet));
+
+    safeUpdate("yomTotal", wallet.total);
+    safeUpdate("yomQ", wallet.q);
+    safeUpdate("yomA", wallet.a);
   }
 
-  window.addEventListener("load", updateYOMUI);
+  // wait for full load
+  window.addEventListener("load", initYOM);
 
 })();
 </script>
 
-<!-- ================= END PATCH ================= -->
-
 </body>
+
+
 </html>
