@@ -293,24 +293,16 @@ ALTER TABLE answers   ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en'
 CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 -->
 
-<div class="user-meta" style="display:flex;align-items:center;gap:10px;">
+<div class="user-meta">
+  <div class="user-name" id="userName"></div>
 
-  <!-- Avatar (keep your existing one if present) -->
-  <div class="avatar">L</div>
-
-  <!-- Name + Wallet -->
-  <div>
-    <div class="user-name" id="userName"></div>
-
-    <div class="yom-wallet">
-      <div class="yom-total">Ψ <span id="yomTotal">0</span></div>
-      <div class="yom-breakup">
-        Q Ψ <span id="yomQ">0</span> · 
-        A Ψ <span id="yomA">0</span>
-      </div>
+  <div class="yom-wallet">
+    <div class="yom-total">Ψ <span id="yomTotal">0</span></div>
+    <div class="yom-breakup">
+      Q Ψ <span id="yomQ">0</span> · 
+      A Ψ <span id="yomA">0</span>
     </div>
   </div>
-
 </div>
 
 </head>
@@ -2254,14 +2246,24 @@ opacity:.7;
 <script>
 (function(){
 
-  function safeUpdate(id, value){
-    const el = document.getElementById(id);
-    if(el) el.innerText = value;
-  }
+  function updateYOMFromDOM(){
 
-  function initYOM(user){
+    // 🔥 Extract points from existing UI instead of JS
+    let pts = 0;
 
-    let pts = user && user.points ? user.points : 0;
+    // Try to read from existing rendered text (SAFE)
+    const bodyText = document.body.innerText;
+
+    const match = bodyText.match(/(\d+)\s*pts/);
+
+    if(match){
+      pts = parseInt(match[1]);
+    }
+
+    // fallback
+    if(!pts){
+      pts = parseFloat(localStorage.getItem("points") || 0);
+    }
 
     let q = Math.round(pts * 0.6);
     let a = Math.round(pts * 0.4);
@@ -2270,48 +2272,19 @@ opacity:.7;
 
     localStorage.setItem("yomWallet", JSON.stringify(wallet));
 
-    safeUpdate("yomTotal", wallet.total);
-    safeUpdate("yomQ", wallet.q);
-    safeUpdate("yomA", wallet.a);
+    // update UI safely
+    const set = (id,val)=>{
+      const el = document.getElementById(id);
+      if(el) el.innerText = val;
+    };
+
+    set("yomTotal", wallet.total);
+    set("yomQ", wallet.q);
+    set("yomA", wallet.a);
   }
 
-  // 🔥 WAIT UNTIL USER EXISTS (KEY FIX)
-  function waitForUser(){
-
-    let tries = 0;
-
-    const interval = setInterval(() => {
-
-      // Try common patterns
-      let user =
-        window.user ||
-        window.currentUser ||
-        window.sessionUser ||
-        (window.supabase && supabase.auth && supabase.auth.user && supabase.auth.user());
-
-      if(user){
-        clearInterval(interval);
-        initYOM(user);
-      }
-
-      tries++;
-
-      if(tries > 20){
-        clearInterval(interval);
-        console.warn("YOM: user not found, fallback to 0");
-        initYOM(null);
-      }
-
-    }, 200); // check every 200ms
-
-  }
-
-  // start after DOM ready
-  if(document.readyState === "complete"){
-    waitForUser();
-  }else{
-    window.addEventListener("load", waitForUser);
-  }
+  // 🔥 RUN AFTER EVERYTHING SETTLES
+  setTimeout(updateYOMFromDOM, 1500);
 
 })();
 </script>
