@@ -1,0 +1,9 @@
+[build]
+  command = "bash generate-config.sh"
+  publish = "."
+
+[[headers]]
+  for = "/config.js"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+    X-Content-Type-Options = "nosniff"
