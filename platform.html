@@ -1049,7 +1049,7 @@ function buildNav(){
   if(!P){nr.innerHTML='';return;}
   const init=(P.display_name||'E').charAt(0).toUpperCase();
   const tier=R?STIERS[R.seeker_tier||1]:'Curious';
-  const pts=R?.pts_total||0;
+  const pts=R?.pts_total??0;
   nr.innerHTML=`
     <div class="user-chip">
       <div class="user-av">${P.avatar_url?`<img src="${P.avatar_url}"/>`:`${init}`}</div>
@@ -1346,7 +1346,7 @@ function qCard(q,force=false){
           data-picsum="${getTopicThumb(q.tags,q.id)}"
           data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
           data-w="400" data-h="225"
-          alt="" loading="lazy" onerror="nfThumbFail(this)"
+          alt="" loading="lazy" onerror="nfCanvasFill(this)"
           style="width:160px;min-width:160px;height:90px;border-radius:8px;object-fit:cover;display:block"/>`
       :`<img src="${getTopicThumb(q.tags,q.id)}"
           data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
@@ -1571,45 +1571,71 @@ function svgFallback(tags, w=400, h=225){
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 
-// Main thumb builder — priority: video_thumbnail → picsum → SVG
-// Uses data-* attributes to avoid any quote-escaping in onerror
-function cardThumbHtml(q, w=400, h=225){
-  const realThumb = q.video_thumbnail || null;
-  const topicImg  = getTopicThumb(q.tags, q.id, w, h);
-  const tag       = ((q.tags||['General'])[0]||'General').replace(/"/g,'');
-  // Always start with the real thumbnail if it exists.
-  // A unique ID lets nfThumbReady/nfThumbFail find this img element.
-  const uid = 'nfimg-'+(q.id||Math.random().toString(36).slice(2));
-  if(realThumb){
-    return `<img id="${uid}" src="${realThumb}" alt=""
-      data-picsum="${topicImg}"
-      data-tag="${tag}" data-w="${w}" data-h="${h}"
-      onload="this.dataset.loaded='1'"
-      onerror="nfThumbFail(this)"
-      style="width:100%;height:100%;object-fit:cover;display:block"/>`;
-  }
-  // No real thumbnail — use picsum directly with canvas fallback
-  return `<img src="${topicImg}" alt=""
-    data-tag="${tag}" data-w="${w}" data-h="${h}"
+// ── THUMBNAIL SYSTEM ─────────────────────────────────────────────
+// Pre-test every real thumbnail URL before inserting into DOM.
+// Uses a hidden Image() object — if it loads, real thumb is used;
+// if it errors, picsum is used. No onerror in the visible <img>.
+
+// Cache of tested URLs so we don't re-test on re-render
+const _thumbCache = {};
+
+// Returns a Promise resolving to the best src for this question
+function resolveThumb(q, w=400, h=225){
+  const realUrl = q.video_thumbnail || null;
+  const picsum  = getTopicThumb(q.tags, q.id, w, h);
+  if(!realUrl) return Promise.resolve(picsum);
+  const key = realUrl+'|'+w+'x'+h;
+  if(_thumbCache[key] !== undefined) return Promise.resolve(_thumbCache[key]);
+  return new Promise(resolve=>{
+    const t = new Image();
+    const done = (src) => { _thumbCache[key]=src; resolve(src); };
+    t.onload  = () => done(realUrl);
+    t.onerror = () => done(picsum);
+    // 4-second timeout — if Supabase is slow, fall back gracefully
+    const timer = setTimeout(()=>{ t.src=''; done(picsum); }, 4000);
+    t.onload = ()=>{ clearTimeout(timer); done(realUrl); };
+    t.onerror= ()=>{ clearTimeout(timer); done(picsum);  };
+    t.src = realUrl;
+  });
+}
+
+// Simple img tag — src already resolved, no onerror needed
+function thumbImg(src, w, h, tag){
+  const safeTag=(tag||'').replace(/"/g,'');
+  return `<img src="${src}" alt=""
+    loading="lazy" decoding="async"
+    data-tag="${safeTag}" data-w="${w}" data-h="${h}"
     onerror="nfCanvasFill(this)"
     style="width:100%;height:100%;object-fit:cover;display:block"/>`;
 }
 
-// Called when a real video_thumbnail fails to load
-function nfThumbFail(img){
-  img.onerror = null;
-  const picsum = img.dataset.picsum;
-  if(picsum){
-    img.onerror = function(){ nfCanvasFill(this); };
-    img.src = picsum;
-  } else {
-    nfCanvasFill(img);
+// Synchronous placeholder while async test runs — replaced in-place
+function cardThumbHtml(q, w=400, h=225){
+  const realUrl = q.video_thumbnail||null;
+  const picsum  = getTopicThumb(q.tags,q.id,w,h);
+  const tag     = ((q.tags||['General'])[0]||'General');
+  const uid     = 'th-'+q.id.replace(/[^a-z0-9]/gi,'');
+  // If already cached, return final img immediately
+  const key = (realUrl||'')+'|'+w+'x'+h;
+  const cached = _thumbCache[key];
+  if(cached!==undefined || !realUrl){
+    return thumbImg(cached||picsum, w, h, tag);
   }
+  // Return picsum now, then swap to real thumb when test completes
+  resolveThumb(q,w,h).then(src=>{
+    const el=document.getElementById(uid);
+    if(el && src!==el.src) el.src=src;
+  });
+  return `<img id="${uid}" src="${picsum}" alt=""
+    loading="lazy" decoding="async"
+    data-tag="${tag.replace(/"/g,'')}" data-w="${w}" data-h="${h}"
+    onerror="nfCanvasFill(this)"
+    style="width:100%;height:100%;object-fit:cover;display:block"/>`;
 }
 
-// Canvas-drawn gradient fallback — zero network, always works
+// Canvas fallback — for picsum failures (extremely rare)
 function nfCanvasFill(img){
-  img.onerror = null;
+  img.onerror=null;
   const w=parseInt(img.dataset.w)||400, h=parseInt(img.dataset.h)||225;
   const tag=img.dataset.tag||'';
   try{
@@ -1620,10 +1646,10 @@ function nfCanvasFill(img){
     gr.addColorStop(0,'#0b1830'); gr.addColorStop(1,'#060e1c');
     ctx.fillStyle=gr; ctx.fillRect(0,0,w,h);
     ctx.fillStyle='rgba(200,146,42,.35)';
-    ctx.font=`bold ${Math.round(h*.11)}px Georgia,serif`;
+    ctx.font=`bold ${Math.round(h*.1)}px Georgia,serif`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(tag,w/2,h/2);
-    ctx.fillStyle='rgba(255,255,255,.12)';
+    ctx.fillStyle='rgba(255,255,255,.15)';
     ctx.font=`${Math.round(h*.07)}px sans-serif`;
     ctx.fillText('▶',w/2,h*.67);
     img.src=cv.toDataURL('image/png');
@@ -1682,15 +1708,19 @@ function buildNfHero(q){
   const heroThumb=q.video_thumbnail||getTopicThumb(q.tags,q.id,1200,500);
   const heroTag=((q.tags||['General'])[0]||'General').replace(/"/g,'');
   const heroPicsum=getTopicThumb(q.tags,q.id,1200,500);
-  const bgEl=q.video_thumbnail
-    ?`<img class="nf-hero-bg" src="${q.video_thumbnail}"
-        data-picsum="${heroPicsum}" data-tag="${heroTag}" data-w="1200" data-h="500"
-        alt="" onload="this.dataset.loaded='1'" onerror="nfThumbFail(this)"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`
-    :`<img class="nf-hero-bg" src="${heroPicsum}"
-        data-tag="${heroTag}" data-w="1200" data-h="500"
-        alt="" onerror="nfCanvasFill(this)"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`;
+  const _heroKey=q.id.replace(/[^a-z0-9]/gi,'');
+  const _heroCachedSrc=(_thumbCache[(q.video_thumbnail||'')+'|1200x500'])||heroPicsum;
+  if(q.video_thumbnail && _thumbCache[(q.video_thumbnail+'|1200x500')]===undefined){
+    resolveThumb(q,1200,500).then(src=>{
+      const el=document.getElementById('herothumb-'+_heroKey);
+      if(el && src!==el.src) el.src=src;
+    });
+  }
+  const bgEl=`<img id="herothumb-${_heroKey}" class="nf-hero-bg"
+    src="${_heroCachedSrc}"
+    data-tag="${heroTag}" data-w="1200" data-h="500"
+    alt="" onerror="nfCanvasFill(this)"
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`;
 
   return `<div class="nf-hero" id="nfhero-${q.id}">
     ${bgEl}
@@ -1867,18 +1897,22 @@ function buildExpandInner(q, pid){
 
   const _xPicsum=getTopicThumb(q.tags,q.id,640,360);
   const _xTag=((q.tags||['General'])[0]||'General').replace(/"/g,'');
-  const _poster=q.video_thumbnail||_xPicsum;
+  const _xCached=(_thumbCache[(q.video_thumbnail||'')+'|640x360'])||_xPicsum;
+  if(q.video_thumbnail && _thumbCache[(q.video_thumbnail+'|640x360')]===undefined){
+    resolveThumb(q,640,360).then(src=>{
+      const el=document.getElementById('xthumb-'+q.id.replace(/[^a-z0-9]/gi,''));
+      if(el&&src!==el.src) el.src=src;
+    });
+  }
+  const _xKey=q.id.replace(/[^a-z0-9]/gi,'');
+  const _poster=(_thumbCache[(q.video_thumbnail||'')+'|640x360'])||_xPicsum;
   const vidEl=q.video_url
     ?`<video src="${q.video_url}" poster="${_poster}"
         controls playsinline style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"></video>`
-    :q.video_thumbnail
-      ?`<img src="${q.video_thumbnail}" data-picsum="${_xPicsum}"
-          data-tag="${_xTag}" data-w="640" data-h="360"
-          alt="" onload="this.dataset.loaded='1'" onerror="nfThumbFail(this)"
-          style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`
-      :`<img src="${_xPicsum}" data-tag="${_xTag}" data-w="640" data-h="360"
-          alt="" onerror="nfCanvasFill(this)"
-          style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`;
+    :`<img id="xthumb-${_xKey}" src="${_xCached}"
+        data-tag="${_xTag}" data-w="640" data-h="360"
+        alt="" onerror="nfCanvasFill(this)"
+        style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`;
 
   return `<div class="nf-expand-top">
       <div class="nf-expand-vid">${vidEl}</div>
@@ -3151,9 +3185,9 @@ async function loadYOMWallet(){
       .select('pts_total,seeker_pts,answerer_pts')
       .eq('user_id',U.id).single();
 
-    const total   = pr?.pts_total    || R?.pts_total    || 0;
-    const qPts    = pr?.seeker_pts   || R?.seeker_pts   || 0;
-    const aPts    = pr?.answerer_pts || R?.answerer_pts || 0;
+    const total   = pr?.pts_total    ?? R?.pts_total    ?? 0;
+    const qPts    = pr?.seeker_pts   ?? R?.seeker_pts   ?? 0;
+    const aPts    = pr?.answerer_pts ?? R?.answerer_pts ?? 0;
 
     // Bought Ψ — sum of psi_purchase entries from score_history
     const{data:purchases}=await supa.from('score_history')
