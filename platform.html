@@ -1341,8 +1341,11 @@ function qCard(q,force=false){
 
   return`<div class="qc ${feat?'feat':''}" data-qid="${q.id}">
     <div style="display:flex;gap:1rem;align-items:flex-start">
-    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):`<img src="${getTopicThumb(q.tags,q.id)}" alt="" loading="lazy"
-  onerror="this.onerror=null;this.src='${svgFallback(q.tags)}'"
+    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):`<img src="${q.video_thumbnail||getTopicThumb(q.tags,q.id)}"
+  data-fb1="${getTopicThumb(q.tags,q.id)}"
+  data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
+  data-w="400" data-h="225"
+  alt="" loading="lazy" onerror="nfImgErr(this)"
   style="width:160px;min-width:160px;height:90px;border-radius:8px;object-fit:cover;display:block"/>`}
     <div class="qc-body" style="flex:1;min-width:0">
       <div class="qm" style="flex-wrap:wrap;gap:.3rem">
@@ -1562,16 +1565,56 @@ function svgFallback(tags, w=400, h=225){
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 
-// Main thumb builder — picsum with inline SVG fallback
+// Main thumb builder — priority: video_thumbnail → picsum → SVG
+// Uses data-* attributes to avoid any quote-escaping in onerror
 function cardThumbHtml(q, w=400, h=225){
-  const picsumUrl  = getTopicThumb(q.tags, q.id, w, h);
-  const fallbackUrl= svgFallback(q.tags, w, h);
-  const src        = q.video_thumbnail || picsumUrl;
-  const errSrc     = q.video_thumbnail ? picsumUrl : fallbackUrl;
+  // Always show video_thumbnail first if it exists
+  const src = q.video_thumbnail || getTopicThumb(q.tags, q.id, w, h);
+  // Store picsum as fallback-1, svgFallback baked in via nfImgErr handler
+  const fb1 = q.video_thumbnail ? getTopicThumb(q.tags, q.id, w, h) : '';
+  const tag  = ((q.tags||['General'])[0]||'General').replace(/"/g,'');
   return `<img src="${src}" alt=""
     loading="lazy" decoding="async"
-    onerror="this.onerror=null;this.src='${errSrc}'"
+    data-fb1="${fb1}"
+    data-tag="${tag}"
+    data-w="${w}" data-h="${h}"
+    onerror="nfImgErr(this)"
     style="width:100%;height:100%;object-fit:cover;display:block"/>`;
+}
+
+// Global image error handler — called from onerror="nfImgErr(this)"
+// No inline data URIs, no quote issues
+function nfImgErr(img){
+  img.onerror=null; // prevent loops
+  const fb1=img.dataset.fb1;
+  if(fb1 && img.src!==fb1){
+    // Try picsum next
+    img.onerror=function(){nfImgErr2(this);};
+    img.src=fb1;
+    return;
+  }
+  nfImgErr2(img);
+}
+function nfImgErr2(img){
+  img.onerror=null;
+  // Final fallback: inline SVG drawn on a canvas then set as src
+  const w=parseInt(img.dataset.w)||400;
+  const h=parseInt(img.dataset.h)||225;
+  const tag=img.dataset.tag||'?';
+  const c2=document.createElement('canvas');
+  c2.width=w; c2.height=h;
+  const ctx=c2.getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,w,h);
+  grad.addColorStop(0,'#0f1e36'); grad.addColorStop(1,'#07101e');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='rgba(200,146,42,0.4)';
+  ctx.font=`bold ${Math.round(h*.1)}px Georgia,serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(tag, w/2, h/2);
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.font=`${Math.round(h*.07)}px sans-serif`;
+  ctx.fillText('▶', w/2, h*.65);
+  img.src=c2.toDataURL('image/png');
 }
 
 // Avatar initials + topic gradient
@@ -1625,8 +1668,12 @@ function buildNfHero(q){
 
   const heroThumb=q.video_thumbnail||getTopicThumb(q.tags,q.id,1200,500);
   const heroFb=svgFallback(q.tags,1200,500);
-  const bgEl=`<img class="nf-hero-bg" src="${heroThumb}" alt=""
-    onerror="this.onerror=null;this.src='${heroFb}'"
+  const bgEl=`<img class="nf-hero-bg"
+    src="${heroThumb}"
+    data-fb1="${getTopicThumb(q.tags,q.id,1200,500)}"
+    data-tag="${((q.tags||['General'])[0]||'General').replace(/"/g,'')}"
+    data-w="1200" data-h="500"
+    alt="" onerror="nfImgErr(this)"
     style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`;
 
   return `<div class="nf-hero" id="nfhero-${q.id}">
@@ -1807,7 +1854,11 @@ function buildExpandInner(q, pid){
   const vidEl=q.video_url
     ?`<video src="${q.video_url}" poster="${_xThumb}"
         controls playsinline style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"></video>`
-    :`<img src="${_xThumb}" alt="" onerror="this.onerror=null;this.src='${_xFb}'"
+    :`<img src="${_xThumb}"
+        data-fb1="${getTopicThumb(q.tags,q.id,640,360)}"
+        data-tag="${((q.tags||['General'])[0]||'General').replace(/"/g,'')}"
+        data-w="640" data-h="360"
+        alt="" onerror="nfImgErr(this)"
         style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`;
 
   return `<div class="nf-expand-top">
