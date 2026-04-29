@@ -159,9 +159,9 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .nf-hero-vbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.4)}
 .nf-hero-smoke{position:absolute;inset:0;background:linear-gradient(to right,rgba(7,16,30,.98) 0%,rgba(7,16,30,.65) 40%,rgba(7,16,30,.1) 75%,transparent 100%)}
 .nf-hero-smoke2{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,var(--bg) 0%,transparent 100%)}
-.nf-hero-body{position:absolute;left:2rem;bottom:1.6rem;max-width:50%}
+.nf-hero-body{position:absolute;left:2rem;bottom:1.6rem;max-width:62%}
 .nf-hero-label{font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem;font-weight:700}
-.nf-hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(16px,2.2vw,28px);color:#fff;font-weight:700;line-height:1.25;margin-bottom:.5rem}
+.nf-hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.8vw,42px);color:#fff;font-weight:700;line-height:1.2;margin-bottom:.6rem;text-shadow:0 2px 20px rgba(0,0,0,.6);letter-spacing:-.3px}
 .nf-hero-meta{font-size:11px;color:rgba(255,255,255,.6);margin-bottom:.9rem;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
 .nf-hero-meta span{display:flex;align-items:center;gap:.25rem}
 .nf-hero-btns{display:flex;gap:.6rem;flex-wrap:wrap}
@@ -416,6 +416,26 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .upload-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .3s;width:0%}
 
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.sb-l,.sb-r{display:none}}
+/* ══ EXISTING-USER CONSENT MODAL ══ */
+#consentModal{position:fixed;inset:0;background:rgba(4,8,18,.97);z-index:9000;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(12px)}
+#consentModal.open{display:flex}
+.cm-card{background:linear-gradient(135deg,#0d1e38,#0a1628);border:1px solid rgba(200,146,42,.4);border-radius:16px;width:100%;max-width:560px;overflow:hidden}
+.cm-hdr{padding:1.4rem 1.6rem 1rem;border-bottom:1px solid rgba(30,58,106,.5)}
+.cm-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gb);font-weight:700;margin-bottom:.3rem}
+.cm-sub{font-size:12px;color:var(--t4);line-height:1.6}
+.cm-body{padding:1.4rem 1.6rem}
+.cm-scroll{max-height:220px;overflow-y:auto;background:rgba(200,146,42,.04);border:1px solid rgba(200,146,42,.15);border-radius:8px;padding:1rem 1.1rem;font-size:12.5px;color:var(--t3);line-height:1.8;margin-bottom:1.1rem}
+.cm-scroll strong{color:var(--t1)}
+.cm-scroll a{color:var(--gb);text-decoration:none}
+.cm-chk{display:flex;align-items:flex-start;gap:.65rem;margin-bottom:.7rem;cursor:pointer}
+.cm-chk input{width:15px;height:15px;accent-color:var(--gold);margin-top:3px;flex-shrink:0;cursor:pointer}
+.cm-chk label{font-size:12px;color:var(--t2);line-height:1.65;cursor:pointer}
+.cm-chk label a{color:var(--gb);text-decoration:none}
+.cm-warn{font-size:11px;color:var(--rd);margin:.3rem 0 .6rem;display:none}
+.cm-btn{width:100%;padding:13px;font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;background:linear-gradient(135deg,var(--gold),var(--gb));color:#040c18;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:all .2s;margin-top:.5rem}
+.cm-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,146,42,.35)}
+.cm-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.cm-legal-note{font-size:9.5px;color:var(--t4);text-align:center;margin-top:.7rem;line-height:1.55}
 /* ══ ASK ARIA BUTTON ══ */
 .aria-ask-btn{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border-radius:5px;background:linear-gradient(135deg,rgba(127,119,221,.15),rgba(200,146,42,.1));border:1px solid rgba(127,119,221,.45);color:#afa9ec;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:.4rem;white-space:nowrap}
 .aria-ask-btn:hover{background:linear-gradient(135deg,rgba(127,119,221,.28),rgba(200,146,42,.18));border-color:#7f77dd;color:#c8c4f8}
@@ -1040,6 +1060,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   buildNav();buildTierCard();
   loadFeed();loadLeaderboard();
   loadInsight();loadEvtCount();loadYOMWallet();
+  setTimeout(checkAndShowConsentModal, 1500);
   supa.auth.onAuthStateChange((_,s)=>{if(!s)window.location.href='auth.html';});
 });
 
@@ -1365,7 +1386,7 @@ function qCard(q,force=false){
           data-picsum="${getTopicThumb(q.tags,q.id)}"
           data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
           data-w="400" data-h="225"
-          alt="" loading="lazy" onerror="nfThumbFail(this)"
+          alt="" loading="lazy" onerror="nfCanvasFill(this)"
           style="width:160px;min-width:160px;height:90px;border-radius:8px;object-fit:cover;display:block"/>`
       :`<img src="${getTopicThumb(q.tags,q.id)}"
           data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
@@ -1590,40 +1611,61 @@ function svgFallback(tags, w=400, h=225){
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 
-// Main thumb builder — priority: video_thumbnail → picsum → SVG
-// Uses data-* attributes to avoid any quote-escaping in onerror
-function cardThumbHtml(q, w=400, h=225){
-  const realThumb = q.video_thumbnail || null;
-  const topicImg  = getTopicThumb(q.tags, q.id, w, h);
-  const tag       = ((q.tags||['General'])[0]||'General').replace(/"/g,'');
-  // Always start with the real thumbnail if it exists.
-  // A unique ID lets nfThumbReady/nfThumbFail find this img element.
-  const uid = 'nfimg-'+(q.id||Math.random().toString(36).slice(2));
-  if(realThumb){
-    return `<img id="${uid}" src="${realThumb}" alt=""
-      data-picsum="${topicImg}"
-      data-tag="${tag}" data-w="${w}" data-h="${h}"
-      onload="this.dataset.loaded='1'"
-      onerror="nfThumbFail(this)"
-      style="width:100%;height:100%;object-fit:cover;display:block"/>`;
-  }
-  // No real thumbnail — use picsum directly with canvas fallback
-  return `<img src="${topicImg}" alt=""
-    data-tag="${tag}" data-w="${w}" data-h="${h}"
+// ── THUMBNAIL SYSTEM ─────────────────────────────────────────────
+// Pre-tests every video_thumbnail URL via a hidden Image() object
+// BEFORE inserting into the DOM. If it loads → use it.
+// If it fails/times out (4s) → fall back to picsum.
+// Result cached so re-renders are instant.
+const _thumbCache = {};
+
+function resolveThumb(url, tags, qid, w, h){
+  const picsum = getTopicThumb(tags, qid, w, h);
+  if(!url) return Promise.resolve(picsum);
+  const key = url+'|'+w+'x'+h;
+  if(_thumbCache[key] !== undefined) return Promise.resolve(_thumbCache[key]);
+  return new Promise(res=>{
+    const img = new Image();
+    let done = false;
+    const finish = (src)=>{ if(done)return; done=true; _thumbCache[key]=src; res(src); };
+    const timer = setTimeout(()=>finish(picsum), 4000);
+    img.onload  = ()=>{ clearTimeout(timer); finish(url);    };
+    img.onerror = ()=>{ clearTimeout(timer); finish(picsum); };
+    img.src = url;
+  });
+}
+
+// Render img tag — src is a pre-resolved URL, only canvas needed as last resort
+function thumbImg(src, w, h, tag){
+  const t = (tag||'').replace(/"/g,'');
+  return `<img src="${src}" alt=""
+    loading="lazy" decoding="async"
+    data-tag="${t}" data-w="${w}" data-h="${h}"
     onerror="nfCanvasFill(this)"
     style="width:100%;height:100%;object-fit:cover;display:block"/>`;
 }
 
-// Called when a real video_thumbnail fails to load
-function nfThumbFail(img){
-  img.onerror = null;
-  const picsum = img.dataset.picsum;
-  if(picsum){
-    img.onerror = function(){ nfCanvasFill(this); };
-    img.src = picsum;
-  } else {
-    nfCanvasFill(img);
-  }
+// cardThumbHtml: sync path uses cache; async path shows picsum then swaps
+function cardThumbHtml(q, w=400, h=225){
+  const url    = q.video_thumbnail || null;
+  const picsum = getTopicThumb(q.tags, q.id, w, h);
+  const tag    = ((q.tags||['General'])[0]||'General');
+  const key    = (url||'')+'|'+w+'x'+h;
+
+  if(!url) return thumbImg(picsum, w, h, tag);
+
+  if(_thumbCache[key] !== undefined) return thumbImg(_thumbCache[key], w, h, tag);
+
+  // Async: show picsum immediately, swap when real thumb resolves
+  const uid = 'th-'+(q.id||'').replace(/[^a-z0-9]/gi,'');
+  resolveThumb(url, q.tags, q.id, w, h).then(src=>{
+    const el = document.getElementById(uid);
+    if(el && el.src !== src) el.src = src;
+  });
+  return `<img id="${uid}" src="${picsum}" alt=""
+    loading="lazy" decoding="async"
+    data-tag="${tag.replace(/"/g,'')}" data-w="${w}" data-h="${h}"
+    onerror="nfCanvasFill(this)"
+    style="width:100%;height:100%;object-fit:cover;display:block"/>`;
 }
 
 // Canvas-drawn gradient fallback — zero network, always works
@@ -1701,15 +1743,20 @@ function buildNfHero(q){
   const heroThumb=q.video_thumbnail||getTopicThumb(q.tags,q.id,1200,500);
   const heroTag=((q.tags||['General'])[0]||'General').replace(/"/g,'');
   const heroPicsum=getTopicThumb(q.tags,q.id,1200,500);
-  const bgEl=q.video_thumbnail
-    ?`<img class="nf-hero-bg" src="${q.video_thumbnail}"
-        data-picsum="${heroPicsum}" data-tag="${heroTag}" data-w="1200" data-h="500"
-        alt="" onload="this.dataset.loaded='1'" onerror="nfThumbFail(this)"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`
-    :`<img class="nf-hero-bg" src="${heroPicsum}"
-        data-tag="${heroTag}" data-w="1200" data-h="500"
-        alt="" onerror="nfCanvasFill(this)"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`;
+  // Pre-test hero thumbnail
+  const _hKey = (q.video_thumbnail||'')+'|1200x500';
+  let _hSrc   = (_thumbCache[_hKey] !== undefined) ? _thumbCache[_hKey] : heroPicsum;
+  const _hUid = 'heroth-'+(q.id||'').replace(/[^a-z0-9]/gi,'');
+  if(q.video_thumbnail && _thumbCache[_hKey]===undefined){
+    resolveThumb(q.video_thumbnail,q.tags,q.id,1200,500).then(src=>{
+      const el=document.getElementById(_hUid);
+      if(el && el.src!==src) el.src=src;
+    });
+  }
+  const bgEl=`<img id="${_hUid}" class="nf-hero-bg" src="${_hSrc}"
+    data-tag="${heroTag}" data-w="1200" data-h="500"
+    alt="" onerror="nfCanvasFill(this)"
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`;
 
   return `<div class="nf-hero" id="nfhero-${q.id}">
     ${bgEl}
@@ -1717,7 +1764,7 @@ function buildNfHero(q){
     <div class="nf-hero-smoke2"></div>
     <div class="nf-hero-body">
       <div class="nf-hero-label">${tags}</div>
-      <div class="nf-hero-title">${title.length>100?title.slice(0,97)+'…':title}</div>
+      <div class="nf-hero-title">${title}</div>
       <div class="nf-hero-meta">
         ${buildAskerAvatar(asker,q.tags,26)}
         <span style="color:rgba(255,255,255,.7)">${asker}</span>
@@ -1887,14 +1934,23 @@ function buildExpandInner(q, pid){
 
   const _xPicsum=getTopicThumb(q.tags,q.id,640,360);
   const _xTag=((q.tags||['General'])[0]||'General').replace(/"/g,'');
-  const _poster=q.video_thumbnail||_xPicsum;
+  const _xKey2=(q.video_thumbnail||'')+'|640x360';
+  let _xSrc2=(_thumbCache[_xKey2]!==undefined)?_thumbCache[_xKey2]:_xPicsum;
+  const _xUid2='xth-'+(q.id||'').replace(/[^a-z0-9]/gi,'');
+  if(q.video_thumbnail&&_thumbCache[_xKey2]===undefined){
+    resolveThumb(q.video_thumbnail,q.tags,q.id,640,360).then(src=>{
+      const el=document.getElementById(_xUid2);
+      if(el&&el.src!==src) el.src=src;
+    });
+  }
+  const _poster=_xSrc2;
   const vidEl=q.video_url
     ?`<video src="${q.video_url}" poster="${_poster}"
         controls playsinline style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"></video>`
     :q.video_thumbnail
       ?`<img src="${q.video_thumbnail}" data-picsum="${_xPicsum}"
           data-tag="${_xTag}" data-w="640" data-h="360"
-          alt="" onload="this.dataset.loaded='1'" onerror="nfThumbFail(this)"
+          alt="" onload="this.dataset.loaded='1'" onerror="nfCanvasFill(this)"
           style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`
       :`<img src="${_xPicsum}" data-tag="${_xTag}" data-w="640" data-h="360"
           alt="" onerror="nfCanvasFill(this)"
@@ -3674,6 +3730,73 @@ async function creditPsiAfterPayment(psi, gateway, txnId){
   }
 }
 
+
+// ══ EXISTING-USER CONSENT MODAL ══════════════════════════════════
+const POLICY_VERSION = '1.0';
+
+function cmCheck(){
+  const all = document.getElementById('cmChk1').checked &&
+               document.getElementById('cmChk2').checked &&
+               document.getElementById('cmChk3').checked;
+  const btn = document.getElementById('cmBtn');
+  if(btn){ btn.disabled = !all; }
+  if(all) document.getElementById('cmWarn').style.display='none';
+  return all;
+}
+
+async function checkAndShowConsentModal(){
+  if(!U) return;
+  try{
+    // Check if this user already has a consent record
+    const{data:rows,error}=await supa.from('legal_consents')
+      .select('id,terms_version')
+      .eq('user_id',U.id)
+      .limit(1);
+
+    // If no consent record exists (or query errored and pts are very low),
+    // show the modal
+    const hasConsent = !error && rows && rows.length > 0 &&
+                       rows[0].terms_version === POLICY_VERSION;
+    if(!hasConsent){
+      document.getElementById('consentModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }catch(e){
+    console.warn('Consent check error:',e);
+    // Show modal on error to be safe
+    document.getElementById('consentModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+async function submitConsent(){
+  if(!cmCheck()){
+    document.getElementById('cmWarn').style.display='block';
+    return;
+  }
+  const btn=document.getElementById('cmBtn');
+  if(btn){btn.disabled=true;btn.textContent='Recording…';}
+  try{
+    await supa.from('legal_consents').insert({
+      user_id:         U.id,
+      terms_version:   POLICY_VERSION,
+      accepted_at:     new Date().toISOString(),
+      user_agent:      navigator.userAgent,
+      screen_res:      `${screen.width}x${screen.height}`,
+      chk_terms:       true,
+      chk_disclaimer:  true,
+      chk_yom:         true,
+    });
+    document.getElementById('consentModal').classList.remove('open');
+    document.body.style.overflow = '';
+    showToast('✓ Thank you — your consent has been recorded.', 'default');
+  }catch(e){
+    console.error('Consent save error:',e);
+    if(btn){btn.disabled=false;btn.textContent='Accept & Continue';}
+    showToast('Error saving consent — please try again.','error');
+  }
+}
+
 async function loadEvtCount(){
   if(!U)return;
   const{count}=await supa.from('score_history').select('*',{count:'exact',head:true}).eq('user_id',U.id);
@@ -3683,6 +3806,42 @@ async function loadEvtCount(){
 
 <!-- ================= YOM WALLET PATCH ================= -->
 
+
+<!-- ══ EXISTING USER CONSENT MODAL ══ -->
+<div id="consentModal">
+  <div class="cm-card">
+    <div class="cm-hdr">
+      <div class="cm-title">⬡ One more step before you continue</div>
+      <div class="cm-sub">We have updated our legal policies. Please review and accept them to continue using Engageneering™.</div>
+    </div>
+    <div class="cm-body">
+      <div class="cm-scroll">
+        <strong>Content Disclaimer — Important</strong><br><br>
+        Engageneering™ is a user-generated content platform. All videos, answers, and questions are uploaded by individual users. <strong>Engageneering™ does not review, verify, endorse, or take responsibility for any user-uploaded content.</strong> Content does not constitute professional medical, legal, financial, or other licensed advice. ARIA scores reflect automated pedagogical quality assessment only — not factual accuracy.<br><br>
+        <strong>YOM Ψ points</strong> are a platform reward currency — not a financial instrument, cryptocurrency, or investment. Purchased Ψ are non-refundable.<br><br>
+        <strong>ARIA</strong> is an automated AI system that may produce inaccurate assessments. Scores are final for Ψ purposes only.<br><br>
+        Full policies: <a href="legal.html" target="_blank">Terms &amp; Conditions</a> · <a href="legal.html" target="_blank">Privacy Policy</a> · <a href="legal.html" target="_blank">Content Disclaimer</a> · <a href="legal.html" target="_blank">YOM Wallet Policy</a>
+      </div>
+
+      <label class="cm-chk">
+        <input type="checkbox" id="cmChk1" onchange="cmCheck()"/>
+        <label for="cmChk1">I have read and agree to the <a href="legal.html" target="_blank">Terms &amp; Conditions</a> and <a href="legal.html" target="_blank">Privacy Policy</a>.</label>
+      </label>
+      <label class="cm-chk">
+        <input type="checkbox" id="cmChk2" onchange="cmCheck()"/>
+        <label for="cmChk2">I understand and accept the Content Disclaimer: Engageneering™ is not responsible for user videos. Content is not professional advice. I am 18 or older.</label>
+      </label>
+      <label class="cm-chk">
+        <input type="checkbox" id="cmChk3" onchange="cmCheck()"/>
+        <label for="cmChk3">I accept the <a href="legal.html" target="_blank">YOM Wallet Policy</a> and <a href="legal.html" target="_blank">ARIA &amp; AI Policy</a>.</label>
+      </label>
+
+      <div class="cm-warn" id="cmWarn">Please check all three boxes to continue.</div>
+      <button class="cm-btn" id="cmBtn" onclick="submitConsent()" disabled>Accept &amp; Continue</button>
+      <div class="cm-legal-note">Your acceptance is recorded with timestamp for legal purposes. You cannot use the platform without accepting.</div>
+    </div>
+  </div>
+</div>
 
 </body>
 
