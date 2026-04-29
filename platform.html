@@ -293,18 +293,6 @@ ALTER TABLE answers   ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en'
 CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 -->
 
-<div class="user-meta">
-  <div class="user-name" id="userName"></div>
-
-  <div class="yom-wallet">
-    <div class="yom-total">Ψ <span id="yomTotal">0</span></div>
-    <div class="yom-breakup">
-      Q Ψ <span id="yomQ">0</span> · 
-      A Ψ <span id="yomA">0</span>
-    </div>
-  </div>
-</div>
-
 </head>
 <body>
 
@@ -328,7 +316,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 
       <!-- Hidden text area kept for title/search indexing only -->
       <div id="textSection" style="display:none">
-        <textarea id="qText" rows="1" style="display:none"></textarea>
+        <textarea id="qTextHidden" rows="1" style="display:none"></textarea>
       </div>
 
       <!-- Video section always visible -->
@@ -783,17 +771,6 @@ function buildTierCard(){
   }
 }
 
-// ==== YOM Wallet
-
-<div class="yom-wallet">
-  <div class="yom-total">Ψ <span id="yomTotal">0</span></div>
-  <div class="yom-breakup">
-    Q Ψ <span id="yomQ">0</span> · 
-    A Ψ <span id="yomA">0</span>
-  </div>
-</div>
-
-
 // ══ VIEW + FORMAT ══
 function setView(v,btn,fromTab=false){
   view=v;
@@ -877,10 +854,9 @@ async function loadFeed(){
       }).join('');
       return; // My Answers rendered above
     }else{
-      const langF=document.getElementById('langFilter')?.value||'';
-  let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
+      let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
       if(topic)q=q.contains('tags',[topic]);
-    if(currentLangFilter)q=q.eq('language',currentLangFilter);
+      if(currentLangFilter)q=q.eq('language',currentLangFilter);
       if(fmt==='video')q=q.in('content_type',['video','both']);
       // text format removed — video only
       const{data}=await q;
@@ -2236,14 +2212,6 @@ opacity:.7;
 </style>
 
 <script>
-
-
-... your entire platform UI ...
-
-<!-- EXISTING PLATFORM SCRIPTS -->
-<script src="platform.js"></script>
-
-<script>
 (function(){
 
   function updateYOMFromDOM(){
@@ -2288,6 +2256,11 @@ opacity:.7;
 
 })();
 </script>
+
+<!-- YOM wallet value holders (updated by patch script below) -->
+<span id="yomTotal" style="display:none">0</span>
+<span id="yomQ" style="display:none">0</span>
+<span id="yomA" style="display:none">0</span>
 
 </body>
 
