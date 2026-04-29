@@ -358,6 +358,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .yw-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
 .yw-icon-q{background:rgba(55,138,221,.15);border:1px solid rgba(55,138,221,.3)}
 .yw-icon-a{background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.3)}
+.yw-icon-b{background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.3)}
 .yw-row-lbl{font-size:11px;color:var(--t3);letter-spacing:.3px}
 .yw-row-val{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--t1)}
 .yw-row-val .yw-psi-s{font-size:10px;color:var(--gold);margin-right:2px}
@@ -764,6 +765,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
       <div class="yw-split-bar">
         <div class="yw-split-q" id="ywSplitQ" style="flex:1"></div>
         <div class="yw-split-a" id="ywSplitA" style="flex:0"></div>
+        <div id="ywSplitB" style="flex:0;height:4px;background:linear-gradient(to right,var(--gold),var(--gb));border-radius:0 2px 2px 0;transition:flex .8s ease"></div>
       </div>
 
       <div class="yw-divider"></div>
@@ -790,6 +792,18 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
           </div>
         </div>
         <div class="yw-row-val"><span class="yw-psi-s">Ψ</span><span id="ywAPts">—</span></div>
+      </div>
+
+      <!-- Bought Ψ -->
+      <div class="yw-row">
+        <div class="yw-row-left">
+          <div class="yw-icon yw-icon-b">💳</div>
+          <div>
+            <div class="yw-row-lbl">Purchased</div>
+            <div class="yw-bar-wrap"><div class="yw-bar-a" id="ywBarB" style="width:0%;background:linear-gradient(to right,var(--gold),var(--gb))"></div></div>
+          </div>
+        </div>
+        <div class="yw-row-val"><span class="yw-psi-s">Ψ</span><span id="ywBPts">—</span></div>
       </div>
 
       <!-- Last Earned -->
@@ -1076,7 +1090,6 @@ async function loadFeed(){
           </div>
         </div>`;
       }).join('');
-      if(!feed.innerHTML||feed.innerHTML.includes('Loading')) feed.innerHTML='<div class="nf-empty">No answers yet.</div>';
       return; // My Answers rendered above
     }else{
       let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
@@ -1088,226 +1101,8 @@ async function loadFeed(){
       qs=data||[];
       if(!qs.length){feed.innerHTML=sampleFeed();return;}
     }
-    feed.innerHTML=buildNetflixFeed(qs);
-  }catch(e){console.warn(e);feed.innerHTML=buildNetflixFeed(sampleData());}
-}
-
-function buildNetflixFeed(qs){
-  if(!qs||!qs.length) return '<div class="nf-empty">No questions yet — be the first to ask.</div>';
-
-  // Split into rows by category
-  const featured  = qs.filter(q=>(q.quality_score||0)>=85).slice(0,10);
-  const newest    = [...qs].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,12);
-  const bounty    = qs.filter(q=>q.bounty_pts>0).slice(0,8);
-  const matched   = qs.filter(q=>U&&(q.matched_uids||[]).includes(U.id)).slice(0,10);
-  const mine      = qs.filter(q=>U&&q.asker_id===U.id).slice(0,10);
-
-  // Hero banner — top question
-  const hero = featured[0] || newest[0];
-  const heroHtml = hero ? buildHeroBanner(hero) : '';
-
-  // Build rows — only show if they have content
-  const rows = [
-    matched.length  ? buildNfRow('✦ Matched for You', matched, 'matched') : '',
-    featured.length ? buildNfRow('Featured · High CDS', featured, 'featured') : '',
-    bounty.length   ? buildNfRow('🏆 Active Bounties', bounty, 'bounty') : '',
-    buildNfRow('Recently Asked', newest, 'newest'),
-    mine.length     ? buildNfRow('Your Questions', mine, 'mine') : '',
-  ].filter(Boolean).join('');
-
-  return heroHtml + rows;
-}
-
-function buildHeroBanner(q){
-  const title = q.text&&q.text!=='[Video question]' ? q.text : 'Video Question';
-  const asker = q.profiles?.display_name||(U&&q.asker_id===U.id?P?.display_name||'You':'Community');
-  const tags  = (q.tags||['General']).slice(0,2).join(' · ');
-  const score = q.quality_score;
-  const pid   = 'panel-'+q.id;
-  const expandId = 'expand-'+q.id;
-
-  const bgHtml = q.video_thumbnail
-    ? `<img class="nf-hero-bg" src="${q.video_thumbnail}" alt=""/>`
-    : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#040810,#0a1828,#040e1a)"></div>`;
-
-  return`<div class="nf-hero-banner">
-    ${bgHtml}
-    <div class="nf-hero-overlay"></div>
-    <div class="nf-hero-content">
-      <div class="nf-hero-eyebrow">${tags}</div>
-      <div class="nf-hero-title">${title.length>90?title.slice(0,87)+'…':title}</div>
-      <div class="nf-hero-sub">Asked by ${asker} · ${q.answer_count||0} answers · ${q.views||0} views</div>
-      <div class="nf-hero-btns">
-        <button class="nf-hero-btn nf-hero-btn-play" onclick="nfOpenAnswer('${q.id}','${pid}')">▶ Answer Now</button>
-        <button class="nf-hero-btn nf-hero-btn-info" onclick="nfPlayOrExpand('${q.id}','${q.video_url||''}')">More Info</button>
-      </div>
-    </div>
-    ${score!=null?`<div class="nf-hero-score"><div class="nf-hero-psi">Ψ ${score}</div><div class="nf-hero-psi-lbl">Quality Score</div></div>`:''}
-  </div>`;
-}
-
-function buildNfRow(title, qs, rowId){
-  const rowEl = `nf-row-${rowId}`;
-  const cards = qs.map((q,i)=>buildNfCard(q, i===0&&rowId==='featured')).join('');
-  return`<div class="nf-section" id="section-${rowId}">
-    <div class="nf-row-hdr">
-      <div class="nf-row-title">${title} <span style="font-size:12px;color:var(--t4);font-weight:400">${qs.length}</span></div>
-    </div>
-    <div class="nf-scroll" id="${rowEl}">
-      ${cards}
-    </div>
-    <div class="nf-arr nf-arr-l" onclick="nfScroll('${rowEl}',-1)">
-      <svg viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-    </div>
-    <div class="nf-arr nf-arr-r" onclick="nfScroll('${rowEl}',1)">
-      <svg viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-    </div>
-  </div>`;
-}
-
-function buildNfCard(q, isHero=false){
-  const tags    = q.tags||['General'];
-  const isMe    = U&&q.asker_id===U.id;
-  const isMatch = U&&(q.matched_uids||[]).includes(U.id);
-  const feat    = (q.quality_score||0)>=85;
-  const asker   = q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
-  const title   = q.text&&q.text!=='[Video question]'?q.text:'Video Question';
-  const pid     = 'panel-'+q.id;
-  const score   = q.quality_score;
-  const hasBounty = q.bounty_pts>0;
-
-  // Days since posted
-  const days = Math.floor((Date.now()-new Date(q.created_at))/(864e5));
-  const isNew = days<=3;
-
-  const thumbHtml = q.video_thumbnail
-    ? `<img src="${q.video_thumbnail}" alt="" loading="lazy"/>`
-    : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#060e1e,#0a1828);display:flex;align-items:center;justify-content:center">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" opacity=".4"><circle cx="14" cy="14" r="12" stroke="#c8922a" stroke-width="1.2"/><polygon points="11,8 21,14 11,20" fill="#c8922a"/></svg>
-      </div>`;
-
-  return`<div class="nfc ${isHero?'nfc-hero':''}" data-qid="${q.id}"
-    onclick="nfPlayOrExpand('${q.id}','${q.video_url||''}')"
-    onmouseenter="nfPeek(this)" onmouseleave="nfUnpeek(this)">
-
-    <div class="nfc-thumb">
-      ${thumbHtml}
-      <div class="nfc-grad"></div>
-      <div class="nfc-badges">
-        <span class="nfc-b nfcb-video">▶</span>
-        ${feat?`<span class="nfc-b nfcb-feat">✦</span>`:''}
-        ${isNew?`<span class="nfc-b nfcb-new">New</span>`:''}
-        ${hasBounty?`<span class="nfc-b nfcb-hot">+${q.bounty_pts}Ψ</span>`:''}
-      </div>
-      ${score!=null?`<div class="nfc-score">Ψ${score}</div>`:''}
-      <div class="nfc-play">
-        <div class="nfc-play-ring">
-          <svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg>
-        </div>
-      </div>
-      <div class="nfc-prog"><div class="nfc-prog-fill" id="prog-${q.id}"></div></div>
-    </div>
-
-    <div class="nfc-info">
-      <div class="nfc-title">${title}</div>
-      <div class="nfc-meta">
-        <div class="nfc-asker">${asker}</div>
-        <div class="nfc-stats">
-          <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1 8 Q4.5 1 8 8" stroke="currentColor" stroke-width="1"/></svg>
-          ${q.answer_count||0}
-        </div>
-      </div>
-    </div>
-
-    <div class="nfc-cta">
-      <button class="nfc-btn nfc-btn-answer" onclick="event.stopPropagation();nfOpenAnswer('${q.id}','${pid}')">🎥 Answer</button>
-      <button class="nfc-btn nfc-btn-aria" onclick="event.stopPropagation();openAriaPanel('${q.id}')">Ask ARIA</button>
-    </div>
-  </div>
-
-  <!-- Expand zone sits OUTSIDE the card, after it in flow -->
-  <div class="qc-expand" id="expand-${q.id}" style="min-width:100vw;margin-left:calc(-1.5rem);padding:0 1.5rem">
-    <div class="aria-panel" id="aria-panel-${q.id}">
-      <div class="aria-panel-hdr">
-        <div class="aria-avatar"><img src="ARIA-Avatar-Icon-TPT.png" alt="ARIA" onerror="this.parentElement.innerHTML='⬡'"/></div>
-        <div class="aria-panel-meta">
-          <div class="aria-panel-name">ARIA · Autonomous Intelligence</div>
-          <div class="aria-panel-sub" id="aria-sub-${q.id}">Synthesising…</div>
-        </div>
-        <div class="aria-cost-badge" id="aria-cost-badge-${q.id}">Ψ${ARIA_COST} spent</div>
-      </div>
-      <div class="aria-video-shell" id="aria-shell-${q.id}">
-        <div class="aria-thinking" id="aria-thinking-${q.id}">
-          <div class="aria-thinking-dots"><span></span><span></span><span></span></div>
-          <div class="aria-thinking-txt" id="aria-thinking-txt-${q.id}">Consulting 12 agents…</div>
-        </div>
-      </div>
-      <div class="aria-response-text" id="aria-text-${q.id}" style="display:none"></div>
-      <div class="aria-sources" id="aria-src-${q.id}" style="display:none"></div>
-    </div>
-    <div class="ans-panel" id="${pid}">
-      <div class="ap-title">🎥 Your video answer</div>
-      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem;background:rgba(226,75,74,.07);border:1px solid rgba(226,75,74,.2);border-radius:6px;padding:.5rem .8rem">
-        <span style="font-size:14px">🎥</span>
-        <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#e24b4a;font-weight:700">Video Answer</span>
-        <span style="font-size:10px;color:var(--t4);margin-left:4px">· Max 3 minutes</span>
-      </div>
-      <div class="ans-video-wrap" id="avw-${q.id}" style="display:block">
-        <div class="recorder-wrap" style="margin-bottom:.8rem">
-          <div class="rec-preview" style="aspect-ratio:16/9">
-            <video id="av-cam-${q.id}" autoplay muted playsinline style="display:none;width:100%;height:100%;object-fit:cover"></video>
-            <video id="av-play-${q.id}" controls playsinline style="display:none;width:100%;height:100%;object-fit:cover"></video>
-            <div id="av-ph-${q.id}" class="rec-placeholder">
-              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/><circle cx="24" cy="24" r="8" fill="currentColor" opacity=".3"/></svg>
-              <div class="rec-placeholder-txt">Record or upload a video answer</div>
-            </div>
-            <div class="rec-timer" id="av-timer-${q.id}">0:00</div>
-          </div>
-          <div class="rec-controls">
-            <button class="rec-btn rec-btn-start" id="av-start-${q.id}" onclick="startAnsRec('${q.id}')">
-              <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>
-              Record
-            </button>
-            <button class="rec-btn rec-btn-stop" id="av-stop-${q.id}" style="display:none" onclick="stopAnsRec('${q.id}')">Stop</button>
-            <button class="rec-btn rec-btn-retake" id="av-retake-${q.id}" style="display:none;border:1px solid" onclick="retakeAnsRec('${q.id}')">Retake</button>
-            <label class="rec-btn" style="background:transparent;border:1px solid var(--bdr2);color:var(--t3);cursor:pointer">
-              <input type="file" accept="video/*" style="display:none" onchange="handleAnsUpload(event,'${q.id}')"/>
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 7V2M2 4l3-3 3 3M1 9h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              Upload
-            </label>
-            <div class="rec-status" id="av-status-${q.id}">Max 3 minutes</div>
-          </div>
-        </div>
-      </div>
-      <div class="ap-row">
-        <div class="ap-hint" id="hint-${q.id}">CDS = AG × 0.60 + PG × 0.40 · 6 indices scored in parallel</div>
-        <button class="nbtn nbtn-ghost" style="padding:5px 14px;font-size:10px" onclick="togglePanel('${pid}')">Cancel</button>
-        <button class="nbtn nbtn-gold" style="padding:7px 22px" id="sbtn-${q.id}" onclick="submitAnswer('${q.id}','ans-${q.id}','list-${q.id}','hint-${q.id}','sc-${q.id}',this)">Submit Answer</button>
-      </div>
-      <div class="sc-panel" id="sc-${q.id}"></div>
-      <div class="al" id="list-${q.id}"></div>
-    </div>
-  </div>`;
-}
-
-// Scroll a row left or right
-function nfScroll(rowId, dir){
-  const el=document.getElementById(rowId);
-  if(el) el.scrollBy({left:dir*640,behavior:'smooth'});
-}
-
-// Peek animation on hover (slight lift already handled by CSS scale)
-function nfPeek(el){ /* CSS handles it */ }
-function nfUnpeek(el){ /* CSS handles it */ }
-
-function sampleData(){
-  return [
-    {id:'s1',language:'en',language_name:'English',text:'What is the most engaging way to explain variables to a 12-year-old who has never seen code before?',tags:['Programming'],quality_score:94,answer_count:3,views:187,bounty_pts:50,profiles:{display_name:'Arjun M.'},asker_id:'',matched_uids:[],content_type:'video',created_at:new Date(Date.now()-86400000).toISOString()},
-    {id:'s2',language:'en',language_name:'English',text:'Why does time slow down near a black hole? Explain it without equations.',tags:['Physics','Science'],quality_score:88,answer_count:2,views:341,bounty_pts:0,profiles:{display_name:'Dr. Meera V.'},asker_id:'',matched_uids:[],content_type:'video',created_at:new Date(Date.now()-172800000).toISOString()},
-    {id:'s3',language:'hi',language_name:'Hindi',text:'How would you explain compound interest to a first-generation investor?',tags:['Finance'],quality_score:91,answer_count:5,views:529,bounty_pts:100,profiles:{display_name:'Ravi K.'},asker_id:'',matched_uids:[],content_type:'video',created_at:new Date(Date.now()-259200000).toISOString()},
-    {id:'s4',language:'en',language_name:'English',text:"Explain Occam's Razor using only a story. No definitions.",tags:['Philosophy'],quality_score:86,answer_count:1,views:98,bounty_pts:0,profiles:{display_name:'Priya S.'},asker_id:'',matched_uids:[],content_type:'video',created_at:new Date(Date.now()-345600000).toISOString()},
-    {id:'s5',language:'pa',language_name:'Punjabi',text:'Why does 0.1 + 0.2 not equal 0.3 in most programming languages?',tags:['Programming','Mathematics'],quality_score:89,answer_count:4,views:612,bounty_pts:75,profiles:{display_name:'Gurpreet S.'},asker_id:'',matched_uids:[],content_type:'video',created_at:new Date(Date.now()-432000000).toISOString()},
-  ];
+    feed.innerHTML=qs.map(q=>qCard(q)).join('');
+  }catch(e){console.warn(e);feed.innerHTML=sampleFeed();}
 }
 
 function empty(t,s){return`<div style="text-align:center;padding:3rem 1rem;color:var(--t4)"><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--t3);margin-bottom:.5rem">${t}</div><div style="font-size:13px;line-height:1.7">${s}</div></div>`;}
@@ -2666,24 +2461,40 @@ async function loadYOMWallet(){
     const qPts    = pr?.seeker_pts   || R?.seeker_pts   || 0;
     const aPts    = pr?.answerer_pts || R?.answerer_pts || 0;
 
+    // Bought Ψ — sum of psi_purchase entries from score_history
+    const{data:purchases}=await supa.from('score_history')
+      .select('pts_awarded')
+      .eq('user_id',U.id)
+      .eq('action_type','psi_purchase');
+    const bPts=(purchases||[]).reduce((s,r)=>s+(r.pts_awarded||0),0);
+
     // Update display
     const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
     set('ywTotal', total);
     set('ywQPts',  qPts);
     set('ywAPts',  aPts);
+    set('ywBPts',  bPts);
+    // Sync R (global profile_roles cache) so buildNav shows same value
+    if(R){ R.pts_total=total; R.seeker_pts=qPts; R.answerer_pts=aPts; }
+    buildNav();
 
     // Progress bars (proportion of total)
-    const qPct = total>0 ? Math.round(qPts/total*100) : 0;
-    const aPct = total>0 ? Math.round(aPts/total*100) : 0;
+    const allPts = total || 1;
+    const qPct = Math.round(qPts/allPts*100);
+    const aPct = Math.round(aPts/allPts*100);
+    const bPct = Math.round(bPts/allPts*100);
     const bq=document.getElementById('ywBarQ'); if(bq)bq.style.width=qPct+'%';
     const ba=document.getElementById('ywBarA'); if(ba)ba.style.width=aPct+'%';
+    const bb=document.getElementById('ywBarB'); if(bb)bb.style.width=bPct+'%';
 
     // Split bar
     const sq=document.getElementById('ywSplitQ');
     const sa=document.getElementById('ywSplitA');
+    const sb=document.getElementById('ywSplitB');
     if(sq&&sa){
-      const qFlex=total>0?qPts:1, aFlex=total>0?aPts:0;
+      const qFlex=total>0?qPts:1, aFlex=total>0?aPts:0, bFlex=total>0?bPts:0;
       sq.style.flex=qFlex; sa.style.flex=aFlex;
+      if(sb) sb.style.flex=bFlex;
     }
 
     // Last earned — query score_history for most recent entry
@@ -2753,7 +2564,7 @@ async function grantSignupBonusIfNew(){
     .select('*',{count:'exact',head:true})
     .eq('user_id',U.id)
     .eq('action_type','signup_bonus');
-  if((count??0)>0) return; // already granted — nullish coalescing handles null count
+  if((count??0)>0) return; // already granted — ?? handles null count
 
   // Grant Ψ10
   try{
@@ -3061,14 +2872,10 @@ async function initiatePurchase(){
 }
 
 function launchRazorpay(displayPrice,btn){
-  const rzpKey = window.ENG_CONFIG?.RAZORPAY_KEY || '';
-  if(!rzpKey){
-    showToast('Razorpay key not configured — check config.js','error');
-    if(btn){btn.disabled=false;btn.textContent=`Pay ₹${displayPrice} → Get Ψ${selectedPack?.psi||0}`;}
-    return;
-  }
+  // In production: create Razorpay order via your backend first
+  // Here we use client-side test mode for demo
   const options={
-    key: rzpKey,
+    key:'window.ENG_CONFIG?.RAZORPAY_KEY',  // ← replace with live key
     amount:Math.round(selectedPack.inr*100), // paise
     currency:'INR',
     name:'Engageneering™',
@@ -3137,76 +2944,6 @@ async function loadEvtCount(){
 
 <!-- ================= YOM WALLET PATCH ================= -->
 
-<style>
-.yom-wallet{
-display:flex;
-flex-direction:column;
-align-items:flex-end;
-line-height:1.2;
-}
-
-.yom-total{
-color:#facc15;
-font-weight:700;
-font-size:16px;
-}
-
-.yom-breakup{
-font-size:11px;
-opacity:.7;
-}
-</style>
-
-<script>
-(function(){
-
-  function updateYOMFromDOM(){
-
-    // 🔥 Extract points from existing UI instead of JS
-    let pts = 0;
-
-    // Try to read from existing rendered text (SAFE)
-    const bodyText = document.body.innerText;
-
-    const match = bodyText.match(/(\d+)\s*pts/);
-
-    if(match){
-      pts = parseInt(match[1]);
-    }
-
-    // fallback
-    if(!pts){
-      pts = parseFloat(localStorage.getItem("points") || 0);
-    }
-
-    let q = Math.round(pts * 0.6);
-    let a = Math.round(pts * 0.4);
-
-    const wallet = { total: pts, q: q, a: a };
-
-    localStorage.setItem("yomWallet", JSON.stringify(wallet));
-
-    // update UI safely
-    const set = (id,val)=>{
-      const el = document.getElementById(id);
-      if(el) el.innerText = val;
-    };
-
-    set("yomTotal", wallet.total);
-    set("yomQ", wallet.q);
-    set("yomA", wallet.a);
-  }
-
-  // 🔥 RUN AFTER EVERYTHING SETTLES
-  setTimeout(updateYOMFromDOM, 1500);
-
-})();
-</script>
-
-<!-- YOM wallet value holders (updated by patch script below) -->
-<span id="yomTotal" style="display:none">0</span>
-<span id="yomQ" style="display:none">0</span>
-<span id="yomA" style="display:none">0</span>
 
 </body>
 
