@@ -33,26 +33,30 @@ body{font-family:'EB Garamond',Georgia,serif;background:var(--navy-mid);color:va
 .dn-item:hover .dn-lbl,.dn-item.active .dn-lbl{opacity:.8;transform:translateX(0)}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;background:rgba(6,12,26,.94);backdrop-filter:blur(16px);border-bottom:1px solid rgba(30,58,106,.4);padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;transition:height .3s}
-nav.sc{height:54px}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;background:rgba(6,12,26,.97);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid rgba(30,58,106,.5);padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;will-change:transform}
+nav.sc{box-shadow:0 2px 24px rgba(0,0,0,.45)}
 .nav-left{display:flex;align-items:center;gap:11px;text-decoration:none}
 .nav-brand{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;letter-spacing:3.5px;color:var(--gold)}
 .nav-tag{font-size:7px;letter-spacing:2.5px;color:#7a6020;text-transform:uppercase}
-.nav-links{display:flex;gap:1.8rem;list-style:none}
-.nav-links a{font-size:10px;color:var(--steel);text-decoration:none;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;position:relative}
-.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--gold);transition:width .3s}
+.nav-links{display:flex;gap:1.6rem;list-style:none}
+.nav-links a{font-size:10px;color:var(--steel);text-decoration:none;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;position:relative;padding-bottom:4px}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--gold);transition:width .3s}
 .nav-links a:hover{color:var(--gold-b)}.nav-links a:hover::after{width:100%}
 .nav-right{display:flex;gap:.8rem;align-items:center}
 .btn-nav-login{background:transparent;color:var(--gold);border:1px solid rgba(200,146,42,.5);padding:7px 18px;border-radius:4px;font-size:10px;letter-spacing:1.5px;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .2s}
 .btn-nav-login:hover{background:rgba(200,146,42,.1);border-color:var(--gold)}
-.btn-nav-join{background:var(--gold);color:var(--navy);padding:8px 20px;border-radius:4px;font-size:10px;letter-spacing:1.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .2s}
+.btn-nav-join{background:var(--gold);color:var(--navy);padding:8px 20px;border-radius:4px;font-size:10px;letter-spacing:1.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:background .2s,transform .2s}
 .btn-nav-join:hover{background:var(--gold-b);transform:translateY(-1px)}
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
-.hamburger span{width:22px;height:1.5px;background:var(--gold);display:block}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;-webkit-tap-highlight-color:transparent}
+.hamburger span{width:22px;height:1.5px;background:var(--gold);display:block;transition:transform .25s,opacity .25s}
+.hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
 
 /* mobile menu */
-#mobileMenu{display:none;position:fixed;top:62px;left:0;right:0;background:rgba(6,12,26,.98);border-bottom:1px solid #1e3a6a;z-index:199;padding:2rem;flex-direction:column;gap:1.4rem}
-#mobileMenu a{font-size:13px;color:#8a9ab8;text-decoration:none;letter-spacing:2px;text-transform:uppercase}
+#mobileMenu{display:none;position:fixed;top:62px;left:0;right:0;background:rgba(4,8,18,.99);border-bottom:1px solid rgba(30,58,106,.6);z-index:199;padding:1.8rem 1.6rem;flex-direction:column;gap:1.2rem;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+#mobileMenu a{font-size:13px;color:#8a9ab8;text-decoration:none;letter-spacing:2px;text-transform:uppercase;padding:.4rem 0;border-bottom:1px solid rgba(30,58,106,.3)}
+#mobileMenu a:last-child{border-bottom:none}
 
 /* ── HERO ── */
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7rem 2rem 4rem;position:relative;overflow:hidden;background:var(--navy)}
@@ -355,7 +359,7 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
 @keyframes hexFloat2{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-9px) rotate(-3deg)}}
 
 @media(max-width:768px){
-  nav{padding:0 1.4rem}.nav-links,.nav-right{display:none}.hamburger{display:flex}
+  nav{padding:0 1.2rem}.nav-links,.nav-right{display:none}.hamburger{display:flex}
   section{padding:4rem 1.4rem}
   .about-flex,.how-flex,.contact-flex,.ladder-flex,.aria-intro{gap:2.5rem}
   .dual-grade{grid-template-columns:1fr}.role-grid{grid-template-columns:1fr 1fr}
@@ -363,6 +367,11 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   .cta-band{padding:4rem 1.4rem}
   footer{padding:3rem 1.4rem 2rem}
   #docNav{display:none}
+}
+@media(max-width:480px){
+  nav{padding:0 1rem}
+  .nav-brand{font-size:12px;letter-spacing:2.5px}
+  .nav-tag{display:none}
 }
 </style>
 </head>
@@ -378,8 +387,8 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   <div class="dn-item" data-s="crowd" onclick="go('crowd')"><span class="dn-lbl">Video Learning</span><div class="dn-dot"></div></div>
   <div class="dn-item" data-s="documents" onclick="go('documents')"><span class="dn-lbl">Documents</span><div class="dn-dot"></div></div>
   <div class="dn-item" data-s="how" onclick="go('how')"><span class="dn-lbl">How It Works</span><div class="dn-dot"></div></div>
-  <div class="dn-item" data-s="numbers" onclick="go('numbers')"><span class="dn-lbl">Impact</span><div class="dn-dot"></div></div>
-  <div class="dn-item" data-s="testimonials" onclick="go('testimonials')"><span class="dn-lbl">Stories</span><div class="dn-dot"></div></div>
+  <div class="dn-item" data-s="numbers" onclick="go('numbers')"><span class="dn-lbl">Why Now</span><div class="dn-dot"></div></div>
+  <div class="dn-item" data-s="testimonials" onclick="go('testimonials')"><span class="dn-lbl">Day One</span><div class="dn-dot"></div></div>
   <div class="dn-item" data-s="contact" onclick="go('contact')"><span class="dn-lbl">Contact</span><div class="dn-dot"></div></div>
 </div>
 
@@ -487,22 +496,32 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
     <div class="about-flex">
       <div style="flex:1;min-width:280px" class="reveal-l">
         <div class="s-label">Who We Are</div>
-        <h2 class="s-title">Built for the <span>Engaged</span> Classroom</h2>
-        <p class="s-body">Engageneering™ is a movement for educators who believe learning is not a spectator sport. We bring together research-backed frameworks, an autonomous AI platform, and a global community committed to one idea — every student deserves genuine engagement, every single day.</p>
+        <h2 class="s-title">The World's First <span>Intellectual Economy</span></h2>
+        <p class="s-body">Engageneering™ is not a platform. It is a new kind of market — one where the commodity is the ability to explain, the currency is Ψ YOM, and the price is set by AI, not opinion. For the first time in human history, the quality of human thought can be measured, traded, and rewarded with provable objectivity.</p>
         <div class="divider-g"></div>
-        <p class="s-body">Founded on the conviction that curiosity can be engineered, not just hoped for. Powered by ARIA — the world's first fully autonomous crowd learning intelligence.</p>
+        <p class="s-body">We believe every domain of knowledge has its master explainers — people who can make the complex luminous, the abstract tangible, the unfamiliar feel like home. Until now, that ability had no market price. Engageneering™ creates that market.</p>
+        <div class="divider-g"></div>
+        <p class="s-body">ARIA — our Autonomous Routing &amp; Intelligence Arbiter — runs twelve specialist agents in parallel, assessing every contribution across five independent indices. No human reviewer. No algorithmic bias from popularity. The score is the score. Permanent, transparent, defensible.</p>
         <button class="btn-outline-d" style="margin-top:2rem" onclick="go('documents')">Read the Manifesto</button>
       </div>
       <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:1.2rem" class="reveal-r">
         <div class="about-quote">
-          <div class="about-qt">"The goal is not to fill a bucket but to light a fire — and we're here to help you engineer the spark."</div>
-          <div class="about-qa">— Engageneering™ Manifesto</div>
+          <div class="about-qt">"Knowledge has always had value. For the first time, the ability to transfer it does too."</div>
+          <div class="about-qa">— Engageneering™ Founding Principle</div>
         </div>
-        <div class="stats">
-          <div class="stat-box"><div class="stat-v">7<span class="stat-u">+</span></div><div class="stat-l">Years of Research</div></div>
-          <div class="stat-box"><div class="stat-v">40<span class="stat-u">+</span></div><div class="stat-l">Institutions Reached</div></div>
-          <div class="stat-box"><div class="stat-v">10<span class="stat-u">k</span></div><div class="stat-l">Global Community</div></div>
-          <div class="stat-box"><div class="stat-v">58<span class="stat-u">+</span></div><div class="stat-l">Countries</div></div>
+        <div style="display:flex;flex-direction:column;gap:.9rem;margin-top:.4rem">
+          <div style="background:var(--navy-card);border-radius:10px;padding:1.2rem 1.4rem;border-left:3px solid var(--gold)">
+            <div style="font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:.5rem">The problem we solve</div>
+            <div style="font-size:14px;color:var(--steel);line-height:1.75">Every day, millions of people explain things — to students, colleagues, customers, strangers on the internet. Some explanations are extraordinary. Most disappear without a trace. None of them had a price.</div>
+          </div>
+          <div style="background:var(--navy-card);border-radius:10px;padding:1.2rem 1.4rem;border-left:3px solid #7f77dd">
+            <div style="font-size:9px;letter-spacing:3px;color:#afa9ec;text-transform:uppercase;margin-bottom:.5rem">What we built instead</div>
+            <div style="font-size:14px;color:var(--steel);line-height:1.75">A live, AI-governed marketplace where explanations earn Ψ YOM — a currency backed by intellectual contribution, not speculation. Ask. Explain. Earn. Rise.</div>
+          </div>
+          <div style="background:var(--navy-card);border-radius:10px;padding:1.2rem 1.4rem;border-left:3px solid #1d9e75">
+            <div style="font-size:9px;letter-spacing:3px;color:#5dcaa5;text-transform:uppercase;margin-bottom:.5rem">Who this is for</div>
+            <div style="font-size:14px;color:var(--steel);line-height:1.75">Teachers. Researchers. Practitioners. Students. Anyone who has ever explained something well and thought — <em>that should count for something.</em> Now it does.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -944,57 +963,134 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
     <div style="display:flex;gap:5rem;flex-wrap:wrap;align-items:flex-start">
       <div style="flex:1;min-width:280px" class="reveal-l">
         <div class="s-label">How It Works</div>
-        <h2 class="s-title" style="color:var(--ink)">Your Path to the <span style="color:#a07020">Engaged Classroom</span></h2>
-        <p class="s-body">Five steps. No full overhaul required. Start where you are, in your next session.</p>
+        <h2 class="s-title" style="color:var(--ink)">How the <span style="color:#a07020">Intellectual Economy</span> Works</h2>
+        <p class="s-body">Six steps from zero to earning. Every step is governed by ARIA — not editors, not committees, not popularity. The score is objective. The economy is live.</p>
         <div class="divider-i"></div>
-        <p class="s-body" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#8a6020;font-style:italic;line-height:1.5">"The Engagement Audit gives you a clear map — and ARIA tells you exactly where to begin."</p>
-        <button class="btn-ink" style="margin-top:2rem" onclick="window.location.href='framework.html#assessment'">Take the Free Audit</button>
+        <div style="background:var(--navy);border-radius:10px;padding:1.4rem 1.6rem;border-left:3px solid var(--gold);margin-bottom:1.4rem">
+          <div style="font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem">The Core Mechanic</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold-l);line-height:1.65;font-style:italic">"Ask a great question — earn Ψ. Give a great explanation — earn more. ARIA decides what great means. Always."</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.7rem">
+          <div style="display:flex;align-items:center;gap:.8rem;font-size:13px;color:#4a5a7a">
+            <span style="width:24px;height:24px;border-radius:50%;background:#f0c040;color:#040c18;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">Ψ</span>
+            <span>Ψ10 credited on sign-up — your first step into the economy</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.8rem;font-size:13px;color:#4a5a7a">
+            <span style="width:24px;height:24px;border-radius:50%;background:#378add;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">Q</span>
+            <span>Quality questions earn Ψ — scored by ARIA on clarity, originality, relevance</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.8rem;font-size:13px;color:#4a5a7a">
+            <span style="width:24px;height:24px;border-radius:50%;background:#1d9e75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">A</span>
+            <span>Video answers earn CDS — the Composite Defended Score, your permanent intellectual credential</span>
+          </div>
+        </div>
+        <button class="btn-ink" style="margin-top:2rem" onclick="window.location.href='auth.html'">Enter the Economy</button>
       </div>
       <div style="flex:1.2;min-width:280px">
         <div class="how-steps">
-          <div class="how-step"><div class="how-num">01</div><div><div class="how-t">Diagnose Your Classroom</div><div class="how-b">The Engagement Audit — 15 minutes, six pillars, honest self-assessment. ARIA maps your strengths and gaps.</div></div></div>
-          <div class="how-step"><div class="how-num">02</div><div><div class="how-t">Get Your Blueprint</div><div class="how-b">A personalised action plan — specific to your subject, year group, and context. No generic advice.</div></div></div>
-          <div class="how-step"><div class="how-num">03</div><div><div class="how-t">Apply the Frameworks</div><div class="how-b">Ready-to-use tools and techniques designed to slot into your existing practice. No overhaul required.</div></div></div>
-          <div class="how-step"><div class="how-num">04</div><div><div class="how-t">Contribute to the Platform</div><div class="how-b">Ask questions, give engaging answers, earn your Composite Defended Score, and climb your tier.</div></div></div>
-          <div class="how-step" style="padding-bottom:0"><div class="how-num">05</div><div><div class="how-t">Rise Through the Community</div><div class="how-b">ARIA's Tier Engine tracks your growth. Your Insight Narrator shows you the path forward. Every week.</div></div></div>
+          <div class="how-step">
+            <div class="how-num">01</div>
+            <div>
+              <div class="how-t">Create Your Account</div>
+              <div class="how-b">Sign up in under 60 seconds. Ψ10 is credited to your YOM Wallet immediately — your founding stake in the Intellectual Economy. No course to buy. No content to consume first.</div>
+            </div>
+          </div>
+          <div class="how-step">
+            <div class="how-num">02</div>
+            <div>
+              <div class="how-t">Ask a Question Worth Asking</div>
+              <div class="how-b">Post a genuine question — in video or text — on any subject you are wrestling with. ARIA's Discovery and Curation Agents assess it instantly. A great question earns Ψ and enters the live feed. A weak one is coached, not punished.</div>
+            </div>
+          </div>
+          <div class="how-step">
+            <div class="how-num">03</div>
+            <div>
+              <div class="how-t">Answer on Camera</div>
+              <div class="how-b">Record a video answer — up to three minutes. No studio required. ARIA's six Evaluation Agents score it across Explanation Intelligence, Relevance, Analogical Reasoning, Conceptual Originality, and Articulation — all in parallel, in seconds.</div>
+            </div>
+          </div>
+          <div class="how-step">
+            <div class="how-num">04</div>
+            <div>
+              <div class="how-t">Receive Your CDS</div>
+              <div class="how-b">The Composite Defended Score is your answer's permanent public credential. It combines your absolute grade with your peer-group percentile — so a brilliant answer in a field of experts earns more than a mediocre answer among novices. Scores are immutable.</div>
+            </div>
+          </div>
+          <div class="how-step">
+            <div class="how-num">05</div>
+            <div>
+              <div class="how-t">Earn Ψ YOM — Spend or Hold</div>
+              <div class="how-b">High-CDS answers earn Ψ credited to your wallet. Spend it to Ask ARIA, boost a question, or unlock advanced features. Hold it as proof of intellectual capital. Top earners — Master Teachers — can convert Ψ to INR.</div>
+            </div>
+          </div>
+          <div class="how-step" style="padding-bottom:0">
+            <div class="how-num">06</div>
+            <div>
+              <div class="how-t">Rise Through the Tiers</div>
+              <div class="how-b">From Inquirer to Master Teacher — each tier is earned, never bought. ARIA's Insight Narrator sends you a weekly personal report: what your scores reveal, where your strengths compound, and exactly what to do next. Your reputation is on-chain, auditable, and yours.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══ NUMBERS (light) ══ -->
+<!-- ══ FIRST PRINCIPLES (replaces numbers) ══ -->
 <section class="s-light" id="numbers">
   <div class="s-inner">
     <div class="reveal">
-      <div class="s-label">By the Numbers</div>
-      <h2 class="s-title" style="color:var(--ink)">Engagement <span style="color:#a07020">at Scale</span></h2>
+      <div class="s-label">Why Now</div>
+      <h2 class="s-title" style="color:var(--ink)">A Market That <span style="color:#a07020">Has Never Existed</span></h2>
+      <p style="font-size:16px;color:#4a5a7a;max-width:640px;line-height:1.85;margin-bottom:2.5rem">Every existing platform measures what you know — through tests, quizzes, completion rates. None of them measure how well you can transfer that knowledge to another human being. That is the rarest, most economically valuable cognitive skill. And until today, it had no market.</p>
     </div>
-    <div class="nums-grid">
-      <div class="num-card reveal"><div class="num-v">92<span class="num-u">%</span></div><div class="num-l">of teachers report higher participation after 4 weeks</div></div>
-      <div class="num-card reveal"><div class="num-v">3<span class="num-u">×</span></div><div class="num-l">increase in student-initiated questions on average</div></div>
-      <div class="num-card reveal"><div class="num-v">10<span class="num-u">k+</span></div><div class="num-l">educators in the global Engageneering™ community</div></div>
-      <div class="num-card reveal"><div class="num-v">58<span class="num-u">+</span></div><div class="num-l">countries reached through our programmes</div></div>
+    <div class="nums-grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">
+      <div class="num-card reveal">
+        <div style="font-size:32px;margin-bottom:.4rem">⬡</div>
+        <div class="num-l" style="font-size:14px;color:#3a3a5a;line-height:1.7"><strong style="color:#8a6020;font-family:'Cormorant Garamond',serif;font-size:17px">Zero human bias</strong><br>ARIA scores every answer. No editors. No upvotes. No popularity contest.</div>
+      </div>
+      <div class="num-card reveal">
+        <div style="font-size:32px;margin-bottom:.4rem">Ψ</div>
+        <div class="num-l" style="font-size:14px;color:#3a3a5a;line-height:1.7"><strong style="color:#8a6020;font-family:'Cormorant Garamond',serif;font-size:17px">Real currency</strong><br>Ψ YOM is earned, not distributed. Every point represents a verified act of intellectual contribution.</div>
+      </div>
+      <div class="num-card reveal">
+        <div style="font-size:32px;margin-bottom:.4rem">🎥</div>
+        <div class="num-l" style="font-size:14px;color:#3a3a5a;line-height:1.7"><strong style="color:#8a6020;font-family:'Cormorant Garamond',serif;font-size:17px">Video-first proof</strong><br>You cannot fake a video explanation. The camera captures what text never could — fluency, conviction, genuine understanding.</div>
+      </div>
+      <div class="num-card reveal">
+        <div style="font-size:32px;margin-bottom:.4rem">∞</div>
+        <div class="num-l" style="font-size:14px;color:#3a3a5a;line-height:1.7"><strong style="color:#8a6020;font-family:'Cormorant Garamond',serif;font-size:17px">Permanent record</strong><br>Your CDS is immutable. A great explanation from today remains on your profile forever — building a verifiable intellectual ledger.</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ══ TESTIMONIALS ══ -->
+<!-- ══ DAY ONE ══ -->
 <section class="s-darker" id="testimonials">
   <div class="s-inner">
-    <div class="reveal"><div class="s-label">From the Community</div><h2 class="s-title">Educators Who <span>Ignited the Room</span></h2></div>
-    <div class="test-grid">
-      <div class="test-card reveal"><div class="test-q">Within three weeks of applying the curiosity framework, my students were arriving to class with questions they'd prepared at home. I hadn't asked them to. They just wanted to know more.</div><div class="test-n">Priya Sharma</div><div class="test-r">Secondary Science Teacher · Mumbai</div></div>
-      <div class="test-card reveal"><div class="test-q">I'd been teaching for 18 years and felt like I'd hit a ceiling. Engageneering™ didn't just give me new tools — it gave me a completely new way of thinking about what a classroom is actually for.</div><div class="test-n">David Osei</div><div class="test-r">Head of Humanities · Accra</div></div>
-      <div class="test-card reveal"><div class="test-q">The attention architecture module alone was worth everything. Understanding how the brain filters information changed how I design every single lesson now.</div><div class="test-n">Mei-Lin Chen</div><div class="test-r">University Lecturer · Singapore</div></div>
+    <div class="reveal">
+      <div class="s-label">Day One</div>
+      <h2 class="s-title">This Is <span>Where It Begins</span></h2>
+    </div>
+    <div style="max-width:760px;margin:0 auto">
+      <div class="test-card reveal" style="border-color:rgba(200,146,42,.3);background:linear-gradient(135deg,#0d1e38,#0a1628)">
+        <div class="test-q" style="font-size:18px;line-height:1.85;color:#c8d8f0;font-style:normal;font-family:'Cormorant Garamond',serif">The Engageneering™ Intellectual Economy opens its doors today. No fabricated numbers. No invented testimonials. No proof-of-concept theatre.<br><br>What we have is a system — built carefully, governed rigorously, and ready for the people it was designed to serve. The first questions asked here will be the ones that define what this place becomes. The first explanations given here will set the standard every future answer is measured against.<br><br>We are not asking you to believe us. We are asking you to participate — and let the score speak.</div>
+        <div style="margin-top:1.4rem;padding-top:1rem;border-top:1px solid rgba(30,58,106,.5);display:flex;align-items:center;justify-content:space-between;flex-wrap:gap">
+          <div>
+            <div class="test-n" style="font-size:16px">The Engageneering™ Team</div>
+            <div class="test-r">Founding Statement · Launch Day</div>
+          </div>
+          <button class="btn-outline-d" style="font-size:10px;padding:10px 24px" onclick="window.location.href='auth.html'">Be First In</button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ══ CTA BAND ══ -->
 <div class="cta-band">
-  <h2 class="cta-title reveal">Ready to <span>Ignite the Room?</span></h2>
-  <p class="cta-sub reveal">Join thousands of educators who have stopped teaching and started engaging. Your transformation — and your tier journey — starts with one step.</p>
+  <h2 class="cta-title reveal">Your Knowledge.<br><span>Your Economy.</span></h2>
+  <p class="cta-sub reveal">The Intellectual Economy is open. Your explanation ability has always had value — now it has a price. Your YOM Wallet, your CDS, your tier. All of it starts with one answer.</p>
   <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative" class="reveal">
     <button class="btn-gold" onclick="window.location.href='auth.html'">Join the Movement</button>
     <button class="btn-outline-d" onclick="window.location.href='platform.html'">Enter the Platform</button>
