@@ -1,4 +1,15 @@
-# Python
+# ── SECRETS — NEVER COMMIT ────────────────────────────────────────
+config.js
+.env
+*.env
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+
+# ── PYTHON ────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
@@ -13,34 +24,32 @@ build/
 .mypy_cache/
 .ruff_cache/
 
-# Virtual environments
+# ── VIRTUAL ENVIRONMENTS ──────────────────────────────────────────
 .venv/
 venv/
 env/
 ENV/
 
-# Secrets — NEVER commit these
-.env
-*.env
-!.env.example
+# ── NODE ──────────────────────────────────────────────────────────
+node_modules/
+package-lock.json
+.npm/
 
-# IDE
+# ── IDE ───────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
-.DS_Store
-Thumbs.db
 
-# Logs
+# ── OS ────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+Thumbs.db
+desktop.ini
+
+# ── LOGS & TEST ARTIFACTS ─────────────────────────────────────────
 *.log
 logs/
-
-# Test artifacts
 .pytest_cache/
 htmlcov/
 .coverage
-
-# Node (if added later)
-node_modules/
-package-lock.json
