@@ -149,7 +149,7 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
         <div class="feature-icon" style="background:rgba(226,75,74,.15)">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="#f09595" stroke-width="1.2"/><path d="M6 6l3 1.5L6 9V6z" fill="#f09595"/></svg>
         </div>
-        <div class="feature-text"><strong>Video-only Q&A</strong> — record up to 1~3 minutes on camera. You cannot fake fluency. ARIA's 12 agents score every frame across 5 indices.</div>
+        <div class="feature-text"><strong>Video-only answers</strong> — record up to 3 minutes on camera. You cannot fake fluency. ARIA's 12 agents score every frame across 5 indices.</div>
       </div>
       <div class="feature">
         <div class="feature-icon" style="background:rgba(200,146,42,.15)">
@@ -414,13 +414,12 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
 
 <script>
 // ── CONFIG ──
-const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
-const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
-const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
-
-// ── CONFIG GUARD: surface missing anon key immediately ──
-if (!SUPA_ANON) {
-  console.error('[Auth] SUPA_ANON key missing — check config.js');
+// ── SUPABASE CLIENT — initialised lazily so config.js always loads first ──
+function getSupa(){
+  const url  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
+  const anon = window.ENG_CONFIG?.SUPA_ANON || '';
+  if(!anon) console.warn('[Auth] SUPA_ANON missing — check config.js');
+  return supabase.createClient(url, anon);
 }
 
 // ── SUPABASE ERROR CLASSIFIER ──
@@ -430,8 +429,8 @@ function classifyError(e, supaError) {
       e.message?.includes('Failed to fetch') || e.name === 'TypeError')) {
     return 'Network error — please check your internet connection and try again.';
   }
-  if (!SUPA_ANON) {
-    return 'Configuration error — API key missing. Contact support if this persists.';
+  if (!window.ENG_CONFIG?.SUPA_ANON) {
+    return 'Configuration error — API key missing in config.js. Contact support if this persists.';
   }
   if (supaError) return supaError.message;
   return e?.message || 'An unexpected error occurred. Please try again.';
@@ -439,7 +438,7 @@ function classifyError(e, supaError) {
 
 // ── CHECK EXISTING SESSION ──
 window.addEventListener('DOMContentLoaded', async () => {
-  const { data: { session } } = await supa.auth.getSession();
+  const { data: { session } } = await getSupa().auth.getSession();
   if (session) {
     // Already logged in — go straight to platform
     window.location.href = 'platform.html';
@@ -555,13 +554,9 @@ async function doLogin() {
   err.textContent = '';
   if (!email) { err.textContent = 'Please enter your email address.'; return; }
   if (!pwd)   { err.textContent = 'Please enter your password.'; return; }
-  if (!SUPA_ANON) {
-    err.textContent = 'Configuration error — API key not loaded. Ensure config.js is present and reload.';
-    return;
-  }
   btn.textContent = 'Signing in...'; btn.disabled = true;
   try {
-    const { data, error } = await supa.auth.signInWithPassword({ email, password: pwd });
+    const { data, error } = await getSupa().auth.signInWithPassword({ email, password: pwd });
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         err.textContent = 'Email or password incorrect. Please check and try again, or join free if you are new.';
@@ -607,7 +602,7 @@ async function doSignup() {
 
   try {
     const fullName = `${first} ${last}`;
-    const { data, error } = await supa.auth.signUp({
+    const { data, error } = await getSupa().auth.signUp({
       email, password: pwd,
       options: {
         data: {
@@ -666,14 +661,14 @@ async function sendEngEmail(type, toEmail, data){
 
 async function createProfile(uid, fullName, meta, tags) {
   // Profile
-  await supa.from('profiles').upsert({
+  await getSupa().from('profiles').upsert({
     id: uid,
     display_name: fullName,
     status: 'active'
   }, { onConflict: 'id' });
 
   // Role with all collected data
-  await supa.from('profile_roles').upsert({
+  await getSupa().from('profile_roles').upsert({
     user_id: uid,
     role: selectedRole,
     seeker_tier: 1,
@@ -686,7 +681,7 @@ async function createProfile(uid, fullName, meta, tags) {
 
   // ── SEND WELCOME EMAIL ──────────────────────────────────────
   try{
-    const userEmail = (await supa.auth.getUser()).data?.user?.email;
+    const userEmail = (await getSupa().auth.getUser()).data?.user?.email;
     if(userEmail){
       const tierMap = {both:'Curious Mind',seeker:'Curious Mind',answerer:'Responder',institution:'Institution'};
       const tierNumMap = {both:1,seeker:1,answerer:1,institution:1};
