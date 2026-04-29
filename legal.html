@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Legal — Engageneering™</title>
+<link rel="icon" type="image/png" sizes="512x512" href="ENG-Favicon.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07101e;--bg2:#0a1628;--bg3:#0f1e36;
+  --bdr:#1e3a6a;--bdr2:#2a4a7a;
+  --gold:#c8922a;--gb:#f0c040;
+  --t1:#e8f0fc;--t2:#b8cce8;--t3:#7a9ab8;--t4:#4a6a88;
+  --rd:#e24b4a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--t2);font-family:'EB Garamond',Georgia,serif;font-size:16px;line-height:1.75}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+
+/* NAV */
+nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo svg{width:36px;height:36px}
+.nav-brand{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;letter-spacing:3px;color:var(--gold)}
+.nav-back{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);text-decoration:none;border:1px solid var(--bdr);padding:6px 16px;border-radius:4px;transition:all .2s}
+.nav-back:hover{border-color:var(--gold);color:var(--gold)}
+
+/* LAYOUT */
+.page{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 60px)}
+
+/* SIDEBAR NAV */
+.legal-nav{background:var(--bg2);border-right:1px solid var(--bdr);padding:2rem 1.2rem;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.legal-nav-title{font-size:8px;letter-spacing:3.5px;text-transform:uppercase;color:var(--gold);font-weight:700;padding:.3rem .5rem .6rem;border-bottom:1px solid rgba(30,58,106,.4);margin-bottom:.8rem}
+.legal-nav a{display:block;font-size:12px;color:var(--t3);text-decoration:none;padding:.45rem .7rem;border-radius:5px;border-left:2px solid transparent;transition:all .2s;letter-spacing:.3px}
+.legal-nav a:hover{background:rgba(55,138,221,.08);color:var(--t2)}
+.legal-nav a.active{background:rgba(200,146,42,.1);color:var(--gb);border-left-color:var(--gold)}
+.legal-nav .ver{font-size:9px;color:var(--t4);margin-top:1.4rem;padding:.5rem .5rem 0;border-top:1px solid rgba(30,58,106,.3)}
+
+/* CONTENT */
+.legal-content{padding:3rem 4rem;max-width:860px}
+.doc-section{display:none;animation:fadeIn .3s ease}
+.doc-section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.doc-eyebrow{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.doc-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:700;color:var(--t1);line-height:1.2;margin-bottom:.4rem}
+.doc-meta{font-size:11px;color:var(--t4);margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--bdr)}
+.doc-meta span{color:var(--t3)}
+
+h2{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);font-weight:600;margin:2.2rem 0 .7rem;padding-top:1.5rem;border-top:1px solid rgba(30,58,106,.35)}
+h2:first-of-type{border-top:none;padding-top:0;margin-top:0}
+h3{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--t1);font-weight:600;margin:1.4rem 0 .5rem}
+p{color:var(--t2);margin-bottom:1rem;line-height:1.85}
+ul,ol{color:var(--t2);padding-left:1.5rem;margin-bottom:1rem}
+li{margin-bottom:.4rem;line-height:1.75}
+strong{color:var(--t1)}
+em{color:var(--t3);font-style:italic}
+
+/* Disclaimer box */
+.warn-box{background:rgba(226,75,74,.07);border:1px solid rgba(226,75,74,.3);border-radius:8px;padding:1.2rem 1.4rem;margin:1.5rem 0}
+.warn-box strong{color:var(--rd)}
+.info-box{background:rgba(200,146,42,.06);border:1px solid rgba(200,146,42,.2);border-radius:8px;padding:1.2rem 1.4rem;margin:1.5rem 0}
+.info-box strong{color:var(--gold)}
+
+/* Contact */
+.contact-card{background:var(--bg3);border:1px solid var(--bdr2);border-radius:10px;padding:1.4rem;margin-top:1.5rem;display:flex;gap:1rem;align-items:flex-start}
+.contact-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.contact-email{font-size:13px;color:var(--gb);font-weight:500;margin-top:.2rem}
+
+@media(max-width:768px){
+  .page{grid-template-columns:1fr}
+  .legal-nav{display:none}
+  .legal-content{padding:2rem 1.2rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="1.5"/>
+      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".85"/>
+      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".9"/>
+      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".9"/>
+      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".9"/>
+      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".9"/>
+      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".9"/>
+    </svg>
+    <span class="nav-brand">ENGAGENEERING™</span>
+  </a>
+  <a class="nav-back" href="platform.html">← Back to Platform</a>
+</nav>
+
+<div class="page">
+
+  <!-- SIDEBAR -->
+  <aside class="legal-nav">
+    <div class="legal-nav-title">Legal Documents</div>
+    <a href="#" class="active" onclick="showDoc('terms',this)">Terms &amp; Conditions</a>
+    <a href="#" onclick="showDoc('privacy',this)">Privacy Policy</a>
+    <a href="#" onclick="showDoc('disclaimer',this)">Content Disclaimer</a>
+    <a href="#" onclick="showDoc('yom',this)">YOM Wallet Policy</a>
+    <a href="#" onclick="showDoc('aria',this)">ARIA &amp; AI Policy</a>
+    <a href="#" onclick="showDoc('cookie',this)">Cookie Policy</a>
+    <div class="ver">
+      All policies effective<br>
+      <span style="color:var(--t3)">1 May 2026</span><br>
+      Version 1.0
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="legal-content">
+
+    <!-- TERMS & CONDITIONS -->
+    <section id="doc-terms" class="doc-section active">
+      <div class="doc-eyebrow">Legal</div>
+      <div class="doc-title">Terms &amp; Conditions</div>
+      <div class="doc-meta">Effective: <span>1 May 2026</span> &nbsp;·&nbsp; Version: <span>1.0</span> &nbsp;·&nbsp; Jurisdiction: <span>Republic of India</span></div>
+
+      <h2>1. Acceptance of Terms</h2>
+      <p>By accessing, registering on, or using the Engageneering™ platform ("Platform"), you agree to be bound by these Terms &amp; Conditions ("Terms"), our Privacy Policy, Content Disclaimer, and all other policies published on this page. If you do not agree, you must not use the Platform. Your acceptance is electronically recorded with timestamp and IP address at the moment of account creation.</p>
+
+      <h2>2. Nature of the Platform</h2>
+      <p>Engageneering™ is an <strong>Intellectual Economy platform</strong> — a crowd learning marketplace where individuals ask questions, post video answers, and earn YOM Ψ points based on the quality of their intellectual contributions as assessed by the ARIA scoring system. The Platform does not guarantee any specific outcome, employment, or financial return from participation.</p>
+
+      <h2>3. Eligibility</h2>
+      <p>You must be at least <strong>18 years of age</strong> to register. By registering, you represent and warrant that you are 18 or older, that you have the legal capacity to enter into a binding agreement, and that all information you provide is accurate and complete.</p>
+
+      <h2>4. User Accounts</h2>
+      <p>You are responsible for maintaining the confidentiality of your account credentials. You are solely responsible for all activity that occurs under your account. Engageneering™ reserves the right to terminate accounts that violate these Terms without prior notice.</p>
+
+      <h2>5. User-Generated Content</h2>
+      <div class="warn-box">
+        <strong>⚠ Critical Notice:</strong> Engageneering™ is a user-generated content platform. The Company does not pre-screen, review, verify, endorse, or take responsibility for any video, text, image, or other content uploaded, posted, or transmitted by users. All content is the sole responsibility of the individual who uploads it.
+      </div>
+      <p>By submitting content, you grant Engageneering™ a non-exclusive, royalty-free, worldwide licence to display, store, process, and share your content for the purpose of operating the Platform. You retain ownership of your original content.</p>
+      <p>You represent and warrant that:</p>
+      <ul>
+        <li>You own or have the right to submit all content you upload</li>
+        <li>Your content does not infringe any third-party intellectual property rights</li>
+        <li>Your content does not contain defamatory, obscene, illegal, or harmful material</li>
+        <li>Your content complies with all applicable laws of the Republic of India and any jurisdiction from which it originates</li>
+      </ul>
+
+      <h2>6. Prohibited Conduct</h2>
+      <p>You must not:</p>
+      <ul>
+        <li>Upload content that is false, misleading, or deceptive</li>
+        <li>Impersonate any person or entity</li>
+        <li>Harass, threaten, or abuse other users</li>
+        <li>Upload content that promotes violence, hatred, or discrimination</li>
+        <li>Attempt to manipulate ARIA scoring through artificial means</li>
+        <li>Use the Platform for any commercial purpose not expressly permitted</li>
+        <li>Reverse-engineer, copy, or redistribute any part of the Platform</li>
+        <li>Circumvent any security or access controls</li>
+      </ul>
+
+      <h2>7. ARIA Scoring System</h2>
+      <p>The ARIA system provides automated quality assessments. These scores are advisory and reflect algorithmic evaluation only. Engageneering™ does not guarantee the accuracy, completeness, or fairness of any ARIA assessment. Scores are final for Ψ credit purposes but do not constitute professional, academic, or legal certification of any kind.</p>
+
+      <h2>8. YOM Ψ Points</h2>
+      <p>YOM Ψ points are a platform-internal currency with no intrinsic monetary value except as described in the YOM Wallet Policy. Engageneering™ reserves the right to modify, suspend, or terminate the Ψ system at any time. Ψ balances may not be transferred, sold, or traded outside the Platform.</p>
+
+      <h2>9. Limitation of Liability</h2>
+      <div class="warn-box">
+        <strong>⚠ Important:</strong> To the maximum extent permitted by applicable law, Engageneering™, its officers, directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Platform, including but not limited to: loss of data, loss of revenue, reputational harm, or harm resulting from content posted by other users. In no event shall our aggregate liability exceed the total amount of fees paid by you to Engageneering™ in the twelve months preceding the claim.
+      </div>
+
+      <h2>10. Indemnification</h2>
+      <p>You agree to indemnify, defend, and hold harmless Engageneering™ and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including legal fees) arising out of or in any way connected with your access to or use of the Platform, your content, or your violation of these Terms.</p>
+
+      <h2>11. Governing Law &amp; Dispute Resolution</h2>
+      <p>These Terms are governed by the laws of the Republic of India. Any disputes shall be subject to the exclusive jurisdiction of the courts located in [City], India. The parties agree to attempt to resolve any dispute through good-faith negotiation before commencing formal proceedings.</p>
+
+      <h2>12. Modifications</h2>
+      <p>We reserve the right to modify these Terms at any time. We will notify registered users by email and by prominently displaying the updated Terms. Continued use of the Platform after the effective date of the updated Terms constitutes acceptance.</p>
+    </section>
+
+    <!-- PRIVACY POLICY -->
+    <section id="doc-privacy" class="doc-section">
+      <div class="doc-eyebrow">Legal</div>
+      <div class="doc-title">Privacy Policy</div>
+      <div class="doc-meta">Effective: <span>1 May 2026</span> &nbsp;·&nbsp; Version: <span>1.0</span></div>
+
+      <h2>1. Data We Collect</h2>
+      <p>We collect the following categories of personal data:</p>
+      <ul>
+        <li><strong>Account data:</strong> Name, email address, profession, country, organisation, years of experience</li>
+        <li><strong>Content data:</strong> Videos, text answers, questions, tags, languages</li>
+        <li><strong>Usage data:</strong> Pages visited, features used, session duration, device type, browser</li>
+        <li><strong>Wallet data:</strong> Ψ transactions, purchase records, score history</li>
+        <li><strong>Consent records:</strong> Timestamp, IP address, and version of policies accepted at registration</li>
+        <li><strong>Communication data:</strong> Emails sent and received via the Platform</li>
+      </ul>
+
+      <h2>2. How We Use Your Data</h2>
+      <ul>
+        <li>To operate and improve the Platform and its features</li>
+        <li>To personalise your experience and deliver matched content via ARIA</li>
+        <li>To process Ψ transactions and maintain your YOM Wallet</li>
+        <li>To communicate platform updates, new features, and your weekly Insight Narrator reports</li>
+        <li>To detect and prevent fraud, abuse, and violations of our Terms</li>
+        <li>To comply with our legal obligations</li>
+      </ul>
+
+      <h2>3. Legal Basis for Processing (GDPR)</h2>
+      <p>Where the GDPR applies, we process your data on the following bases: <em>contractual necessity</em> (to provide the service you signed up for), <em>legitimate interests</em> (platform security, fraud prevention), and <em>consent</em> (marketing communications, optional personalisation features). You may withdraw consent at any time.</p>
+
+      <h2>4. Data Storage</h2>
+      <p>Your data is stored securely on Supabase infrastructure, which uses industry-standard encryption at rest and in transit. Videos are stored in Supabase Storage with access controls. We do not sell your personal data to third parties.</p>
+
+      <h2>5. Sharing Your Data</h2>
+      <p>We do not sell, rent, or trade personal data. We share data only in the following limited circumstances:</p>
+      <ul>
+        <li><strong>Service providers:</strong> Supabase (database &amp; storage), Razorpay (payment processing), Anthropic (ARIA AI responses)</li>
+        <li><strong>Legal requirement:</strong> When required by law, court order, or government authority</li>
+        <li><strong>Business transfer:</strong> In the event of a merger, acquisition, or asset sale, subject to equivalent privacy protections</li>
+      </ul>
+
+      <h2>6. Your Rights</h2>
+      <p>You have the right to: access your personal data; correct inaccurate data; request deletion of your data; withdraw consent; object to or restrict processing; and data portability. To exercise these rights, contact us at <strong>privacy@engageneering.org</strong>.</p>
+
+      <h2>7. Data Retention</h2>
+      <p>We retain your data for as long as your account is active and for 7 years thereafter for legal compliance purposes. Video content may be retained longer where it has been viewed or cited by other users. Consent records are retained indefinitely as legal evidence of your agreement.</p>
+
+      <h2>8. Children</h2>
+      <p>The Platform is not directed at persons under 18. We do not knowingly collect data from minors. If we become aware that a minor has registered, we will delete their account and data promptly.</p>
+    </section>
+
+    <!-- CONTENT DISCLAIMER -->
+    <section id="doc-disclaimer" class="doc-section">
+      <div class="doc-eyebrow">Legal</div>
+      <div class="doc-title">Content Disclaimer</div>
+      <div class="doc-meta">Effective: <span>1 May 2026</span> &nbsp;·&nbsp; Version: <span>1.0</span></div>
+
+      <div class="warn-box">
+        <strong>⚠ User-Generated Content Notice</strong><br><br>
+        Engageneering™ is a crowd learning platform. All video answers, questions, text responses, and other content on this platform are created, uploaded, and published by individual users — not by Engageneering™ or its employees.<br><br>
+        <strong>Engageneering™ does not:</strong> review, verify, endorse, approve, or take editorial responsibility for any user-generated content. The Company is not the author, publisher, or broadcaster of user content in any legal sense.
+      </div>
+
+      <h2>1. No Professional Advice</h2>
+      <p>Nothing on this Platform constitutes professional medical, legal, financial, psychological, or other licensed advice. Content is provided for general educational and intellectual exchange purposes only. Always consult a qualified professional before acting on any information obtained from this Platform.</p>
+
+      <h2>2. Accuracy of Content</h2>
+      <p>ARIA scoring assesses pedagogical quality, explanatory clarity, and engagement — not factual accuracy or professional correctness. A high CDS score does not imply that the content is factually correct, safe to act on, or appropriate for your specific circumstances.</p>
+
+      <h2>3. Video Content</h2>
+      <p>Videos uploaded to Engageneering™ are the sole responsibility of the uploading user. By viewing user videos, you acknowledge that:</p>
+      <ul>
+        <li>The content has not been reviewed or approved by Engageneering™</li>
+        <li>The views expressed are those of the individual user only</li>
+        <li>Engageneering™ shall not be liable for any harm, loss, or damage arising from viewing or acting on video content</li>
+        <li>You may encounter content that you find inaccurate, offensive, or with which you disagree</li>
+      </ul>
+
+      <h2>4. Intellectual Property</h2>
+      <p>Users are solely responsible for ensuring they have the rights to all content they upload. If you believe that content on this Platform infringes your intellectual property rights, please contact us at <strong>legal@engageneering.org</strong> with a detailed description of the alleged infringement. We will investigate and act in accordance with applicable law.</p>
+
+      <h2>5. Third-Party Content</h2>
+      <p>The Platform may display links to or content from third-party websites. Engageneering™ has no control over and accepts no responsibility for the content, privacy practices, or availability of any third-party site or resource.</p>
+
+      <h2>6. Reporting Harmful Content</h2>
+      <p>If you encounter content that you believe violates our Terms, is harmful, illegal, or infringes intellectual property rights, please report it using the reporting feature on the Platform or by emailing <strong>content@engageneering.org</strong>. We will investigate all reports in good faith.</p>
+      <div class="info-box">
+        <strong>Content Reporting:</strong> content@engageneering.org<br>
+        <strong>Legal Notices:</strong> legal@engageneering.org<br>
+        <strong>Privacy:</strong> privacy@engageneering.org
+      </div>
+    </section>
+
+    <!-- YOM WALLET POLICY -->
+    <section id="doc-yom" class="doc-section">
+      <div class="doc-eyebrow">Legal</div>
+      <div class="doc-title">YOM Wallet Policy</div>
+      <div class="doc-meta">Effective: <span>1 May 2026</span> &nbsp;·&nbsp; Version: <span>1.0</span></div>
+
+      <h2>1. Nature of Ψ Points</h2>
+      <p>YOM Ψ ("Psi") points are a platform-internal reward currency that represents a user's accumulated intellectual contribution as measured by the ARIA scoring system. Ψ points are <strong>not</strong> a cryptocurrency, security, financial instrument, or legal tender.</p>
+
+      <h2>2. Earning Ψ Points</h2>
+      <p>Ψ points are earned through:</p>
+      <ul>
+        <li><strong>Asking questions:</strong> Points awarded based on ARIA's quality assessment of the question</li>
+        <li><strong>Answering questions:</strong> Points awarded based on the Composite Defended Score (CDS) achieved</li>
+        <li><strong>Signing bonus:</strong> Ψ10 credited once on first account creation</li>
+      </ul>
+      <p>ARIA's scoring decisions are final for Ψ purposes. There is no formal appeals process for individual score disputes, though we welcome feedback at <strong>feedback@engageneering.org</strong>.</p>
+
+      <h2>3. Purchasing Ψ Points</h2>
+      <p>Users may purchase additional Ψ points using INR via Razorpay or international currencies via Stripe at rates published on the platform. All purchases are subject to Razorpay's and Stripe's respective terms of service. Purchased Ψ are non-refundable except where required by applicable consumer law.</p>
+
+      <h2>4. Spending Ψ Points</h2>
+      <p>Ψ points may be spent on platform features including Ask ARIA (Ψ20 per query). Spent Ψ are non-refundable. If the platform fails to deliver a paid service (e.g., ARIA is unavailable), Ψ will be automatically refunded to your wallet.</p>
+
+      <h2>5. Master Teacher Conversion</h2>
+      <p>Users who reach Master Teacher tier may apply to convert a portion of their earned Ψ to INR at a rate published in the platform. Purchased Ψ are not eligible for conversion. Conversion is subject to KYC verification, applicable tax deductions, and a minimum threshold to be published. Engageneering™ reserves the right to modify conversion rates and eligibility criteria at any time.</p>
+
+      <h2>6. Forfeiture</h2>
+      <p>Ψ balances may be forfeited in full upon account termination for violation of these Terms. Ψ may not be transferred between accounts. Ψ balances are not inheritable or transferable upon death or incapacitation.</p>
+
+      <h2>7. Modifications</h2>
+      <p>We reserve the right to modify the Ψ earning rates, spending options, and conversion terms at any time with 30 days' notice to affected users.</p>
+    </section>
+
+    <!-- ARIA & AI POLICY -->
+    <section id="doc-aria" class="doc-section">
+      <div class="doc-eyebrow">Legal</div>
+      <div class="doc-title">ARIA &amp; AI Policy</div>
+      <div class="doc-meta">Effective: <span>1 May 2026</span> &nbsp;·&nbsp; Version: <span>1.0</span></div>
+
+      <h2>1. What ARIA Is</h2>
+      <p>ARIA (Autonomous Routing &amp; Intelligence Arbiter) is Engageneering™'s proprietary AI assessment system. It evaluates user contributions using multiple specialised agents across five scoring dimensions: Explanation Intelligence (EI), Relevance Index (RI), Relevance-Adjusted Intelligence (RAI), Conceptual Originality Index (COI), and Articulation Index (AI).</p>
+
+      <h2>2. Limitations of AI Assessment</h2>
+      <div class="warn-box">
+        <strong>⚠ AI Limitations Notice:</strong> ARIA is an automated system. Like all AI, it may produce assessments that are inaccurate, incomplete, biased, or inconsistent. ARIA scores reflect the system's algorithmic evaluation only and should not be relied upon as definitive judgments of knowledge, competence, or teaching ability.
+      </div>
+
+      <h2>3. Ask ARIA</h2>
+      <p>The Ask ARIA feature uses the Anthropic Claude API to synthesise answers from platform content. These AI-generated responses:</p>
+      <ul>
+        <li>Are generated by an AI model and may contain errors or hallucinations</li>
+        <li>Do not constitute professional advice of any kind</li>
+        <li>Are not reviewed by Engageneering™ staff before delivery</li>
+        <li>Should be treated as a starting point for inquiry, not a definitive answer</li>
+      </ul>
+
+      <h2>4. Data Used for AI Processing</h2>
+      <p>Your questions and answers may be sent to Anthropic's API for processing as part of the Ask ARIA feature. By using Ask ARIA, you consent to this processing in accordance with Anthropic's privacy policy. We do not use your personal data to train AI models without your explicit consent.</p>
+
+      <h2>5. Bias and Fairness</h2>
+      <p>We are committed to ongoing monitoring of ARIA for systemic bias across language, topic, culture, and user demographics. If you believe ARIA has assessed your contribution unfairly due to language, cultural context, or topic area, please contact <strong>aria@engageneering.org</strong>.</p>
+
+      <h2>6. Human Oversight</h2>
+      <p>Engageneering™ reserves the right to manually review, adjust, or override any ARIA assessment in cases of apparent system error, user complaint, or legal necessity. Manual overrides are recorded and logged.</p>
+    </section>
+
+    <!-- COOKIE POLICY -->
+    <section id="doc-cookie" class="doc-section">
+      <div class="doc-eyebrow">Legal</div>
+      <div class="doc-title">Cookie Policy</div>
+      <div class="doc-meta">Effective: <span>1 May 2026</span> &nbsp;·&nbsp; Version: <span>1.0</span></div>
+
+      <h2>1. What Are Cookies</h2>
+      <p>Cookies are small text files stored on your device when you visit our Platform. They allow us to recognise your device across sessions and provide a consistent, personalised experience.</p>
+
+      <h2>2. Cookies We Use</h2>
+      <h3>Essential Cookies</h3>
+      <p>Required for the Platform to function. These include authentication tokens (managed by Supabase), session management, and security cookies. These cannot be disabled.</p>
+      <h3>Functional Cookies</h3>
+      <p>Remember your preferences such as language, feed filters, and display settings.</p>
+      <h3>Analytics Cookies</h3>
+      <p>Help us understand how users interact with the Platform so we can improve it. We use anonymised analytics only — we do not share analytics data with advertising networks.</p>
+
+      <h2>3. Third-Party Cookies</h2>
+      <p>The following third parties may set cookies when you use their services on our Platform:</p>
+      <ul>
+        <li><strong>Razorpay:</strong> Payment processing cookies (set only during a purchase flow)</li>
+        <li><strong>Google Fonts:</strong> Font delivery (session only, no tracking)</li>
+      </ul>
+      <p>We do not use advertising cookies or sell cookie data to any party.</p>
+
+      <h2>4. Managing Cookies</h2>
+      <p>You can control cookies via your browser settings. Note that disabling essential cookies will prevent the Platform from functioning correctly. You can opt out of analytics cookies by contacting us at <strong>privacy@engageneering.org</strong>.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+function showDoc(id, el){
+  document.querySelectorAll('.doc-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.legal-nav a').forEach(a=>a.classList.remove('active'));
+  const sec=document.getElementById('doc-'+id);
+  if(sec) sec.classList.add('active');
+  if(el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  return false;
+}
+// Highlight active section on scroll
+window.addEventListener('hashchange',()=>{
+  const id=location.hash.replace('#','');
+  if(id){
+    const link=document.querySelector(`.legal-nav a[onclick*="${id}"]`);
+    if(link) showDoc(id,link);
+  }
+});
+</script>
+</body>
+</html>
