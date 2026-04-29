@@ -147,20 +147,131 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .tag-chip.on{background:rgba(200,146,42,.12);border-color:var(--gold);color:var(--gb)}
 .err{font-size:11px;color:#f09595;margin-top:.4rem;min-height:14px}
 
-/* ══ Q CARD — VIDEO AWARE ══ */
-.q-feed{padding:1.2rem 1.5rem;display:flex;flex-direction:column;gap:1rem}
-.qc{background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;transition:border-color .25s,transform .2s,box-shadow .2s}
-.qc:hover{border-color:var(--bdr2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
-.qc.feat{border-color:rgba(200,146,42,.4);background:#0d1e38}
-.qc.new{animation:si .35s ease}
-@keyframes si{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+/* ══════════════════════════════════════════════════════
+   NETFLIX-STYLE Q&A FEED
+   ══════════════════════════════════════════════════════ */
 
-/* Video thumbnail in card */
-.qc-video-thumb{width:180px;height:102px;background:#000;position:relative;cursor:pointer;overflow:hidden;border-radius:6px;flex-shrink:0}
+/* Feed layout — no gutters, cards fill width */
+.q-feed{padding:.6rem 0;display:flex;flex-direction:column;gap:0}
+
+/* ── HERO CARD (featured/first) ── */
+.qc{position:relative;overflow:hidden;cursor:default;transition:all .3s cubic-bezier(.25,.46,.45,.94)}
+.qc.new{animation:nfSlideIn .4s ease}
+@keyframes nfSlideIn{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+
+/* STANDARD CARD — horizontal cinematic strip */
+.qc-strip{display:flex;position:relative;background:var(--bg3);border-bottom:1px solid rgba(30,58,106,.4);transition:background .25s}
+.qc-strip:hover{background:#111d35}
+.qc-strip:hover .qc-expand-hint{opacity:1}
+.qc-strip.feat{background:linear-gradient(135deg,#0d1e38 0%,#0f2240 100%);border-left:3px solid var(--gold)}
+
+/* Thumbnail col — 16:9, fixed width */
+.qc-thumb-col{position:relative;width:220px;min-width:220px;background:#000;overflow:hidden;cursor:pointer;flex-shrink:0}
+.qc-thumb-col::after{content:'';position:absolute;right:0;top:0;bottom:0;width:32px;background:linear-gradient(to right,transparent,var(--bg3));pointer-events:none;transition:opacity .3s}
+.qc-strip.feat .qc-thumb-col::after{background:linear-gradient(to right,transparent,#0d1e38)}
+.qc-strip:hover .qc-thumb-col::after{opacity:0}
+.qc-thumb-inner{width:100%;aspect-ratio:16/9;position:relative;overflow:hidden}
+.qc-thumb-inner img,.qc-thumb-inner video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+.qc-strip:hover .qc-thumb-inner img{transform:scale(1.06)}
+
+/* Play overlay */
+.qc-play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);transition:all .3s;z-index:2}
+.qc-strip:hover .qc-play-overlay{background:rgba(0,0,0,.15)}
+.qc-play-ring{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);transition:all .3s;backdrop-filter:blur(2px)}
+.qc-strip:hover .qc-play-ring{border-color:#fff;background:rgba(200,146,42,.85);transform:scale(1.08)}
+.qc-play-ring svg{width:16px;height:16px;margin-left:3px}
+
+/* Badges on thumb */
+.qc-badge-row{position:absolute;top:.5rem;left:.5rem;display:flex;gap:.3rem;z-index:3}
+.qc-badge{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;font-weight:800}
+.qcb-video{background:#e50914;color:#fff}
+.qcb-feat{background:var(--gold);color:#040c18}
+.qcb-matched{background:rgba(55,138,221,.9);color:#fff}
+.qcb-mine{background:rgba(29,158,117,.9);color:#fff}
+.qcb-bounty{background:rgba(212,146,12,.9);color:#040c18}
+
+/* Progress bar on thumb (watch progress simulation) */
+.qc-progress{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.2);z-index:3}
+.qc-progress-fill{height:100%;background:#e50914;width:0;transition:width .4s}
+
+/* Main content col */
+.qc-main{flex:1;min-width:0;padding:1rem 1.1rem .9rem;display:flex;flex-direction:column;justify-content:space-between}
+.qc-top{display:flex;flex-direction:column;gap:.5rem}
+.qc-meta-row{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+
+/* Tag chips */
+.qtag{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:3px;border:1px solid;font-weight:700}
+.qscore{font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.3);color:var(--gb);font-weight:700;letter-spacing:.5px}
+
+/* Question title */
+.qtext{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--t1);line-height:1.42;font-weight:600;letter-spacing:.1px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.qc-strip:hover .qtext{color:#fff}
+
+/* Asker pill */
+.qasker-pill{display:inline-flex;align-items:center;gap:.35rem;font-size:11px;color:var(--t4)}
+.qasker-avatar{width:18px;height:18px;border-radius:50%;background:var(--bdr2);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:var(--gb);flex-shrink:0}
+
+/* Stats row */
+.qc-stats{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.qstat{font-size:10px;color:var(--t4);display:flex;align-items:center;gap:.3rem}
+.qstat svg{opacity:.6}
+
+/* Action row */
+.qc-actions{display:flex;align-items:center;gap:.5rem;margin-top:.5rem;flex-wrap:wrap}
+.ans-btn{font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 16px;border-radius:4px;background:rgba(200,146,42,.15);border:1px solid rgba(200,146,42,.5);color:var(--gold);cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all .2s;font-weight:700;white-space:nowrap}
+.ans-btn:hover{background:var(--gold);color:#040c18;border-color:var(--gold);transform:translateY(-1px);box-shadow:0 4px 16px rgba(200,146,42,.3)}
+.qc-expand-hint{font-size:9px;color:var(--t4);opacity:0;transition:opacity .25s;letter-spacing:.5px;margin-left:auto}
+
+/* Lang badge */
+.lang-badge{font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:rgba(127,119,221,.12);color:#afa9ec;border:1px solid rgba(127,119,221,.3);font-weight:600}
+
+/* Bounty glow */
+.qc-bounty-glow{font-size:10px;color:var(--am);font-weight:700;display:flex;align-items:center;gap:.3rem;animation:bountyPulse 2s ease infinite}
+@keyframes bountyPulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* ── EXPANDED PANEL (answer + ARIA) ── */
+.qc-expand{background:#080e1d;border-top:1px solid rgba(30,58,106,.5);display:none;animation:expandIn .3s ease}
+.qc-expand.open{display:block}
+@keyframes expandIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ── ANSWER PANEL ── */
+.ans-panel{padding:1.2rem 1.4rem;border-top:1px solid var(--bdr);display:none}
+.ans-panel.open{display:block}
+.ap-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:700}
+.ans-type-toggle{display:flex;gap:.5rem;margin-bottom:1rem}
+.att{font-size:10px;letter-spacing:1px;padding:5px 16px;border-radius:20px;cursor:pointer;border:1px solid var(--bdr);color:var(--t4);background:transparent;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.att.on{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gb)}
+.ans-text-wrap{display:none}.ans-text-wrap.show{display:block}
+.ans-video-wrap{display:none}.ans-video-wrap.show{display:block}
+.ans-ta{width:100%;background:var(--bg);border:1px solid var(--bdr2);border-radius:6px;padding:.85rem 1rem;color:var(--t1);font-family:'EB Garamond',serif;font-size:14px;resize:vertical;min-height:96px;outline:none;transition:border-color .25s;line-height:1.7}
+.ans-ta:focus{border-color:rgba(200,146,42,.5)}
+.ans-ta::placeholder{color:var(--t4)}
+.ap-row{display:flex;align-items:center;gap:.7rem;margin-top:.7rem;flex-wrap:wrap}
+.ap-hint{font-size:10px;color:var(--t4);flex:1}
+
+/* ── ANSWER CARDS (inside expanded) ── */
+.al{display:flex;flex-direction:column;gap:.6rem;margin-top:.9rem}
+.ac{background:#0a1020;border:1px solid var(--bdr);border-radius:8px;overflow:hidden;display:flex}
+.ac.top{border-color:rgba(200,146,42,.35);background:linear-gradient(135deg,#0d1a30,#0a1525)}
+.ac-video{width:120px;min-width:120px;height:68px;background:#000;position:relative;cursor:pointer;overflow:hidden;flex-shrink:0}
+.ac-video video{width:100%;height:100%;object-fit:cover;display:block}
+.ac-video img{width:100%;height:100%;object-fit:cover;display:block}
+.ac-body-wrap{padding:.7rem 1rem;flex:1;min-width:0}
+.ac-hdr{display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem;flex-wrap:wrap}
+.ac-name{font-size:11px;color:var(--gb);font-weight:700}
+.ac-tier{font-size:8px;padding:1px 7px;border-radius:3px;border:1px solid;letter-spacing:.5px}
+.ac-cds{font-size:9px;color:var(--t4);margin-left:auto}
+.top-badge{font-size:8px;color:var(--gb);background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.3);padding:1px 7px;border-radius:3px;font-weight:700;letter-spacing:.5px}
+.ac-text{font-size:13px;color:var(--t2);line-height:1.75}
+.ac-scores{font-size:10px;color:var(--t4);margin-top:.4rem}
+.ac-watch{font-size:10px;color:var(--tl);margin-top:.3rem}
+
+/* Video thumb in card */
+.qc-video-thumb{width:220px;height:124px;background:#000;position:relative;cursor:pointer;overflow:hidden;flex-shrink:0}
 .qc-video-thumb video{width:100%;height:100%;object-fit:cover;display:block}
 .qc-video-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.qc-video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;transition:background .2s}
-.qc-video-thumb:hover .qc-video-overlay{background:rgba(0,0,0,.2)}
+.qc-video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.qc-video-thumb:hover .qc-video-overlay{background:rgba(0,0,0,.15)}
 .play-btn{width:36px;height:36px;border-radius:50%;background:rgba(200,146,42,.9);display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s}
 .qc-video-thumb:hover .play-btn{transform:scale(1.1);background:var(--gold)}
 .play-btn svg{width:14px;height:14px;margin-left:2px}
@@ -170,35 +281,20 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .badge-text{background:rgba(55,138,221,.85);color:#fff}
 .badge-both{background:rgba(200,146,42,.85);color:#040c18}
 
-.qc-body{padding:1.2rem 1.4rem}
-.qm{display:flex;align-items:center;gap:.5rem;margin-bottom:.65rem;flex-wrap:wrap}
-.qtag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid;font-weight:700}
-.qscore{font-size:10px;padding:2px 9px;border-radius:20px;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.25);color:var(--gb)}
-.qasker{font-size:10px;color:var(--t4);margin-left:auto}
-.qtext{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--t1);line-height:1.45;margin-bottom:.85rem}
-.qfoot{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
-.qstat{font-size:11px;color:var(--t4)}
-.ans-btn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 16px;border-radius:5px;background:transparent;border:1px solid rgba(200,146,42,.4);color:var(--gold);cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all .2s;margin-left:auto}
-.ans-btn:hover{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gb)}
+/* Score panel */
+.sc-panel{background:var(--bg4);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.2rem;margin-top:.8rem;display:none}
+.sc-panel.open{display:block}
+.sc-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem}
+.sc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:.9rem}
+.sc-col{display:flex;flex-direction:column;align-items:center;gap:.25rem}
+.sc-num{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;line-height:1}
+.sc-track{width:100%;height:44px;background:var(--bdr);border-radius:3px;position:relative;overflow:hidden}
+.sc-fill{position:absolute;bottom:0;left:0;right:0;border-radius:3px;transition:height .7s ease}
+.sc-lbl{font-size:8.5px;color:var(--t4);text-align:center;letter-spacing:.3px}
+.cds-row{border-top:1px solid var(--bdr);padding-top:.6rem;display:flex;align-items:center;justify-content:space-between}
+.cds-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gb);font-weight:600}
 
-/* ══ VIDEO ANSWER PLAYER ══ */
-.ans-panel{padding:1.2rem 1.4rem;border-top:1px solid var(--bdr);display:none}
-.ans-panel.open{display:block}
-.ap-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:700}
-
-/* Answer type toggle */
-.ans-type-toggle{display:flex;gap:.5rem;margin-bottom:1rem}
-.att{font-size:10px;letter-spacing:1px;padding:5px 16px;border-radius:20px;cursor:pointer;border:1px solid var(--bdr);color:var(--t4);background:transparent;transition:all .2s;display:flex;align-items:center;gap:.4rem}
-.att.on{background:rgba(200,146,42,.1);border-color:var(--gold);color:var(--gb)}
-
-.ans-text-wrap{display:none}.ans-text-wrap.show{display:block}
-.ans-video-wrap{display:none}.ans-video-wrap.show{display:block}
-
-.ans-ta{width:100%;background:var(--bg);border:1px solid var(--bdr2);border-radius:6px;padding:.85rem 1rem;color:var(--t1);font-family:'EB Garamond',serif;font-size:14px;resize:vertical;min-height:96px;outline:none;transition:border-color .25s;line-height:1.7}
-.ans-ta:focus{border-color:rgba(200,146,42,.5)}
-.ans-ta::placeholder{color:var(--t4)}
-.ap-row{display:flex;align-items:center;gap:.7rem;margin-top:.7rem;flex-wrap:wrap}
-.ap-hint{font-size:10px;color:var(--t4);flex:1}
+/* ans-panel styles defined in Netflix Q&A section above */
 
 /* ══ ANSWER CARD ══ */
 .al{display:flex;flex-direction:column;gap:.7rem;margin-top:.9rem}
@@ -740,7 +836,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
     </div>
 
     <div class="q-feed" id="qFeed">
-      <div style="text-align:center;padding:3rem;color:var(--t4)">Loading...</div>
+      <div style="text-align:center;padding:3rem;color:var(--t4);letter-spacing:2px;font-size:11px;text-transform:uppercase">Loading feed…</div>
     </div>
   </div>
 
@@ -1173,54 +1269,104 @@ function playVideo_legacy(id,url){
 
 function fmtDur(s){if(!s)return'';const m=Math.floor(s/60),sec=s%60;return`${m}:${sec.toString().padStart(2,'0')}`;}
 
-// ══ Q CARD ══
+// ══ Q CARD — NETFLIX STYLE ══
 function qCard(q,force=false){
   const tags=q.tags||['General'];
-  const tag=tags[0]||'General';
-  const cls=tc(tag);
   const isMe=U&&q.asker_id===U.id;
   const isMatch=U&&(q.matched_uids||[]).includes(U.id);
   const feat=force||(q.quality_score>=85);
   const asker=q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
-  const ct='video'; // video-only platform
+  const askerInitial=(asker||'?').charAt(0).toUpperCase();
   const pid='panel-'+q.id;
   const aid='ans-'+q.id;
   const lid='list-'+q.id;
   const hid='hint-'+q.id;
   const sid='sc-'+q.id;
   const ma=q.myAnswer;
-  const hasVid=true; // always video
   const langCode=q.language||'en';
   const langName=q.language_name||getLanguageName(langCode);
   const showLangBadge=!!(langCode&&langName);
+  const qs=q.quality_score;
+  const hasBounty=q.bounty_pts>0;
+  const expandId='expand-'+q.id;
 
-  return`<div class="qc ${feat?'feat':''}" data-qid="${q.id}">
-    <div style="display:flex;gap:1rem;align-items:flex-start">
-    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):'<div style="width:160px;min-width:160px;height:90px;background:var(--bg4);border-radius:8px;border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;color:var(--t4);font-size:22px">🎙️</div>'}
-    <div class="qc-body" style="flex:1;min-width:0">
-      <div class="qm" style="flex-wrap:wrap;gap:.3rem">
-        ${tags.map(t=>`<div class="qtag ${tc(t)}">${t}</div>`).join('')}
-        ${q.quality_score!=null?`<div class="qscore">Ψ ${q.quality_score}</div>`:''}
-        <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(226,75,74,.12);color:#e24b4a;border:1px solid rgba(226,75,74,.3);font-weight:700">🎥 Video</span>
-        ${showLangBadge?`<span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(127,119,221,.12);color:#afa9ec;border:1px solid rgba(127,119,221,.3);font-weight:600">${langName}</span>`:''}
-        ${isMatch?`<span style="font-size:10px;color:var(--tlb)">✦ Matched</span>`:''}
-        ${isMe?`<span style="font-size:10px;color:var(--gold)">✦ Yours</span>`:''}
-        <div class="qasker">${asker}</div>
+  // Thumb: prefer explicit thumbnail, then generate from video
+  const thumbHtml = q.video_url
+    ? nfThumb(q.video_url, q.video_thumbnail, q.id)
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#060e1e,#0a1828)">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" stroke="rgba(200,146,42,.3)" stroke-width="1.5"/><polygon points="13,10 23,16 13,22" fill="rgba(200,146,42,.5)"/></svg>
+      </div>`;
+
+  return`<div class="qc ${feat?'feat':''} qc-strip" data-qid="${q.id}">
+
+    <!-- ── THUMBNAIL COL ── -->
+    <div class="qc-thumb-col" onclick="nfPlayOrExpand('${q.id}','${q.video_url||''}')">
+      <div class="qc-thumb-inner">${thumbHtml}</div>
+      <div class="qc-play-overlay">
+        <div class="qc-play-ring">
+          <svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg>
+        </div>
       </div>
-      ${q.text&&q.text!=='[Video question]'?`<div class="qtext">${q.text}</div>`:''}
-      <div class="qfoot">
-        <div class="qstat">${q.answer_count||0} answers</div>
-        <div class="qstat">${q.views||0} views</div>
-        ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">+${q.bounty_pts} Ψ YOM</div>`:''}
-        <button class="ans-btn" onclick="togglePanel('${pid}')">Answer</button>
-        <button class="aria-ask-btn" id="ask-aria-${q.id}" onclick="openAriaPanel('${q.id}')" title="ARIA synthesises the best answer from top-CDS responses · Costs Ψ${ARIA_COST}">
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><polygon points="5.5,1 10,5.5 5.5,10 1,5.5" stroke="#afa9ec" stroke-width="1.2" fill="rgba(127,119,221,.2)"/><text x="5.5" y="7.2" text-anchor="middle" font-size="5.5" fill="#afa9ec" font-weight="700">A</text></svg>
-          Ask ARIA
-          <span class="aria-cost">Ψ${ARIA_COST}</span>
-        </button>
+      <!-- Badges -->
+      <div class="qc-badge-row">
+        <span class="qc-badge qcb-video">▶ Video</span>
+        ${feat?`<span class="qc-badge qcb-feat">✦ Featured</span>`:''}
+        ${isMatch?`<span class="qc-badge qcb-matched">Matched</span>`:''}
+        ${isMe?`<span class="qc-badge qcb-mine">Yours</span>`:''}
+        ${hasBounty?`<span class="qc-badge qcb-bounty">+${q.bounty_pts} Ψ</span>`:''}
+      </div>
+      <!-- Progress bar placeholder -->
+      <div class="qc-progress"><div class="qc-progress-fill" id="prog-${q.id}" style="width:0%"></div></div>
+    </div>
+
+    <!-- ── MAIN CONTENT COL ── -->
+    <div class="qc-main">
+      <div class="qc-top">
+
+        <!-- Tags + score row -->
+        <div class="qc-meta-row">
+          ${tags.slice(0,2).map(t=>`<div class="qtag ${tc(t)}">${t}</div>`).join('')}
+          ${qs!=null?`<div class="qscore">Ψ ${qs}</div>`:''}
+          ${showLangBadge?`<span class="lang-badge">${langName}</span>`:''}
+          ${hasBounty?`<span class="qc-bounty-glow"><svg width="10" height="10" viewBox="0 0 10 10"><text y="9" font-size="9">Ψ</text></svg>+${q.bounty_pts} bounty</span>`:''}
+        </div>
+
+        <!-- Question text -->
+        <div class="qtext">${q.text&&q.text!=='[Video question]'?q.text:'Video question — click to watch'}</div>
+
+        <!-- Asker -->
+        <div class="qasker-pill">
+          <div class="qasker-avatar">${askerInitial}</div>
+          <span>${asker}</span>
+        </div>
+      </div>
+
+      <!-- Stats + actions -->
+      <div>
+        <div class="qc-stats">
+          <span class="qstat">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 10 Q5.5 1 10 10" stroke="currentColor" stroke-width="1.2"/><circle cx="5.5" cy="7" r="2" fill="currentColor" opacity=".5"/></svg>
+            ${q.answer_count||0} answers
+          </span>
+          <span class="qstat">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><ellipse cx="5.5" cy="5.5" rx="4.5" ry="3" stroke="currentColor" stroke-width="1.1"/><circle cx="5.5" cy="5.5" r="1.4" fill="currentColor"/></svg>
+            ${q.views||0} views
+          </span>
+        </div>
+        <div class="qc-actions">
+          <button class="ans-btn" onclick="nfOpenAnswer('${q.id}','${pid}')">🎥 Answer</button>
+          <button class="aria-ask-btn" id="ask-aria-${q.id}" onclick="openAriaPanel('${q.id}')" title="ARIA synthesises from top-CDS answers · Costs Ψ${ARIA_COST}">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><polygon points="5.5,1 10,5.5 5.5,10 1,5.5" stroke="#afa9ec" stroke-width="1.2" fill="rgba(127,119,221,.2)"/><text x="5.5" y="7.2" text-anchor="middle" font-size="5.5" fill="#afa9ec" font-weight="700">A</text></svg>
+            Ask ARIA <span class="aria-cost">Ψ${ARIA_COST}</span>
+          </button>
+          <span class="qc-expand-hint">▾ expand</span>
+        </div>
       </div>
     </div>
-    </div>
+  </div>
+
+  <!-- ── EXPANDED ZONE (ARIA + Answer panel) ── -->
+  <div class="qc-expand" id="${expandId}">
 
     <!-- ARIA Response Panel -->
     <div class="aria-panel" id="aria-panel-${q.id}">
@@ -1304,6 +1450,51 @@ function qCard(q,force=false){
       </div>
     </div>
   </div>`;
+}
+
+
+// ══ NETFLIX HELPERS ══════════════════════════════════════════════
+function nfThumb(url, thumb, qid){
+  const id='v'+qid.replace(/-/g,'').substr(0,6);
+  if(thumb){
+    return`<img src="${thumb}" alt="Question thumbnail" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"/>`;
+  }
+  // Poster from video first frame
+  return`<video src="${url}" preload="metadata" muted playsinline crossorigin="anonymous"
+    style="width:100%;height:100%;object-fit:cover;display:block"
+    onloadeddata="this.currentTime=0.5"></video>`;
+}
+
+function nfPlayOrExpand(qid, videoUrl){
+  const expandId='expand-'+qid;
+  const expand=document.getElementById(expandId);
+  if(!expand) return;
+  const isOpen=expand.classList.contains('open');
+  // Close all other expanded cards first
+  document.querySelectorAll('.qc-expand.open').forEach(el=>{
+    if(el.id!==expandId) el.classList.remove('open');
+  });
+  if(isOpen){
+    expand.classList.remove('open');
+    return;
+  }
+  expand.classList.add('open');
+  // If has video, open answer panel so video player is visible
+  if(videoUrl && videoUrl!=='undefined'){
+    const pid='panel-'+qid;
+    const panel=document.getElementById(pid);
+    if(panel&&!panel.classList.contains('open')) panel.classList.add('open');
+  }
+  // Smooth scroll card into view
+  const card=document.querySelector(`[data-qid="${qid}"]`);
+  if(card) setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+function nfOpenAnswer(qid, pid){
+  const expandId='expand-'+qid;
+  const expand=document.getElementById(expandId);
+  if(expand&&!expand.classList.contains('open')) expand.classList.add('open');
+  togglePanel(pid);
 }
 
 function togglePanel(id){
