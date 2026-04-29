@@ -489,6 +489,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .yw-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
 .yw-icon-q{background:rgba(55,138,221,.15);border:1px solid rgba(55,138,221,.3)}
 .yw-icon-a{background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.3)}
+.yw-icon-b{background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.3)}
 .yw-row-lbl{font-size:11px;color:var(--t3);letter-spacing:.3px}
 .yw-row-val{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--t1)}
 .yw-row-val .yw-psi-s{font-size:10px;color:var(--gold);margin-right:2px}
@@ -895,6 +896,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
       <div class="yw-split-bar">
         <div class="yw-split-q" id="ywSplitQ" style="flex:1"></div>
         <div class="yw-split-a" id="ywSplitA" style="flex:0"></div>
+        <div id="ywSplitB" style="flex:0;height:4px;background:linear-gradient(to right,var(--gold),var(--gb));border-radius:0 2px 2px 0;transition:flex .8s ease"></div>
       </div>
 
       <div class="yw-divider"></div>
@@ -921,6 +923,30 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
           </div>
         </div>
         <div class="yw-row-val"><span class="yw-psi-s">Ψ</span><span id="ywAPts">—</span></div>
+      </div>
+
+      <!-- Bought Ψ -->
+      <div class="yw-row">
+        <div class="yw-row-left">
+          <div class="yw-icon yw-icon-b">💳</div>
+          <div>
+            <div class="yw-row-lbl">Purchased</div>
+            <div class="yw-bar-wrap"><div class="yw-bar-a" id="ywBarB" style="width:0%;background:linear-gradient(to right,var(--gold),var(--gb))"></div></div>
+          </div>
+        </div>
+        <div class="yw-row-val"><span class="yw-psi-s">Ψ</span><span id="ywBPts">—</span></div>
+      </div>
+
+      <!-- Purchased Ψ -->
+      <div class="yw-row">
+        <div class="yw-row-left">
+          <div class="yw-icon" style="background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.3)">💳</div>
+          <div>
+            <div class="yw-row-lbl">Purchased</div>
+            <div class="yw-bar-wrap"><div id="ywBarB" style="height:3px;background:linear-gradient(to right,var(--gold),var(--gb));border-radius:2px;width:0%;transition:width .8s ease"></div></div>
+          </div>
+        </div>
+        <div class="yw-row-val"><span class="yw-psi-s">Ψ</span><span id="ywBPts">0</span></div>
       </div>
 
       <!-- Last Earned -->
@@ -1327,7 +1353,7 @@ function qCard(q,force=false){
 
   return`<div class="qc ${feat?'feat':''}" data-qid="${q.id}">
     <div style="display:flex;gap:1rem;align-items:flex-start">
-    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):'<div style="width:160px;min-width:160px;height:90px;background:var(--bg4);border-radius:8px;border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;color:var(--t4);font-size:22px">🎙️</div>'}
+    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):`<img src="${getTopicThumb(q.tags,q.id)}" alt="" loading="lazy" style="width:160px;min-width:160px;height:90px;border-radius:8px;object-fit:cover;display:block"/>`}
     <div class="qc-body" style="flex:1;min-width:0">
       <div class="qm" style="flex-wrap:wrap;gap:.3rem">
         ${tags.map(t=>`<div class="qtag ${tc(t)}">${t}</div>`).join('')}
@@ -1462,6 +1488,86 @@ function setAnsType(qid,type){
 // NETFLIX-STYLE FEED
 // ════════════════════════════════════════════════════════════════
 
+
+// ══════════════════════════════════════════════════════════════════
+// THUMBNAIL HELPERS
+// ══════════════════════════════════════════════════════════════════
+
+// Curated Unsplash photo IDs by topic — copyright free, CC0
+const TOPIC_PHOTOS = {
+  'Programming':   ['xkBaqlcqeb4','ZIPFteu-R8k','jLwVAUtLOAQ','f77Bh3inUpE','npxXWgQ33ZQ'],
+  'Mathematics':   ['WE0RXlIXMFQ','E8Ufcyxz514','5mZ_M06Fc9g','3bEWOdqsIso','RFlssa-NKFE'],
+  'Science':       ['oMpAz-DN-9I','7JX0-bfiuxQ','mPdmqbBG5e0','9I6bFVMUmUw','ZzOa5G8hSPI'],
+  'Physics':       ['oMpAz-DN-9I','7JX0-bfiuxQ','4dpAqfTbvKA','j4ocWABQ6Vc','3m2IxN9yFxs'],
+  'History':       ['7mUXaBBpOc0','VBLHICVh-lI','dznMoEkYb84','g9OsWHE3sn8','4t5F0vI0cXc'],
+  'Philosophy':    ['XEsx2yKiqds','d2w-_1LJioQ','qWT3Dq1aS9A','7mUXaBBpOc0','YjxBPt3t9w8'],
+  'Finance':       ['5fNmWej4tAA','hpjSkU2UYSU','IrRbSND5EUc','q8U1YgBZixI','PIyvB4O_38I'],
+  'Economics':     ['5fNmWej4tAA','hpjSkU2UYSU','IrRbSND5EUc','m_HRfLhgABo','3m2IxN9yFxs'],
+  'Biology':       ['mPdmqbBG5e0','9I6bFVMUmUw','oGv9xIl7ThI','jO6vBWX9h9Y','Kl9SQjBe0nA'],
+  'Chemistry':     ['ZzOa5G8hSPI','7JX0-bfiuxQ','oMpAz-DN-9I','9I6bFVMUmUw','4dpAqfTbvKA'],
+  'Psychology':    ['XEsx2yKiqds','d2w-_1LJioQ','jO6vBWX9h9Y','Y3AqmbmtLQI','YjxBPt3t9w8'],
+  'Politics':      ['7mUXaBBpOc0','VBLHICVh-lI','dznMoEkYb84','g9OsWHE3sn8','4t5F0vI0cXc'],
+  'Literature':    ['qWT3Dq1aS9A','YjxBPt3t9w8','XEsx2yKiqds','d2w-_1LJioQ','7mUXaBBpOc0'],
+  'Language':      ['qWT3Dq1aS9A','YjxBPt3t9w8','hGV2TfOh0ns','d2w-_1LJioQ','3m2IxN9yFxs'],
+  'Medicine':      ['mPdmqbBG5e0','9I6bFVMUmUw','oGv9xIl7ThI','jO6vBWX9h9Y','Kl9SQjBe0nA'],
+  'Engineering':   ['xkBaqlcqeb4','ZIPFteu-R8k','jLwVAUtLOAQ','f77Bh3inUpE','npxXWgQ33ZQ'],
+  'Technology':    ['xkBaqlcqeb4','ZIPFteu-R8k','jLwVAUtLOAQ','4dpAqfTbvKA','ZzOa5G8hSPI'],
+  'General':       ['d2w-_1LJioQ','XEsx2yKiqds','qWT3Dq1aS9A','YjxBPt3t9w8','7mUXaBBpOc0'],
+  'default':       ['d2w-_1LJioQ','XEsx2yKiqds','7mUXaBBpOc0','YjxBPt3t9w8','3m2IxN9yFxs'],
+};
+
+// Gradient palettes per topic for avatar fallback
+const TOPIC_GRADIENTS = {
+  'Programming':   ['#1a3a6a','#0d2040'],
+  'Mathematics':   ['#2a1a4a','#150d30'],
+  'Science':       ['#0d2a1a','#081508'],
+  'Physics':       ['#1a2a4a','#0a1428'],
+  'History':       ['#3a2010','#1a0e08'],
+  'Philosophy':    ['#1a1a3a','#0d0d20'],
+  'Finance':       ['#1a2a10','#0d1508'],
+  'General':       ['#1a2a3a','#0d1520'],
+  'default':       ['#0f1e36','#07101e'],
+};
+
+// Get a deterministic topic image URL (Unsplash, free)
+function getTopicThumb(tags, qid, w=400, h=225){
+  const tag = (tags||['General'])[0]||'General';
+  // Normalise tag to a key
+  const key = Object.keys(TOPIC_PHOTOS).find(k=>
+    tag.toLowerCase().includes(k.toLowerCase()) ||
+    k.toLowerCase().includes(tag.toLowerCase())
+  ) || 'default';
+  const photos = TOPIC_PHOTOS[key];
+  // Deterministic pick from qid
+  const seed = qid ? [...qid].reduce((s,c)=>s+c.charCodeAt(0),0) : 0;
+  const photo = photos[seed % photos.length];
+  return `https://images.unsplash.com/photo-${photo}?w=${w}&h=${h}&fit=crop&auto=format&q=70`;
+}
+
+// Build avatar HTML for asker (initials + gradient)
+function buildAskerAvatar(name, tags, size=36){
+  const initial = (name||'?').charAt(0).toUpperCase();
+  const tag = (tags||['General'])[0]||'General';
+  const key = Object.keys(TOPIC_GRADIENTS).find(k=>
+    tag.toLowerCase().includes(k.toLowerCase())
+  ) || 'default';
+  const [c1,c2] = TOPIC_GRADIENTS[key];
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,${c1},${c2});border:2px solid rgba(200,146,42,.4);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:${Math.round(size*.4)}px;color:var(--gb);font-weight:700;flex-shrink:0">${initial}</div>`;
+}
+
+// Combined: returns img tag with topic fallback via onerror
+function cardThumbHtml(q, w=400, h=225){
+  const fallback = getTopicThumb(q.tags, q.id, w, h);
+  if(q.video_thumbnail){
+    return `<img src="${q.video_thumbnail}" alt="" loading="lazy"
+      onerror="this.src='${fallback}'"
+      style="width:100%;height:100%;object-fit:cover;display:block"/>`;
+  }
+  // No video thumbnail — use topic image directly
+  return `<img src="${fallback}" alt="${(q.tags||[''])[0]}"
+    loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"/>`;
+}
+
 function buildNfFeed(qs){
   if(!qs||!qs.length) return '<div style="padding:3rem 2rem;color:var(--t4);font-size:13px;letter-spacing:1px">No questions yet — be the first to ask.</div>';
 
@@ -1498,9 +1604,8 @@ function buildNfHero(q){
   const score = q.quality_score;
   const days  = Math.floor((Date.now()-new Date(q.created_at||Date.now()))/(864e5));
 
-  const bgEl = q.video_thumbnail
-    ? `<img class="nf-hero-bg" src="${q.video_thumbnail}" alt=""/>`
-    : `<div class="nf-hero-vbg" style="background:linear-gradient(135deg,#040810 0%,#0a1828 50%,#07101e 100%)"></div>`;
+  const bgEl = `<img class="nf-hero-bg" src="${q.video_thumbnail||getTopicThumb(q.tags,q.id,1200,500)}"
+    alt="" onerror="this.src='${getTopicThumb(q.tags,q.id,1200,500)}'"/>`;
 
   return `<div class="nf-hero" id="nfhero-${q.id}">
     ${bgEl}
@@ -1510,6 +1615,8 @@ function buildNfHero(q){
       <div class="nf-hero-label">${tags}</div>
       <div class="nf-hero-title">${title.length>100?title.slice(0,97)+'…':title}</div>
       <div class="nf-hero-meta">
+        ${buildAskerAvatar(asker,q.tags,28)}
+        <span style="color:var(--t2)">${asker}</span>
         ${score!=null?`<span style="color:var(--gb);font-weight:700">Ψ ${score}</span>`:''}
         <span>${q.answer_count||0} answers</span>
         <span>${q.views||0} views</span>
@@ -1581,9 +1688,7 @@ function buildNfCard(q){
   const title = (q.text&&q.text!=='[Video question]') ? q.text : 'Video Question';
   const asker = q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
 
-  const thumb = q.video_thumbnail
-    ? `<img src="${q.video_thumbnail}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"/>`
-    : `<div class="nfc-img-ph"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" opacity=".35"><circle cx="16" cy="16" r="13" stroke="#c8922a" stroke-width="1.2"/><polygon points="12,9 23,16 12,23" fill="#c8922a"/></svg></div>`;
+  const thumb = cardThumbHtml(q);
 
   const badge = feat?`<span class="nfc-badge nfb-feat">★</span>`:
     isNew?`<span class="nfc-badge nfb-new">New</span>`:
@@ -1629,11 +1734,7 @@ function buildNfRankCard(q, rank){
   const pid   = 'panel-r'+q.id;
   const title = (q.text&&q.text!=='[Video question]') ? q.text : 'Video Question';
 
-  const thumb = q.video_thumbnail
-    ? `<img src="${q.video_thumbnail}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"/>`
-    : `<div class="nfc-rank-thumb-ph">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" opacity=".4"><polygon points="8,5 19,12 8,19" fill="#c8922a"/></svg>
-       </div>`;
+  const thumb = cardThumbHtml(q, 300, 450);
 
   // Badge on thumbnail
   const days  = Math.floor((Date.now()-new Date(q.created_at||Date.now()))/(864e5));
@@ -1674,19 +1775,24 @@ function buildNfRankCard(q, rank){
 // ── EXPAND INNER (shared by hero / card / rank) ───────────────────
 function buildExpandInner(q, pid){
   const title = (q.text&&q.text!=='[Video question]') ? q.text : 'Video Question';
-  const asker = q.profiles?.display_name || 'Community';
+  const isMe  = U&&q.asker_id===U.id;
+  const asker = q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
   const yr    = q.created_at ? new Date(q.created_at).getFullYear() : '';
   const xid   = 'nfx-'+q.id;
 
+  const topicImg = getTopicThumb(q.tags, q.id, 640, 360);
   const vidEl = q.video_url
-    ? `<video src="${q.video_url}" ${q.video_thumbnail?`poster="${q.video_thumbnail}"`:''}
+    ? `<video src="${q.video_url}" poster="${q.video_thumbnail||topicImg}"
          controls playsinline style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"></video>`
-    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0a1828">
-         <span style="font-size:40px;opacity:.3">🎙️</span></div>`;
+    : `<img src="${topicImg}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`;
 
   return `<div class="nf-expand-top">
       <div class="nf-expand-vid">${vidEl}</div>
       <div class="nf-expand-meta">
+        <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem">
+          ${buildAskerAvatar(asker,q.tags,32)}
+          <span style="font-size:12px;color:var(--t3)">${asker}</span>
+        </div>
         <div class="nf-expand-title">${title}</div>
         <div class="nf-expand-row">
           ${q.quality_score!=null?`<span class="nf-expand-score">Ψ ${q.quality_score}</span>`:''}
@@ -2955,24 +3061,40 @@ async function loadYOMWallet(){
     const qPts    = pr?.seeker_pts   || R?.seeker_pts   || 0;
     const aPts    = pr?.answerer_pts || R?.answerer_pts || 0;
 
+    // Bought Ψ — sum of psi_purchase entries from score_history
+    const{data:purchases}=await supa.from('score_history')
+      .select('pts_awarded')
+      .eq('user_id',U.id)
+      .eq('action_type','psi_purchase');
+    const bPts=(purchases||[]).reduce((s,r)=>s+(r.pts_awarded||0),0);
+
     // Update display
     const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
     set('ywTotal', total);
     set('ywQPts',  qPts);
     set('ywAPts',  aPts);
+    set('ywBPts',  bPts);
+    // Sync R (global profile_roles cache) so buildNav shows same value
+    if(R){ R.pts_total=total; R.seeker_pts=qPts; R.answerer_pts=aPts; }
+    buildNav();
 
     // Progress bars (proportion of total)
-    const qPct = total>0 ? Math.round(qPts/total*100) : 0;
-    const aPct = total>0 ? Math.round(aPts/total*100) : 0;
+    const allPts = total || 1;
+    const qPct = Math.round(qPts/allPts*100);
+    const aPct = Math.round(aPts/allPts*100);
+    const bPct = Math.round(bPts/allPts*100);
     const bq=document.getElementById('ywBarQ'); if(bq)bq.style.width=qPct+'%';
     const ba=document.getElementById('ywBarA'); if(ba)ba.style.width=aPct+'%';
+    const bb=document.getElementById('ywBarB'); if(bb)bb.style.width=bPct+'%';
 
     // Split bar
     const sq=document.getElementById('ywSplitQ');
     const sa=document.getElementById('ywSplitA');
+    const sb=document.getElementById('ywSplitB');
     if(sq&&sa){
-      const qFlex=total>0?qPts:1, aFlex=total>0?aPts:0;
+      const qFlex=total>0?qPts:1, aFlex=total>0?aPts:0, bFlex=total>0?bPts:0;
       sq.style.flex=qFlex; sa.style.flex=aFlex;
+      if(sb) sb.style.flex=bFlex;
     }
 
     // Last earned — query score_history for most recent entry
@@ -3042,7 +3164,7 @@ async function grantSignupBonusIfNew(){
     .select('*',{count:'exact',head:true})
     .eq('user_id',U.id)
     .eq('action_type','signup_bonus');
-  if(count>0) return; // already granted
+  if((count??0)>0) return; // already granted — ?? handles null count
 
   // Grant Ψ10
   try{
@@ -3422,76 +3544,6 @@ async function loadEvtCount(){
 
 <!-- ================= YOM WALLET PATCH ================= -->
 
-<style>
-.yom-wallet{
-display:flex;
-flex-direction:column;
-align-items:flex-end;
-line-height:1.2;
-}
-
-.yom-total{
-color:#facc15;
-font-weight:700;
-font-size:16px;
-}
-
-.yom-breakup{
-font-size:11px;
-opacity:.7;
-}
-</style>
-
-<script>
-(function(){
-
-  function updateYOMFromDOM(){
-
-    // 🔥 Extract points from existing UI instead of JS
-    let pts = 0;
-
-    // Try to read from existing rendered text (SAFE)
-    const bodyText = document.body.innerText;
-
-    const match = bodyText.match(/(\d+)\s*pts/);
-
-    if(match){
-      pts = parseInt(match[1]);
-    }
-
-    // fallback
-    if(!pts){
-      pts = parseFloat(localStorage.getItem("points") || 0);
-    }
-
-    let q = Math.round(pts * 0.6);
-    let a = Math.round(pts * 0.4);
-
-    const wallet = { total: pts, q: q, a: a };
-
-    localStorage.setItem("yomWallet", JSON.stringify(wallet));
-
-    // update UI safely
-    const set = (id,val)=>{
-      const el = document.getElementById(id);
-      if(el) el.innerText = val;
-    };
-
-    set("yomTotal", wallet.total);
-    set("yomQ", wallet.q);
-    set("yomA", wallet.a);
-  }
-
-  // 🔥 RUN AFTER EVERYTHING SETTLES
-  setTimeout(updateYOMFromDOM, 1500);
-
-})();
-</script>
-
-<!-- YOM wallet value holders (updated by patch script below) -->
-<span id="yomTotal" style="display:none">0</span>
-<span id="yomQ" style="display:none">0</span>
-<span id="yomA" style="display:none">0</span>
 
 </body>
 
