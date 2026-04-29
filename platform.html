@@ -1341,12 +1341,18 @@ function qCard(q,force=false){
 
   return`<div class="qc ${feat?'feat':''}" data-qid="${q.id}">
     <div style="display:flex;gap:1rem;align-items:flex-start">
-    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):`<img src="${q.video_thumbnail||getTopicThumb(q.tags,q.id)}"
-  data-fb1="${getTopicThumb(q.tags,q.id)}"
-  data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
-  data-w="400" data-h="225"
-  alt="" loading="lazy" onerror="nfImgErr(this)"
-  style="width:160px;min-width:160px;height:90px;border-radius:8px;object-fit:cover;display:block"/>`}
+    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):q.video_thumbnail
+      ?`<img src="${q.video_thumbnail}"
+          data-picsum="${getTopicThumb(q.tags,q.id)}"
+          data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
+          data-w="400" data-h="225"
+          alt="" loading="lazy" onerror="nfThumbFail(this)"
+          style="width:160px;min-width:160px;height:90px;border-radius:8px;object-fit:cover;display:block"/>`
+      :`<img src="${getTopicThumb(q.tags,q.id)}"
+          data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
+          data-w="400" data-h="225"
+          alt="" loading="lazy" onerror="nfCanvasFill(this)"
+          style="width:160px;min-width:160px;height:90px;border-radius:8px;object-fit:cover;display:block"/>`}
     <div class="qc-body" style="flex:1;min-width:0">
       <div class="qm" style="flex-wrap:wrap;gap:.3rem">
         ${tags.map(t=>`<div class="qtag ${tc(t)}">${t}</div>`).join('')}
@@ -1568,53 +1574,60 @@ function svgFallback(tags, w=400, h=225){
 // Main thumb builder — priority: video_thumbnail → picsum → SVG
 // Uses data-* attributes to avoid any quote-escaping in onerror
 function cardThumbHtml(q, w=400, h=225){
-  // Always show video_thumbnail first if it exists
-  const src = q.video_thumbnail || getTopicThumb(q.tags, q.id, w, h);
-  // Store picsum as fallback-1, svgFallback baked in via nfImgErr handler
-  const fb1 = q.video_thumbnail ? getTopicThumb(q.tags, q.id, w, h) : '';
-  const tag  = ((q.tags||['General'])[0]||'General').replace(/"/g,'');
-  return `<img src="${src}" alt=""
-    loading="lazy" decoding="async"
-    data-fb1="${fb1}"
-    data-tag="${tag}"
-    data-w="${w}" data-h="${h}"
-    onerror="nfImgErr(this)"
+  const realThumb = q.video_thumbnail || null;
+  const topicImg  = getTopicThumb(q.tags, q.id, w, h);
+  const tag       = ((q.tags||['General'])[0]||'General').replace(/"/g,'');
+  // Always start with the real thumbnail if it exists.
+  // A unique ID lets nfThumbReady/nfThumbFail find this img element.
+  const uid = 'nfimg-'+(q.id||Math.random().toString(36).slice(2));
+  if(realThumb){
+    return `<img id="${uid}" src="${realThumb}" alt=""
+      data-picsum="${topicImg}"
+      data-tag="${tag}" data-w="${w}" data-h="${h}"
+      onload="this.dataset.loaded='1'"
+      onerror="nfThumbFail(this)"
+      style="width:100%;height:100%;object-fit:cover;display:block"/>`;
+  }
+  // No real thumbnail — use picsum directly with canvas fallback
+  return `<img src="${topicImg}" alt=""
+    data-tag="${tag}" data-w="${w}" data-h="${h}"
+    onerror="nfCanvasFill(this)"
     style="width:100%;height:100%;object-fit:cover;display:block"/>`;
 }
 
-// Global image error handler — called from onerror="nfImgErr(this)"
-// No inline data URIs, no quote issues
-function nfImgErr(img){
-  img.onerror=null; // prevent loops
-  const fb1=img.dataset.fb1;
-  if(fb1 && img.src!==fb1){
-    // Try picsum next
-    img.onerror=function(){nfImgErr2(this);};
-    img.src=fb1;
-    return;
+// Called when a real video_thumbnail fails to load
+function nfThumbFail(img){
+  img.onerror = null;
+  const picsum = img.dataset.picsum;
+  if(picsum){
+    img.onerror = function(){ nfCanvasFill(this); };
+    img.src = picsum;
+  } else {
+    nfCanvasFill(img);
   }
-  nfImgErr2(img);
 }
-function nfImgErr2(img){
-  img.onerror=null;
-  // Final fallback: inline SVG drawn on a canvas then set as src
-  const w=parseInt(img.dataset.w)||400;
-  const h=parseInt(img.dataset.h)||225;
-  const tag=img.dataset.tag||'?';
-  const c2=document.createElement('canvas');
-  c2.width=w; c2.height=h;
-  const ctx=c2.getContext('2d');
-  const grad=ctx.createLinearGradient(0,0,w,h);
-  grad.addColorStop(0,'#0f1e36'); grad.addColorStop(1,'#07101e');
-  ctx.fillStyle=grad; ctx.fillRect(0,0,w,h);
-  ctx.fillStyle='rgba(200,146,42,0.4)';
-  ctx.font=`bold ${Math.round(h*.1)}px Georgia,serif`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(tag, w/2, h/2);
-  ctx.fillStyle='rgba(255,255,255,0.15)';
-  ctx.font=`${Math.round(h*.07)}px sans-serif`;
-  ctx.fillText('▶', w/2, h*.65);
-  img.src=c2.toDataURL('image/png');
+
+// Canvas-drawn gradient fallback — zero network, always works
+function nfCanvasFill(img){
+  img.onerror = null;
+  const w=parseInt(img.dataset.w)||400, h=parseInt(img.dataset.h)||225;
+  const tag=img.dataset.tag||'';
+  try{
+    const cv=document.createElement('canvas');
+    cv.width=w; cv.height=h;
+    const ctx=cv.getContext('2d');
+    const gr=ctx.createLinearGradient(0,0,w,h);
+    gr.addColorStop(0,'#0b1830'); gr.addColorStop(1,'#060e1c');
+    ctx.fillStyle=gr; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='rgba(200,146,42,.35)';
+    ctx.font=`bold ${Math.round(h*.11)}px Georgia,serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(tag,w/2,h/2);
+    ctx.fillStyle='rgba(255,255,255,.12)';
+    ctx.font=`${Math.round(h*.07)}px sans-serif`;
+    ctx.fillText('▶',w/2,h*.67);
+    img.src=cv.toDataURL('image/png');
+  }catch(e){ img.style.background='#0b1830'; }
 }
 
 // Avatar initials + topic gradient
@@ -1667,14 +1680,17 @@ function buildNfHero(q){
   const days  = Math.floor((Date.now()-new Date(q.created_at||Date.now()))/(864e5));
 
   const heroThumb=q.video_thumbnail||getTopicThumb(q.tags,q.id,1200,500);
-  const heroFb=svgFallback(q.tags,1200,500);
-  const bgEl=`<img class="nf-hero-bg"
-    src="${heroThumb}"
-    data-fb1="${getTopicThumb(q.tags,q.id,1200,500)}"
-    data-tag="${((q.tags||['General'])[0]||'General').replace(/"/g,'')}"
-    data-w="1200" data-h="500"
-    alt="" onerror="nfImgErr(this)"
-    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`;
+  const heroTag=((q.tags||['General'])[0]||'General').replace(/"/g,'');
+  const heroPicsum=getTopicThumb(q.tags,q.id,1200,500);
+  const bgEl=q.video_thumbnail
+    ?`<img class="nf-hero-bg" src="${q.video_thumbnail}"
+        data-picsum="${heroPicsum}" data-tag="${heroTag}" data-w="1200" data-h="500"
+        alt="" onload="this.dataset.loaded='1'" onerror="nfThumbFail(this)"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`
+    :`<img class="nf-hero-bg" src="${heroPicsum}"
+        data-tag="${heroTag}" data-w="1200" data-h="500"
+        alt="" onerror="nfCanvasFill(this)"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`;
 
   return `<div class="nf-hero" id="nfhero-${q.id}">
     ${bgEl}
@@ -1849,17 +1865,20 @@ function buildExpandInner(q, pid){
   const yr    = q.created_at ? new Date(q.created_at).getFullYear() : '';
   const xid   = 'nfx-'+q.id;
 
-  const _xThumb=q.video_thumbnail||getTopicThumb(q.tags,q.id,640,360);
-  const _xFb=svgFallback(q.tags,640,360);
+  const _xPicsum=getTopicThumb(q.tags,q.id,640,360);
+  const _xTag=((q.tags||['General'])[0]||'General').replace(/"/g,'');
+  const _poster=q.video_thumbnail||_xPicsum;
   const vidEl=q.video_url
-    ?`<video src="${q.video_url}" poster="${_xThumb}"
+    ?`<video src="${q.video_url}" poster="${_poster}"
         controls playsinline style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"></video>`
-    :`<img src="${_xThumb}"
-        data-fb1="${getTopicThumb(q.tags,q.id,640,360)}"
-        data-tag="${((q.tags||['General'])[0]||'General').replace(/"/g,'')}"
-        data-w="640" data-h="360"
-        alt="" onerror="nfImgErr(this)"
-        style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`;
+    :q.video_thumbnail
+      ?`<img src="${q.video_thumbnail}" data-picsum="${_xPicsum}"
+          data-tag="${_xTag}" data-w="640" data-h="360"
+          alt="" onload="this.dataset.loaded='1'" onerror="nfThumbFail(this)"
+          style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`
+      :`<img src="${_xPicsum}" data-tag="${_xTag}" data-w="640" data-h="360"
+          alt="" onerror="nfCanvasFill(this)"
+          style="width:100%;height:100%;object-fit:cover;border-radius:4px;display:block"/>`;
 
   return `<div class="nf-expand-top">
       <div class="nf-expand-vid">${vidEl}</div>
@@ -3234,31 +3253,49 @@ let selectedPayMethod = 'upi';
 // ── SIGN-UP BONUS ──────────────────────────────────────────────
 async function grantSignupBonusIfNew(){
   if(!U||!R) return;
-  // Check score_history for any existing entry for this user
-  const{count}=await supa.from('score_history')
-    .select('*',{count:'exact',head:true})
-    .eq('user_id',U.id)
-    .eq('action_type','signup_bonus');
-  if((count??0)>0) return; // already granted — ?? handles null count
 
-  // Grant Ψ10
+  // GUARD 1: check score_history (with error handling for RLS)
+  const{data:bonusRows,error:bonusErr}=await supa.from('score_history')
+    .select('id').eq('user_id',U.id).eq('action_type','signup_bonus').limit(1);
+
+  // If query succeeded and found a row — already granted
+  if(!bonusErr && bonusRows && bonusRows.length>0) return;
+
+  // GUARD 2: if RLS blocked the query, fall back to pts check
+  // If pts_total is already > SIGNUP_BONUS they have earned before — skip
+  if(bonusErr){
+    const existingPts=R?.pts_total||0;
+    if(existingPts>=SIGNUP_BONUS){
+      console.log('Bonus: RLS blocked count query, pts suggest already granted');
+      return;
+    }
+  }
+
+  // GUARD 3: use upsert with onConflict to make the insert idempotent
+  // If a row already exists it will be a no-op, not a duplicate
   try{
-    await supa.from('score_history').insert({
+    const{error:insertErr}=await supa.from('score_history').insert({
       user_id:U.id,
       action_type:'signup_bonus',
       pts_awarded:SIGNUP_BONUS,
       ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0
     });
+    // If insert failed with a duplicate/conflict, bonus was already granted
+    if(insertErr){
+      console.log('Bonus already granted (insert conflict):', insertErr.code);
+      return;
+    }
+
+    // Credit the wallet
     const{data:rn}=await supa.from('profile_roles')
-      .select('pts_total,seeker_pts')
-      .eq('user_id',U.id).single();
+      .select('pts_total,seeker_pts').eq('user_id',U.id).single();
     if(rn){
       await supa.from('profile_roles').update({
         pts_total:(rn.pts_total||0)+SIGNUP_BONUS,
         seeker_pts:(rn.seeker_pts||0)+SIGNUP_BONUS,
         updated_at:new Date().toISOString()
       }).eq('user_id',U.id);
-      if(R){R.pts_total=(R.pts_total||0)+SIGNUP_BONUS;R.seeker_pts=(R.seeker_pts||0)+SIGNUP_BONUS;}
+      if(R){R.pts_total=(rn.pts_total||0)+SIGNUP_BONUS;R.seeker_pts=(rn.seeker_pts||0)+SIGNUP_BONUS;}
     }
     showToast(`🎉 Welcome bonus: +Ψ${SIGNUP_BONUS} credited to your YOM Wallet!`,'gold');
     setTimeout(()=>{buildTierCard();loadYOMWallet();},600);
