@@ -285,6 +285,61 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .upload-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .3s;width:0%}
 
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.sb-l,.sb-r{display:none}}
+/* ══ ASK ARIA BUTTON ══ */
+.aria-ask-btn{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border-radius:5px;background:linear-gradient(135deg,rgba(127,119,221,.15),rgba(200,146,42,.1));border:1px solid rgba(127,119,221,.45);color:#afa9ec;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:.4rem;white-space:nowrap}
+.aria-ask-btn:hover{background:linear-gradient(135deg,rgba(127,119,221,.28),rgba(200,146,42,.18));border-color:#7f77dd;color:#c8c4f8}
+.aria-ask-btn .aria-cost{font-size:9px;background:rgba(127,119,221,.2);border:1px solid rgba(127,119,221,.35);border-radius:20px;padding:1px 7px;color:var(--gb);margin-left:2px}
+.aria-ask-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ══ ARIA RESPONSE PANEL ══ */
+.aria-panel{display:none;padding:1rem 1.4rem;border-top:1px solid rgba(127,119,221,.25);background:linear-gradient(135deg,rgba(15,10,40,.6),rgba(10,22,40,.4))}
+.aria-panel.open{display:block}
+.aria-panel-hdr{display:flex;align-items:center;gap:.7rem;margin-bottom:.9rem}
+.aria-avatar{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(127,119,221,.6);overflow:hidden;flex-shrink:0;background:#060c1a;display:flex;align-items:center;justify-content:center}
+.aria-avatar img{width:100%;height:100%;object-fit:cover}
+.aria-avatar-fallback{font-size:16px}
+.aria-panel-meta{flex:1}
+.aria-panel-name{font-size:12px;color:#afa9ec;font-weight:700;letter-spacing:.5px}
+.aria-panel-sub{font-size:10px;color:var(--t4);margin-top:1px}
+.aria-cost-badge{font-size:9px;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);border-radius:20px;padding:2px 10px;color:var(--gold)}
+.aria-video-shell{background:#000;border-radius:8px;overflow:hidden;position:relative;aspect-ratio:16/9;margin-bottom:.8rem;border:1px solid rgba(127,119,221,.2)}
+.aria-video-shell video{width:100%;height:100%;object-fit:cover;display:block}
+.aria-thinking{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:.8rem;padding:2rem}
+.aria-thinking-dots{display:flex;gap:.4rem}
+.aria-thinking-dots span{width:8px;height:8px;border-radius:50%;background:var(--pu);animation:ariaPulse 1.2s ease infinite}
+.aria-thinking-dots span:nth-child(2){animation-delay:.2s;background:var(--gold)}
+.aria-thinking-dots span:nth-child(3){animation-delay:.4s;background:var(--tl)}
+@keyframes ariaPulse{0%,100%{transform:scale(.7);opacity:.4}50%{transform:scale(1.1);opacity:1}}
+.aria-thinking-txt{font-size:12px;color:var(--t4);font-family:monospace;letter-spacing:.5px}
+.aria-response-text{font-size:14px;color:var(--t2);line-height:1.9;font-family:'EB Garamond',serif;padding:.2rem 0}
+.aria-response-text .aria-kw{color:var(--gb);font-weight:600}
+.aria-sources{font-size:10px;color:var(--t4);margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(30,58,106,.3)}
+
+/* ══ BUY Ψ MODAL ══ */
+.buy-psi-overlay{position:fixed;inset:0;background:rgba(4,8,18,.95);z-index:600;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(12px)}
+.buy-psi-overlay.open{display:flex}
+.buy-psi-modal{background:linear-gradient(135deg,#0d1e38 0%,#0a1628 100%);border:1px solid rgba(200,146,42,.4);border-radius:16px;width:100%;max-width:480px;overflow:hidden;position:relative}
+.buy-psi-hdr{padding:1.3rem 1.5rem;border-bottom:1px solid rgba(30,58,106,.5);display:flex;align-items:center;justify-content:space-between}
+.buy-psi-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gb);font-weight:700;display:flex;align-items:center;gap:.5rem}
+.buy-psi-body{padding:1.5rem}
+.psi-pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.2rem}
+.psi-pack{border:1px solid var(--bdr);border-radius:10px;padding:.9rem;cursor:pointer;transition:all .25s;background:rgba(10,20,40,.5);text-align:center;position:relative}
+.psi-pack:hover{border-color:rgba(200,146,42,.5);background:rgba(200,146,42,.06)}
+.psi-pack.selected{border-color:var(--gold);background:rgba(200,146,42,.1)}
+.psi-pack.best-val::after{content:'Best Value';position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:8px;letter-spacing:1.5px;background:var(--gold);color:#040c18;padding:2px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.psi-pack-psi{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gb);font-weight:700;line-height:1}
+.psi-pack-psi span{font-size:14px;color:var(--gold)}
+.psi-pack-inr{font-size:13px;color:var(--t3);margin-top:.25rem}
+.psi-pack-per{font-size:10px;color:var(--t4);margin-top:.1rem}
+.pay-methods{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.pay-method{border:1px solid var(--bdr);border-radius:7px;padding:.5rem .9rem;cursor:pointer;transition:all .2s;font-size:11px;color:var(--t3);background:transparent;display:flex;align-items:center;gap:.4rem}
+.pay-method:hover{border-color:var(--bdr2);color:var(--t2)}
+.pay-method.sel{border-color:var(--gold);background:rgba(200,146,42,.08);color:var(--gb)}
+.buy-psi-btn{width:100%;padding:13px;font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,var(--gold),var(--gb));color:#040c18;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:all .25s}
+.buy-psi-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,146,42,.3)}
+.buy-psi-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.buy-secure{font-size:9px;color:var(--t4);text-align:center;margin-top:.7rem;letter-spacing:.5px}
+
 
 /* ══ YOM WALLET WIDGET ══ */
 .yw-card{background:linear-gradient(135deg,#0d1e38 0%,#0a1628 60%,#0f1e36 100%);border:1px solid rgba(200,146,42,.35);border-radius:12px;padding:1.1rem 1.1rem .9rem;margin-bottom:1.4rem;position:relative;overflow:hidden}
@@ -476,6 +531,79 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
     </div>
   </div>
 </div>
+
+<!-- ══ BUY Ψ MODAL ══ -->
+<div class="buy-psi-overlay" id="buyPsiModal">
+  <div class="buy-psi-modal">
+    <div class="buy-psi-hdr">
+      <div class="buy-psi-title">
+        <span style="font-size:22px">Ψ</span> Buy YOM Points
+      </div>
+      <button style="background:none;border:none;color:var(--t4);font-size:22px;cursor:pointer;line-height:1" onclick="closeBuyModal()">×</button>
+    </div>
+    <div class="buy-psi-body">
+      <div style="font-size:11px;color:var(--t4);margin-bottom:1rem;line-height:1.7">
+        YOM Ψ powers Ask ARIA, boosts your questions, and unlocks platform features.<br>
+        <span style="color:var(--gold)">Ψ10 signing bonus</span> credited on first sign-in · <span style="color:var(--t4)">Ask ARIA costs Ψ20 — earn more by answering.</span>
+      </div>
+
+      <!-- Packs -->
+      <div class="psi-pack-grid" id="psiPackGrid">
+        <div class="psi-pack" data-psi="50" data-inr="49" onclick="selectPack(this)">
+          <div class="psi-pack-psi"><span>Ψ</span>50</div>
+          <div class="psi-pack-inr">₹49</div>
+          <div class="psi-pack-per">₹0.98 / Ψ</div>
+        </div>
+        <div class="psi-pack best-val" data-psi="200" data-inr="149" onclick="selectPack(this)">
+          <div class="psi-pack-psi"><span>Ψ</span>200</div>
+          <div class="psi-pack-inr">₹149</div>
+          <div class="psi-pack-per">₹0.74 / Ψ</div>
+        </div>
+        <div class="psi-pack" data-psi="500" data-inr="299" onclick="selectPack(this)">
+          <div class="psi-pack-psi"><span>Ψ</span>500</div>
+          <div class="psi-pack-inr">₹299</div>
+          <div class="psi-pack-per">₹0.60 / Ψ</div>
+        </div>
+        <div class="psi-pack" data-psi="1500" data-inr="799" onclick="selectPack(this)">
+          <div class="psi-pack-psi"><span>Ψ</span>1500</div>
+          <div class="psi-pack-inr">₹799</div>
+          <div class="psi-pack-per">₹0.53 / Ψ</div>
+        </div>
+      </div>
+
+      <!-- Currency toggle -->
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;font-size:10px;color:var(--t4)">
+        <span>Currency:</span>
+        <button class="pay-method sel" id="cur-inr" onclick="setCurrency('INR',this)">🇮🇳 INR</button>
+        <button class="pay-method" id="cur-usd" onclick="setCurrency('USD',this)">🇺🇸 USD</button>
+        <button class="pay-method" id="cur-gbp" onclick="setCurrency('GBP',this)">🇬🇧 GBP</button>
+        <button class="pay-method" id="cur-aed" onclick="setCurrency('AED',this)">🇦🇪 AED</button>
+      </div>
+
+      <!-- Payment method -->
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Pay via</div>
+      <div class="pay-methods" id="payMethods">
+        <button class="pay-method sel" id="pm-upi" onclick="selectPayMethod('upi',this)">📲 UPI</button>
+        <button class="pay-method" id="pm-card" onclick="selectPayMethod('card',this)">💳 Card</button>
+        <button class="pay-method" id="pm-nb" onclick="selectPayMethod('nb',this)">🏦 Net Banking</button>
+        <button class="pay-method" id="pm-wallet" onclick="selectPayMethod('wallet',this)">👝 Wallet</button>
+        <button class="pay-method" id="pm-stripe" style="display:none" onclick="selectPayMethod('stripe',this)">🌍 Stripe</button>
+      </div>
+
+      <div style="font-size:11px;color:var(--t4);background:rgba(30,58,106,.2);border-radius:6px;padding:.6rem .9rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
+        <span>You get</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gb)" id="buyPsiSummary">— Ψ</span>
+        <span id="buyInrSummary" style="color:var(--gold)">Select a pack</span>
+      </div>
+
+      <button class="buy-psi-btn" id="buyPsiConfirmBtn" disabled onclick="initiatePurchase()">
+        Proceed to Pay
+      </button>
+      <div class="buy-secure">🔒 Secured by Razorpay · All transactions encrypted</div>
+    </div>
+  </div>
+</div>
+
 
 <!-- ══ NAV ══ -->
 <nav>
@@ -764,6 +892,8 @@ async function loadUserData(){
     ({data:role}=await supa.from('profile_roles').select('*').eq('user_id',U.id).single());
   }
   R=role;
+  // Grant sign-up bonus on first ever login
+  setTimeout(()=>grantSignupBonusIfNew(),1200);
 }
 
 async function doSignout(){await supa.auth.signOut();window.location.href='auth.html';}
@@ -780,7 +910,8 @@ function buildNav(){
       <div class="user-av">${P.avatar_url?`<img src="${P.avatar_url}"/>`:`${init}`}</div>
       <div><div class="user-info-name">${P.display_name||'Engageneer™'}</div><div class="user-info-tier">${tier} · ${pts}  Ψ</div></div>
     </div>
-    <button class="nbtn nbtn-ghost" onclick="doSignout()">Sign Out</button>`;
+    <button class="nbtn nbtn-ghost" onclick="doSignout()">Sign Out</button>
+    <button class="nbtn" style="background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.4);color:var(--gold);font-size:9px;letter-spacing:1.5px;padding:6px 14px;border-radius:4px" onclick="openBuyModal()" title="Buy YOM Ψ Points">+ Buy Ψ</button>`;
 }
 
 // Badge colour + shape map
@@ -1082,9 +1213,38 @@ function qCard(q,force=false){
         <div class="qstat">${q.views||0} views</div>
         ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">+${q.bounty_pts} Ψ YOM</div>`:''}
         <button class="ans-btn" onclick="togglePanel('${pid}')">Answer</button>
+        <button class="aria-ask-btn" id="ask-aria-${q.id}" onclick="openAriaPanel('${q.id}')" title="ARIA synthesises the best answer from top-CDS responses · Costs Ψ${ARIA_COST}">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><polygon points="5.5,1 10,5.5 5.5,10 1,5.5" stroke="#afa9ec" stroke-width="1.2" fill="rgba(127,119,221,.2)"/><text x="5.5" y="7.2" text-anchor="middle" font-size="5.5" fill="#afa9ec" font-weight="700">A</text></svg>
+          Ask ARIA
+          <span class="aria-cost">Ψ${ARIA_COST}</span>
+        </button>
       </div>
     </div>
     </div>
+
+    <!-- ARIA Response Panel -->
+    <div class="aria-panel" id="aria-panel-${q.id}">
+      <div class="aria-panel-hdr">
+        <div class="aria-avatar" id="aria-av-${q.id}">
+          <img src="ARIA-Avatar-Icon-TPT.png" alt="ARIA" onerror="this.parentElement.innerHTML='<span class=aria-avatar-fallback>⬡</span>'"/>
+        </div>
+        <div class="aria-panel-meta">
+          <div class="aria-panel-name">ARIA · Autonomous Intelligence</div>
+          <div class="aria-panel-sub" id="aria-sub-${q.id}">Synthesising from top-CDS answers…</div>
+        </div>
+        <div class="aria-cost-badge" id="aria-cost-badge-${q.id}">Ψ${ARIA_COST} spent</div>
+      </div>
+      <div class="aria-video-shell" id="aria-shell-${q.id}">
+        <div class="aria-thinking" id="aria-thinking-${q.id}">
+          <div class="aria-thinking-dots"><span></span><span></span><span></span></div>
+          <div class="aria-thinking-txt" id="aria-thinking-txt-${q.id}">Consulting 12 agents…</div>
+        </div>
+        <video id="aria-vid-${q.id}" controls playsinline style="display:none;width:100%;height:100%;object-fit:cover"></video>
+      </div>
+      <div class="aria-response-text" id="aria-text-${q.id}" style="display:none"></div>
+      <div class="aria-sources" id="aria-src-${q.id}" style="display:none"></div>
+    </div>
+
     <div class="ans-panel" id="${pid}">
       <div class="ap-title">🎥 Your video answer</div>
       <!-- VIDEO-ONLY answer platform -->
@@ -2339,6 +2499,409 @@ async function loadYOMWallet(){
     }
   }catch(e){
     console.warn('YOM wallet load error:',e);
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// ── CONSTANTS ──────────────────────────────────────────────────
+const ARIA_COST       = 20;   // Ψ per Ask ARIA query
+const SIGNUP_BONUS    = 10;   // Ψ on first sign-in
+const ARIA_AVATAR_URL = 'ARIA-Avatar-Icon-TPT.png';
+
+// Exchange rates vs INR (update periodically)
+const FX = { INR:1, USD:0.012, GBP:0.0096, AED:0.044 };
+const FX_SYM = { INR:'₹', USD:'$', GBP:'£', AED:'AED' };
+
+// Ψ packs base prices in INR
+const PSI_PACKS = [
+  {psi:50,   inr:49},
+  {psi:200,  inr:149},
+  {psi:500,  inr:299},
+  {psi:1500, inr:799},
+];
+
+// ── BUY Ψ STATE ────────────────────────────────────────────────
+let selectedPack = null;
+let selectedCurrency = 'INR';
+let selectedPayMethod = 'upi';
+
+// ── SIGN-UP BONUS ──────────────────────────────────────────────
+async function grantSignupBonusIfNew(){
+  if(!U||!R) return;
+  // Check score_history for any existing entry for this user
+  const{count}=await supa.from('score_history')
+    .select('*',{count:'exact',head:true})
+    .eq('user_id',U.id)
+    .eq('action_type','signup_bonus');
+  if(count>0) return; // already granted
+
+  // Grant Ψ10
+  try{
+    await supa.from('score_history').insert({
+      user_id:U.id,
+      action_type:'signup_bonus',
+      pts_awarded:SIGNUP_BONUS,
+      ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0
+    });
+    const{data:rn}=await supa.from('profile_roles')
+      .select('pts_total,seeker_pts')
+      .eq('user_id',U.id).single();
+    if(rn){
+      await supa.from('profile_roles').update({
+        pts_total:(rn.pts_total||0)+SIGNUP_BONUS,
+        seeker_pts:(rn.seeker_pts||0)+SIGNUP_BONUS,
+        updated_at:new Date().toISOString()
+      }).eq('user_id',U.id);
+      if(R){R.pts_total=(R.pts_total||0)+SIGNUP_BONUS;R.seeker_pts=(R.seeker_pts||0)+SIGNUP_BONUS;}
+    }
+    showToast(`🎉 Welcome bonus: +Ψ${SIGNUP_BONUS} credited to your YOM Wallet!`,'gold');
+    setTimeout(()=>{buildTierCard();loadYOMWallet();},600);
+  }catch(e){console.warn('Bonus grant error:',e);}
+}
+
+// ── TOAST HELPER ───────────────────────────────────────────────
+function showToast(msg, type='default'){
+  let t=document.getElementById('globalToast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='globalToast';
+    t.style.cssText='position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:9999;font-size:13px;padding:.7rem 1.4rem;border-radius:8px;font-family:EB Garamond,serif;pointer-events:none;transition:opacity .4s;opacity:0;max-width:90vw;text-align:center';
+    document.body.appendChild(t);
+  }
+  const colors={gold:'background:rgba(200,146,42,.92);color:#040c18;border:1px solid #c8922a',
+    error:'background:rgba(226,75,74,.9);color:#fff;border:1px solid #e24b4a',
+    default:'background:rgba(15,30,54,.95);color:#e8f0fc;border:1px solid #1e3a6a'};
+  t.style.cssText+=';'+colors[type]||colors.default;
+  t.textContent=msg;
+  t.style.opacity='1';
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>{t.style.opacity='0';},3200);
+}
+
+// ── DEDUCT Ψ FROM WALLET ───────────────────────────────────────
+async function deductPsi(amount, reason){
+  const cur=R?.pts_total||0;
+  if(cur<amount){
+    showToast(`Insufficient Ψ — you need Ψ${amount} but have Ψ${cur}. Buy more below.`,'error');
+    setTimeout(()=>openBuyModal(),800);
+    return false;
+  }
+  try{
+    await supa.from('profile_roles').update({
+      pts_total:cur-amount,
+      updated_at:new Date().toISOString()
+    }).eq('user_id',U.id);
+    if(R) R.pts_total=cur-amount;
+    await supa.from('score_history').insert({
+      user_id:U.id,action_type:'psi_spend',
+      pts_awarded:-amount,
+      ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
+      ref_id:reason||null
+    });
+    loadYOMWallet();
+    return true;
+  }catch(e){console.warn('Deduct error:',e);return false;}
+}
+
+// ── ASK ARIA ───────────────────────────────────────────────────
+async function openAriaPanel(qid){
+  const panel=document.getElementById('aria-panel-'+qid);
+  if(!panel) return;
+
+  // If already open and answered, just toggle closed
+  if(panel.classList.contains('open')){
+    panel.classList.remove('open');
+    return;
+  }
+
+  // Check balance first
+  const bal=R?.pts_total||0;
+  if(bal<ARIA_COST){
+    showToast(`You need Ψ${ARIA_COST} to Ask ARIA. You have Ψ${bal}.`,'error');
+    setTimeout(()=>openBuyModal(),700);
+    return;
+  }
+
+  // Deduct
+  const ok=await deductPsi(ARIA_COST,'ask_aria_q'+qid);
+  if(!ok) return;
+
+  // Open panel, start thinking
+  panel.classList.add('open');
+  const btn=document.getElementById('ask-aria-'+qid);
+  if(btn) btn.disabled=true;
+
+  const thinkEl=document.getElementById('aria-thinking-'+qid);
+  const thinkTxt=document.getElementById('aria-thinking-txt-'+qid);
+  const textEl=document.getElementById('aria-text-'+qid);
+  const srcEl=document.getElementById('aria-src-'+qid);
+  const vidEl=document.getElementById('aria-vid-'+qid);
+  const subEl=document.getElementById('aria-sub-'+qid);
+
+  if(thinkEl) thinkEl.style.display='flex';
+  if(vidEl) vidEl.style.display='none';
+  if(textEl) textEl.style.display='none';
+  if(srcEl) srcEl.style.display='none';
+
+  // Thinking ticker
+  const phases=['Consulting 12 agents…','Retrieving top-CDS answers…','Synthesising response…','Verifying accuracy…','Composing explanation…'];
+  let pi=0;
+  const ticker=setInterval(()=>{
+    pi=(pi+1)%phases.length;
+    if(thinkTxt) thinkTxt.textContent=phases[pi];
+  },900);
+
+  try{
+    // Fetch question text for ARIA context
+    const{data:qData}=await supa.from('questions')
+      .select('text,tags,language_name,answers(text,cds,ai_score,ei_score)')
+      .eq('id',qid).single();
+
+    // Build ARIA prompt from top answers (CDS sorted)
+    const topAnswers=(qData?.answers||[])
+      .filter(a=>a.cds&&a.text)
+      .sort((a,b)=>(b.cds||0)-(a.cds||0))
+      .slice(0,3);
+
+    const questionText=qData?.text||'this question';
+    const tags=(qData?.tags||[]).join(', ');
+    const lang=qData?.language_name||'English';
+
+    let prompt=`You are ARIA, the Autonomous Routing & Intelligence Arbiter for Engageneering™, a crowd learning platform. Answer the following question with exceptional clarity and pedagogical quality. Use concrete examples, analogies, and a structured explanation suitable for video delivery.
+
+Question: "${questionText}"
+Topic tags: ${tags}
+Language: ${lang}`;
+
+    if(topAnswers.length>0){
+      prompt+=`\n\nTop community answers (synthesise the best insights from these):\n`;
+      topAnswers.forEach((a,i)=>{
+        prompt+=`\nAnswer ${i+1} (CDS: ${a.cds}):\n${a.text}\n`;
+      });
+      prompt+=`\nNow give YOUR best synthesis — clearer, more structured, more memorable than any single answer above. Explain it as if speaking to camera in a 60-second video. Use paragraphs, not bullet points. Start directly with the explanation.`;
+    }else{
+      prompt+=`\n\nNo community answers yet. Give a definitive, pedagogically excellent answer as if explaining to camera in a 60-second video. Be concrete, use a memorable analogy, and structure it as: Hook → Core Concept → Example → Takeaway.`;
+    }
+
+    // Call Anthropic API directly (Claude claude-sonnet-4-20250514)
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    clearInterval(ticker);
+
+    if(!resp.ok) throw new Error('ARIA API error');
+    const data=await resp.json();
+    const ariaText=data.content?.find(c=>c.type==='text')?.text||'ARIA could not generate a response.';
+
+    // Display
+    if(thinkEl) thinkEl.style.display='none';
+    if(textEl){
+      textEl.style.display='block';
+      // Highlight key phrases
+      textEl.innerHTML=ariaText
+        .replace(/\n\n/g,'</p><p style="margin-top:.7rem">')
+        .replace(/^/,'<p>').replace(/$/,'</p>');
+    }
+    if(srcEl){
+      srcEl.style.display='block';
+      srcEl.innerHTML=topAnswers.length>0
+        ?`Synthesised from ${topAnswers.length} top community answer${topAnswers.length>1?'s':''} · Powered by ARIA · Ψ${ARIA_COST} spent`
+        :`Original ARIA response — no community answers yet · Ψ${ARIA_COST} spent`;
+    }
+    if(subEl) subEl.textContent='Response ready · '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+    // Log ARIA query to DB
+    try{
+      await supa.from('score_history').insert({
+        user_id:U.id,action_type:'aria_query',
+        ref_id:qid,pts_awarded:0,
+        ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0
+      });
+    }catch(e){/* non-critical */}
+
+  }catch(err){
+    clearInterval(ticker);
+    if(thinkEl) thinkEl.style.display='none';
+    if(textEl){
+      textEl.style.display='block';
+      textEl.innerHTML='<span style="color:var(--rd)">ARIA is temporarily unavailable. Your Ψ has been refunded.</span>';
+    }
+    // Refund on error
+    try{
+      const{data:rn}=await supa.from('profile_roles').select('pts_total').eq('user_id',U.id).single();
+      if(rn) await supa.from('profile_roles').update({pts_total:(rn.pts_total||0)+ARIA_COST,updated_at:new Date().toISOString()}).eq('user_id',U.id);
+      if(R) R.pts_total=(R.pts_total||0)+ARIA_COST;
+      showToast('Ψ refunded — ARIA unavailable','error');
+    }catch(e2){}
+    loadYOMWallet();
+    if(btn) btn.disabled=false;
+    console.warn('ARIA error:',err);
+  }
+}
+
+// ── BUY Ψ MODAL ────────────────────────────────────────────────
+function openBuyModal(){
+  document.getElementById('buyPsiModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  // Auto-select best-value pack
+  const bestPack=document.querySelector('.psi-pack.best-val');
+  if(bestPack&&!selectedPack) selectPack(bestPack);
+}
+function closeBuyModal(){
+  document.getElementById('buyPsiModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('buyPsiModal')?.addEventListener('click',e=>{
+    if(e.target===document.getElementById('buyPsiModal')) closeBuyModal();
+  });
+});
+
+function selectPack(el){
+  document.querySelectorAll('.psi-pack').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPack={psi:parseInt(el.dataset.psi),inr:parseInt(el.dataset.inr)};
+  updateBuySummary();
+}
+
+function setCurrency(cur,el){
+  selectedCurrency=cur;
+  document.querySelectorAll('[id^="cur-"]').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  // Show/hide pay methods based on currency
+  const isINR=cur==='INR';
+  ['pm-upi','pm-nb','pm-wallet'].forEach(id=>{
+    const btn=document.getElementById(id);
+    if(btn) btn.style.display=isINR?'':'none';
+  });
+  const stripeBtn=document.getElementById('pm-stripe');
+  if(stripeBtn) stripeBtn.style.display=isINR?'none':'';
+  if(!isINR){
+    selectPayMethod('stripe',document.getElementById('pm-stripe'));
+  } else {
+    selectPayMethod('upi',document.getElementById('pm-upi'));
+  }
+  updateBuySummary();
+}
+
+function selectPayMethod(pm,el){
+  if(!el) return;
+  selectedPayMethod=pm;
+  document.querySelectorAll('.pay-method[id^="pm-"]').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function updateBuySummary(){
+  if(!selectedPack) return;
+  const rate=FX[selectedCurrency]||1;
+  const sym=FX_SYM[selectedCurrency]||'₹';
+  const convertedPrice=(selectedPack.inr*rate).toFixed(selectedCurrency==='INR'?0:2);
+  document.getElementById('buyPsiSummary').textContent=`Ψ${selectedPack.psi}`;
+  document.getElementById('buyInrSummary').textContent=`${sym}${convertedPrice}`;
+  const btn=document.getElementById('buyPsiConfirmBtn');
+  if(btn){
+    btn.disabled=false;
+    btn.textContent=`Pay ${sym}${convertedPrice} → Get Ψ${selectedPack.psi}`;
+  }
+}
+
+async function initiatePurchase(){
+  if(!selectedPack||!U) return;
+  const btn=document.getElementById('buyPsiConfirmBtn');
+  if(btn){btn.disabled=true;btn.textContent='Opening payment…';}
+
+  const rate=FX[selectedCurrency]||1;
+  const sym=FX_SYM[selectedCurrency]||'₹';
+  const displayPrice=(selectedPack.inr*rate).toFixed(selectedCurrency==='INR'?0:2);
+
+  if(selectedCurrency==='INR'){
+    // ── Razorpay (INR) ──────────────────────────────────────────
+    if(typeof Razorpay==='undefined'){
+      const s=document.createElement('script');
+      s.src='https://checkout.razorpay.com/v1/checkout.js';
+      s.onload=()=>launchRazorpay(displayPrice,btn);
+      document.head.appendChild(s);
+    } else {
+      launchRazorpay(displayPrice,btn);
+    }
+  } else {
+    // ── Stripe (International) ──────────────────────────────────
+    // In production: call your backend to create a Stripe session
+    // For now show a clear placeholder
+    showToast(`International payments (${selectedCurrency}) — connect Stripe in backend config`,'default');
+    if(btn){btn.disabled=false;btn.textContent=`Pay ${sym}${displayPrice} → Get Ψ${selectedPack.psi}`;}
+  }
+}
+
+function launchRazorpay(displayPrice,btn){
+  // In production: create Razorpay order via your backend first
+  // Here we use client-side test mode for demo
+  const options={
+    key:'window.ENG_CONFIG?.RAZORPAY_KEY',  // ← replace with live key
+    amount:Math.round(selectedPack.inr*100), // paise
+    currency:'INR',
+    name:'Engageneering™',
+    description:`YOM Wallet · Ψ${selectedPack.psi} Points`,
+    image:'ARIA-Avatar-Favicon.png',
+    handler:async function(response){
+      // Payment successful — credit Ψ
+      await creditPsiAfterPayment(selectedPack.psi,'razorpay',response.razorpay_payment_id);
+    },
+    prefill:{
+      name:P?.display_name||'',
+      email:U?.email||''
+    },
+    theme:{color:'#c8922a'},
+    modal:{ondismiss:()=>{
+      if(btn){btn.disabled=false;btn.textContent=`Pay ₹${displayPrice} → Get Ψ${selectedPack.psi}`;}
+    }}
+  };
+  try{
+    const rzp=new Razorpay(options);
+    rzp.open();
+  }catch(e){
+    showToast('Razorpay error — configure your API key in config.js','error');
+    if(btn){btn.disabled=false;btn.textContent=`Pay ₹${displayPrice} → Get Ψ${selectedPack.psi}`;}
+  }
+}
+
+async function creditPsiAfterPayment(psi, gateway, txnId){
+  try{
+    // 1. Record transaction
+    await supa.from('score_history').insert({
+      user_id:U.id,
+      action_type:'psi_purchase',
+      pts_awarded:psi,
+      ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
+      ref_id:txnId||null
+    });
+    // 2. Credit wallet
+    const{data:rn}=await supa.from('profile_roles')
+      .select('pts_total,seeker_pts').eq('user_id',U.id).single();
+    if(rn){
+      await supa.from('profile_roles').update({
+        pts_total:(rn.pts_total||0)+psi,
+        seeker_pts:(rn.seeker_pts||0)+psi,
+        updated_at:new Date().toISOString()
+      }).eq('user_id',U.id);
+      if(R){R.pts_total=(R.pts_total||0)+psi;R.seeker_pts=(R.seeker_pts||0)+psi;}
+    }
+    showToast(`✓ Ψ${psi} credited to your YOM Wallet!`,'gold');
+    closeBuyModal();
+    loadYOMWallet();
+    buildTierCard();
+    buildNav();
+  }catch(e){
+    console.error('Credit error:',e);
+    showToast('Payment recorded but wallet update failed — contact support','error');
   }
 }
 
