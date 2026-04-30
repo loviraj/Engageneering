@@ -427,7 +427,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .cm-scroll{max-height:220px;overflow-y:auto;background:rgba(200,146,42,.04);border:1px solid rgba(200,146,42,.15);border-radius:8px;padding:1rem 1.1rem;font-size:12.5px;color:var(--t3);line-height:1.8;margin-bottom:1.1rem}
 .cm-scroll strong{color:var(--t1)}
 .cm-scroll a{color:var(--gb);text-decoration:none}
-.cm-chk{display:flex;align-items:flex-start;gap:.65rem;margin-bottom:.7rem;cursor:pointer}
+.cm-chk{display:flex;align-items:flex-start;gap:.65rem;margin-bottom:.7rem}
 .cm-chk input{width:15px;height:15px;accent-color:var(--gold);margin-top:3px;flex-shrink:0;cursor:pointer}
 .cm-chk label{font-size:12px;color:var(--t2);line-height:1.65;cursor:pointer}
 .cm-chk label a{color:var(--gb);text-decoration:none}
@@ -3735,65 +3735,88 @@ async function creditPsiAfterPayment(psi, gateway, txnId){
 const POLICY_VERSION = '1.0';
 
 function cmCheck(){
-  const all = document.getElementById('cmChk1').checked &&
-               document.getElementById('cmChk2').checked &&
-               document.getElementById('cmChk3').checked;
+  const c1 = document.getElementById('cmChk1');
+  const c2 = document.getElementById('cmChk2');
+  const c3 = document.getElementById('cmChk3');
+  if(!c1||!c2||!c3) return false;
+  const all = c1.checked && c2.checked && c3.checked;
   const btn = document.getElementById('cmBtn');
-  if(btn){ btn.disabled = !all; }
-  if(all) document.getElementById('cmWarn').style.display='none';
+  if(btn) btn.disabled = !all;
+  const warn = document.getElementById('cmWarn');
+  if(warn) warn.style.display = all ? 'none' : '';
   return all;
 }
 
 async function checkAndShowConsentModal(){
   if(!U) return;
+  function showModal(){
+    const m=document.getElementById('consentModal');
+    if(m&&!m.classList.contains('open')){
+      m.classList.add('open');
+      document.body.style.overflow='hidden';
+    }
+  }
   try{
-    // Check if this user already has a consent record
-    const{data:rows,error}=await supa.from('legal_consents')
+    const{data:rows,error}=await supa
+      .from('legal_consents')
       .select('id,terms_version')
       .eq('user_id',U.id)
       .limit(1);
 
-    // If no consent record exists (or query errored and pts are very low),
-    // show the modal
-    const hasConsent = !error && rows && rows.length > 0 &&
-                       rows[0].terms_version === POLICY_VERSION;
-    if(!hasConsent){
-      document.getElementById('consentModal').classList.add('open');
-      document.body.style.overflow = 'hidden';
+    if(error){
+      // RLS error (code 42501) or network error
+      // If they have earned pts (q/a activity), they are clearly existing
+      // users who we need consent from. Show modal if pts < safety threshold
+      // that implies they've been genuinely active but never consented.
+      console.warn('Consent check query error:',error.message);
+      // Always show if we can't confirm consent
+      showModal();
+      return;
     }
+
+    const hasConsent = rows && rows.length>0 &&
+                       rows[0].terms_version===POLICY_VERSION;
+    if(!hasConsent) showModal();
+
   }catch(e){
-    console.warn('Consent check error:',e);
-    // Show modal on error to be safe
-    document.getElementById('consentModal').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    console.warn('Consent check exception:',e);
+    showModal();
   }
 }
 
 async function submitConsent(){
   if(!cmCheck()){
-    document.getElementById('cmWarn').style.display='block';
+    const w=document.getElementById('cmWarn');
+    if(w) w.style.display='block';
     return;
   }
   const btn=document.getElementById('cmBtn');
   if(btn){btn.disabled=true;btn.textContent='Recording…';}
   try{
-    await supa.from('legal_consents').insert({
+    const{error:ce}=await supa.from('legal_consents').insert({
       user_id:         U.id,
       terms_version:   POLICY_VERSION,
       accepted_at:     new Date().toISOString(),
-      user_agent:      navigator.userAgent,
-      screen_res:      `${screen.width}x${screen.height}`,
+      user_agent:      (navigator.userAgent||'').slice(0,500),
+      screen_res:      screen.width+'x'+screen.height,
       chk_terms:       true,
       chk_disclaimer:  true,
       chk_yom:         true,
     });
+    if(ce) throw ce;
     document.getElementById('consentModal').classList.remove('open');
-    document.body.style.overflow = '';
-    showToast('✓ Thank you — your consent has been recorded.', 'default');
+    document.body.style.overflow='';
+    showToast('✓ Consent recorded — thank you.','default');
   }catch(e){
     console.error('Consent save error:',e);
+    // If duplicate (user somehow accepted already), close anyway
+    if(e.code==='23505'||e.message?.includes('duplicate')){
+      document.getElementById('consentModal').classList.remove('open');
+      document.body.style.overflow='';
+      return;
+    }
     if(btn){btn.disabled=false;btn.textContent='Accept & Continue';}
-    showToast('Error saving consent — please try again.','error');
+    showToast('Error saving consent — check connection and try again.','error');
   }
 }
 
@@ -3823,18 +3846,18 @@ async function loadEvtCount(){
         Full policies: <a href="legal.html" target="_blank">Terms &amp; Conditions</a> · <a href="legal.html" target="_blank">Privacy Policy</a> · <a href="legal.html" target="_blank">Content Disclaimer</a> · <a href="legal.html" target="_blank">YOM Wallet Policy</a>
       </div>
 
-      <label class="cm-chk">
+      <div class="cm-chk">
         <input type="checkbox" id="cmChk1" onchange="cmCheck()"/>
         <label for="cmChk1">I have read and agree to the <a href="legal.html" target="_blank">Terms &amp; Conditions</a> and <a href="legal.html" target="_blank">Privacy Policy</a>.</label>
-      </label>
-      <label class="cm-chk">
+      </div>
+      <div class="cm-chk">
         <input type="checkbox" id="cmChk2" onchange="cmCheck()"/>
         <label for="cmChk2">I understand and accept the Content Disclaimer: Engageneering™ is not responsible for user videos. Content is not professional advice. I am 18 or older.</label>
-      </label>
-      <label class="cm-chk">
+      </div>
+      <div class="cm-chk">
         <input type="checkbox" id="cmChk3" onchange="cmCheck()"/>
         <label for="cmChk3">I accept the <a href="legal.html" target="_blank">YOM Wallet Policy</a> and <a href="legal.html" target="_blank">ARIA &amp; AI Policy</a>.</label>
-      </label>
+      </div>
 
       <div class="cm-warn" id="cmWarn">Please check all three boxes to continue.</div>
       <button class="cm-btn" id="cmBtn" onclick="submitConsent()" disabled>Accept &amp; Continue</button>
