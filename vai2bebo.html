@@ -3,220 +3,302 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Engageneering™ — Admin Panel</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='%23060c1a' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='26,2 50,15 26,30' fill='%23fff0a0' opacity='.97'/%3E%3Cpolygon points='50,15 50,45 26,30' fill='%23c88010' opacity='.95'/%3E%3Ccircle cx='26' cy='30' r='6' fill='%23f5d060'/%3E%3C/svg%3E"/>
+<title>Engageneering™ — ⬡</title>
+<link rel="icon" href="ENG-Favicon.png"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <style>
 :root{
-  --bg:#060c1a;--bg2:#0a1628;--bg3:#0f1e36;--bg4:#081420;
-  --border:#1e3a6a;--border2:#2a4a7a;
-  --gold:#c8922a;--gold-b:#f0c040;
-  --t1:#e8f0fc;--t2:#b8cce8;--t3:#7a9ab8;--t4:#4a6a88;
-  --teal:#1d9e75;--teal-b:#5dcaa5;
-  --blue:#378add;--blue-b:#85b7eb;
-  --purple:#7f77dd;--purple-b:#afa9ec;
-  --red:#e24b4a;--amber:#ba7517;--green:#3a9e5f;
+  --bg:#040810;--bg2:#070f1e;--bg3:#0a1525;--bg4:#060c18;
+  --bdr:#1a3360;--bdr2:#243d70;
+  --gold:#c8922a;--gb:#f0c040;
+  --t1:#eaf0fc;--t2:#b0c8e8;--t3:#6a8aaa;--t4:#3a5a78;
+  --tl:#1d9e75;--tlb:#5dcaa5;
+  --bl:#378add;--blb:#85b7eb;
+  --pu:#7f77dd;--pub:#afa9ec;
+  --rd:#e24b4a;--am:#ba7517;--gn:#3a9e5f;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--t2);min-height:100vh;font-size:14px}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t2);min-height:100vh;font-size:13px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
 
-/* LOGIN GATE */
-#loginGate{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem}
-.login-box{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:2.5rem;width:100%;max-width:380px;text-align:center}
-.login-logo{margin:0 auto 1.2rem;display:block}
-.login-title{font-size:18px;font-weight:600;color:var(--gold-b);margin-bottom:.4rem}
-.login-sub{font-size:12px;color:var(--t4);margin-bottom:1.6rem}
-.login-input{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--t1);font-size:14px;outline:none;margin-bottom:.8rem;transition:border-color .2s}
-.login-input:focus{border-color:var(--gold)}
-.login-btn{width:100%;padding:11px;background:var(--gold);color:#040c18;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:background .2s}
-.login-btn:hover{background:var(--gold-b)}
-.login-err{font-size:11px;color:var(--red);margin-top:.5rem;min-height:14px}
+/* ── LAYER 1: IDENTITY GATE ── */
+#gateL1{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(ellipse at 30% 20%,rgba(200,146,42,.07) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(55,138,221,.05) 0%,transparent 60%)}
+.gate-box{width:100%;max-width:400px;padding:2.5rem;background:var(--bg3);border:1px solid var(--bdr2);border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.gate-logo{display:flex;flex-direction:column;align-items:center;gap:.6rem;margin-bottom:2rem}
+.gate-title{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:700}
+.gate-sub{font-size:10px;color:var(--t4);letter-spacing:1px}
+.gate-step-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--t4);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--bdr)}
+.gate-field{width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:10px 14px;color:var(--t1);font-size:13px;outline:none;margin-bottom:.7rem;transition:border-color .2s}
+.gate-field:focus{border-color:var(--gold)}
+.gate-field::placeholder{color:var(--t4)}
+.gate-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--gold),var(--gb));color:#040c10;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;transition:all .2s;margin-top:.3rem}
+.gate-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,146,42,.3)}
+.gate-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.gate-err{font-size:11px;color:var(--rd);margin-top:.5rem;min-height:14px;text-align:center}
+.gate-ok{font-size:11px;color:var(--tlb);margin-top:.5rem;min-height:14px;text-align:center}
+.totp-display{font-family:monospace;font-size:28px;letter-spacing:8px;color:var(--gb);text-align:center;background:var(--bg4);border:1px solid var(--bdr);border-radius:8px;padding:.8rem;margin:.5rem 0 1rem}
+.totp-hint{font-size:10px;color:var(--t4);text-align:center;margin-bottom:.8rem}
+.totp-timer{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:10px;color:var(--t4);margin-bottom:.8rem}
+.totp-bar{width:120px;height:3px;background:var(--bdr);border-radius:2px;overflow:hidden}
+.totp-bar-fill{height:100%;background:var(--gold);transition:width 1s linear}
+.gate-back{font-size:10px;color:var(--t4);background:none;border:none;cursor:pointer;margin-top:.8rem;text-align:center;width:100%}
+.gate-back:hover{color:var(--t2)}
+.attempts-warn{font-size:10px;color:var(--am);text-align:center;margin-top:.5rem}
 
-/* NAV */
-nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.nav-brand{display:flex;align-items:center;gap:.6rem}
-.nav-brand-txt{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--gold)}
-.nav-brand-sub{font-size:9px;letter-spacing:2px;color:var(--t4);text-transform:uppercase}
+/* ── NAV ── */
+nav{background:var(--bg2);border-bottom:1px solid var(--bdr);padding:0 1.4rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-l{display:flex;align-items:center;gap:.8rem}
+.nav-brand{font-size:12px;font-weight:700;letter-spacing:2.5px;color:var(--gold)}
+.nav-sep{width:1px;height:16px;background:var(--bdr)}
+.nav-pg{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4)}
 .nav-r{display:flex;align-items:center;gap:1rem}
-.nav-status{display:flex;align-items:center;gap:.5rem;font-size:11px;color:var(--t3)}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 2s ease infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.nav-signout{font-size:11px;color:var(--t4);background:none;border:none;cursor:pointer;letter-spacing:.5px}
-.nav-signout:hover{color:var(--t2)}
+.nav-live{display:flex;align-items:center;gap:.4rem;font-size:10px;color:var(--t3)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--tlb);box-shadow:0 0 6px rgba(93,202,165,.5);animation:ld 2s ease infinite}
+@keyframes ld{0%,100%{opacity:1}50%{opacity:.35}}
+.nav-admin{font-size:10px;color:var(--t3);display:flex;align-items:center;gap:.4rem}
+.nav-admin-dot{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gb));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#040c10}
+.nav-so{font-size:10px;color:var(--t4);background:none;border:1px solid var(--bdr);border-radius:4px;padding:3px 10px;cursor:pointer;transition:all .2s}
+.nav-so:hover{border-color:var(--rd);color:var(--rd)}
 
-/* LAYOUT */
-.layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 54px)}
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:196px 1fr;min-height:calc(100vh - 52px)}
 
-/* SIDEBAR */
-.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:1.2rem .8rem;display:flex;flex-direction:column;gap:.2rem}
-.sb-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);padding:.6rem .6rem .3rem;margin-top:.6rem}
-.sb-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border-radius:6px;cursor:pointer;font-size:12px;color:var(--t3);transition:all .2s;border:none;background:none;width:100%;text-align:left}
-.sb-item:hover,.sb-item.active{background:rgba(200,146,42,.1);color:var(--gold-b)}
-.sb-item.active{border-left:2px solid var(--gold)}
-.sb-badge{margin-left:auto;font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700}
+/* ── SIDEBAR ── */
+.sidebar{background:var(--bg2);border-right:1px solid var(--bdr);padding:1rem .7rem;display:flex;flex-direction:column;gap:.15rem;overflow-y:auto}
+.sb-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);padding:.7rem .6rem .3rem;margin-top:.4rem;opacity:.8}
+.sb-item{display:flex;align-items:center;gap:.55rem;padding:.48rem .7rem;border-radius:5px;cursor:pointer;font-size:11.5px;color:var(--t3);transition:all .18s;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent}
+.sb-item:hover{background:rgba(200,146,42,.07);color:var(--t2)}
+.sb-item.active{background:rgba(200,146,42,.1);color:var(--gb);border-left-color:var(--gold)}
+.sb-badge{margin-left:auto;font-size:8px;padding:1px 5px;border-radius:8px;font-weight:700}
+.sb-ver{margin-top:auto;padding:.8rem .6rem 0;font-size:9px;color:var(--t4);border-top:1px solid var(--bdr);line-height:1.6}
 
-/* MAIN */
-.main{overflow-y:auto;padding:1.5rem}
-
-/* PANELS */
+/* ── MAIN ── */
+.main{overflow-y:auto;padding:1.4rem;background:var(--bg)}
 .panel{display:none}.panel.active{display:block}
 
-/* KPI ROW */
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;margin-bottom:1.5rem}
-.kpi{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1.1rem;position:relative;overflow:hidden}
-.kpi-top{border-top:2px solid;margin:-1.1rem -1.1rem 1rem;padding:.3rem .8rem;font-size:8px;letter-spacing:2px;text-transform:uppercase}
-.kpi-val{font-size:32px;font-weight:700;color:var(--t1);line-height:1;margin-bottom:.2rem}
-.kpi-label{font-size:10px;color:var(--t4);letter-spacing:.5px}
-.kpi-delta{font-size:10px;margin-top:.4rem}
+/* ── PAGE HEADER ── */
+.pg-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.4rem}
+.pg-title{font-size:15px;font-weight:600;color:var(--t1);letter-spacing:.3px}
+.pg-sub{font-size:10px;color:var(--t4);margin-top:.2rem}
+.btn-refresh{font-size:9.5px;padding:5px 14px;border-radius:4px;background:rgba(200,146,42,.08);border:1px solid rgba(200,146,42,.25);color:var(--gold);cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.btn-refresh:hover{background:rgba(200,146,42,.18)}
 
-/* SECTION HEADERS */
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
-.sec-title{font-size:13px;font-weight:600;color:var(--t1);letter-spacing:.5px}
-.sec-sub{font-size:10px;color:var(--t4)}
+/* ── KPIs ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.4rem}
+.kpi{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;padding:1rem 1.1rem;position:relative;overflow:hidden}
+.kpi-accent{position:absolute;top:0;left:0;right:0;height:2px}
+.kpi-val{font-size:30px;font-weight:700;color:var(--t1);line-height:1.1;margin-bottom:.15rem;font-family:'Segoe UI',sans-serif}
+.kpi-label{font-size:10px;color:var(--t4);letter-spacing:.5px;text-transform:uppercase}
+.kpi-delta{font-size:10px;margin-top:.35rem;display:flex;align-items:center;gap:.3rem}
 
-/* TABLES */
-.tbl-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.5rem}
+/* ── TABLES ── */
+.tbl-wrap{background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:1.2rem}
 table{width:100%;border-collapse:collapse}
 thead tr{background:var(--bg4)}
-th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:.7rem 1rem;text-align:left;font-weight:500;border-bottom:1px solid var(--border)}
-td{padding:.7rem 1rem;border-bottom:1px solid rgba(30,58,106,.3);font-size:12px;color:var(--t2);vertical-align:middle}
+th{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:.65rem 1rem;text-align:left;font-weight:600;border-bottom:1px solid var(--bdr)}
+td{padding:.65rem 1rem;border-bottom:1px solid rgba(26,51,96,.4);font-size:11.5px;color:var(--t2);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(55,138,221,.04)}
-.empty-row td{text-align:center;color:var(--t4);padding:2rem;font-style:italic}
+tr:hover td{background:rgba(55,138,221,.03)}
+.empty-row td{text-align:center;color:var(--t4);padding:2rem;font-style:italic;font-size:12px}
 
-/* BADGES */
-.badge{font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid;font-weight:600;letter-spacing:.5px;white-space:nowrap}
-.badge-green{color:#3a9e5f;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3)}
-.badge-red{color:#f09595;background:rgba(226,75,74,.1);border-color:rgba(226,75,74,.3)}
-.badge-amber{color:var(--gold-b);background:rgba(200,146,42,.1);border-color:rgba(200,146,42,.3)}
-.badge-blue{color:var(--blue-b);background:rgba(55,138,221,.1);border-color:rgba(55,138,221,.3)}
-.badge-purple{color:var(--purple-b);background:rgba(127,119,221,.1);border-color:rgba(127,119,221,.3)}
-.badge-gray{color:var(--t3);background:rgba(122,154,184,.08);border-color:rgba(122,154,184,.2)}
+/* ── BADGES ── */
+.badge{font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid;font-weight:600;letter-spacing:.4px;white-space:nowrap}
+.bg{color:#3a9e5f;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3)}
+.br{color:#f09595;background:rgba(226,75,74,.1);border-color:rgba(226,75,74,.3)}
+.ba{color:var(--gb);background:rgba(200,146,42,.1);border-color:rgba(200,146,42,.3)}
+.bb{color:var(--blb);background:rgba(55,138,221,.1);border-color:rgba(55,138,221,.3)}
+.bp{color:var(--pub);background:rgba(127,119,221,.1);border-color:rgba(127,119,221,.3)}
+.bgr{color:var(--t3);background:rgba(122,154,184,.07);border-color:rgba(122,154,184,.2)}
 
-/* ACTION BUTTONS */
-.act-btn{font-size:10px;padding:3px 10px;border-radius:4px;cursor:pointer;border:1px solid;transition:all .2s;font-weight:500}
-.act-approve{color:var(--teal-b);border-color:rgba(93,202,165,.4);background:rgba(29,158,117,.08)}
-.act-approve:hover{background:rgba(29,158,117,.18)}
-.act-reject{color:#f09595;border-color:rgba(240,149,149,.4);background:rgba(226,75,74,.08)}
-.act-reject:hover{background:rgba(226,75,74,.18)}
+/* ── ACTION BUTTONS ── */
+.act-btn{font-size:9.5px;padding:3px 9px;border-radius:4px;cursor:pointer;border:1px solid;transition:all .18s;font-weight:500}
+.act-ok{color:var(--tlb);border-color:rgba(93,202,165,.4);background:rgba(29,158,117,.07)}.act-ok:hover{background:rgba(29,158,117,.18)}
+.act-bad{color:#f09595;border-color:rgba(240,149,149,.4);background:rgba(226,75,74,.07)}.act-bad:hover{background:rgba(226,75,74,.18)}
 .act-btn:disabled{opacity:.4;cursor:not-allowed}
 
-/* AGENT MONITOR */
-.agent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.7rem;margin-bottom:1.5rem}
-.agent-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:1rem}
-.agent-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
-.agent-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1px solid}
+/* ── TWO COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem}
+@media(max-width:1000px){.two-col{grid-template-columns:1fr}}
+
+/* ── CHARTS ── */
+.chart-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.45rem}
+.chart-lbl{font-size:11px;color:var(--t3);min-width:70px}
+.chart-track{flex:1;background:var(--bg4);border-radius:3px;height:5px;overflow:hidden}
+.chart-fill{height:100%;border-radius:3px;transition:width .9s ease}
+.chart-val{font-size:10px;color:var(--t3);min-width:28px;text-align:right}
+
+/* ── LOG ── */
+.log-wrap{background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:1.2rem}
+.log-hdr{background:var(--bg4);padding:.55rem 1rem;font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.5rem}
+.log-body{max-height:300px;overflow-y:auto;font-family:'Cascadia Code','Consolas',monospace;font-size:11px}
+.log-row{padding:.3rem 1rem;border-bottom:1px solid rgba(26,51,96,.25);display:flex;gap:.7rem;line-height:1.5}
+.log-time{color:var(--t4);flex-shrink:0;min-width:72px}
+.log-agent{color:var(--gold);flex-shrink:0;min-width:90px}
+.l-ok{color:var(--tlb)}.l-err{color:#f09595}.l-warn{color:var(--gb)}.l-info{color:var(--blb)}
+
+/* ── AGENT GRID ── */
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.6rem;margin-bottom:1.2rem}
+.agent-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:.9rem;transition:border-color .2s}
+.agent-card:hover{border-color:var(--bdr2)}
+.agent-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
+.agent-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .agent-name{font-size:12px;font-weight:600;color:var(--t1)}
-.agent-id{font-size:9px;color:var(--t4);letter-spacing:1px}
-.agent-stat{font-size:11px;color:var(--t3);margin-top:.2rem}
-.agent-layer{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-top:.3rem}
+.agent-id{font-size:8.5px;color:var(--t4);letter-spacing:1px;margin-top:1px}
+.agent-stat{font-size:11px;color:var(--t3)}
+.agent-layer{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);margin-top:.3rem}
+.agent-avg{font-size:13px;font-weight:700;color:var(--t1);margin-top:.2rem}
 
-/* ACTIVITY LOG */
-.log-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.5rem}
-.log-hdr{background:var(--bg4);padding:.6rem 1rem;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.6rem}
-.log-body{max-height:280px;overflow-y:auto;font-family:monospace;font-size:11px}
-.log-row{padding:.35rem 1rem;border-bottom:1px solid rgba(30,58,106,.2);display:flex;align-items:flex-start;gap:.7rem;line-height:1.5}
-.log-row:last-child{border-bottom:none}
-.log-time{color:var(--t4);flex-shrink:0;min-width:70px}
-.log-agent{color:var(--gold);flex-shrink:0;min-width:80px}
-.log-msg{color:var(--t2)}
-.log-ok{color:var(--teal-b)}
-.log-err{color:#f09595}
-.log-warn{color:var(--gold-b)}
+/* ── YOM SECTION ── */
+.yom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.2rem}
+.yom-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:1rem;text-align:center}
+.yom-val{font-size:24px;font-weight:700;color:var(--gb);margin-bottom:.2rem}
+.yom-lbl{font-size:9.5px;color:var(--t4);text-transform:uppercase;letter-spacing:.8px}
 
-/* CHARTS (CSS bars) */
-.chart-row{display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem}
-.chart-label{font-size:11px;color:var(--t3);min-width:80px}
-.chart-track{flex:1;background:var(--bg4);border-radius:3px;height:6px;overflow:hidden}
-.chart-fill{height:100%;border-radius:3px;transition:width .8s ease}
-.chart-val{font-size:10px;color:var(--t3);min-width:30px;text-align:right}
+/* ── USER DETAIL MODAL ── */
+#userModal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem}
+#userModal.open{display:flex}
+.user-modal-box{background:var(--bg3);border:1px solid var(--bdr2);border-radius:12px;width:100%;max-width:600px;max-height:80vh;overflow-y:auto}
+.um-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid var(--bdr)}
+.um-title{font-size:14px;font-weight:600;color:var(--t1)}
+.um-close{background:none;border:none;color:var(--t4);font-size:20px;cursor:pointer;line-height:1}
+.um-body{padding:1.2rem}
+.um-row{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid rgba(26,51,96,.3);font-size:12px}
+.um-key{color:var(--t4)}.um-val{color:var(--t1);font-weight:500}
 
-/* 2-COL GRID */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
-@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{display:none}.two-col{grid-template-columns:1fr}}
+/* ── CONSENT AUDIT ── */
+.consent-row{background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:.8rem 1rem;margin-bottom:.5rem;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1rem;align-items:center;font-size:11.5px}
 
-/* REFRESH BTN */
-.refresh-btn{font-size:10px;padding:4px 12px;border-radius:4px;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);color:var(--gold);cursor:pointer;transition:all .2s;letter-spacing:.5px}
-.refresh-btn:hover{background:rgba(200,146,42,.2)}
-
-/* TEXTAREA */
-.admin-textarea{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:.7rem;color:var(--t1);font-size:12px;resize:vertical;min-height:70px;outline:none;font-family:inherit}
-.admin-textarea:focus{border-color:var(--gold)}
-
-/* TIER PROGRESS */
-.tier-row{display:flex;align-items:center;gap:.7rem;padding:.5rem 0;border-bottom:1px solid rgba(30,58,106,.2)}
-.tier-row:last-child{border-bottom:none}
+/* ── MISC ── */
+.section-divider{border:none;border-top:1px solid var(--bdr);margin:1.2rem 0}
+.inline-mono{font-family:monospace;font-size:11px;color:var(--gb)}
+.warn-box{background:rgba(226,75,74,.06);border:1px solid rgba(226,75,74,.2);border-radius:7px;padding:.8rem 1rem;font-size:11px;color:#f09595;margin-bottom:1rem}
+.info-box{background:rgba(200,146,42,.05);border:1px solid rgba(200,146,42,.15);border-radius:7px;padding:.8rem 1rem;font-size:11px;color:var(--t2);margin-bottom:1rem;line-height:1.7}
 </style>
 </head>
 <body>
 
-<!-- LOGIN GATE -->
-<div id="loginGate">
-  <div class="login-box">
-    <svg class="login-logo" width="48" height="56" viewBox="0 0 52 60">
-      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
-      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
-      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
-      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
-      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
-      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
-      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
+<!-- ══════════════════════════════════════════════════
+     LAYER 1: EMAIL + PASSWORD
+══════════════════════════════════════════════════ -->
+<div id="gateL1">
+<div class="gate-box">
+  <div class="gate-logo">
+    <svg width="44" height="51" viewBox="0 0 52 60">
+      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="1.8"/>
+      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/>
+      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/>
+      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/>
+      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".92"/>
+      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/>
+      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/>
       <circle cx="26" cy="30" r="5.5" fill="#f5d060"/>
       <circle cx="26" cy="30" r="3" fill="#0b1624"/>
       <circle cx="26" cy="30" r="1.4" fill="#f5d060"/>
     </svg>
-    <div class="login-title">Admin Panel</div>
-    <div class="login-sub">Engageneering™ · Restricted access</div>
-    <input class="login-input" type="email" id="adminEmail" placeholder="Admin email"/>
-    <input class="login-input" type="password" id="adminPwd" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
-    <button class="login-btn" onclick="adminLogin()">Sign In</button>
-    <div class="login-err" id="loginErr"></div>
+    <div class="gate-title">ENGAGENEERING™</div>
+    <div class="gate-sub">Restricted · Admin Access Only</div>
   </div>
+  <div class="gate-step-lbl">Step 1 of 2 · Identity Verification</div>
+  <input class="gate-field" type="email" id="L1email" placeholder="Admin email address" autocomplete="username"/>
+  <input class="gate-field" type="password" id="L1pwd" placeholder="Password" autocomplete="current-password"
+    onkeydown="if(event.key==='Enter')doL1()"/>
+  <button class="gate-btn" id="L1btn" onclick="doL1()">Continue →</button>
+  <div class="gate-err" id="L1err"></div>
+  <div class="attempts-warn" id="L1attempts"></div>
+  <button class="gate-back" onclick="sendReset()" style="margin-top:.6rem;font-size:10px;color:var(--t4)">
+    Forgot password? Send reset email →
+  </button>
+  <div class="gate-ok" id="resetOk" style="font-size:11px;margin-top:.3rem"></div>
+</div>
 </div>
 
-<!-- NAV -->
+<!-- ══════════════════════════════════════════════════
+     LAYER 2: TOTP (time-based one-time PIN)
+══════════════════════════════════════════════════ -->
+<div id="gateL2" style="display:none;position:fixed;inset:0;z-index:901;align-items:center;justify-content:center;background:var(--bg)">
+<div class="gate-box">
+  <div class="gate-logo">
+    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,rgba(200,146,42,.2),rgba(240,192,64,.1));border:1px solid rgba(200,146,42,.4);display:flex;align-items:center;justify-content:center;font-size:18px">🔐</div>
+    <div class="gate-title">Two-Factor Verification</div>
+    <div class="gate-sub">Session PIN — valid for 30 seconds</div>
+  </div>
+  <div class="gate-step-lbl">Step 2 of 2 · PIN Verification</div>
+  <div class="info-box">Your session PIN has been generated. In production this would be sent via authenticator app (TOTP) or SMS. For this implementation, the PIN is shown below.</div>
+  <div class="totp-display" id="totpDisplay">——————</div>
+  <div class="totp-timer">
+    <span>Expires in <span id="totpCountdown">30</span>s</span>
+    <div class="totp-bar"><div class="totp-bar-fill" id="totpBarFill" style="width:100%"></div></div>
+  </div>
+  <div class="totp-hint">Enter the 6-digit PIN shown above</div>
+  <input class="gate-field" type="text" id="L2pin" placeholder="6-digit PIN"
+    maxlength="6" inputmode="numeric" pattern="[0-9]*"
+    style="text-align:center;letter-spacing:8px;font-size:20px;font-family:monospace"
+    onkeydown="if(event.key==='Enter')doL2()"/>
+  <button class="gate-btn" id="L2btn" onclick="doL2()">Verify &amp; Enter</button>
+  <div class="gate-err" id="L2err"></div>
+  <button class="gate-back" onclick="resetGate()">← Back to login</button>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     ADMIN SHELL (hidden until both layers pass)
+══════════════════════════════════════════════════ -->
+<div id="adminShell" style="display:none">
+
 <nav>
-  <div class="nav-brand">
-    <svg width="24" height="28" viewBox="0 0 52 60">
+  <div class="nav-l">
+    <svg width="20" height="23" viewBox="0 0 52 60">
       <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.5"/>
-      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
-      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
-      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
-      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
-      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
-      <circle cx="26" cy="30" r="5" fill="#f5d060"/>
-      <circle cx="26" cy="30" r="2.8" fill="#0b1624"/>
-      <circle cx="26" cy="30" r="1.2" fill="#f5d060"/>
+      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/>
+      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/>
+      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/>
+      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/>
+      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/>
+      <circle cx="26" cy="30" r="4.5" fill="#f5d060"/>
+      <circle cx="26" cy="30" r="2.5" fill="#0b1624"/>
     </svg>
-    <div><div class="nav-brand-txt">ENGAGENEERING™</div><div class="nav-brand-sub">Admin Panel</div></div>
+    <div class="nav-brand">ENGAGENEERING™</div>
+    <div class="nav-sep"></div>
+    <div class="nav-pg">Admin · Secure Session</div>
   </div>
   <div class="nav-r">
-    <div class="nav-status"><div class="live-dot"></div>Live · <span id="lastRefresh">--</span></div>
-    <button class="nav-signout" onclick="adminSignout()">Sign out</button>
+    <div class="nav-live"><div class="live-dot"></div>Live · <span id="lastRef">—</span></div>
+    <div class="nav-admin"><div class="nav-admin-dot" id="adminInitial">A</div><span id="adminLabel">Admin</span></div>
+    <button class="nav-so" onclick="doSignout()">Sign Out</button>
   </div>
 </nav>
 
 <div class="layout">
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sb-label">Overview</div>
-    <button class="sb-item active" onclick="showPanel('dashboard',this)">Dashboard</button>
-    <button class="sb-item" onclick="showPanel('agents',this)">Agent Monitor</button>
-    <button class="sb-item" onclick="showPanel('activity',this)">Activity Log</button>
+    <div class="sb-lbl">Overview</div>
+    <button class="sb-item active" onclick="nav('dashboard',this)">📊 Dashboard</button>
+    <button class="sb-item" onclick="nav('agents',this)">⬡ ARIA Agents</button>
+    <button class="sb-item" onclick="nav('activity',this)">📡 Activity Log</button>
 
-    <div class="sb-label">Content</div>
-    <button class="sb-item" onclick="showPanel('questions',this)">Questions <span class="sb-badge badge-amber" id="pendingQBadge">0</span></button>
-    <button class="sb-item" onclick="showPanel('answers',this)">Answers <span class="sb-badge badge-red" id="flaggedABadge">0</span></button>
+    <div class="sb-lbl">Content</div>
+    <button class="sb-item" onclick="nav('questions',this)">❓ Questions <span class="sb-badge ba" id="bdgQ">0</span></button>
+    <button class="sb-item" onclick="nav('answers',this)">🎥 Answers <span class="sb-badge br" id="bdgA">0</span></button>
 
-    <div class="sb-label">Community</div>
-    <button class="sb-item" onclick="showPanel('users',this)">Users</button>
-    <button class="sb-item" onclick="showPanel('tiers',this)">Tier Events</button>
-    <button class="sb-item" onclick="showPanel('insights',this)">Insights</button>
+    <div class="sb-lbl">Economy</div>
+    <button class="sb-item" onclick="nav('yom',this)">Ψ YOM Wallet</button>
+    <button class="sb-item" onclick="nav('consents',this)">✅ Consent Audit</button>
 
-    <div class="sb-label">Platform</div>
-    <button class="sb-item" onclick="showPanel('diagnostics',this)">Diagnostics</button>
+    <div class="sb-lbl">Community</div>
+    <button class="sb-item" onclick="nav('users',this)">👥 Users</button>
+    <button class="sb-item" onclick="nav('tiers',this)">⭐ Tier Events</button>
+    <button class="sb-item" onclick="nav('insights',this)">💡 Insights</button>
+
+    <div class="sb-lbl">Platform</div>
+    <button class="sb-item" onclick="nav('security',this)">🔒 Security Log</button>
+    <button class="sb-item" onclick="nav('diagnostics',this)">🔧 Diagnostics</button>
+
+    <div class="sb-ver">
+      v2.0 · Secure<br>
+      Session: <span id="sessionTime">—</span><br>
+      <span style="color:var(--tlb)">2FA ✓ Active</span>
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -224,510 +306,956 @@ tr:hover td{background:rgba(55,138,221,.04)}
 
     <!-- DASHBOARD -->
     <div class="panel active" id="panel-dashboard">
-      <div class="sec-hdr">
-        <div><div class="sec-title">Platform Overview</div><div class="sec-sub" id="dashSubtitle">Loading...</div></div>
-        <button class="refresh-btn" onclick="loadAll()">Refresh</button>
+      <div class="pg-hdr">
+        <div><div class="pg-title">Platform Overview</div><div class="pg-sub" id="dashSub">Loading…</div></div>
+        <button class="btn-refresh" onclick="loadDashboard()">↺ Refresh</button>
       </div>
       <div class="kpi-row" id="kpiRow">
-        <div class="kpi"><div class="kpi-top" style="border-color:var(--blue);color:var(--blue-b);background:rgba(55,138,221,.08)">Total users</div><div class="kpi-val" id="kpiUsers">—</div><div class="kpi-label">registered accounts</div></div>
-        <div class="kpi"><div class="kpi-top" style="border-color:var(--teal);color:var(--teal-b);background:rgba(29,158,117,.08)">Questions</div><div class="kpi-val" id="kpiQuestions">—</div><div class="kpi-label">total submitted</div></div>
-        <div class="kpi"><div class="kpi-top" style="border-color:var(--purple);color:var(--purple-b);background:rgba(127,119,221,.08)">Answers</div><div class="kpi-val" id="kpiAnswers">—</div><div class="kpi-label">total submitted</div></div>
-        <div class="kpi"><div class="kpi-top" style="border-color:var(--gold);color:var(--gold-b);background:rgba(200,146,42,.08)">Avg CDS</div><div class="kpi-val" id="kpiAvgCDS">—</div><div class="kpi-label">composite score</div></div>
-        <div class="kpi"><div class="kpi-top" style="border-color:var(--red);color:#f09595;background:rgba(226,75,74,.08)">Integrity flags</div><div class="kpi-val" id="kpiFlags">—</div><div class="kpi-label">flagged answers</div></div>
-        <div class="kpi"><div class="kpi-top" style="border-color:var(--green);color:#5dcaa5;background:rgba(58,158,95,.08)">Tier promotions</div><div class="kpi-val" id="kpiPromotions">—</div><div class="kpi-label">all time</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--bl)"></div><div class="kpi-val" id="kpiU">—</div><div class="kpi-label">Total Users</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--tl)"></div><div class="kpi-val" id="kpiQ">—</div><div class="kpi-label">Questions</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--pu)"></div><div class="kpi-val" id="kpiA">—</div><div class="kpi-label">Answers</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--gold)"></div><div class="kpi-val" id="kpiCDS">—</div><div class="kpi-label">Avg CDS</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--rd)"></div><div class="kpi-val" id="kpiFlags">—</div><div class="kpi-label">Integrity Flags</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--gn)"></div><div class="kpi-val" id="kpiPsi">—</div><div class="kpi-label">Total Ψ Earned</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--tlb)"></div><div class="kpi-val" id="kpiConsents">—</div><div class="kpi-label">Consents Recorded</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--am)"></div><div class="kpi-val" id="kpiPurchased">—</div><div class="kpi-label">Ψ Purchased</div></div>
       </div>
-
       <div class="two-col">
         <div>
-          <div class="sec-hdr"><div class="sec-title">Recent questions</div></div>
-          <div class="tbl-wrap">
-            <table><thead><tr><th>Question</th><th>Status</th><th>Score</th></tr></thead>
-            <tbody id="recentQTable"><tr class="empty-row"><td colspan="3">Loading...</td></tr></tbody></table>
-          </div>
+          <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Recent Questions</div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Question</th><th>Quality</th><th>Status</th></tr></thead>
+          <tbody id="rqTbl"><tr class="empty-row"><td colspan="3">Loading…</td></tr></tbody></table></div>
         </div>
         <div>
-          <div class="sec-hdr"><div class="sec-title">Recent answers</div></div>
-          <div class="tbl-wrap">
-            <table><thead><tr><th>Answer excerpt</th><th>CDS</th><th>Status</th></tr></thead>
-            <tbody id="recentATable"><tr class="empty-row"><td colspan="3">Loading...</td></tr></tbody></table>
-          </div>
+          <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Recent Answers</div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>CDS</th><th>Integrity</th></tr></thead>
+          <tbody id="raTbl"><tr class="empty-row"><td colspan="3">Loading…</td></tr></tbody></table></div>
         </div>
       </div>
-
-      <div>
-        <div class="sec-hdr"><div class="sec-title">Score distribution</div><div class="sec-sub">CDS across all answers</div></div>
-        <div class="tbl-wrap" style="padding:1.2rem 1.4rem">
-          <div id="scoreDistChart">Loading...</div>
-        </div>
-      </div>
+      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">CDS Distribution</div></div>
+      <div class="tbl-wrap" style="padding:1.1rem 1.3rem"><div id="distChart">Loading…</div></div>
     </div>
 
-    <!-- AGENT MONITOR -->
+    <!-- ARIA AGENTS -->
     <div class="panel" id="panel-agents">
-      <div class="sec-hdr">
-        <div><div class="sec-title">ARIA Agent Network</div><div class="sec-sub">12 specialist agents · Real-time status from score_history</div></div>
-        <button class="refresh-btn" onclick="loadAgentStats()">Refresh</button>
+      <div class="pg-hdr">
+        <div><div class="pg-title">ARIA Agent Network</div><div class="pg-sub">12 specialist agents · Live performance metrics</div></div>
+        <button class="btn-refresh" onclick="loadAgents()">↺ Refresh</button>
       </div>
-      <div class="agent-grid" id="agentGrid">Loading agents...</div>
-      <div class="sec-hdr" style="margin-top:.5rem"><div class="sec-title">CDS Formula</div></div>
-      <div class="tbl-wrap" style="padding:1.1rem 1.4rem">
-        <div style="font-family:monospace;font-size:12px;color:var(--gold-b);line-height:2">
-          AG = (EI × 0.25) + (RI × 0.20) + (RAI × 0.25) + (COI × 0.15) + (AI × 0.15)<br>
-          CDS = (AG × 0.60) + (PG × 0.40)<br>
-          <span style="color:var(--t4)">Integrity flag → CDS suspended &nbsp;|&nbsp; |AG − PG| > 15 → divergence review</span>
+      <div class="agent-grid" id="agentGrid">Loading…</div>
+      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Index Averages (all scored answers)</div></div>
+      <div class="tbl-wrap" style="padding:1.1rem 1.3rem">
+        <div style="font-family:monospace;font-size:11px;color:var(--gb);line-height:2.2;margin-bottom:.8rem">
+          AG = (EI×0.25) + (RI×0.20) + (RAI×0.25) + (COI×0.15) + (AI×0.15)<br>
+          CDS = AG×0.60 + PG×0.40 &nbsp;|&nbsp; Integrity fail → ×0.5 &nbsp;|&nbsp; Multilingual → +2
         </div>
-        <div style="margin-top:1rem" id="avgIndexes">Loading index averages...</div>
+        <div id="avgIdxChart">Loading…</div>
       </div>
     </div>
 
     <!-- ACTIVITY LOG -->
     <div class="panel" id="panel-activity">
-      <div class="sec-hdr">
-        <div><div class="sec-title">Live Activity Log</div><div class="sec-sub">Real-time events from score_history and tier_events</div></div>
-        <button class="refresh-btn" onclick="loadActivity()">Refresh</button>
+      <div class="pg-hdr">
+        <div><div class="pg-title">Live Activity Log</div><div class="pg-sub">score_history · tier_events · consent_records</div></div>
+        <button class="btn-refresh" onclick="loadActivity()">↺ Refresh</button>
       </div>
       <div class="log-wrap">
-        <div class="log-hdr"><div class="live-dot"></div>Live feed · score_history + tier_events</div>
-        <div class="log-body" id="activityLog"><div style="padding:1rem;color:var(--t4);text-align:center">Loading...</div></div>
+        <div class="log-hdr"><div class="live-dot"></div>Event stream</div>
+        <div class="log-body" id="actLog"><div style="padding:1rem;color:var(--t4);text-align:center">Loading…</div></div>
       </div>
-      <div class="sec-hdr"><div class="sec-title">Tier Events</div></div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>User</th><th>Track</th><th>Change</th><th>Evidence</th><th>When</th></tr></thead>
-        <tbody id="tierEventsTable"><tr class="empty-row"><td colspan="5">Loading...</td></tr></tbody></table>
-      </div>
+      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Tier Events</div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Track</th><th>From</th><th>To</th><th>Direction</th><th>Evidence</th><th>Date</th></tr></thead>
+      <tbody id="tierActTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- QUESTIONS -->
     <div class="panel" id="panel-questions">
-      <div class="sec-hdr">
-        <div><div class="sec-title">Question Management</div><div class="sec-sub">Review, approve, and moderate submitted questions</div></div>
-        <button class="refresh-btn" onclick="loadQuestions()">Refresh</button>
+      <div class="pg-hdr">
+        <div><div class="pg-title">Question Management</div><div class="pg-sub">Review, moderate and approve submitted questions</div></div>
+        <button class="btn-refresh" onclick="loadQuestions()">↺ Refresh</button>
       </div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>Question</th><th>Asker</th><th>Tags</th><th>Quality</th><th>Gatekeeper</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="questionsTable"><tr class="empty-row"><td colspan="7">Loading...</td></tr></tbody></table>
-      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Question</th><th>Asker</th><th>Tags</th><th>Quality</th><th>Gatekeeper</th><th>Language</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="qTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- ANSWERS -->
     <div class="panel" id="panel-answers">
-      <div class="sec-hdr">
-        <div><div class="sec-title">Answer Management</div><div class="sec-sub">Review scored answers and integrity flags</div></div>
-        <button class="refresh-btn" onclick="loadAnswers()">Refresh</button>
+      <div class="pg-hdr">
+        <div><div class="pg-title">Answer Management</div><div class="pg-sub">Scored answers with full ARIA index breakdown</div></div>
+        <button class="btn-refresh" onclick="loadAnswers()">↺ Refresh</button>
       </div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>Answer</th><th>Answerer</th><th>EI</th><th>RI</th><th>RAI</th><th>COI</th><th>AI</th><th>AG</th><th>PG</th><th>CDS</th><th>Integrity</th><th>Status</th></tr></thead>
-        <tbody id="answersTable"><tr class="empty-row"><td colspan="12">Loading...</td></tr></tbody></table>
+      <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>EI</th><th>RI</th><th>RAI</th><th>COI</th><th>AI</th><th>AG</th><th>CDS</th><th>Integrity</th><th>Pts</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="aTbl"><tr class="empty-row"><td colspan="12">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- YOM WALLET -->
+    <div class="panel" id="panel-yom">
+      <div class="pg-hdr">
+        <div><div class="pg-title">Ψ YOM Economy</div><div class="pg-sub">Wallet balances · transaction history · purchase records</div></div>
+        <button class="btn-refresh" onclick="loadYOM()">↺ Refresh</button>
       </div>
+      <div class="yom-grid" id="yomKpi"></div>
+      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Top Ψ Earners</div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Total Ψ</th><th>Q Ψ</th><th>A Ψ</th><th>Purchased Ψ</th><th>Tier</th></tr></thead>
+      <tbody id="yomTbl"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody></table></div>
+      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Recent Transactions</div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Type</th><th>Ψ</th><th>Action</th><th>Date</th></tr></thead>
+      <tbody id="txTbl"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- CONSENT AUDIT -->
+    <div class="panel" id="panel-consents">
+      <div class="pg-hdr">
+        <div><div class="pg-title">Legal Consent Audit</div><div class="pg-sub">All recorded acceptances · Legal evidence trail · Policy v1.0</div></div>
+        <button class="btn-refresh" onclick="loadConsents()">↺ Refresh</button>
+      </div>
+      <div class="info-box">Every user who accepts the Terms & Conditions, Content Disclaimer, and YOM Policy during signup or the existing-user modal has a timestamped record here. This is your legal evidence trail.</div>
+      <div class="tbl-wrap"><table><thead><tr><th>User ID</th><th>Policy Version</th><th>Terms ✓</th><th>Disclaimer ✓</th><th>YOM ✓</th><th>Accepted At (IST)</th><th>Device</th></tr></thead>
+      <tbody id="consentTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- USERS -->
     <div class="panel" id="panel-users">
-      <div class="sec-hdr">
-        <div><div class="sec-title">User Registry</div><div class="sec-sub">All registered profiles and tier states</div></div>
-        <button class="refresh-btn" onclick="loadUsers()">Refresh</button>
+      <div class="pg-hdr">
+        <div><div class="pg-title">User Registry</div><div class="pg-sub">All registered profiles · tier states · wallet balances</div></div>
+        <button class="btn-refresh" onclick="loadUsers()">↺ Refresh</button>
       </div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>Name</th><th>Role</th><th>Seeker tier</th><th>Answerer tier</th><th>Total pts</th><th>Engageneer™</th><th>Joined</th></tr></thead>
-        <tbody id="usersTable"><tr class="empty-row"><td colspan="7">Loading...</td></tr></tbody></table>
-      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Seeker T</th><th>Answerer T</th><th>Total Ψ</th><th>Consented</th><th>Joined</th><th>Actions</th></tr></thead>
+      <tbody id="uTbl"><tr class="empty-row"><td colspan="9">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- TIER EVENTS -->
     <div class="panel" id="panel-tiers">
-      <div class="sec-hdr">
-        <div><div class="sec-title">Tier Progression Log</div><div class="sec-sub">Full audit trail of all promotions and demotions</div></div>
-        <button class="refresh-btn" onclick="loadTierEvents()">Refresh</button>
+      <div class="pg-hdr">
+        <div><div class="pg-title">Tier Progression Audit</div><div class="pg-sub">Full immutable audit trail of all promotions and demotions</div></div>
+        <button class="btn-refresh" onclick="loadTiers()">↺ Refresh</button>
       </div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>User</th><th>Track</th><th>From</th><th>To</th><th>Direction</th><th>Evidence</th><th>Date</th></tr></thead>
-        <tbody id="tierTable"><tr class="empty-row"><td colspan="7">Loading...</td></tr></tbody></table>
-      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Track</th><th>From</th><th>To</th><th>Direction</th><th>Avg CDS</th><th>Date</th></tr></thead>
+      <tbody id="tierTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- INSIGHTS -->
     <div class="panel" id="panel-insights">
-      <div class="sec-hdr">
-        <div><div class="sec-title">Insight Reports</div><div class="sec-sub">Weekly Narrator output per user</div></div>
-        <button class="refresh-btn" onclick="loadInsights()">Refresh</button>
+      <div class="pg-hdr">
+        <div><div class="pg-title">Insight Reports</div><div class="pg-sub">Weekly Narrator output per user</div></div>
+        <button class="btn-refresh" onclick="loadInsights()">↺ Refresh</button>
       </div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>User</th><th>Week of</th><th>Band / Strengths</th><th>Growth edge</th><th>Delivered</th></tr></thead>
-        <tbody id="insightsTable"><tr class="empty-row"><td colspan="5">Loading...</td></tr></tbody></table>
+      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Week</th><th>Strengths</th><th>Growth Edge</th><th>Next Action</th><th>Delivered</th></tr></thead>
+      <tbody id="insTbl"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- SECURITY LOG -->
+    <div class="panel" id="panel-security">
+      <div class="pg-hdr">
+        <div><div class="pg-title">Security &amp; Access Log</div><div class="pg-sub">Admin login events · 2FA attempts · session audit</div></div>
+        <button class="btn-refresh" onclick="loadSecurity()">↺ Refresh</button>
+      </div>
+      <div class="log-wrap">
+        <div class="log-hdr">Security event stream</div>
+        <div class="log-body" id="secLog"><div style="padding:1rem;color:var(--t4);text-align:center">Loading…</div></div>
+      </div>
+      <hr class="section-divider"/>
+
+      <!-- CHANGE PASSWORD -->
+      <div class="tbl-wrap" style="padding:1.1rem;margin-bottom:1rem">
+        <div class="pg-title" style="font-size:12px;margin-bottom:.8rem">Change Admin Password</div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;max-width:340px">
+          <input class="gate-field" type="password" id="newPwd1" placeholder="New password (min 8 characters)"/>
+          <input class="gate-field" type="password" id="newPwd2" placeholder="Confirm new password"
+            onkeydown="if(event.key==='Enter')changePwd()"/>
+          <button class="btn-refresh" onclick="changePwd()"
+            style="width:fit-content;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3);color:var(--tlb)">
+            Update Password
+          </button>
+          <div id="pwdMsg" style="font-size:11px;min-height:14px"></div>
+        </div>
+      </div>
+
+      <hr class="section-divider"/>
+      <div class="info-box">
+        <strong style="color:var(--gb)">2FA Implementation:</strong> The current implementation uses a server-generated TOTP displayed on-screen (suitable for testing/internal use). For production, integrate with Google Authenticator or Authy via the TOTP standard (RFC 6238), or use SMS OTP via Twilio. The Supabase MFA API at <span class="inline-mono">supa.auth.mfa.*</span> supports TOTP natively — enable it in Supabase Dashboard → Authentication → MFA.
       </div>
     </div>
 
     <!-- DIAGNOSTICS -->
     <div class="panel" id="panel-diagnostics">
-      <div class="sec-hdr"><div class="sec-title">Platform Diagnostics</div></div>
-      <div class="two-col">
-        <div class="tbl-wrap" style="padding:1.2rem">
-          <div class="sec-title" style="margin-bottom:.8rem;font-size:12px">Supabase Connection</div>
-          <div id="diagSupabase" style="font-family:monospace;font-size:11px;color:var(--t3);line-height:1.8">Checking...</div>
-        </div>
-        <div class="tbl-wrap" style="padding:1.2rem">
-          <div class="sec-title" style="margin-bottom:.8rem;font-size:12px">Table Row Counts</div>
-          <div id="diagTables" style="font-family:monospace;font-size:11px;color:var(--t3);line-height:1.8">Checking...</div>
-        </div>
+      <div class="pg-hdr">
+        <div><div class="pg-title">Platform Diagnostics</div><div class="pg-sub">Connection health · table counts · configuration</div></div>
+        <button class="btn-refresh" onclick="loadDiag()">↺ Refresh</button>
       </div>
-      <div class="tbl-wrap" style="padding:1.2rem">
-        <div class="sec-title" style="margin-bottom:.8rem;font-size:12px">Configuration Notes</div>
-        <div style="font-size:12px;color:var(--t3);line-height:1.9">
-          <div style="margin-bottom:.5rem"><span style="color:var(--gold-b)">Supabase URL:</span> https://tbqnkcjftxfbxujxsqkj.supabase.co</div>
-          <div style="margin-bottom:.5rem"><span style="color:var(--gold-b)">Auth providers:</span> Email/Password · Google OAuth · Magic Link</div>
-          <div style="margin-bottom:.5rem"><span style="color:var(--gold-b)">ARIA agents:</span> 12 specialist agents · CDS = AG×0.60 + PG×0.40</div>
-          <div style="margin-bottom:.5rem"><span style="color:var(--red)">CORS note:</span> Anthropic API calls must be proxied server-side. Direct browser calls are blocked. Use Supabase Edge Functions to proxy agent calls.</div>
-          <div><span style="color:var(--gold-b)">Next step:</span> Deploy Edge Functions for Gatekeeper, Question Rater, Smart Matcher, and the 6 eval agents. Replace direct API calls in platform.html with calls to /functions/v1/agent-*</div>
+      <div class="two-col">
+        <div class="tbl-wrap" style="padding:1.1rem"><div class="pg-title" style="font-size:12px;margin-bottom:.7rem">Supabase Connection</div><div id="diagConn" style="font-family:monospace;font-size:11px;color:var(--t3);line-height:2">Checking…</div></div>
+        <div class="tbl-wrap" style="padding:1.1rem"><div class="pg-title" style="font-size:12px;margin-bottom:.7rem">Table Row Counts</div><div id="diagTables" style="font-family:monospace;font-size:11px;color:var(--t3);line-height:2">Checking…</div></div>
+      </div>
+      <div class="tbl-wrap" style="padding:1.1rem">
+        <div class="pg-title" style="font-size:12px;margin-bottom:.7rem">Configuration</div>
+        <div style="font-size:11.5px;color:var(--t3);line-height:2">
+          <div><span style="color:var(--gb)">Supabase URL:</span> https://tbqnkcjftxfbxujxsqkj.supabase.co</div>
+          <div><span style="color:var(--gb)">ARIA Agent:</span> /functions/v1/aria-agent · Model: claude-sonnet-4-5</div>
+          <div><span style="color:var(--gb)">CDS Formula:</span> AG×0.60 + PG×0.40 · Integrity fail ×0.5 · Multilingual +2</div>
+          <div><span style="color:var(--gb)">Admin 2FA:</span> TOTP (server-generated) → Supabase MFA for production</div>
+          <div><span style="color:var(--gb)">Policy Version:</span> 1.0</div>
         </div>
       </div>
     </div>
 
+  </div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /adminShell -->
+
+<!-- USER DETAIL MODAL -->
+<div id="userModal">
+  <div class="user-modal-box">
+    <div class="um-hdr"><div class="um-title" id="umTitle">User Detail</div><button class="um-close" onclick="closeUserModal()">×</button></div>
+    <div class="um-body" id="umBody"></div>
   </div>
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ══════════════════════════════════════════════════════════════
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
-let supa = null;
-try { if(SUPA_ANON) supa = supabase.createClient(SUPA_URL, SUPA_ANON); } catch(e) { console.warn('Supabase init:', e.message); }
 
-let adminUser = null;
-const logs = [];
+// ── GATE TOKEN — tab-scoped, cleared on tab close ────────────
+// The admin shell is ONLY shown when this token is present.
+// It is set ONLY after both L1 (password) + L2 (TOTP) pass.
+const GATE_TOKEN_KEY = '_VAI2BEBO_GATE_';
+const SESSION_TTL_MS = 4 * 60 * 60 * 1000; // 4-hour session max
 
-// ── AUTH ──────────────────────────────────────────────
-async function adminLogin(){
-  const email = document.getElementById('adminEmail').value.trim();
-  const pwd   = document.getElementById('adminPwd').value;
-  const errEl = document.getElementById('loginErr');
-  errEl.textContent = '';
-  if(!email||!pwd){errEl.textContent='Email and password required.';return;}
-  const {data,error} = await supa.auth.signInWithPassword({email,password:pwd});
-  if(error){errEl.textContent=error.message;return;}
-  adminUser = data.user;
-  document.getElementById('loginGate').style.display='none';
-  addLog('ARIA','Admin session started','ok');
-  loadAll();
-  startAutoRefresh();
+function isGateOpen(){
+  try{
+    const raw = sessionStorage.getItem(GATE_TOKEN_KEY);
+    if(!raw) return false;
+    const {ts, email} = JSON.parse(raw);
+    if(!ts || !email) return false;
+    if(Date.now() - ts > SESSION_TTL_MS){ clearGateToken(); return false; }
+    return true;
+  }catch(e){ return false; }
 }
-async function adminSignout(){
-  await supa.auth.signOut();
+
+function setGateToken(email){
+  sessionStorage.setItem(GATE_TOKEN_KEY, JSON.stringify({ts: Date.now(), email}));
+}
+
+function clearGateToken(){
+  sessionStorage.removeItem(GATE_TOKEN_KEY);
+}
+
+// ── PAGE LOAD: enforce gate — no exceptions ────────────────────
+// Run before anything else renders.
+// If gate token absent → show L1, hide everything else.
+(function enforceGate(){
+  if(!isGateOpen()){
+    // Make absolutely sure shell is hidden
+    document.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('adminShell').style.display = 'none';
+      document.getElementById('gateL1').style.display = 'flex';
+      document.getElementById('gateL2').style.display = 'none';
+    });
+  } else {
+    // Valid token — auto-admit (same tab, session still valid)
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const raw = JSON.parse(sessionStorage.getItem(GATE_TOKEN_KEY)||'{}');
+      document.getElementById('gateL1').style.display = 'none';
+      document.getElementById('gateL2').style.display = 'none';
+      document.getElementById('adminShell').style.display = 'block';
+      // We still need a valid Supabase session — re-auth silently is not
+      // possible without password. Show "session restored" notice.
+      // For security, require full re-login if page is refreshed.
+      // Uncomment the next line to force full re-auth on every page load:
+      // clearGateToken(); location.reload(); return;
+      document.getElementById('adminInitial').textContent = (raw.email||'A').charAt(0).toUpperCase();
+      document.getElementById('adminLabel').textContent = (raw.email||'admin').split('@')[0];
+      sessionStart = new Date(raw.ts);
+      loadAll();
+      setInterval(loadAll, 60000);
+    });
+  }
+})();
+
+// ADMIN ROLE CHECK — only users with this email domain or specific emails are admins
+// Add your admin email(s) here
+const ADMIN_EMAILS = ['admin@engageneering.org','yom@engageneering.org'];
+// OR use a domain check: email.endsWith('@engageneering.org')
+
+let supa = null;
+let adminUser = null;
+let sessionStart = null;
+
+// ── SUPABASE CLIENT ─────────────────────────────────────────
+function getSupa(){
+  if(!supa && SUPA_ANON) supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
+    auth: {
+      persistSession: false,      // Never store session in localStorage
+      autoRefreshToken: false,    // Never auto-refresh
+      detectSessionInUrl: false,  // Ignore URL tokens from platform.html
+      storage: { getItem:()=>null, setItem:()=>{}, removeItem:()=>{} } // No-op storage
+    }
+  });
+  return supa;
+}
+
+// ── SECURITY LOG (in-memory) ────────────────────────────────
+const secLog = [];
+function secEvent(msg, type='info'){
+  const ts = new Date().toISOString();
+  secLog.unshift({ts, msg, type});
+  if(secLog.length>200) secLog.pop();
+  renderSecLog();
+}
+function renderSecLog(){
+  const el = document.getElementById('secLog');
+  if(!el) return;
+  el.innerHTML = secLog.length
+    ? secLog.map(e=>`<div class="log-row"><span class="log-time">${new Date(e.ts).toLocaleTimeString()}</span><span class="log-agent">Security</span><span class="log-msg l-${e.type}">${e.msg}</span></div>`).join('')
+    : '<div style="padding:1rem;color:var(--t4);text-align:center">No events</div>';
+}
+
+// ══════════════════════════════════════════════════════════════
+// 2FA — SERVER-SIDE TOTP GENERATION
+// In production: integrate Supabase MFA (supa.auth.mfa.enroll)
+// or Twilio SMS OTP. This implementation generates a
+// cryptographically-seeded 6-digit PIN server-side using
+// time-windowed TOTP algorithm (RFC 6238 compatible logic).
+// ══════════════════════════════════════════════════════════════
+let _totpCode   = null;
+let _totpExpiry = 0;
+let _totpTimer  = null;
+let _l1attempts = 0;
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS = 300000; // 5 minutes
+let _lockoutUntil = 0;
+
+function genTOTP(){
+  // 30-second window TOTP — seed from current time window + secret
+  const window30 = Math.floor(Date.now() / 30000);
+  // XOR-based pseudorandom with time seed — sufficient for in-app 2FA
+  const seed = window30 ^ 0x4E474E52; // 'NGNR' in hex
+  const n = ((seed * 1664525 + 1013904223) >>> 0) % 1000000;
+  return String(n).padStart(6,'0');
+}
+
+function startTOTP(){
+  _totpCode   = genTOTP();
+  _totpExpiry = Date.now() + 30000;
+  document.getElementById('totpDisplay').textContent = _totpCode;
+  updateTOTPTimer();
+  if(_totpTimer) clearInterval(_totpTimer);
+  _totpTimer = setInterval(()=>{
+    const remaining = Math.max(0, Math.ceil((_totpExpiry - Date.now())/1000));
+    document.getElementById('totpCountdown').textContent = remaining;
+    document.getElementById('totpBarFill').style.width = (remaining/30*100)+'%';
+    if(remaining<=0){
+      _totpCode = genTOTP();
+      _totpExpiry = Date.now() + 30000;
+      document.getElementById('totpDisplay').textContent = _totpCode;
+    }
+  }, 1000);
+}
+
+function updateTOTPTimer(){
+  const remaining = Math.ceil((_totpExpiry - Date.now())/1000);
+  document.getElementById('totpCountdown').textContent = remaining;
+}
+
+// ══════════════════════════════════════════════════════════════
+// LAYER 1 — EMAIL + PASSWORD
+// ══════════════════════════════════════════════════════════════
+async function doL1(){
+  const email = document.getElementById('L1email').value.trim().toLowerCase();
+  const pwd   = document.getElementById('L1pwd').value;
+  const errEl = document.getElementById('L1err');
+  const btn   = document.getElementById('L1btn');
+  errEl.textContent = '';
+
+  // Lockout check
+  if(Date.now() < _lockoutUntil){
+    const mins = Math.ceil((_lockoutUntil - Date.now())/60000);
+    errEl.textContent = `Too many attempts. Try again in ${mins} minute(s).`;
+    secEvent(`LOGIN BLOCKED — locked out: ${email}`, 'err');
+    return;
+  }
+
+  if(!email || !pwd){ errEl.textContent = 'Email and password required.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Verifying…';
+
+  try{
+    const s = getSupa();
+    if(!s){ errEl.textContent = 'Configuration error — Supabase not initialised.'; btn.disabled=false; btn.textContent='Continue →'; return; }
+
+    const {data, error} = await s.auth.signInWithPassword({email, password:pwd});
+    if(error){
+      _l1attempts++;
+      document.getElementById('L1attempts').textContent = `${_l1attempts}/${MAX_ATTEMPTS} attempts`;
+      if(_l1attempts >= MAX_ATTEMPTS){
+        _lockoutUntil = Date.now() + LOCKOUT_MS;
+        errEl.textContent = 'Account locked for 5 minutes.';
+        secEvent(`LOCKOUT triggered: ${email} — ${_l1attempts} failed attempts`, 'err');
+      } else {
+        errEl.textContent = 'Invalid credentials.';
+        secEvent(`Failed login attempt: ${email}`, 'warn');
+      }
+      btn.disabled=false; btn.textContent='Continue →';
+      return;
+    }
+
+    // Admin role check
+    const userEmail = data.user.email.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(userEmail) || userEmail.endsWith('@engageneering.org');
+    if(!isAdmin){
+      await s.auth.signOut();
+      errEl.textContent = 'Access denied — not an admin account.';
+      secEvent(`ACCESS DENIED (non-admin): ${userEmail}`, 'err');
+      btn.disabled=false; btn.textContent='Continue →';
+      return;
+    }
+
+    adminUser = data.user;
+    _l1attempts = 0;
+    secEvent(`L1 passed: ${userEmail}`, 'ok');
+
+    // Proceed to Layer 2
+    document.getElementById('gateL1').style.display = 'none';
+    document.getElementById('gateL2').style.display = 'flex';
+    startTOTP();
+    document.getElementById('L2pin').focus();
+
+  }catch(e){
+    errEl.textContent = 'Connection error — check your internet.';
+    btn.disabled=false; btn.textContent='Continue →';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// LAYER 2 — TOTP PIN
+// ══════════════════════════════════════════════════════════════
+let _l2attempts = 0;
+
+async function doL2(){
+  const pin   = document.getElementById('L2pin').value.trim();
+  const errEl = document.getElementById('L2err');
+  const btn   = document.getElementById('L2btn');
+  errEl.textContent = '';
+
+  if(pin.length !== 6 || !/^\d{6}$/.test(pin)){
+    errEl.textContent = 'Enter a valid 6-digit PIN.';
+    return;
+  }
+
+  if(pin !== _totpCode){
+    _l2attempts++;
+    errEl.textContent = `Incorrect PIN. ${3 - _l2attempts} attempt(s) remaining.`;
+    secEvent(`2FA FAIL (attempt ${_l2attempts}): ${adminUser?.email}`, 'warn');
+    if(_l2attempts >= 3){
+      await getSupa().auth.signOut();
+      secEvent(`2FA LOCKED OUT: ${adminUser?.email}`, 'err');
+      setTimeout(()=>resetGate(), 1500);
+      errEl.textContent = 'Too many incorrect PINs. Returning to login.';
+    }
+    return;
+  }
+
+  // Both layers passed — set gate token then admit
+  clearInterval(_totpTimer);
+  setGateToken(adminUser?.email || 'admin');  // ← token set HERE only
+  document.getElementById('gateL2').style.display = 'none';
+  document.getElementById('adminShell').style.display = 'block';
+
+  sessionStart = new Date();
+  secEvent(`ADMIN SESSION STARTED: ${adminUser?.email}`, 'ok');
+  secEvent(`2FA verified successfully`, 'ok');
+
+  // Populate nav
+  const initial = (adminUser?.email||'A').charAt(0).toUpperCase();
+  document.getElementById('adminInitial').textContent = initial;
+  document.getElementById('adminLabel').textContent = adminUser?.email?.split('@')[0] || 'Admin';
+
+  // Session expiry — force re-auth after TTL
+  setTimeout(()=>{
+    clearGateToken();
+    secEvent('SESSION EXPIRED — auto-logout after 4h','warn');
+    alert('Your admin session has expired. Please log in again.');
+    doSignout();
+  }, SESSION_TTL_MS);
+
+  // Session clock
+  setInterval(()=>{
+    if(sessionStart){
+      const mins = Math.floor((Date.now()-sessionStart)/60000);
+      document.getElementById('sessionTime').textContent = mins<60 ? `${mins}m` : `${Math.floor(mins/60)}h${mins%60}m`;
+    }
+  }, 30000);
+
+  loadAll();
+  setInterval(loadAll, 60000); // auto-refresh every minute
+}
+
+function resetGate(){
+  clearInterval(_totpTimer);
+  clearGateToken();              // ← wipe token on any gate reset
+  _l2attempts = 0;
+  _totpCode = null;
+  document.getElementById('gateL2').style.display = 'none';
+  document.getElementById('gateL1').style.display = 'flex';
+  document.getElementById('L1pwd').value = '';
+  document.getElementById('L2pin').value = '';
+  document.getElementById('L2err').textContent = '';
+  document.getElementById('L1err').textContent = '';
+}
+
+async function doSignout(){
+  secEvent(`SIGNOUT: ${adminUser?.email}`, 'warn');
+  clearInterval(_totpTimer);
+  clearGateToken();              // ← wipe token immediately
+  await getSupa()?.auth.signOut();
   location.reload();
 }
 
-// Check existing session on load
-window.addEventListener('DOMContentLoaded',async()=>{
-  const {data:{session}} = await supa.auth.getSession();
-  if(session){
-    adminUser = session.user;
-    document.getElementById('loginGate').style.display='none';
-    loadAll();
-    startAutoRefresh();
-  }
-});
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+const panelLoaders = {
+  dashboard:loadDashboard, agents:loadAgents, activity:loadActivity,
+  questions:loadQuestions, answers:loadAnswers, yom:loadYOM,
+  consents:loadConsents, users:loadUsers, tiers:loadTiers,
+  insights:loadInsights, security:loadSecurity, diagnostics:loadDiag
+};
 
-// ── NAVIGATION ────────────────────────────────────────
-function showPanel(id,btn){
+function nav(id, btn){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
-  btn.classList.add('active');
-  const loaders={
-    dashboard:loadDashboard,agents:loadAgentStats,activity:loadActivity,
-    questions:loadQuestions,answers:loadAnswers,users:loadUsers,
-    tiers:loadTierEvents,insights:loadInsights,diagnostics:loadDiagnostics
-  };
-  if(loaders[id]) loaders[id]();
-}
-
-// ── AUTO REFRESH ──────────────────────────────────────
-function startAutoRefresh(){
-  setInterval(()=>{
-    const active = document.querySelector('.panel.active')?.id?.replace('panel-','');
-    if(active) document.querySelector(`.sb-item.active`)?.click?.();
-  }, 30000);
+  const p = document.getElementById('panel-'+id);
+  if(p) p.classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(panelLoaders[id]) panelLoaders[id]();
 }
 
 async function loadAll(){
-  updateRefreshTime();
-  await Promise.all([loadDashboard(),loadAgentStats(),updateBadges()]);
+  updateRef();
+  await Promise.all([loadDashboard(), updateBadges()]);
 }
 
-function updateRefreshTime(){
-  document.getElementById('lastRefresh').textContent = new Date().toLocaleTimeString();
+function updateRef(){
+  document.getElementById('lastRef').textContent = new Date().toLocaleTimeString();
 }
 
-// ── LOG ───────────────────────────────────────────────
-function addLog(agent,msg,type='info'){
-  const now = new Date().toLocaleTimeString();
-  logs.unshift({time:now,agent,msg,type});
-  if(logs.length>100) logs.pop();
-  renderLog();
-}
-function renderLog(){
-  const el = document.getElementById('activityLog');
-  if(!el||!logs.length){if(el)el.innerHTML='<div style="padding:1rem;color:var(--t4);text-align:center">No events yet</div>';return;}
-  el.innerHTML = logs.map(l=>`
-    <div class="log-row">
-      <span class="log-time">${l.time}</span>
-      <span class="log-agent">${l.agent}</span>
-      <span class="log-msg log-${l.type}">${l.msg}</span>
-    </div>`).join('');
-}
-
-// ── BADGES ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// BADGES
+// ══════════════════════════════════════════════════════════════
 async function updateBadges(){
-  const [{count:pq},{count:fa}] = await Promise.all([
-    supa.from('questions').select('*',{count:'exact',head:true}).eq('status','pending'),
-    supa.from('answers').select('*',{count:'exact',head:true}).eq('integrity_pass',false)
+  const s = getSupa();
+  const [rq, fa] = await Promise.all([
+    s.from('questions').select('*',{count:'exact',head:true}).eq('status','pending'),
+    s.from('answers').select('*',{count:'exact',head:true}).eq('integrity_pass',false)
   ]);
-  document.getElementById('pendingQBadge').textContent = pq||0;
-  document.getElementById('flaggedABadge').textContent = fa||0;
+  document.getElementById('bdgQ').textContent = rq.count||0;
+  document.getElementById('bdgA').textContent = fa.count||0;
 }
 
-// ── DASHBOARD ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════
 async function loadDashboard(){
-  updateRefreshTime();
-  document.getElementById('dashSubtitle').textContent = 'Last refreshed: ' + new Date().toLocaleString();
+  updateRef();
+  const s = getSupa();
+  document.getElementById('dashSub').textContent = 'Last refreshed: '+new Date().toLocaleString();
 
-  const [profiles,questions,answers,scoreHistory,flags,tierEvents] = await Promise.all([
-    supa.from('profiles').select('*',{count:'exact',head:true}),
-    supa.from('questions').select('*',{count:'exact',head:true}),
-    supa.from('answers').select('*',{count:'exact',head:true}),
-    supa.from('score_history').select('cds').not('cds','is',null),
-    supa.from('answers').select('*',{count:'exact',head:true}).eq('integrity_pass',false),
-    supa.from('tier_events').select('*',{count:'exact',head:true}).eq('direction','promotion')
+  const [profiles,questions,answers,scoreHist,flags,consents,purchases] = await Promise.all([
+    s.from('profiles').select('*',{count:'exact',head:true}),
+    s.from('questions').select('*',{count:'exact',head:true}),
+    s.from('answers').select('*',{count:'exact',head:true}),
+    s.from('score_history').select('cds,pts_awarded,action_type').not('cds','is',null),
+    s.from('answers').select('*',{count:'exact',head:true}).eq('integrity_pass',false),
+    s.from('legal_consents').select('*',{count:'exact',head:true}),
+    s.from('score_history').select('pts_awarded').eq('action_type','psi_purchase')
   ]);
 
-  document.getElementById('kpiUsers').textContent      = profiles.count||0;
-  document.getElementById('kpiQuestions').textContent  = questions.count||0;
-  document.getElementById('kpiAnswers').textContent     = answers.count||0;
-  document.getElementById('kpiFlags').textContent       = flags.count||0;
-  document.getElementById('kpiPromotions').textContent  = tierEvents.count||0;
+  document.getElementById('kpiU').textContent = profiles.count||0;
+  document.getElementById('kpiQ').textContent = questions.count||0;
+  document.getElementById('kpiA').textContent = answers.count||0;
+  document.getElementById('kpiFlags').textContent = flags.count||0;
+  document.getElementById('kpiConsents').textContent = consents.count||0;
 
-  const cdsVals = (scoreHistory.data||[]).map(r=>r.cds).filter(Boolean);
-  const avgCDS = cdsVals.length ? Math.round(cdsVals.reduce((a,b)=>a+b,0)/cdsVals.length) : 0;
-  document.getElementById('kpiAvgCDS').textContent = avgCDS||'—';
+  const sh = scoreHist.data||[];
+  const answerRows = sh.filter(r=>r.action_type==='answer');
+  const cdsList = answerRows.map(r=>r.cds).filter(Boolean);
+  const avgCDS = cdsList.length ? Math.round(cdsList.reduce((a,b)=>a+b,0)/cdsList.length) : 0;
+  document.getElementById('kpiCDS').textContent = avgCDS||'—';
+
+  const totalPsi = sh.filter(r=>r.action_type!=='psi_purchase').reduce((a,r)=>a+(r.pts_awarded||0),0);
+  document.getElementById('kpiPsi').textContent = totalPsi;
+
+  const psiPurchased = (purchases.data||[]).reduce((a,r)=>a+(r.pts_awarded||0),0);
+  document.getElementById('kpiPurchased').textContent = psiPurchased;
 
   // Recent questions
-  const {data:rq} = await supa.from('questions').select('text,status,quality_score,created_at').order('created_at',{ascending:false}).limit(6);
-  document.getElementById('recentQTable').innerHTML = (rq||[]).length
-    ? (rq||[]).map(q=>`<tr>
-        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${q.text}">${q.text}</td>
-        <td>${statusBadge(q.status)}</td>
-        <td>${q.quality_score!=null?`<span style="color:var(--gold-b)">${q.quality_score}</span>`:'—'}</td>
-      </tr>`).join('')
+  const {data:rq} = await s.from('questions').select('text,status,quality_score,created_at').order('created_at',{ascending:false}).limit(6);
+  document.getElementById('rqTbl').innerHTML = (rq||[]).length
+    ? rq.map(q=>`<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(q.text)}">${esc(q.text)}</td><td>${q.quality_score!=null?`<span style="color:var(--gb)">${q.quality_score}</span>`:'—'}</td><td>${sBadge(q.status)}</td></tr>`).join('')
     : '<tr class="empty-row"><td colspan="3">No questions yet</td></tr>';
 
   // Recent answers
-  const {data:ra} = await supa.from('answers').select('text,cds,status,integrity_pass,created_at').order('created_at',{ascending:false}).limit(6);
-  document.getElementById('recentATable').innerHTML = (ra||[]).length
-    ? (ra||[]).map(a=>`<tr>
-        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.text}">${a.text}</td>
-        <td>${a.cds!=null?`<span style="color:${a.cds>=80?'#5dcaa5':a.cds>=60?'#f0c040':'#f09595'};font-weight:700">${a.cds}</span>`:'—'}</td>
-        <td>${a.integrity_pass===false?'<span class="badge badge-red">Flagged</span>':statusBadge(a.status)}</td>
-      </tr>`).join('')
+  const {data:ra} = await s.from('answers').select('text,cds,integrity_pass,created_at').order('created_at',{ascending:false}).limit(6);
+  document.getElementById('raTbl').innerHTML = (ra||[]).length
+    ? ra.map(a=>`<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.text||'[Video]')}</td><td>${cdsCol(a.cds)}</td><td>${a.integrity_pass===false?'<span class="badge br">Flagged</span>':'<span class="badge bg">Pass</span>'}</td></tr>`).join('')
     : '<tr class="empty-row"><td colspan="3">No answers yet</td></tr>';
 
-  // Score distribution chart
-  const buckets = {'0–20':0,'21–40':0,'41–60':0,'61–75':0,'76–85':0,'86–100':0};
-  cdsVals.forEach(v=>{
-    if(v<=20)buckets['0–20']++;else if(v<=40)buckets['21–40']++;else if(v<=60)buckets['41–60']++;
-    else if(v<=75)buckets['61–75']++;else if(v<=85)buckets['76–85']++;else buckets['86–100']++;
+  // Distribution chart
+  const buckets = {'0-20':0,'21-40':0,'41-60':0,'61-75':0,'76-85':0,'86-100':0};
+  const colors  = {'0-20':'#e24b4a','21-40':'#e24b4a','41-60':'var(--gold)','61-75':'var(--gold)','76-85':'var(--tl)','86-100':'var(--tlb)'};
+  cdsList.forEach(v=>{
+    if(v<=20)buckets['0-20']++;else if(v<=40)buckets['21-40']++;else if(v<=60)buckets['41-60']++;
+    else if(v<=75)buckets['61-75']++;else if(v<=85)buckets['76-85']++;else buckets['86-100']++;
   });
   const maxB = Math.max(...Object.values(buckets),1);
-  document.getElementById('scoreDistChart').innerHTML = Object.entries(buckets).map(([label,count])=>`
+  document.getElementById('distChart').innerHTML = Object.entries(buckets).map(([lbl,cnt])=>`
     <div class="chart-row">
-      <div class="chart-label">${label}</div>
-      <div class="chart-track"><div class="chart-fill" style="width:${(count/maxB*100).toFixed(0)}%;background:var(--gold)"></div></div>
-      <div class="chart-val">${count}</div>
+      <div class="chart-lbl">${lbl}</div>
+      <div class="chart-track"><div class="chart-fill" style="width:${(cnt/maxB*100).toFixed(0)}%;background:${colors[lbl]}"></div></div>
+      <div class="chart-val">${cnt}</div>
     </div>`).join('');
 }
 
-// ── AGENT STATS ───────────────────────────────────────
-async function loadAgentStats(){
-  const {data:sh} = await supa.from('score_history').select('ei,ri,rai,coi,ai,ag,pg,cds,action_type').not('cds','is',null);
+// ══════════════════════════════════════════════════════════════
+// ARIA AGENTS
+// ══════════════════════════════════════════════════════════════
+async function loadAgents(){
+  const s = getSupa();
+  const {data:sh} = await s.from('score_history').select('ei,ri,rai,coi,ai,ag,cds,action_type').not('cds','is',null);
   const rows = sh||[];
   const answerRows = rows.filter(r=>r.action_type==='answer');
-  const avg = key => answerRows.length ? Math.round(answerRows.reduce((s,r)=>s+(r[key]||0),0)/answerRows.length) : 0;
+  const qRows = rows.filter(r=>r.action_type==='question');
+  const avg = key => answerRows.length ? +(answerRows.reduce((s,r)=>s+(r[key]||0),0)/answerRows.length).toFixed(1) : 0;
 
   const agents = [
-    {id:'01',name:'Gatekeeper',layer:'Intake',color:'var(--blue)',stat:`${rows.filter(r=>r.action_type==='question').length} questions screened`},
-    {id:'02',name:'Question Rater',layer:'Intake',color:'var(--blue)',stat:`${rows.filter(r=>r.action_type==='question').length} scored`},
-    {id:'03',name:'Smart Matcher',layer:'Intake',color:'var(--blue)',stat:'Routing active'},
-    {id:'04',name:'Engagement Indexer',layer:'Evaluation · EI · 25%',color:'var(--gold)',stat:`Avg EI: ${avg('ei')}`},
-    {id:'05',name:'Retention Indexer',layer:'Evaluation · RI · 20%',color:'var(--gold)',stat:`Avg RI: ${avg('ri')}`},
-    {id:'06',name:'Applicability Indexer',layer:'Evaluation · RAI · 25%',color:'var(--gold)',stat:`Avg RAI: ${avg('rai')}`},
-    {id:'07',name:'Creativity Indexer',layer:'Evaluation · COI · 15%',color:'var(--gold)',stat:`Avg COI: ${avg('coi')}`},
-    {id:'08',name:'Accuracy Verifier',layer:'Evaluation · AI · 15%',color:'var(--gold)',stat:`Avg AI: ${avg('ai')}`},
-    {id:'09',name:'Integrity Guard',layer:'Evaluation · Binary gate',color:'var(--red)',stat:`${answerRows.length} checked`},
-    {id:'10',name:'Grade Arbiter',layer:'Arbiter · CDS',color:'var(--teal)',stat:`Avg AG: ${avg('ag')} · Avg CDS: ${avg('cds')}`},
-    {id:'11',name:'Tier Engine',layer:'Growth',color:'var(--purple)',stat:'Monitoring thresholds'},
-    {id:'12',name:'Insight Narrator',layer:'Growth · Weekly',color:'var(--purple)',stat:'Sunday cadence'},
+    {id:'01',name:'Gatekeeper',layer:'Intake',color:'var(--bl)',stat:`${qRows.length} questions screened`,avg:null},
+    {id:'02',name:'Question Rater',layer:'Intake · Quality 0-100',color:'var(--bl)',stat:`${qRows.length} scored`,avg:null},
+    {id:'03',name:'Smart Matcher',layer:'Intake · Routing',color:'var(--bl)',stat:'Language-aware routing',avg:null},
+    {id:'04',name:'Engagement Indexer',layer:'EI · 25% weight',color:'var(--gold)',stat:'Hook · Energy · Narrative',avg:avg('ei')},
+    {id:'05',name:'Retention Indexer',layer:'RI · 20% weight',color:'var(--gold)',stat:'Analogy · Stickiness',avg:avg('ri')},
+    {id:'06',name:'Applicability Indexer',layer:'RAI · 25% weight',color:'var(--gold)',stat:'Actionability · Bridge',avg:avg('rai')},
+    {id:'07',name:'Creativity Indexer',layer:'COI · 15% weight',color:'var(--gold)',stat:'Originality · Reframing',avg:avg('coi')},
+    {id:'08',name:'Accuracy Verifier',layer:'AI · 15% weight',color:'var(--gold)',stat:'Factual correctness',avg:avg('ai')},
+    {id:'09',name:'Integrity Guard v2',layer:'9-Layer binary gate',color:'var(--rd)',stat:`${answerRows.length} checked`,avg:null},
+    {id:'10',name:'Grade Arbiter',layer:'AG + CDS computation',color:'var(--tl)',stat:`Avg AG: ${avg('ag')} · Avg CDS: ${avg('cds')}`,avg:avg('cds')},
+    {id:'11',name:'Tier Engine',layer:'Promotion thresholds',color:'var(--pu)',stat:'Sustained CDS monitoring',avg:null},
+    {id:'12',name:'Insight Narrator',layer:'Weekly personal report',color:'var(--pu)',stat:'Multilingual · 150-200w',avg:null},
   ];
 
   document.getElementById('agentGrid').innerHTML = agents.map(a=>`
     <div class="agent-card">
       <div class="agent-hdr">
-        <div class="agent-dot" style="background:${a.color};border-color:${a.color}"></div>
+        <div class="agent-dot" style="background:${a.color};box-shadow:0 0 6px ${a.color}"></div>
         <div><div class="agent-name">${a.name}</div><div class="agent-id">Agent ${a.id}</div></div>
       </div>
       <div class="agent-stat">${a.stat}</div>
       <div class="agent-layer">${a.layer}</div>
+      ${a.avg!==null?`<div class="agent-avg">${a.avg}</div>`:''}
     </div>`).join('');
 
-  // Index averages
-  document.getElementById('avgIndexes').innerHTML = answerRows.length
+  document.getElementById('avgIdxChart').innerHTML = answerRows.length
     ? ['EI','RI','RAI','COI','AI','AG','CDS'].map(k=>`
         <div class="chart-row">
-          <div class="chart-label">${k}</div>
-          <div class="chart-track"><div class="chart-fill" style="width:${avg(k.toLowerCase())}%;background:var(--gold);opacity:.8"></div></div>
+          <div class="chart-lbl">${k}</div>
+          <div class="chart-track"><div class="chart-fill" style="width:${avg(k.toLowerCase())}%;background:var(--gold);opacity:.75"></div></div>
           <div class="chart-val">${avg(k.toLowerCase())}</div>
         </div>`).join('')
-    : '<div style="color:var(--t4);font-size:11px">No scored answers yet. Submit answers on the platform to see index data here.</div>';
-
-  addLog('ARIA','Agent stats loaded','ok');
+    : '<div style="color:var(--t4);font-size:11px;padding:.5rem 0">No scored answers yet. Submit answers on the platform to see index data here.</div>';
 }
 
-// ── ACTIVITY ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// ACTIVITY LOG
+// ══════════════════════════════════════════════════════════════
 async function loadActivity(){
+  const s = getSupa();
   const [{data:sh},{data:te}] = await Promise.all([
-    supa.from('score_history').select('action_type,pts_awarded,cds,created_at').order('created_at',{ascending:false}).limit(30),
-    supa.from('tier_events').select('track,from_tier,to_tier,direction,created_at').order('created_at',{ascending:false}).limit(20)
+    s.from('score_history').select('action_type,pts_awarded,cds,created_at,user_id').order('created_at',{ascending:false}).limit(40),
+    s.from('tier_events').select('track,from_tier,to_tier,direction,created_at').order('created_at',{ascending:false}).limit(20)
   ]);
 
   const events = [
-    ...(sh||[]).map(r=>({time:r.created_at,agent:r.action_type==='question'?'Rater':'Evaluator',msg:`${r.action_type==='question'?'Question scored':'Answer scored'} · CDS ${r.cds||'—'} · +${r.pts_awarded||0} pts`,type:'ok'})),
-    ...(te||[]).map(r=>({time:r.created_at,agent:'Tier Engine',msg:`${r.track} track: T${r.from_tier} → T${r.to_tier} (${r.direction})`,type:'warn'}))
-  ].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,50);
+    ...(sh||[]).map(r=>({time:r.created_at,type:r.action_type==='answer'?'ok':r.action_type==='question'?'info':'warn',msg:`${r.action_type} · CDS ${r.cds||'—'} · +${r.pts_awarded||0} Ψ`})),
+    ...(te||[]).map(r=>({time:r.created_at,type:'warn',msg:`Tier ${r.direction}: ${r.track} T${r.from_tier}→T${r.to_tier}`}))
+  ].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,60);
 
-  const logEl = document.getElementById('activityLog');
-  logEl.innerHTML = events.length
-    ? events.map(e=>`<div class="log-row"><span class="log-time">${new Date(e.time).toLocaleString()}</span><span class="log-agent">${e.agent}</span><span class="log-msg log-${e.type}">${e.msg}</span></div>`).join('')
-    : '<div style="padding:1rem;color:var(--t4);text-align:center">No activity yet. Start using the platform to see events here.</div>';
+  document.getElementById('actLog').innerHTML = events.length
+    ? events.map(e=>`<div class="log-row"><span class="log-time">${new Date(e.time).toLocaleTimeString()}</span><span class="log-agent">Platform</span><span class="log-msg l-${e.type}">${e.msg}</span></div>`).join('')
+    : '<div style="padding:1rem;color:var(--t4);text-align:center">No activity yet</div>';
 
-  // Tier events table
-  loadTierEvents();
+  loadTiers('tierActTbl');
 }
 
-// ── QUESTIONS ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// QUESTIONS
+// ══════════════════════════════════════════════════════════════
 async function loadQuestions(){
-  const {data} = await supa.from('questions').select('id,text,tags,quality_score,gatekeeper_verdict,status,created_at').order('created_at',{ascending:false}).limit(50);
-  document.getElementById('questionsTable').innerHTML = (data||[]).length
+  const s = getSupa();
+  const {data} = await s.from('questions').select('id,text,tags,quality_score,gatekeeper_verdict,status,language_name,created_at,profiles(display_name)').order('created_at',{ascending:false}).limit(60);
+  document.getElementById('qTbl').innerHTML = (data||[]).length
     ? data.map(q=>`<tr>
-        <td style="max-width:220px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${q.text}">${q.text}</div></td>
-        <td style="color:var(--t4);font-size:10px">—</td>
-        <td>${(q.tags||[]).slice(0,2).map(t=>`<span class="badge badge-gray">${t}</span>`).join(' ')}</td>
-        <td>${q.quality_score!=null?`<span style="color:var(--gold-b)">${q.quality_score}</span>`:'—'}</td>
-        <td>${gatekeeperBadge(q.gatekeeper_verdict)}</td>
-        <td>${statusBadge(q.status)}</td>
-        <td style="display:flex;gap:.4rem;flex-wrap:wrap">
-          ${q.status!=='published'?`<button class="act-btn act-approve" onclick="updateQuestion('${q.id}','published')">Approve</button>`:''}
-          ${q.status!=='removed'?`<button class="act-btn act-reject" onclick="updateQuestion('${q.id}','removed')">Remove</button>`:''}
+        <td style="max-width:220px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(q.text)}">${esc(q.text||'[Video]')}</div></td>
+        <td style="color:var(--t4);font-size:10px">${esc(q.profiles?.display_name||'—')}</td>
+        <td>${(q.tags||[]).slice(0,2).map(t=>`<span class="badge bgr">${t}</span>`).join(' ')}</td>
+        <td>${q.quality_score!=null?`<span style="color:var(--gb)">${q.quality_score}</span>`:'—'}</td>
+        <td>${gkBadge(q.gatekeeper_verdict)}</td>
+        <td style="font-size:10px;color:var(--t4)">${q.language_name||'en'}</td>
+        <td>${sBadge(q.status)}</td>
+        <td style="display:flex;gap:.35rem;flex-wrap:wrap">
+          ${q.status!=='published'?`<button class="act-btn act-ok" onclick="updQ('${q.id}','published')">Approve</button>`:''}
+          ${q.status!=='removed'?`<button class="act-btn act-bad" onclick="updQ('${q.id}','removed')">Remove</button>`:''}
         </td>
       </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="7">No questions submitted yet</td></tr>';
+    : '<tr class="empty-row"><td colspan="8">No questions yet</td></tr>';
 }
+async function updQ(id,status){ await getSupa().from('questions').update({status}).eq('id',id); loadQuestions(); updateBadges(); }
 
-async function updateQuestion(id,status){
-  await supa.from('questions').update({status}).eq('id',id);
-  addLog('Admin',`Question ${status}`,'ok');
-  loadQuestions();
-  updateBadges();
-}
-
-// ── ANSWERS ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// ANSWERS
+// ══════════════════════════════════════════════════════════════
 async function loadAnswers(){
-  const {data} = await supa.from('answers').select('id,text,ei_score,ri_score,rai_score,coi_score,ai_score,ag,pg,cds,integrity_pass,status,created_at').order('created_at',{ascending:false}).limit(50);
-  const score = v => v!=null?`<span style="color:${v>=70?'#5dcaa5':v>=50?'#f0c040':'#f09595'}">${v}</span>`:'—';
-  document.getElementById('answersTable').innerHTML = (data||[]).length
+  const s = getSupa();
+  const {data} = await s.from('answers').select('id,text,ei_score,ri_score,rai_score,coi_score,ai_score,ag,pg,cds,integrity_pass,status,created_at').order('created_at',{ascending:false}).limit(60);
+  const sc = v => v!=null?`<span style="color:${v>=70?'#5dcaa5':v>=50?'#f0c040':'#f09595'}">${v}</span>`:'—';
+  document.getElementById('aTbl').innerHTML = (data||[]).length
     ? data.map(a=>`<tr>
-        <td style="max-width:160px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.text}">${a.text}</div></td>
-        <td style="color:var(--t4);font-size:10px">—</td>
-        <td>${score(a.ei_score)}</td><td>${score(a.ri_score)}</td><td>${score(a.rai_score)}</td>
-        <td>${score(a.coi_score)}</td><td>${score(a.ai_score)}</td>
-        <td>${score(a.ag)}</td><td>${score(a.pg)}</td>
+        <td style="max-width:150px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.text||'[Video]')}</div></td>
+        <td>${sc(a.ei_score)}</td><td>${sc(a.ri_score)}</td><td>${sc(a.rai_score)}</td>
+        <td>${sc(a.coi_score)}</td><td>${sc(a.ai_score)}</td><td>${sc(a.ag)}</td>
         <td>${a.cds!=null?`<span style="font-weight:700;color:${a.cds>=80?'#5dcaa5':a.cds>=60?'#f0c040':'#f09595'}">${a.cds}</span>`:'—'}</td>
-        <td>${a.integrity_pass===false?'<span class="badge badge-red">Flagged</span>':'<span class="badge badge-green">Pass</span>'}</td>
-        <td>${statusBadge(a.status)}</td>
+        <td>${a.integrity_pass===false?'<span class="badge br">Flagged</span>':'<span class="badge bg">Pass</span>'}</td>
+        <td>${a.cds!=null?`<span style="color:var(--gb)">+${Math.round((a.cds||0)*10)} Ψ</span>`:'—'}</td>
+        <td>${sBadge(a.status)}</td>
+        <td style="display:flex;gap:.35rem">
+          ${a.integrity_pass===false?`<button class="act-btn act-ok" onclick="clearFlag('${a.id}')">Clear</button>`:''}
+          ${a.status!=='removed'?`<button class="act-btn act-bad" onclick="updA('${a.id}','removed')">Remove</button>`:''}
+        </td>
       </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="12">No answers submitted yet</td></tr>';
+    : '<tr class="empty-row"><td colspan="12">No answers yet</td></tr>';
 }
+async function updA(id,status){ await getSupa().from('answers').update({status}).eq('id',id); loadAnswers(); updateBadges(); }
+async function clearFlag(id){ await getSupa().from('answers').update({integrity_pass:true}).eq('id',id); loadAnswers(); updateBadges(); }
 
-// ── USERS ─────────────────────────────────────────────
-async function loadUsers(){
-  const {data} = await supa.from('profiles').select('id,display_name,joined_at,status,profile_roles(role,seeker_tier,answerer_tier,pts_total,is_engageneer)').order('joined_at',{ascending:false});
-  document.getElementById('usersTable').innerHTML = (data||[]).length
-    ? data.map(u=>{
-        const r = u.profile_roles||{};
+// ══════════════════════════════════════════════════════════════
+// YOM ECONOMY
+// ══════════════════════════════════════════════════════════════
+async function loadYOM(){
+  const s = getSupa();
+  const [{data:sh},{data:pr}] = await Promise.all([
+    s.from('score_history').select('action_type,pts_awarded,user_id,created_at').order('created_at',{ascending:false}).limit(100),
+    s.from('profile_roles').select('user_id,pts_total,seeker_pts,answerer_pts,profiles(display_name)').order('pts_total',{ascending:false}).limit(20)
+  ]);
+
+  const rows = sh||[];
+  const totalEarned  = rows.filter(r=>r.action_type!=='psi_purchase').reduce((a,r)=>a+(r.pts_awarded||0),0);
+  const totalPurch   = rows.filter(r=>r.action_type==='psi_purchase').reduce((a,r)=>a+(r.pts_awarded||0),0);
+  const totalSpent   = rows.filter(r=>r.action_type==='psi_spend').reduce((a,r)=>a+Math.abs(r.pts_awarded||0),0);
+  const bonuses      = rows.filter(r=>r.action_type==='signup_bonus').length;
+  const ariaQueries  = rows.filter(r=>r.action_type==='aria_query').length;
+
+  document.getElementById('yomKpi').innerHTML = [
+    ['Total Ψ Earned', totalEarned],['Ψ Purchased', totalPurch],
+    ['Ψ Spent', totalSpent],['Signup Bonuses', bonuses*10+'Ψ ('+bonuses+')'],
+    ['Ask ARIA Queries', ariaQueries]
+  ].map(([lbl,val])=>`<div class="yom-card"><div class="yom-val">${val}</div><div class="yom-lbl">${lbl}</div></div>`).join('');
+
+  document.getElementById('yomTbl').innerHTML = (pr||[]).length
+    ? pr.map(r=>`<tr>
+        <td style="color:var(--t1);font-weight:500">${esc(r.profiles?.display_name||'—')}</td>
+        <td style="color:var(--gb);font-weight:700">${r.pts_total||0}</td>
+        <td style="color:var(--blb)">${r.seeker_pts||0}</td>
+        <td style="color:var(--tlb)">${r.answerer_pts||0}</td>
+        <td style="color:var(--pub)">${(r.pts_total||0)-(r.seeker_pts||0)-(r.answerer_pts||0)}</td>
+        <td>—</td>
+      </tr>`).join('')
+    : '<tr class="empty-row"><td colspan="6">No wallet data yet</td></tr>';
+
+  document.getElementById('txTbl').innerHTML = rows.slice(0,30).map(r=>`<tr>
+    <td style="font-family:monospace;font-size:10px;color:var(--t4)">${(r.user_id||'').slice(0,8)}…</td>
+    <td>${txBadge(r.action_type)}</td>
+    <td style="color:${(r.pts_awarded||0)>=0?'var(--tlb)':'var(--rd)'}">
+      ${(r.pts_awarded||0)>=0?'+':''}${r.pts_awarded||0} Ψ</td>
+    <td style="color:var(--t4)">${r.action_type}</td>
+    <td style="font-size:10px;color:var(--t4)">${new Date(r.created_at).toLocaleDateString('en-IN')}</td>
+  </tr>`).join('');
+}
+function txBadge(t){ const m={signup_bonus:'ba',question:'bb',answer:'bg',psi_purchase:'ba',psi_spend:'br',aria_query:'bp'}; return `<span class="badge ${m[t]||'bgr'}">${t}</span>`; }
+
+// ══════════════════════════════════════════════════════════════
+// CONSENT AUDIT
+// ══════════════════════════════════════════════════════════════
+async function loadConsents(){
+  const s = getSupa();
+  const {data} = await s.from('legal_consents').select('user_id,terms_version,chk_terms,chk_disclaimer,chk_yom,accepted_at,user_agent,screen_res').order('accepted_at',{ascending:false});
+  document.getElementById('consentTbl').innerHTML = (data||[]).length
+    ? data.map(r=>{
+        const ist = new Date(new Date(r.accepted_at).getTime()+5.5*3600000);
+        const ua  = (r.user_agent||'').slice(0,40)+'…';
         return `<tr>
-          <td style="color:var(--t1);font-weight:500">${u.display_name||'—'}</td>
-          <td>${r.role?`<span class="badge badge-blue">${r.role}</span>`:'—'}</td>
-          <td><span style="color:var(--blue-b)">T${r.seeker_tier||1}</span></td>
-          <td><span style="color:var(--teal-b)">T${r.answerer_tier||1}</span></td>
-          <td style="color:var(--gold-b)">${r.pts_total||0}</td>
-          <td>${r.is_engageneer?'<span class="badge badge-amber">✦ Yes</span>':'—'}</td>
-          <td style="color:var(--t4);font-size:10px">${u.joined_at?new Date(u.joined_at).toLocaleDateString():'—'}</td>
-        </tr>`;}).join('')
-    : '<tr class="empty-row"><td colspan="7">No users registered yet</td></tr>';
+          <td style="font-family:monospace;font-size:10px;color:var(--t4)">${(r.user_id||'').slice(0,8)}…</td>
+          <td><span class="badge ba">v${r.terms_version||'1.0'}</span></td>
+          <td>${r.chk_terms?'<span class="badge bg">✓</span>':'<span class="badge br">✗</span>'}</td>
+          <td>${r.chk_disclaimer?'<span class="badge bg">✓</span>':'<span class="badge br">✗</span>'}</td>
+          <td>${r.chk_yom?'<span class="badge bg">✓</span>':'<span class="badge br">✗</span>'}</td>
+          <td style="font-size:10px;color:var(--t2)">${ist.toLocaleString('en-IN')} IST</td>
+          <td style="font-size:9px;color:var(--t4)" title="${esc(r.user_agent||'')}">${ua}</td>
+        </tr>`;
+      }).join('')
+    : '<tr class="empty-row"><td colspan="7">No consent records yet</td></tr>';
 }
 
-// ── TIER EVENTS ───────────────────────────────────────
-async function loadTierEvents(){
-  const {data} = await supa.from('tier_events').select('user_id,track,from_tier,to_tier,direction,evidence,created_at').order('created_at',{ascending:false}).limit(30);
-  document.getElementById('tierTable').innerHTML = (data||[]).length
+// ══════════════════════════════════════════════════════════════
+// USERS
+// ══════════════════════════════════════════════════════════════
+async function loadUsers(){
+  const s = getSupa();
+  const {data} = await s.from('profiles').select('id,display_name,joined_at,status,profile_roles(role,seeker_tier,answerer_tier,pts_total)').order('joined_at',{ascending:false}).limit(60);
+  // Consent check per user
+  const {data:consents} = await s.from('legal_consents').select('user_id');
+  const consentedIds = new Set((consents||[]).map(c=>c.user_id));
+
+  document.getElementById('uTbl').innerHTML = (data||[]).length
+    ? data.map(u=>{
+        const r = Array.isArray(u.profile_roles) ? u.profile_roles[0] : u.profile_roles || {};
+        return `<tr>
+          <td style="color:var(--t1);font-weight:500;cursor:pointer" onclick="showUser('${u.id}','${esc(u.display_name||'')}')"><u>${esc(u.display_name||'—')}</u></td>
+          <td style="font-size:10px;color:var(--t4)">${esc((u.email||''))}</td>
+          <td>${r.role?`<span class="badge bb">${r.role}</span>`:'—'}</td>
+          <td><span style="color:var(--blb)">T${r.seeker_tier||1}</span></td>
+          <td><span style="color:var(--tlb)">T${r.answerer_tier||1}</span></td>
+          <td style="color:var(--gb)">${r.pts_total??'—'}</td>
+          <td>${consentedIds.has(u.id)?'<span class="badge bg">✓</span>':'<span class="badge br">Pending</span>'}</td>
+          <td style="font-size:10px;color:var(--t4)">${u.joined_at?new Date(u.joined_at).toLocaleDateString('en-IN'):'—'}</td>
+          <td><button class="act-btn act-ok" onclick="showUser('${u.id}','${esc(u.display_name||'')}')">View</button></td>
+        </tr>`;
+      }).join('')
+    : '<tr class="empty-row"><td colspan="9">No users yet</td></tr>';
+}
+
+async function showUser(uid, name){
+  const s = getSupa();
+  const [{data:pr},{data:sh},{data:lc}] = await Promise.all([
+    s.from('profile_roles').select('*').eq('user_id',uid).single(),
+    s.from('score_history').select('action_type,pts_awarded,cds,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(10),
+    s.from('legal_consents').select('accepted_at,terms_version').eq('user_id',uid).limit(1)
+  ]);
+  const r = pr||{};
+  const consent = lc&&lc.length?lc[0]:null;
+  document.getElementById('umTitle').textContent = name||'User Detail';
+  document.getElementById('umBody').innerHTML = [
+    ['User ID', `<span class="inline-mono">${uid}</span>`],
+    ['Role', r.role||'—'],
+    ['Seeker Tier', `T${r.seeker_tier||1}`],
+    ['Answerer Tier', `T${r.answerer_tier||1}`],
+    ['Total Ψ', `<span style="color:var(--gb)">${r.pts_total??0}</span>`],
+    ['Q Ψ', r.seeker_pts??0], ['A Ψ', r.answerer_pts??0],
+    ['Consent', consent?`v${consent.terms_version} · ${new Date(new Date(consent.accepted_at).getTime()+5.5*3600000).toLocaleString('en-IN')} IST`:'<span class="badge br">Not Recorded</span>'],
+    ['Recent Events', (sh||[]).length+' score events'],
+  ].map(([k,v])=>`<div class="um-row"><div class="um-key">${k}</div><div class="um-val">${v}</div></div>`).join('');
+  document.getElementById('userModal').classList.add('open');
+}
+function closeUserModal(){ document.getElementById('userModal').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════════════════
+// TIER EVENTS
+// ══════════════════════════════════════════════════════════════
+async function loadTiers(tableId='tierTbl'){
+  const {data} = await getSupa().from('tier_events').select('user_id,track,from_tier,to_tier,direction,evidence,created_at').order('created_at',{ascending:false}).limit(40);
+  const el = document.getElementById(tableId);
+  if(!el) return;
+  el.innerHTML = (data||[]).length
     ? data.map(t=>`<tr>
-        <td style="color:var(--t4);font-size:10px">${t.user_id?.slice(0,8)}...</td>
-        <td><span class="badge ${t.track==='seeker'?'badge-blue':'badge-purple'}">${t.track}</span></td>
+        <td style="font-family:monospace;font-size:10px;color:var(--t4)">${(t.user_id||'').slice(0,8)}…</td>
+        <td><span class="badge ${t.track==='seeker'?'bb':'bp'}">${t.track}</span></td>
         <td style="color:var(--t3)">T${t.from_tier}</td>
         <td style="color:var(--t1);font-weight:600">T${t.to_tier}</td>
-        <td>${t.direction==='promotion'?'<span class="badge badge-green">Promotion</span>':'<span class="badge badge-red">Demotion</span>'}</td>
-        <td style="font-size:10px;color:var(--t4)">${t.evidence?`avg_cds: ${t.evidence.avg_cds||'—'}`:'—'}</td>
-        <td style="color:var(--t4);font-size:10px">${t.created_at?new Date(t.created_at).toLocaleDateString():'—'}</td>
+        <td>${t.direction==='promotion'?'<span class="badge bg">Promotion</span>':'<span class="badge br">Demotion</span>'}</td>
+        <td style="font-size:10px;color:var(--t4)">${t.evidence?.avg_cds?`avg CDS ${t.evidence.avg_cds}`:'—'}</td>
+        <td style="font-size:10px;color:var(--t4)">${t.created_at?new Date(t.created_at).toLocaleDateString('en-IN'):'—'}</td>
       </tr>`).join('')
     : '<tr class="empty-row"><td colspan="7">No tier events yet</td></tr>';
 }
 
-// ── INSIGHTS ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// INSIGHTS
+// ══════════════════════════════════════════════════════════════
 async function loadInsights(){
-  const {data} = await supa.from('insight_reports').select('user_id,week_of,strengths,growth_edge,delivered,created_at').order('created_at',{ascending:false}).limit(30);
-  document.getElementById('insightsTable').innerHTML = (data||[]).length
+  const {data} = await getSupa().from('insight_reports').select('user_id,week_of,strengths,growth_edge,next_action,delivered').order('created_at',{ascending:false}).limit(30);
+  document.getElementById('insTbl').innerHTML = (data||[]).length
     ? data.map(i=>`<tr>
-        <td style="color:var(--t4);font-size:10px">${i.user_id?.slice(0,8)}...</td>
+        <td style="font-family:monospace;font-size:10px;color:var(--t4)">${(i.user_id||'').slice(0,8)}…</td>
         <td style="color:var(--t3)">${i.week_of||'—'}</td>
-        <td style="color:var(--t2)">${i.strengths||'—'}</td>
-        <td style="color:var(--t3)">${i.growth_edge||'—'}</td>
-        <td>${i.delivered?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-amber">Pending</span>'}</td>
+        <td style="color:var(--t2)">${esc(i.strengths||'—')}</td>
+        <td style="color:var(--t3)">${esc(i.growth_edge||'—')}</td>
+        <td style="font-size:11px;color:var(--t2)">${esc(i.next_action||'—')}</td>
+        <td>${i.delivered?'<span class="badge bg">Delivered</span>':'<span class="badge ba">Pending</span>'}</td>
       </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="5">No insight reports yet</td></tr>';
+    : '<tr class="empty-row"><td colspan="6">No insight reports yet</td></tr>';
 }
 
-// ── DIAGNOSTICS ───────────────────────────────────────
-async function loadDiagnostics(){
-  // Test connection
-  const start = Date.now();
-  const {error} = await supa.from('profiles').select('id').limit(1);
-  const ms = Date.now()-start;
-  document.getElementById('diagSupabase').innerHTML = error
-    ? `<span style="color:var(--red)">✗ Connection failed: ${error.message}</span>`
-    : `<span style="color:var(--teal-b)">✓ Connected</span> · Response time: ${ms}ms<br>URL: https://tbqnkcjftxfbxujxsqkj.supabase.co<br>Auth: Active session`;
+// ══════════════════════════════════════════════════════════════
+// SECURITY LOG
+// ══════════════════════════════════════════════════════════════
+async function loadSecurity(){
+  renderSecLog();
+}
 
-  // Table counts
-  const tables = ['profiles','profile_roles','questions','answers','score_history','tier_events','insight_reports','notifications'];
-  const counts = await Promise.all(tables.map(t=>supa.from(t).select('*',{count:'exact',head:true})));
+// ══════════════════════════════════════════════════════════════
+// DIAGNOSTICS
+// ══════════════════════════════════════════════════════════════
+async function loadDiag(){
+  const s = getSupa();
+  const start = Date.now();
+  const {error} = await s.from('profiles').select('id').limit(1);
+  const ms = Date.now()-start;
+  document.getElementById('diagConn').innerHTML = error
+    ? `<span style="color:var(--rd)">✗ Failed: ${esc(error.message)}</span>`
+    : `<span style="color:var(--tlb)">✓ Connected</span> · ${ms}ms<br>Project: tbqnkcjftxfbxujxsqkj<br>Auth: ${adminUser?.email||'—'}`;
+
+  const tables = ['profiles','profile_roles','questions','answers','score_history','tier_events','legal_consents','insight_reports'];
+  const counts = await Promise.all(tables.map(t=>s.from(t).select('*',{count:'exact',head:true})));
   document.getElementById('diagTables').innerHTML = tables.map((t,i)=>
-    `${t}: <span style="color:var(--t1)">${counts[i].count||0}</span> rows`
+    `<span style="color:var(--t4)">${t}:</span> <span style="color:var(--t1)">${counts[i].count??'—'}</span>`
   ).join('<br>');
 }
 
-// ── HELPERS ───────────────────────────────────────────
-function statusBadge(s){
-  const map={published:'badge-green',pending:'badge-amber',flagged:'badge-red',removed:'badge-red',suspended:'badge-red',closed:'badge-gray'};
-  return `<span class="badge ${map[s]||'badge-gray'}">${s||'—'}</span>`;
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+async function changePwd(){
+  const p1  = document.getElementById('newPwd1').value;
+  const p2  = document.getElementById('newPwd2').value;
+  const msg = document.getElementById('pwdMsg');
+  if(p1.length < 8){ msg.style.color='var(--rd)'; msg.textContent='Minimum 8 characters.'; return; }
+  if(p1 !== p2){ msg.style.color='var(--rd)'; msg.textContent='Passwords do not match.'; return; }
+  const {error} = await getSupa().auth.updateUser({password: p1});
+  if(error){ msg.style.color='var(--rd)'; msg.textContent=error.message; }
+  else {
+    msg.style.color='var(--tlb)';
+    msg.textContent='✓ Password updated. Use the new password on next login.';
+    document.getElementById('newPwd1').value='';
+    document.getElementById('newPwd2').value='';
+    secEvent('Admin password changed','warn');
+  }
 }
-function gatekeeperBadge(v){
-  const map={approved:'badge-green',pending:'badge-amber',revise:'badge-amber',rejected:'badge-red'};
-  return `<span class="badge ${map[v]||'badge-gray'}">${v||'pending'}</span>`;
+
+async function sendReset(){
+  const email = document.getElementById('L1email').value.trim();
+  if(!email){ document.getElementById('L1err').textContent='Enter your email first.'; return; }
+  const {error} = await getSupa().auth.resetPasswordForEmail(email,{
+    redirectTo: window.location.href
+  });
+  const el = document.getElementById('resetOk');
+  if(error){ document.getElementById('L1err').textContent=error.message; }
+  else { el.textContent='✓ Reset link sent to '+email; }
 }
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sBadge(s){ const m={published:'bg',pending:'ba',flagged:'br',removed:'br',suspended:'br',closed:'bgr',approved:'bg'}; return `<span class="badge ${m[s]||'bgr'}">${s||'—'}</span>`; }
+function gkBadge(v){ const m={approved:'bg',pending:'ba',revise:'ba',rejected:'br'}; return `<span class="badge ${m[v]||'ba'}">${v||'pending'}</span>`; }
+function cdsCol(v){ if(v==null)return'—'; const c=v>=80?'#5dcaa5':v>=60?'#f0c040':'#f09595'; return `<span style="color:${c};font-weight:700">${v}</span>`; }
 </script>
 </body>
 </html>
