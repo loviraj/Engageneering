@@ -504,13 +504,14 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
   padding:4rem 2rem;gap:1.5rem;
 }
 .aria-loader-hex{
-  width:64px;height:64px;
-  animation:ariaBreathe 2s ease-in-out infinite;
-  filter:drop-shadow(0 0 12px rgba(200,146,42,.4));
+  width:120px;height:80px;object-fit:contain;
+  animation:ariaBreathe 2.5s ease-in-out infinite;
+  filter:drop-shadow(0 0 18px rgba(200,146,42,.5));
+  border-radius:8px;
 }
 @keyframes ariaBreathe{
-  0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(200,146,42,.3))}
-  50%{transform:scale(1.12);filter:drop-shadow(0 0 20px rgba(200,146,42,.7))}
+  0%,100%{transform:scale(1) translateY(0);filter:drop-shadow(0 0 10px rgba(200,146,42,.3));opacity:.9}
+  50%{transform:scale(1.08) translateY(-6px);filter:drop-shadow(0 0 28px rgba(200,146,42,.8));opacity:1}
 }
 .aria-loader-dots{display:flex;gap:.4rem;align-items:center}
 .aria-loader-dots span{
@@ -529,29 +530,58 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
   color:var(--t4);font-family:'Cormorant Garamond',serif;
 }
 
-/* ══ MY ANSWERS MASONRY GRID ══ */
-.ma-grid{
+/* ══ MY ANSWERS DYNAMIC LAYOUT ══ */
+.ma-layout{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  grid-template-columns:1fr 320px;
   gap:1rem;
   padding:1.2rem 1.5rem 2rem;
 }
+@media(max-width:900px){.ma-layout{grid-template-columns:1fr}}
+
+/* Main tile grid — left pane */
+.ma-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:.9rem;
+  align-content:start;
+}
+
+/* Right pane — 4 rotating featured tiles */
+.ma-right-pane{
+  display:flex;
+  flex-direction:column;
+  gap:.7rem;
+}
+.ma-right-pane-hdr{
+  font-size:8px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);font-weight:700;
+  padding:.2rem 0 .5rem;
+  border-bottom:1px solid rgba(200,146,42,.2);
+}
 .ma-tile{
   background:var(--bg3);
-  border-radius:10px;
+  border-radius:8px;
   overflow:hidden;
   border:1px solid var(--bdr);
   cursor:pointer;
-  transition:transform .22s ease,box-shadow .22s ease,border-color .22s;
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s,opacity .5s ease;
   position:relative;
 }
 .ma-tile:hover{
-  transform:translateY(-4px);
-  box-shadow:0 12px 40px rgba(0,0,0,.55);
+  transform:translateY(-3px);
+  box-shadow:0 10px 32px rgba(0,0,0,.5);
   border-color:var(--bdr2);
 }
-.ma-tile.cds-high{border-color:rgba(29,158,117,.45)}
+.ma-tile.cds-high{border-color:rgba(29,158,117,.4)}
 .ma-tile.cds-high:hover{border-color:#1d9e75}
+/* Right pane tiles — compact */
+.ma-tile.ma-compact .ma-thumb{aspect-ratio:16/7}
+.ma-tile.ma-compact .ma-info{padding:.45rem .6rem .5rem}
+.ma-tile.ma-compact .ma-q-title{font-size:12px;-webkit-line-clamp:1}
+.ma-tile.ma-compact .ma-score-row{display:none}
+/* Shuffle animation */
+.ma-tile.shuffling{opacity:0;transform:translateY(8px)}
 
 /* Thumbnail area */
 .ma-thumb{
@@ -1033,7 +1063,6 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
   <div class="sidebar sb-l">
     <div class="sb-sec">Explore</div>
     <button class="sb-item on" onclick="setView('all',this)"><div class="sb-pip" style="background:var(--gold);border:1px solid var(--gb)"></div>All Questions</button>
-    <button class="sb-item" onclick="setView('video',this)"><div class="sb-pip" style="background:var(--rd);border:1px solid #f09595"></div>Video Only</button>
     <button class="sb-item" onclick="setView('featured',this)"><div class="sb-pip" style="background:var(--bl);border:1px solid var(--blb)"></div>Featured</button>
     <button class="sb-item" onclick="setView('matched',this)"><div class="sb-pip" style="background:var(--tl);border:1px solid var(--tlb)"></div>Matched for Me</button>
     <button class="sb-item" onclick="setView('mine',this)"><div class="sb-pip" style="background:var(--am);border:1px solid var(--gb)"></div>My Questions</button>
@@ -1073,12 +1102,6 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
     <div class="feed-hdr">
       <div class="tabs">
         <button class="tab on" id="tab-all" onclick="setView('all',this,true)">All</button>
-        <button class="tab" id="tab-video" onclick="setView('video',this,true)">
-          <span style="display:flex;align-items:center;gap:.3rem">
-            <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#e24b4a"/></svg>
-            Video
-          </span>
-        </button>
         <button class="tab" id="tab-featured" onclick="setView('featured',this,true)">Featured</button>
         <button class="tab" id="tab-matched" onclick="setView('matched',this,true)">Matched</button>
         <button class="tab" id="tab-mine" onclick="setView('mine',this,true)">My Questions</button>
@@ -1438,7 +1461,7 @@ function setView(v,btn,fromTab=false){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   if(btn)btn.classList.add('on');
   const t=document.getElementById('tab-'+v);if(t)t.classList.add('on');
-  const map={all:0,video:1,featured:2,matched:3,mine:4,answered:5};
+  const map={all:0,featured:1,matched:2,mine:3,answered:4};
   const si=document.querySelectorAll('.sb-item');
   if(map[v]!==undefined)si[map[v]]?.classList.add('on');
   loadFeed();
@@ -1464,15 +1487,7 @@ const BASE='id,text,tags,quality_score,status,views,answer_count,bounty_pts,aske
 async function loadFeed(){
   const feed=document.getElementById('qFeed');
   feed.innerHTML=`<div class="aria-loader">
-    <svg class="aria-loader-hex" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="1.5"/>
-      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".85"/>
-      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".9"/>
-      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".9"/>
-      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".9"/>
-      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".9"/>
-      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".9"/>
-    </svg>
+    <img src="ARIA-Avatar-Icon-TPT.png" class="aria-loader-hex" alt="ARIA" style="width:120px;height:80px;object-fit:contain"/>
     <div class="aria-loader-dots"><span></span><span></span><span></span></div>
     <div class="aria-loader-txt">ARIA · Loading feed</div>
   </div>`;
@@ -4212,79 +4227,149 @@ async function submitConsent(){
 
 // ══ MY ANSWERS MASONRY GRID ══════════════════════════════════════
 
+// Build one tile HTML (reused for both main grid and right pane)
+function buildMaTile(a, q, i, compact=false){
+  const qTitle  = q?.text&&q.text!=='[Video question]' ? q.text : 'Video question';
+  const qTags   = q?.tags||[];
+  const dt      = new Date(a.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const cds     = a.cds||0;
+  const cdsClass= cds>=80?'hi':cds>=60?'mid':'lo';
+  const tileClass= (cds>=80?'cds-high':'') + (compact?' ma-compact':'');
+  const tileKey = 'ma-'+i;
+
+  window._maRegistry[tileKey] = {
+    url: a.video_url||'', title: qTitle, cds,
+    ei: a.ei_score||0, ri: a.ri_score||0,
+    rai: a.rai_score||0, coi: a.coi_score||0, ai: a.ai_score||0
+  };
+
+  const thumbSrc = a.video_thumbnail
+    ? (_thumbCache[(a.video_thumbnail+'|400x225')]||a.video_thumbnail)
+    : getTopicThumb(qTags.length?qTags:['General'], a.id, 400, 225);
+
+  const pills = [
+    a.ei_score!=null  ?`<span class="ma-score-pill ei">EI ${a.ei_score}</span>`:'',
+    a.ri_score!=null  ?`<span class="ma-score-pill ri">RI ${a.ri_score}</span>`:'',
+    a.rai_score!=null ?`<span class="ma-score-pill rai">RAI ${a.rai_score}</span>`:'',
+    a.coi_score!=null ?`<span class="ma-score-pill coi">COI ${a.coi_score}</span>`:'',
+    a.ai_score!=null  ?`<span class="ma-score-pill ai">AI ${a.ai_score}</span>`:'',
+  ].filter(Boolean).join('');
+
+  return `<div class="ma-tile ${tileClass}" data-makey="${tileKey}">
+    <div class="ma-thumb">
+      <img src="${thumbSrc}" data-tag="${(qTags[0]||'General').replace(/"/g,'')}"
+        data-w="400" data-h="225" alt="" onerror="nfCanvasFill(this)" loading="lazy"/>
+      <div class="ma-play-overlay">
+        <div class="ma-play-ring">
+          <svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg>
+        </div>
+      </div>
+      <div class="ma-date">${dt}</div>
+      ${cds?`<div class="ma-cds-badge ${cdsClass}">CDS ${cds}</div>`:''}
+    </div>
+    <div class="ma-info">
+      <div class="ma-q-label">Your Answer</div>
+      <div class="ma-q-title">${qTitle}</div>
+      ${!compact&&pills?`<div class="ma-score-row">${pills}</div>`:''}
+    </div>
+  </div>`;
+}
+
 function buildMyAnswersGrid(answers, qMap){
   if(!answers||!answers.length) return '';
-
-  // Store answer data in a registry so tiles can reference it without
-  // any string escaping in onclick attributes
   window._maRegistry = {};
 
-  const tiles = answers.map((a,i)=>{
-    const q       = qMap[a.question_id];
-    const qTitle  = q?.text&&q.text!=='[Video question]' ? q.text : 'Video question';
-    const qTags   = q?.tags||[];
-    const dt      = new Date(a.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    const cds     = a.cds||0;
-    const cdsClass= cds>=80?'hi':cds>=60?'mid':'lo';
-    const tileClass= cds>=80?'cds-high':'';
-    const tileKey = 'ma-'+i;
+  // Sort by CDS desc for right pane (best answers featured)
+  const sorted = [...answers].sort((a,b)=>(b.cds||0)-(a.cds||0));
 
-    // Store in registry — no string escaping needed
-    window._maRegistry[tileKey] = {
-      url:   a.video_url||'',
-      title: qTitle,
-      cds,
-      ei:  a.ei_score||0,  ri:  a.ri_score||0,
-      rai: a.rai_score||0, coi: a.coi_score||0,
-      ai:  a.ai_score||0
-    };
+  // Main grid: all answers
+  const mainTiles = answers.map((a,i)=>
+    buildMaTile(a, qMap[a.question_id], i, false)
+  ).join('');
 
-    const thumbSrc = a.video_thumbnail
-      ? (_thumbCache[(a.video_thumbnail+'|400x225')]||a.video_thumbnail)
-      : getTopicThumb(qTags.length?qTags:['General'], a.id, 400, 225);
+  // Right pane: top 4 by CDS, will rotate
+  const rightPool = sorted.slice(0, Math.min(8, sorted.length));
+  const rightIndexOffset = 1000; // avoid key collision with main grid
 
-    const pills = [
-      a.ei_score!=null  ? `<span class="ma-score-pill ei">EI ${a.ei_score}</span>`  : '',
-      a.ri_score!=null  ? `<span class="ma-score-pill ri">RI ${a.ri_score}</span>`  : '',
-      a.rai_score!=null ? `<span class="ma-score-pill rai">RAI ${a.rai_score}</span>`: '',
-      a.coi_score!=null ? `<span class="ma-score-pill coi">COI ${a.coi_score}</span>`: '',
-      a.ai_score!=null  ? `<span class="ma-score-pill ai">AI ${a.ai_score}</span>`  : '',
-    ].filter(Boolean).join('');
+  const rightTiles = rightPool.slice(0,4).map((a,i)=>
+    buildMaTile(a, qMap[a.question_id], rightIndexOffset+i, true)
+  ).join('');
 
-    return `<div class="ma-tile ${tileClass}" data-makey="${tileKey}">
-      <div class="ma-thumb">
-        <img src="${thumbSrc}"
-          data-tag="${(qTags[0]||'General').replace(/"/g,'')}"
-          data-w="400" data-h="225"
-          alt="" onerror="nfCanvasFill(this)"
-          loading="lazy"/>
-        <div class="ma-play-overlay">
-          <div class="ma-play-ring">
-            <svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg>
-          </div>
-        </div>
-        <div class="ma-date">${dt}</div>
-        ${cds?`<div class="ma-cds-badge ${cdsClass}">CDS ${cds}</div>`:''}
-      </div>
-      <div class="ma-info">
-        <div class="ma-q-label">Your Answer</div>
-        <div class="ma-q-title">${qTitle}</div>
-        ${pills?`<div class="ma-score-row">${pills}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-
-  // Single event listener on the grid (event delegation — no inline onclick)
+  // Wire click handlers after DOM insert
   setTimeout(()=>{
     document.querySelectorAll('.ma-tile[data-makey]').forEach(tile=>{
-      tile.addEventListener('click',()=>{
+      tile.onclick = ()=>{
         const d = window._maRegistry[tile.dataset.makey];
         if(d) openMaModal(d.url, d.title, d.cds, d.ei, d.ri, d.rai, d.coi, d.ai);
-      });
+      };
     });
+
+    // Start right pane rotation if pool > 4
+    if(rightPool.length > 4){
+      startMaRotation(rightPool, qMap, rightIndexOffset);
+    }
   }, 0);
 
-  return `<div class="ma-grid">${tiles}</div>`;
+  return `<div class="ma-layout">
+    <div class="ma-grid">${mainTiles}</div>
+    <div class="ma-right-pane" id="maRightPane">
+      <div class="ma-right-pane-hdr">⭐ Top Answers · Highest CDS</div>
+      ${rightTiles}
+    </div>
+  </div>`;
+}
+
+// Rotate right pane tiles every 4 seconds
+let _maRotTimer = null;
+function startMaRotation(pool, qMap, offset){
+  if(_maRotTimer) clearInterval(_maRotTimer);
+  let idx = 0;
+  _maRotTimer = setInterval(()=>{
+    const pane = document.getElementById('maRightPane');
+    if(!pane) { clearInterval(_maRotTimer); return; }
+
+    // Pick 4 starting at idx (wrap around)
+    const batch = [0,1,2,3].map(j=>pool[(idx+j) % pool.length]);
+    idx = (idx + 1) % pool.length;
+
+    // Fade out existing tiles
+    const existing = pane.querySelectorAll('.ma-tile');
+    existing.forEach(t=>t.classList.add('shuffling'));
+
+    setTimeout(()=>{
+      // Replace with new batch
+      const newTiles = batch.map((a,i)=>{
+        const key = offset + i;
+        window._maRegistry['ma-'+key] = {
+          url: a.video_url||'',
+          title: (qMap[a.question_id]?.text&&qMap[a.question_id].text!=='[Video question]')
+            ? qMap[a.question_id].text : 'Video question',
+          cds: a.cds||0,
+          ei: a.ei_score||0, ri: a.ri_score||0,
+          rai: a.rai_score||0, coi: a.coi_score||0, ai: a.ai_score||0
+        };
+        return buildMaTile(a, qMap[a.question_id], key, true);
+      }).join('');
+
+      // Remove old tiles, insert new
+      existing.forEach(t=>t.remove());
+      const hdr = pane.querySelector('.ma-right-pane-hdr');
+      hdr.insertAdjacentHTML('afterend', newTiles);
+
+      // Wire new click handlers
+      pane.querySelectorAll('.ma-tile[data-makey]').forEach(tile=>{
+        tile.onclick = ()=>{
+          const d = window._maRegistry[tile.dataset.makey];
+          if(d) openMaModal(d.url, d.title, d.cds, d.ei, d.ri, d.rai, d.coi, d.ai);
+        };
+      });
+
+      // Fade in
+      requestAnimationFrame(()=>{
+        pane.querySelectorAll('.ma-tile.shuffling').forEach(t=>t.classList.remove('shuffling'));
+      });
+    }, 450);
+  }, 4000);
 }
 
 function openMaModal(url, title, cds, ei, ri, rai, coi, ai){
