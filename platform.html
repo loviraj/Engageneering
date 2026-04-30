@@ -497,6 +497,145 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .upload-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .3s;width:0%}
 
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.sb-l,.sb-r{display:none}}
+
+/* ══ MY ANSWERS MASONRY GRID ══ */
+.ma-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1rem;
+  padding:1.2rem 1.5rem 2rem;
+}
+.ma-tile{
+  background:var(--bg3);
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--bdr);
+  cursor:pointer;
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s;
+  position:relative;
+}
+.ma-tile:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(0,0,0,.55);
+  border-color:var(--bdr2);
+}
+.ma-tile.cds-high{border-color:rgba(29,158,117,.45)}
+.ma-tile.cds-high:hover{border-color:#1d9e75}
+
+/* Thumbnail area */
+.ma-thumb{
+  width:100%;
+  aspect-ratio:16/9;
+  position:relative;
+  background:#000;
+  overflow:hidden;
+}
+.ma-thumb img,.ma-thumb video{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .35s ease;
+}
+.ma-tile:hover .ma-thumb img{transform:scale(1.05)}
+
+/* Play overlay */
+.ma-play-overlay{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.3);
+  transition:background .2s;
+}
+.ma-tile:hover .ma-play-overlay{background:rgba(0,0,0,.1)}
+.ma-play-ring{
+  width:44px;height:44px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.8);
+  background:rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;backdrop-filter:blur(2px);
+}
+.ma-tile:hover .ma-play-ring{
+  border-color:var(--gold);
+  background:rgba(200,146,42,.8);
+  transform:scale(1.1);
+}
+.ma-play-ring svg{width:16px;height:16px;margin-left:3px}
+
+/* CDS badge — top right of thumb */
+.ma-cds-badge{
+  position:absolute;top:.5rem;right:.5rem;
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;font-weight:700;
+  padding:3px 10px;border-radius:4px;
+  backdrop-filter:blur(8px);
+  border:1px solid;
+}
+.ma-cds-badge.hi{background:rgba(29,158,117,.25);color:#5dcaa5;border-color:#1d9e75}
+.ma-cds-badge.mid{background:rgba(200,146,42,.2);color:var(--gb);border-color:var(--gold)}
+.ma-cds-badge.lo{background:rgba(226,75,74,.15);color:#f09595;border-color:#e24b4a}
+
+/* Date chip — top left */
+.ma-date{
+  position:absolute;top:.5rem;left:.5rem;
+  font-size:8px;letter-spacing:.5px;
+  color:rgba(255,255,255,.7);
+  background:rgba(0,0,0,.6);
+  padding:2px 7px;border-radius:3px;
+  backdrop-filter:blur(4px);
+}
+
+/* Info section */
+.ma-info{padding:.75rem .9rem .85rem}
+.ma-q-label{
+  font-size:8px;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.35rem;font-weight:700;
+}
+.ma-q-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:14px;color:var(--t1);font-weight:600;
+  line-height:1.4;margin-bottom:.6rem;
+  display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden;
+}
+.ma-score-row{
+  display:flex;align-items:center;gap:.35rem;
+  flex-wrap:wrap;
+}
+.ma-score-pill{
+  font-size:9px;
+  padding:2px 7px;border-radius:3px;
+  border:1px solid;letter-spacing:.3px;
+}
+.ma-score-pill.ei{background:rgba(55,138,221,.12);color:#85b7eb;border-color:rgba(55,138,221,.3)}
+.ma-score-pill.ri{background:rgba(29,158,117,.1);color:#5dcaa5;border-color:rgba(29,158,117,.25)}
+.ma-score-pill.rai{background:rgba(127,119,221,.12);color:#afa9ec;border-color:rgba(127,119,221,.3)}
+.ma-score-pill.coi{background:rgba(200,146,42,.1);color:var(--gb);border-color:rgba(200,146,42,.25)}
+.ma-score-pill.ai{background:rgba(226,75,74,.1);color:#f09595;border-color:rgba(226,75,74,.25)}
+
+/* Full-screen video player for My Answers */
+#maVideoModal{
+  position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:8000;
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:1rem;
+  padding:1.5rem;
+}
+#maVideoModal.open{display:flex}
+#maVideoModal video{
+  width:100%;max-width:900px;max-height:75vh;
+  border-radius:8px;background:#000;
+}
+.ma-modal-close{
+  position:absolute;top:1rem;right:1.5rem;
+  background:none;border:none;color:#fff;
+  font-size:28px;cursor:pointer;line-height:1;
+  opacity:.7;transition:opacity .2s;
+}
+.ma-modal-close:hover{opacity:1}
+.ma-modal-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:16px;color:rgba(255,255,255,.8);
+  max-width:900px;text-align:center;line-height:1.5;
+}
+.ma-modal-scores{
+  display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;
+}
 /* ══ EXISTING-USER CONSENT MODAL ══ */
 #consentModal{position:fixed;inset:0;background:rgba(4,8,18,.97);z-index:9000;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(12px)}
 #consentModal.open{display:flex}
@@ -1322,26 +1461,11 @@ async function loadFeed(){
         const{data:lq}=await supa.from('questions').select(BASE).in('id',qIds);
         if(lq)lq.forEach(q=>{qMap[q.id]=q;});
       }
-      // Show all answers regardless of whether question is found
-      feed.innerHTML=myAns.map(a=>{
-        const q=qMap[a.question_id];
-        const qTitle=q?.text||'Video question';
-        const dt=new Date(a.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-        return`<div class="qc">
-          <div style="display:flex;gap:.8rem;align-items:flex-start">
-            ${a.video_url?videoPlayer(a.video_url,a.video_thumbnail,'answer'):'<div style="width:160px;min-width:160px;height:90px;background:var(--bg4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px">🎥</div>'}
-            <div style="flex:1;min-width:0">
-              <div class="qm" style="flex-wrap:wrap;gap:.3rem;margin-bottom:.4rem">
-                <div class="qtag tgen">Your Answer</div>
-                <div class="qasker">${dt}</div>
-                ${a.cds?`<div class="qscore" style="background:rgba(29,158,117,.12);color:#5dcaa5;border-color:#1d9e75">CDS ${a.cds}</div>`:''}
-              </div>
-              <div class="qtext" style="font-size:12px;color:var(--t4);margin-bottom:.4rem">In response to: ${qTitle}</div>
-              ${inlineScore(a)}
-            </div>
-          </div>
-        </div>`;
-      }).join('');
+      // Prewarm answer thumbnails
+      const ansWithThumbs = myAns.filter(a=>a.video_thumbnail);
+      await Promise.all(ansWithThumbs.map(a=>resolveThumb(a.video_thumbnail,[],a.id,400,225)));
+      // Build dynamic masonry grid
+      feed.innerHTML = buildMyAnswersGrid(myAns, qMap);
       return; // My Answers rendered above
     }else{
       let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
@@ -1722,12 +1846,13 @@ function resolveThumb(url, tags, qid, w, h){
 // Returns a Promise that resolves when all are done.
 function prewarmThumbs(qs){
   if(!qs||!qs.length) return Promise.resolve();
-  const jobs = qs.filter(q=>q.video_thumbnail).flatMap(q=>[
-    resolveThumb(q.video_thumbnail, q.tags, q.id, 400, 225),
-    // Also warm hero size for the top card
-  ]);
-  // Hero gets 1200x500 pre-warm
-  const hero = qs.find(q=>(q.quality_score||0)===Math.max(...qs.map(x=>x.quality_score||0))) || qs[0];
+  const jobs = qs.filter(q=>q.video_thumbnail).map(q=>
+    resolveThumb(q.video_thumbnail, q.tags, q.id, 400, 225)
+  );
+  // Also warm hero (top-scored) at large size
+  const scores = qs.map(x=>x.quality_score||0);
+  const maxScore = scores.length ? Math.max(...scores) : 0;
+  const hero = qs.find(q=>(q.quality_score||0)===maxScore) || qs[0];
   if(hero?.video_thumbnail){
     jobs.push(resolveThumb(hero.video_thumbnail, hero.tags, hero.id, 1200, 500));
   }
@@ -4043,6 +4168,110 @@ async function submitConsent(){
   }
 }
 
+
+// ══ MY ANSWERS MASONRY GRID ══════════════════════════════════════
+
+function buildMyAnswersGrid(answers, qMap){
+  if(!answers||!answers.length) return '';
+
+  const tiles = answers.map(a=>{
+    const q       = qMap[a.question_id];
+    const qTitle  = q?.text&&q.text!=='[Video question]' ? q.text : 'Video question';
+    const qTags   = q?.tags||[];
+    const dt      = new Date(a.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const cds     = a.cds||0;
+    const cdsClass= cds>=80?'hi':cds>=60?'mid':'lo';
+    const tileClass= cds>=80?'cds-high':'';
+
+    // Thumbnail: use answer's own thumbnail or topic image
+    const thumbSrc = a.video_thumbnail
+      ? (_thumbCache[(a.video_thumbnail+'|400x225')]||a.video_thumbnail)
+      : getTopicThumb(qTags.length?qTags:['General'], a.id, 400, 225);
+
+    // Score pills
+    const pills = [
+      a.ei_score!=null  ? `<span class="ma-score-pill ei">EI ${a.ei_score}</span>`  : '',
+      a.ri_score!=null  ? `<span class="ma-score-pill ri">RI ${a.ri_score}</span>`  : '',
+      a.rai_score!=null ? `<span class="ma-score-pill rai">RAI ${a.rai_score}</span>`: '',
+      a.coi_score!=null ? `<span class="ma-score-pill coi">COI ${a.coi_score}</span>`: '',
+      a.ai_score!=null  ? `<span class="ma-score-pill ai">AI ${a.ai_score}</span>`  : '',
+    ].filter(Boolean).join('');
+
+    // Encode params safely for onclick
+    const safeTitle = qTitle.replace(/\/g,'\\').replace(/'/g,"\'").replace(/"/g,'&quot;');
+    const safeUrl   = (a.video_url||'').replace(/'/g,"\'");
+
+    return `<div class="ma-tile ${tileClass}" onclick="openMaModal('${safeUrl}','${safeTitle}',${cds},${a.ei_score||0},${a.ri_score||0},${a.rai_score||0},${a.coi_score||0},${a.ai_score||0})">
+      <!-- Thumbnail -->
+      <div class="ma-thumb">
+        <img src="${thumbSrc}"
+          data-tag="${(qTags[0]||'General').replace(/"/g,'')}"
+          data-w="400" data-h="225"
+          alt="" onerror="nfCanvasFill(this)"
+          loading="lazy"/>
+        <div class="ma-play-overlay">
+          <div class="ma-play-ring">
+            <svg viewBox="0 0 22 22" fill="white"><path d="M7 4l12 7-12 7V4z"/></svg>
+          </div>
+        </div>
+        <div class="ma-date">${dt}</div>
+        ${cds?`<div class="ma-cds-badge ${cdsClass}">CDS ${cds}</div>`:''}
+      </div>
+      <!-- Info -->
+      <div class="ma-info">
+        <div class="ma-q-label">Your Answer</div>
+        <div class="ma-q-title">${qTitle}</div>
+        ${pills?`<div class="ma-score-row">${pills}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="ma-grid">${tiles}</div>`;
+}
+
+function openMaModal(url, title, cds, ei, ri, rai, coi, ai){
+  if(!url) return;
+  const modal = document.getElementById('maVideoModal');
+  const vid   = document.getElementById('maModalVid');
+  const ttl   = document.getElementById('maModalTitle');
+  const scr   = document.getElementById('maModalScores');
+
+  vid.src = url;
+  vid.load();
+  vid.play().catch(()=>{});
+
+  ttl.textContent = title;
+
+  const pills = [
+    ei  ? `<span class="ma-score-pill ei">EI ${ei}</span>`    : '',
+    ri  ? `<span class="ma-score-pill ri">RI ${ri}</span>`    : '',
+    rai ? `<span class="ma-score-pill rai">RAI ${rai}</span>` : '',
+    coi ? `<span class="ma-score-pill coi">COI ${coi}</span>` : '',
+    ai  ? `<span class="ma-score-pill ai">AI ${ai}</span>`    : '',
+    cds ? `<span class="ma-score-pill" style="background:rgba(29,158,117,.2);color:#5dcaa5;border-color:#1d9e75;font-size:11px;font-weight:700">CDS ${cds}</span>` : '',
+  ].filter(Boolean).join('');
+  scr.innerHTML = pills;
+
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeMaModal(){
+  const modal = document.getElementById('maVideoModal');
+  const vid   = document.getElementById('maModalVid');
+  modal.classList.remove('open');
+  vid.pause();
+  vid.src='';
+  document.body.style.overflow='';
+}
+
+// Close on backdrop click
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('maVideoModal')?.addEventListener('click',e=>{
+    if(e.target===document.getElementById('maVideoModal')) closeMaModal();
+  });
+});
+
 async function loadEvtCount(){
   if(!U)return;
   const{count}=await supa.from('score_history').select('*',{count:'exact',head:true}).eq('user_id',U.id);
@@ -4087,6 +4316,14 @@ async function loadEvtCount(){
       <div class="cm-legal-note">Your acceptance is recorded with timestamp for legal purposes. You cannot use the platform without accepting.</div>
     </div>
   </div>
+</div>
+
+<!-- ══ MY ANSWERS VIDEO MODAL ══ -->
+<div id="maVideoModal">
+  <button class="ma-modal-close" onclick="closeMaModal()">×</button>
+  <video id="maModalVid" controls playsinline></video>
+  <div class="ma-modal-title" id="maModalTitle"></div>
+  <div class="ma-modal-scores" id="maModalScores"></div>
 </div>
 
 </body>
