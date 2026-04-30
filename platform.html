@@ -199,10 +199,10 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 
 /* ── STANDARD CARD ────────────────────────────── */
 .nfc{width:clamp(160px,13vw,220px);flex-shrink:0;cursor:pointer;position:relative;transform-origin:center center;transition:transform .35s cubic-bezier(.25,.46,.45,.94),z-index 0s .35s;z-index:1}
-.nfc:hover{transform:scale(1.2);z-index:20;transition:transform .35s cubic-bezier(.25,.46,.45,.94),z-index 0s}
+.nfc:hover{transform:scale(1.08);z-index:20;transition:transform .25s cubic-bezier(.25,.46,.45,.94),z-index 0s;box-shadow:0 8px 32px rgba(0,0,0,.6)}
 /* Edge cards — scale toward centre */
-.nf-track .nfc:first-child:hover{transform:scale(1.2) translateX(9%);}
-.nf-track .nfc:last-child:hover{transform:scale(1.2) translateX(-9%);}
+.nf-track .nfc:first-child:hover{transform:scale(1.08) translateX(5%);}
+.nf-track .nfc:last-child:hover{transform:scale(1.08) translateX(-5%);}
 
 .nfc-img{width:100%;aspect-ratio:16/9;overflow:hidden;background:#141414;border-radius:2px;display:block}
 .nfc-img img{width:100%;height:100%;object-fit:cover;display:block;transition:none}
@@ -255,10 +255,10 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 
 /* ── EXPAND ZONE ─────────────────────────────── */
 .nf-expand{display:none;background:#141414;border-top:3px solid #fff;border-bottom:3px solid #141414;margin:0;animation:nfExpand .25s ease}
-@keyframes nfExpand{from{opacity:0;transform:scaleY(.95);transform-origin:top}to{opacity:1;transform:scaleY(1)}}
+@keyframes nfExpand{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .nf-expand.open{display:block}
 .nf-expand-inner{padding:1.2rem 2rem 1.4rem}
-.nf-expand-top{display:flex;gap:1.4rem;align-items:flex-start;margin-bottom:1rem}
+.nf-expand-top{display:flex;gap:1.4rem;align-items:flex-start;margin-bottom:1rem;flex-wrap:wrap}
 .nf-expand-vid{width:320px;min-width:320px;aspect-ratio:16/9;background:#000;border-radius:4px;overflow:hidden;flex-shrink:0}
 .nf-expand-vid video,.nf-expand-vid img{width:100%;height:100%;object-fit:cover;display:block}
 .nf-expand-meta{flex:1;min-width:0}
@@ -1272,6 +1272,7 @@ async function loadFeed(){
       qs=data||[];
       if(!qs.length){feed.innerHTML=sampleFeed();return;}
     }
+    await prewarmThumbs(qs);
     feed.innerHTML=buildNfFeed(qs);
   }catch(e){console.warn(e);feed.innerHTML=sampleFeed();}
 }
@@ -1612,58 +1613,59 @@ function svgFallback(tags, w=400, h=225){
 }
 
 // ── THUMBNAIL SYSTEM ─────────────────────────────────────────────
-// Pre-tests every video_thumbnail URL via a hidden Image() object
-// BEFORE inserting into the DOM. If it loads → use it.
-// If it fails/times out (4s) → fall back to picsum.
-// Result cached so re-renders are instant.
+// ══ THUMBNAIL SYSTEM — DEFINITIVE ═══════════════════════════════
+// Pre-warms ALL thumbnails before any HTML is rendered.
+// _thumbCache maps "url|WxH" → resolved src string.
+// cardThumbHtml() is 100% synchronous — always returns real src.
 const _thumbCache = {};
 
+// Test a single URL: resolves to the real URL if it loads,
+// or to a topic image if it fails/times out.
 function resolveThumb(url, tags, qid, w, h){
-  const picsum = getTopicThumb(tags, qid, w, h);
-  if(!url) return Promise.resolve(picsum);
+  const fallback = getTopicThumb(tags, qid, w, h);
+  if(!url) return Promise.resolve(fallback);
   const key = url+'|'+w+'x'+h;
   if(_thumbCache[key] !== undefined) return Promise.resolve(_thumbCache[key]);
-  return new Promise(res=>{
-    const img = new Image();
-    let done = false;
-    const finish = (src)=>{ if(done)return; done=true; _thumbCache[key]=src; res(src); };
-    const timer = setTimeout(()=>finish(picsum), 4000);
-    img.onload  = ()=>{ clearTimeout(timer); finish(url);    };
-    img.onerror = ()=>{ clearTimeout(timer); finish(picsum); };
-    img.src = url;
+  return new Promise(resolve=>{
+    const t   = new Image();
+    let done  = false;
+    const fin = (src)=>{ if(done)return; done=true; _thumbCache[key]=src; resolve(src); };
+    const tmr = setTimeout(()=>fin(fallback), 5000);
+    t.onload  = ()=>{ clearTimeout(tmr); fin(url);      };
+    t.onerror = ()=>{ clearTimeout(tmr); fin(fallback); };
+    t.src = url;
   });
 }
 
-// Render img tag — src is a pre-resolved URL, only canvas needed as last resort
-function thumbImg(src, w, h, tag){
-  const t = (tag||'').replace(/"/g,'');
+// Pre-warm all thumbnails in a question array (parallel, 400×225)
+// Returns a Promise that resolves when all are done.
+function prewarmThumbs(qs){
+  if(!qs||!qs.length) return Promise.resolve();
+  const jobs = qs.filter(q=>q.video_thumbnail).flatMap(q=>[
+    resolveThumb(q.video_thumbnail, q.tags, q.id, 400, 225),
+    // Also warm hero size for the top card
+  ]);
+  // Hero gets 1200x500 pre-warm
+  const hero = qs.find(q=>(q.quality_score||0)===Math.max(...qs.map(x=>x.quality_score||0))) || qs[0];
+  if(hero?.video_thumbnail){
+    jobs.push(resolveThumb(hero.video_thumbnail, hero.tags, hero.id, 1200, 500));
+  }
+  return Promise.all(jobs);
+}
+
+// Build img tag — always synchronous because prewarm ran first
+function cardThumbHtml(q, w=400, h=225){
+  const url  = q.video_thumbnail || null;
+  const tag  = ((q.tags||['General'])[0]||'General');
+  const key  = (url||'')+'|'+w+'x'+h;
+  // Use cached result (set by prewarm), or topic image if no url
+  const src  = url
+    ? (_thumbCache[key] !== undefined ? _thumbCache[key] : getTopicThumb(q.tags,q.id,w,h))
+    : getTopicThumb(q.tags, q.id, w, h);
+  const safeTag = tag.replace(/"/g,'');
   return `<img src="${src}" alt=""
     loading="lazy" decoding="async"
-    data-tag="${t}" data-w="${w}" data-h="${h}"
-    onerror="nfCanvasFill(this)"
-    style="width:100%;height:100%;object-fit:cover;display:block"/>`;
-}
-
-// cardThumbHtml: sync path uses cache; async path shows picsum then swaps
-function cardThumbHtml(q, w=400, h=225){
-  const url    = q.video_thumbnail || null;
-  const picsum = getTopicThumb(q.tags, q.id, w, h);
-  const tag    = ((q.tags||['General'])[0]||'General');
-  const key    = (url||'')+'|'+w+'x'+h;
-
-  if(!url) return thumbImg(picsum, w, h, tag);
-
-  if(_thumbCache[key] !== undefined) return thumbImg(_thumbCache[key], w, h, tag);
-
-  // Async: show picsum immediately, swap when real thumb resolves
-  const uid = 'th-'+(q.id||'').replace(/[^a-z0-9]/gi,'');
-  resolveThumb(url, q.tags, q.id, w, h).then(src=>{
-    const el = document.getElementById(uid);
-    if(el && el.src !== src) el.src = src;
-  });
-  return `<img id="${uid}" src="${picsum}" alt=""
-    loading="lazy" decoding="async"
-    data-tag="${tag.replace(/"/g,'')}" data-w="${w}" data-h="${h}"
+    data-tag="${safeTag}" data-w="${w}" data-h="${h}"
     onerror="nfCanvasFill(this)"
     style="width:100%;height:100%;object-fit:cover;display:block"/>`;
 }
@@ -1705,25 +1707,36 @@ function buildAskerAvatar(name, tags, size=36){
 }
 
 function buildNfFeed(qs){
-  if(!qs||!qs.length) return '<div style="padding:3rem 2rem;color:var(--t4);font-size:13px;letter-spacing:1px">No questions yet — be the first to ask.</div>';
+  if(!qs||!qs.length) return `<div style="padding:4rem 2rem;text-align:center;color:var(--t4)">
+    <div style="font-size:36px;margin-bottom:1rem">⬡</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--t3);margin-bottom:.5rem">No questions yet</div>
+    <div style="font-size:13px">Be the first to ask something worth answering.</div>
+  </div>`;
 
-  // Sort buckets
-  const byScore  = [...qs].sort((a,b)=>(b.quality_score||0)-(a.quality_score||0));
-  const byNew    = [...qs].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-  const bounty   = qs.filter(q=>q.bounty_pts>0).sort((a,b)=>b.bounty_pts-a.bounty_pts);
-  const matched  = qs.filter(q=>U&&(q.matched_uids||[]).includes(U.id));
-  const mine     = qs.filter(q=>U&&q.asker_id===U.id);
+  // Smart buckets — only real data, no padding
+  const byScore = [...qs].sort((a,b)=>(b.quality_score||0)-(a.quality_score||0));
+  const byNew   = [...qs].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const bounty  = qs.filter(q=>(q.bounty_pts||0)>0).sort((a,b)=>b.bounty_pts-a.bounty_pts);
+  const matched = qs.filter(q=>U&&(q.matched_uids||[]).includes(U.id));
+  const mine    = qs.filter(q=>U&&q.asker_id===U.id);
+  // Featured = quality ≥ 85, at least 2 required to show as row
+  const featured = byScore.filter(q=>(q.quality_score||0)>=85);
 
-  const hero = byScore[0] || qs[0];
+  // Hero = highest scoring question (exclude from rows below)
+  const hero = featured[0] || byScore[0] || qs[0];
+  const heroId = hero?.id;
 
+  // Build rows — each only shows if meaningful
   const rows = [
-    matched.length  ? buildNfRow('✦ Matched for You', matched, 'matched', false) : '',
-    buildNfHero(hero),
-    byScore.length  ? buildNfRow('Top Rated · Highest CDS', byScore, 'rated', false) : '',
-    bounty.length   ? buildNfRow('🏆 Active Bounties', bounty, 'bounty', false) : '',
-    byNew.length>=3 ? buildNfRankRow('Top 10 in the Feed', byNew.slice(0,10), 'top10') : '',
-    buildNfRow('Recently Asked', byNew, 'new', false),
-    mine.length     ? buildNfRow('Your Questions', mine, 'mine', false) : '',
+    matched.length>=1 ? buildNfRow('✦ Matched for You', matched.filter(q=>q.id!==heroId), 'matched') : '',
+    hero ? buildNfHero(hero) : '',
+    featured.filter(q=>q.id!==heroId).length>=1
+      ? buildNfRow('⭐ Featured · Highest CDS', featured.filter(q=>q.id!==heroId), 'rated') : '',
+    bounty.filter(q=>q.id!==heroId).length>=1
+      ? buildNfRow('🏆 Active Bounties', bounty.filter(q=>q.id!==heroId), 'bounty') : '',
+    buildNfRow('Recently Asked', byNew.filter(q=>q.id!==heroId), 'new'),
+    mine.filter(q=>q.id!==heroId).length>=1
+      ? buildNfRow('Your Questions', mine.filter(q=>q.id!==heroId), 'mine') : '',
   ].filter(Boolean).join('');
 
   return rows;
@@ -1740,9 +1753,12 @@ function buildNfHero(q){
   const score = q.quality_score;
   const days  = Math.floor((Date.now()-new Date(q.created_at||Date.now()))/(864e5));
 
-  const heroThumb=q.video_thumbnail||getTopicThumb(q.tags,q.id,1200,500);
   const heroTag=((q.tags||['General'])[0]||'General').replace(/"/g,'');
-  const heroPicsum=getTopicThumb(q.tags,q.id,1200,500);
+  // Use prewarm cache (w=400 was prewarmed; hero needs 1200 — resolve sync from cache or topic)
+  const _hk=(q.video_thumbnail||'')+'|1200x500';
+  const heroSrc=q.video_thumbnail
+    ? (_thumbCache[_hk]!==undefined ? _thumbCache[_hk] : getTopicThumb(q.tags,q.id,1200,500))
+    : getTopicThumb(q.tags,q.id,1200,500);
   // Pre-test hero thumbnail
   const _hKey = (q.video_thumbnail||'')+'|1200x500';
   let _hSrc   = (_thumbCache[_hKey] !== undefined) ? _thumbCache[_hKey] : heroPicsum;
@@ -1828,53 +1844,68 @@ function buildNfRankRow(title, qs, rowId){
 
 // ── STANDARD CARD ─────────────────────────────────────────────────
 function buildNfCard(q){
-  const xid   = 'nfx-'+q.id;
-  const pid   = 'panel-'+q.id;
-  const isMe  = U&&q.asker_id===U.id;
-  const feat  = (q.quality_score||0)>=85;
-  const days  = Math.floor((Date.now()-new Date(q.created_at||Date.now()))/(864e5));
-  const isNew = days<=2;
+  const xid       = 'nfx-'+q.id;
+  const pid       = 'panel-'+q.id;
+  const isMe      = U&&q.asker_id===U.id;
+  const feat      = (q.quality_score||0)>=85;
+  const days      = Math.floor((Date.now()-new Date(q.created_at||Date.now()))/(864e5));
+  const isNew     = days<=2;
   const hasBounty = (q.bounty_pts||0)>0;
-  const tags  = (q.tags||['General']).slice(0,3);
-  const title = (q.text&&q.text!=='[Video question]') ? q.text : 'Video Question';
-  const asker = q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
+  const isAnswered= (q.answer_count||0)>0;
+  const tags      = (q.tags||['General']).slice(0,2);
+  const title     = (q.text&&q.text!=='[Video question]') ? q.text : 'Video Question';
+  const asker     = q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
+  const thumb     = cardThumbHtml(q);
 
-  const thumb=cardThumbHtml(q);
+  // Smart badge: only one, most important first
+  const badge = isMe     ? `<span class="nfc-badge nfb-mine">Yours</span>` :
+                feat      ? `<span class="nfc-badge nfb-feat">★ Featured</span>` :
+                hasBounty ? `<span class="nfc-badge nfb-bounty">+${q.bounty_pts} Ψ</span>` :
+                isNew     ? `<span class="nfc-badge nfb-new">New</span>` : '';
 
-  const badge = feat?`<span class="nfc-badge nfb-feat">★</span>`:
-    isNew?`<span class="nfc-badge nfb-new">New</span>`:
-    hasBounty?`<span class="nfc-badge nfb-bounty">Ψ${q.bounty_pts}</span>`:
-    isMe?`<span class="nfc-badge nfb-mine">Yours</span>`:'';
+  // Video indicator
+  const hasVid = !!q.video_url;
 
-  return `<div class="nfc" data-qid="${q.id}" onclick="nfOpen('${q.id}','info')">
-    <div class="nfc-img">${thumb}</div>
+  return `<div class="nfc" data-qid="${q.id}" onclick="nfOpen('${q.id}','info')" title="${title.replace(/"/g,'&quot;')}">
+    <!-- Thumbnail -->
+    <div class="nfc-img">
+      ${thumb}
+      ${hasVid?`<div style="position:absolute;bottom:.4rem;right:.4rem;background:rgba(0,0,0,.7);border-radius:2px;padding:1px 5px;font-size:8px;color:#fff;display:flex;align-items:center;gap:3px"><svg width="7" height="7" viewBox="0 0 8 8" fill="white"><path d="M1 1l6 3-6 3V1z"/></svg>${q.video_duration?Math.floor(q.video_duration/60)+':'+(q.video_duration%60<10?'0':'')+q.video_duration%60:''}</div>`:''}
+    </div>
     <div class="nfc-badges">${badge}</div>
     <div class="nfc-prog"><div class="nfc-prog-fill" id="prog-${q.id}"></div></div>
+
+    <!-- Hover panel -->
     <div class="nfc-hover">
+      <!-- Action buttons -->
       <div class="nfc-hover-top">
-        <button class="nfc-hbtn nfc-hbtn-play" onclick="event.stopPropagation();nfOpen('${q.id}','answer')" title="Answer">
+        <button class="nfc-hbtn nfc-hbtn-play" onclick="event.stopPropagation();nfOpen('${q.id}','answer')" title="Record Answer">
           <svg viewBox="0 0 22 22" fill="black"><path d="M6 3l14 8-14 8V3z"/></svg>
         </button>
-        <button class="nfc-hbtn" onclick="event.stopPropagation();nfOpen('${q.id}','aria')" title="Ask ARIA">
-          <svg viewBox="0 0 22 22" fill="none"><polygon points="11,2 20,11 11,20 2,11" stroke="currentColor" stroke-width="1.5"/><text x="11" y="14.5" text-anchor="middle" font-size="7" fill="currentColor" font-weight="700">A</text></svg>
+        <button class="nfc-hbtn" style="background:rgba(127,119,221,.25);border-color:rgba(127,119,221,.5)" onclick="event.stopPropagation();nfOpen('${q.id}','aria')" title="Ask ARIA Ψ${ARIA_COST}">
+          <svg viewBox="0 0 22 22" fill="none"><polygon points="11,2 20,11 11,20 2,11" stroke="#afa9ec" stroke-width="1.5"/><text x="11" y="14.5" text-anchor="middle" font-size="6" fill="#afa9ec" font-weight="700">A</text></svg>
         </button>
-        <button class="nfc-hbtn nfc-hmore" onclick="event.stopPropagation();nfOpen('${q.id}','toggle')" title="Expand">
-          <svg viewBox="0 0 22 22" fill="none"><path d="M6 9l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <button class="nfc-hbtn nfc-hmore" onclick="event.stopPropagation();nfOpen('${q.id}','toggle')" title="More Info">
+          <svg viewBox="0 0 22 22" fill="none"><path d="M6 9l5 5 5-5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
+      <!-- Info -->
       <div class="nfc-hover-info">
-        <div class="nfc-hover-title">${title.length>70?title.slice(0,67)+'…':title}</div>
+        <div class="nfc-hover-title">${title.length>75?title.slice(0,72)+'…':title}</div>
         <div class="nfc-hover-tags">${tags.map(t=>`<span class="nfc-htag">${t}</span>`).join('')}</div>
         <div class="nfc-hover-stat">
-          ${q.quality_score!=null?`<span class="nfc-psi">Ψ ${q.quality_score}</span>`:''}
-          <span>${q.answer_count||0} ans</span>
+          ${q.quality_score!=null?`<span class="nfc-psi">Ψ${q.quality_score}</span>`:''}
+          ${isAnswered?`<span style="color:#1d9e75">${q.answer_count} ans</span>`:`<span style="color:#f0c040">Be first</span>`}
           <span>${q.views||0} views</span>
-          <span>${asker}</span>
         </div>
-        <div style="font-size:8px;color:#8a6060;margin-top:.2rem;line-height:1.4">User content · Not reviewed by Engageneering™</div>
+        <div style="display:flex;align-items:center;gap:.35rem;margin-top:.35rem">
+          ${buildAskerAvatar(asker,q.tags,16)}
+          <span style="font-size:9px;color:rgba(255,255,255,.4)">${asker}</span>
+        </div>
       </div>
     </div>
   </div>
+  <!-- Expand zone — lives outside scroll track, full width -->
   <div class="nf-expand" id="${xid}">
     <div class="nf-expand-inner">${buildExpandInner(q,pid)}</div>
   </div>`;
@@ -1929,6 +1960,8 @@ function buildExpandInner(q, pid){
   const title=(q.text&&q.text!=='[Video question]')?q.text:'Video Question';
   const isMe=U&&q.asker_id===U.id;
   const asker=q.profiles?.display_name||(isMe?P?.display_name||'You':'Community');
+  const ansCount=q.answer_count||0;
+  const hasVid=!!q.video_url;
   const yr    = q.created_at ? new Date(q.created_at).getFullYear() : '';
   const xid   = 'nfx-'+q.id;
 
@@ -1971,13 +2004,20 @@ function buildExpandInner(q, pid){
           ${q.bounty_pts>0?`<span style="color:var(--am);font-weight:700">+${q.bounty_pts} Ψ bounty</span>`:''}
         </div>
         <div class="nf-expand-desc">${title}</div>
-        <div class="nf-expand-btns">
-          <button class="nf-xbtn nf-xbtn-answer" onclick="nfOpen('${q.id}','answer')">🎥 Answer</button>
-          <button class="nf-xbtn nf-xbtn-aria" id="ask-aria-${q.id}" onclick="openAriaPanel('${q.id}')">⬡ Ask ARIA  Ψ${ARIA_COST}</button>
-          <button class="nf-xbtn nf-xbtn-close" onclick="nfClose('${q.id}')">✕ Close</button>
+        <div class="nf-expand-btns" style="flex-wrap:wrap;gap:.5rem">
+          <button class="nf-xbtn nf-xbtn-answer" style="flex:1;min-width:140px;padding:10px 16px;font-size:11px" onclick="nfOpen('${q.id}','answer')">
+            🎥 Answer ${ansCount>0?`<span style="font-size:9px;opacity:.65">· ${ansCount} so far</span>`:''}
+          </button>
+          <button class="nf-xbtn nf-xbtn-aria" id="ask-aria-${q.id}" style="flex:1;min-width:120px;padding:10px 16px;font-size:11px" onclick="openAriaPanel('${q.id}')">
+            ⬡ Ask ARIA <span style="font-size:9px;opacity:.7">Ψ${ARIA_COST}</span>
+          </button>
+          ${hasVid?`<button class="nf-xbtn" style="background:rgba(55,138,221,.15);color:#85b7eb;border:1px solid rgba(55,138,221,.3);flex:none;padding:10px 14px" onclick="nfPlayQuestion('${q.id}')">▶ Watch Question</button>`:''}
+          <button class="nf-xbtn nf-xbtn-close" style="flex:none;padding:10px 14px" onclick="nfClose('${q.id}')">✕</button>
         </div>
-        <div style="font-size:10px;color:#8a5050;margin-top:.6rem;line-height:1.65;padding:.5rem .7rem;background:rgba(226,75,74,.05);border:1px solid rgba(226,75,74,.15);border-radius:5px">
-          ⚠ User-generated content. Engageneering™ does not review or verify this video. Views expressed are those of the individual user only. Not professional advice. <a href="legal.html" target="_blank" style="color:#f0c040;text-decoration:none">Full Disclaimer ›</a>
+        <div style="font-size:9.5px;color:rgba(138,80,80,.9);margin-top:.6rem;line-height:1.6;padding:.45rem .7rem;background:rgba(226,75,74,.04);border:1px solid rgba(226,75,74,.12);border-radius:5px;display:flex;align-items:center;gap:.5rem">
+          <span style="flex-shrink:0">⚠</span>
+          <span>User-generated content — not reviewed by Engageneering™. Not professional advice.
+          <a href="legal.html" target="_blank" style="color:#f0c040;text-decoration:none;margin-left:.3rem">Disclaimer ›</a></span>
         </div>
       </div>
     </div>
@@ -2052,42 +2092,58 @@ function buildExpandInner(q, pid){
 let _nfOpenId = null;
 
 function nfOpen(qid, mode){
-  const xid   = 'nfx-'+qid;
-  const xidR  = 'nfx-'+qid+'-r';
-  const pid   = 'panel-'+qid;
-  const pidR  = 'panel-r'+qid;
+  const xid  = 'nfx-'+qid;
+  const xidR = 'nfx-'+qid+'-r';
+  const pid  = 'panel-'+qid;
+  const pidR = 'panel-r'+qid;
 
-  // Try both (card and rank card may have different IDs)
-  const expand  = document.getElementById(xid)  || document.getElementById(xidR);
-  const panel   = document.getElementById(pid)  || document.getElementById(pidR);
-  const heroEl  = document.getElementById('nfhero-'+qid);
+  const expand = document.getElementById(xid) || document.getElementById(xidR);
+  const panel  = document.getElementById(pid) || document.getElementById(pidR);
 
-  if(!expand&&!heroEl) return;
+  if(!expand) return;
 
-  // Toggle if same card clicked again with toggle mode
+  // Toggle: clicking same card's expand button closes it
   if(mode==='toggle' && _nfOpenId===qid){
-    nfClose(qid); return;
+    nfClose(qid);
+    return;
   }
 
   // Close previously open card
   if(_nfOpenId && _nfOpenId!==qid) nfClose(_nfOpenId);
   _nfOpenId = qid;
 
-  // Open expand zone
-  if(expand) expand.classList.add('open');
+  // Open expand zone with animation
+  expand.classList.add('open');
 
-  // Activate the right sub-panel
-  if(mode==='answer' && panel){
-    panel.classList.add('open');
-    setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
-  }
-  if(mode==='aria'){
-    openAriaPanel(qid);
+  // Mode-specific actions
+  if(mode==='answer'){
+    if(panel){
+      panel.classList.add('open');
+      // Slight delay so expand animation starts first
+      setTimeout(()=>{
+        expand.scrollIntoView({behavior:'smooth',block:'nearest'});
+      },180);
+    }
+  } else if(mode==='info'){
+    // Just open expand, scroll into view
+    setTimeout(()=>{
+      expand.scrollIntoView({behavior:'smooth',block:'nearest'});
+    },120);
+  } else if(mode==='aria'){
+    expand.scrollIntoView({behavior:'smooth',block:'nearest'});
+    setTimeout(()=>openAriaPanel(qid),200);
   }
 
-  // Scroll card into view
-  const card = document.querySelector(`[data-qid="${qid}"]`);
-  if(card) setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+  // Scroll the card itself into view (for row cards, not hero)
+  const card = document.querySelector(`.nfc[data-qid="${qid}"]`);
+  if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// Watch the question video in the expand panel
+function nfPlayQuestion(qid){
+  // Find the expand video element and play it
+  const expVid = document.querySelector(`#nfx-${qid} video`);
+  if(expVid){ expVid.play(); expVid.scrollIntoView({behavior:'smooth',block:'center'}); }
 }
 
 function nfClose(qid){
