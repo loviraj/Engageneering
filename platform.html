@@ -507,7 +507,9 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
   width:120px;height:80px;object-fit:contain;
   animation:ariaBreathe 2.5s ease-in-out infinite;
   filter:drop-shadow(0 0 18px rgba(200,146,42,.5));
-  border-radius:8px;
+  background:transparent;
+  border-radius:0;
+  display:block;
 }
 @keyframes ariaBreathe{
   0%,100%{transform:scale(1) translateY(0);filter:drop-shadow(0 0 10px rgba(200,146,42,.3));opacity:.9}
@@ -1487,7 +1489,7 @@ const BASE='id,text,tags,quality_score,status,views,answer_count,bounty_pts,aske
 async function loadFeed(){
   const feed=document.getElementById('qFeed');
   feed.innerHTML=`<div class="aria-loader">
-    <img src="ARIA-Avatar-Icon-TPT.png" class="aria-loader-hex" alt="ARIA" style="width:120px;height:80px;object-fit:contain"/>
+    <img src="ARIA-Avatar-Icon-TPT.png" class="aria-loader-hex" alt="ARIA" style="width:120px;height:80px;object-fit:contain;background:transparent;border-radius:0"/>
     <div class="aria-loader-dots"><span></span><span></span><span></span></div>
     <div class="aria-loader-txt">ARIA · Loading feed</div>
   </div>`;
@@ -2055,7 +2057,7 @@ function buildNfHero(q){
       <div class="nf-hero-btns">
         <button class="nf-hero-btn nf-hbtn-play" onclick="nfOpen('${q.id}','answer')">▶ Answer Now</button>
         <button class="nf-hero-btn nf-hbtn-more" onclick="nfOpen('${q.id}','info')">ⓘ More Info</button>
-        ${isMe?`<button class="nf-hero-btn nf-hbtn-aria" onclick="nfOpen('${q.id}','aria')">⬡ Ask ARIA  Ψ${ARIA_COST}</button>`:''}
+        ${(U&&q.asker_id===U.id)?`<button class="nf-hero-btn nf-hbtn-aria" onclick="nfOpen('${q.id}','aria')">⬡ Ask ARIA  Ψ${ARIA_COST}</button>`:''}
       </div>
     </div>
     ${score!=null?`<div class="nf-hero-score"><div class="nf-hero-psi-val">Ψ ${score}</div><div class="nf-hero-psi-lbl">Quality Score</div></div>`:''}
