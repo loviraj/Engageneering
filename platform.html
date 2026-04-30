@@ -498,6 +498,37 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.sb-l,.sb-r{display:none}}
 
+/* ══ ARIA BREATHING LOADER ══ */
+.aria-loader{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4rem 2rem;gap:1.5rem;
+}
+.aria-loader-hex{
+  width:64px;height:64px;
+  animation:ariaBreathe 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 12px rgba(200,146,42,.4));
+}
+@keyframes ariaBreathe{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(200,146,42,.3))}
+  50%{transform:scale(1.12);filter:drop-shadow(0 0 20px rgba(200,146,42,.7))}
+}
+.aria-loader-dots{display:flex;gap:.4rem;align-items:center}
+.aria-loader-dots span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--gold);opacity:.3;
+  animation:ariaLoadDot 1.4s ease-in-out infinite;
+}
+.aria-loader-dots span:nth-child(2){animation-delay:.2s;background:var(--gb)}
+.aria-loader-dots span:nth-child(3){animation-delay:.4s;background:var(--tl)}
+@keyframes ariaLoadDot{
+  0%,80%,100%{transform:scale(.7);opacity:.3}
+  40%{transform:scale(1.1);opacity:1}
+}
+.aria-loader-txt{
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--t4);font-family:'Cormorant Garamond',serif;
+}
+
 /* ══ MY ANSWERS MASONRY GRID ══ */
 .ma-grid{
   display:grid;
@@ -1432,7 +1463,19 @@ const BASE='id,text,tags,quality_score,status,views,answer_count,bounty_pts,aske
 
 async function loadFeed(){
   const feed=document.getElementById('qFeed');
-  feed.innerHTML='<div style="text-align:center;padding:2rem;color:var(--t4)">Loading...</div>';
+  feed.innerHTML=`<div class="aria-loader">
+    <svg class="aria-loader-hex" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="1.5"/>
+      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".85"/>
+      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".9"/>
+      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".9"/>
+      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".9"/>
+      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".9"/>
+      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".9"/>
+    </svg>
+    <div class="aria-loader-dots"><span></span><span></span><span></span></div>
+    <div class="aria-loader-txt">ARIA · Loading feed</div>
+  </div>`;
   try{
     let qs=[];
     if(view==='mine'){
@@ -1478,8 +1521,16 @@ async function loadFeed(){
       if(!qs.length){feed.innerHTML=sampleFeed();return;}
     }
     await prewarmThumbs(qs);
-    feed.innerHTML=buildNfFeed(qs);
-  }catch(e){console.warn(e);feed.innerHTML=sampleFeed();}
+    try{
+      feed.innerHTML=buildNfFeed(qs);
+    }catch(renderErr){
+      console.error('Feed render error:',renderErr);
+      feed.innerHTML=sampleFeed();
+    }
+  }catch(e){
+    console.error('loadFeed error:',e);
+    if(feed) feed.innerHTML=sampleFeed();
+  }
 }
 
 function empty(t,s){return`<div style="text-align:center;padding:3rem 1rem;color:var(--t4)"><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--t3);margin-bottom:.5rem">${t}</div><div style="font-size:13px;line-height:1.7">${s}</div></div>`;}
@@ -1960,22 +2011,12 @@ function buildNfHero(q){
   const days  = Math.floor((Date.now()-new Date(q.created_at||Date.now()))/(864e5));
 
   const heroTag=((q.tags||['General'])[0]||'General').replace(/"/g,'');
-  // Use prewarm cache (w=400 was prewarmed; hero needs 1200 — resolve sync from cache or topic)
-  const _hk=(q.video_thumbnail||'')+'|1200x500';
+  // Synchronous: prewarmThumbs already ran, cache is populated
+  const _hKey=(q.video_thumbnail||'')+'|1200x500';
   const heroSrc=q.video_thumbnail
-    ? (_thumbCache[_hk]!==undefined ? _thumbCache[_hk] : getTopicThumb(q.tags,q.id,1200,500))
+    ? (_thumbCache[_hKey]!==undefined ? _thumbCache[_hKey] : getTopicThumb(q.tags,q.id,1200,500))
     : getTopicThumb(q.tags,q.id,1200,500);
-  // Pre-test hero thumbnail
-  const _hKey = (q.video_thumbnail||'')+'|1200x500';
-  let _hSrc   = (_thumbCache[_hKey] !== undefined) ? _thumbCache[_hKey] : heroPicsum;
-  const _hUid = 'heroth-'+(q.id||'').replace(/[^a-z0-9]/gi,'');
-  if(q.video_thumbnail && _thumbCache[_hKey]===undefined){
-    resolveThumb(q.video_thumbnail,q.tags,q.id,1200,500).then(src=>{
-      const el=document.getElementById(_hUid);
-      if(el && el.src!==src) el.src=src;
-    });
-  }
-  const bgEl=`<img id="${_hUid}" class="nf-hero-bg" src="${_hSrc}"
+  const bgEl=`<img class="nf-hero-bg" src="${heroSrc}"
     data-tag="${heroTag}" data-w="1200" data-h="500"
     alt="" onerror="nfCanvasFill(this)"
     style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)"/>`;
@@ -3578,9 +3619,9 @@ async function loadYOMWallet(){
       .select('pts_total,seeker_pts,answerer_pts')
       .eq('user_id',U.id).single();
 
-    const total   = pr?.pts_total    || R?.pts_total    || 0;
-    const qPts    = pr?.seeker_pts   || R?.seeker_pts   || 0;
-    const aPts    = pr?.answerer_pts || R?.answerer_pts || 0;
+    const total   = pr?.pts_total    ?? R?.pts_total    ?? 0;
+    const qPts    = pr?.seeker_pts   ?? R?.seeker_pts   ?? 0;
+    const aPts    = pr?.answerer_pts ?? R?.answerer_pts ?? 0;
 
     // Bought Ψ — sum of psi_purchase entries from score_history
     const{data:purchases}=await supa.from('score_history')
@@ -4174,7 +4215,11 @@ async function submitConsent(){
 function buildMyAnswersGrid(answers, qMap){
   if(!answers||!answers.length) return '';
 
-  const tiles = answers.map(a=>{
+  // Store answer data in a registry so tiles can reference it without
+  // any string escaping in onclick attributes
+  window._maRegistry = {};
+
+  const tiles = answers.map((a,i)=>{
     const q       = qMap[a.question_id];
     const qTitle  = q?.text&&q.text!=='[Video question]' ? q.text : 'Video question';
     const qTags   = q?.tags||[];
@@ -4182,13 +4227,22 @@ function buildMyAnswersGrid(answers, qMap){
     const cds     = a.cds||0;
     const cdsClass= cds>=80?'hi':cds>=60?'mid':'lo';
     const tileClass= cds>=80?'cds-high':'';
+    const tileKey = 'ma-'+i;
 
-    // Thumbnail: use answer's own thumbnail or topic image
+    // Store in registry — no string escaping needed
+    window._maRegistry[tileKey] = {
+      url:   a.video_url||'',
+      title: qTitle,
+      cds,
+      ei:  a.ei_score||0,  ri:  a.ri_score||0,
+      rai: a.rai_score||0, coi: a.coi_score||0,
+      ai:  a.ai_score||0
+    };
+
     const thumbSrc = a.video_thumbnail
       ? (_thumbCache[(a.video_thumbnail+'|400x225')]||a.video_thumbnail)
       : getTopicThumb(qTags.length?qTags:['General'], a.id, 400, 225);
 
-    // Score pills
     const pills = [
       a.ei_score!=null  ? `<span class="ma-score-pill ei">EI ${a.ei_score}</span>`  : '',
       a.ri_score!=null  ? `<span class="ma-score-pill ri">RI ${a.ri_score}</span>`  : '',
@@ -4197,12 +4251,7 @@ function buildMyAnswersGrid(answers, qMap){
       a.ai_score!=null  ? `<span class="ma-score-pill ai">AI ${a.ai_score}</span>`  : '',
     ].filter(Boolean).join('');
 
-    // Encode params safely for onclick
-    const safeTitle = qTitle.replace(/\/g,'\\').replace(/'/g,"\'").replace(/"/g,'&quot;');
-    const safeUrl   = (a.video_url||'').replace(/'/g,"\'");
-
-    return `<div class="ma-tile ${tileClass}" onclick="openMaModal('${safeUrl}','${safeTitle}',${cds},${a.ei_score||0},${a.ri_score||0},${a.rai_score||0},${a.coi_score||0},${a.ai_score||0})">
-      <!-- Thumbnail -->
+    return `<div class="ma-tile ${tileClass}" data-makey="${tileKey}">
       <div class="ma-thumb">
         <img src="${thumbSrc}"
           data-tag="${(qTags[0]||'General').replace(/"/g,'')}"
@@ -4217,7 +4266,6 @@ function buildMyAnswersGrid(answers, qMap){
         <div class="ma-date">${dt}</div>
         ${cds?`<div class="ma-cds-badge ${cdsClass}">CDS ${cds}</div>`:''}
       </div>
-      <!-- Info -->
       <div class="ma-info">
         <div class="ma-q-label">Your Answer</div>
         <div class="ma-q-title">${qTitle}</div>
@@ -4225,6 +4273,16 @@ function buildMyAnswersGrid(answers, qMap){
       </div>
     </div>`;
   }).join('');
+
+  // Single event listener on the grid (event delegation — no inline onclick)
+  setTimeout(()=>{
+    document.querySelectorAll('.ma-tile[data-makey]').forEach(tile=>{
+      tile.addEventListener('click',()=>{
+        const d = window._maRegistry[tile.dataset.makey];
+        if(d) openMaModal(d.url, d.title, d.cds, d.ei, d.ri, d.rai, d.coi, d.ai);
+      });
+    });
+  }, 0);
 
   return `<div class="ma-grid">${tiles}</div>`;
 }
