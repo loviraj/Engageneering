@@ -104,7 +104,7 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
 .consent-box strong{color:#e8f0fc}
 .consent-box a{color:#f0c040;text-decoration:none}
 .consent-box a:hover{text-decoration:underline}
-.consent-check-row{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.7rem;cursor:pointer}
+.consent-check-row{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.7rem}
 .consent-check-row input[type=checkbox]{width:16px;height:16px;accent-color:#c8922a;margin-top:3px;flex-shrink:0;cursor:pointer}
 .consent-check-row label{font-size:12px;color:#b8cce8;line-height:1.65;cursor:pointer}
 .consent-warn{font-size:11px;color:#e24b4a;margin-top:.4rem;display:none}
@@ -392,18 +392,18 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
             <strong>Terms Summary:</strong> By joining you agree to our full <a href="legal.html" target="_blank">Terms &amp; Conditions</a>, <a href="legal.html#privacy" target="_blank">Privacy Policy</a>, and <a href="legal.html#disclaimer" target="_blank">Content Disclaimer</a>. You must be 18+ to register. You are solely responsible for content you upload.
           </div>
 
-          <label class="consent-check-row" id="chk1row">
+          <div class="consent-check-row" id="chk1row">
             <input type="checkbox" id="chkTerms" onchange="checkConsent()"/>
             <label for="chkTerms">I have read and agree to the <a href="legal.html" target="_blank">Terms &amp; Conditions</a> and <a href="legal.html" target="_blank">Privacy Policy</a> of Engageneering™.</label>
-          </label>
-          <label class="consent-check-row" id="chk2row">
+          </div>
+          <div class="consent-check-row" id="chk2row">
             <input type="checkbox" id="chkDisclaimer" onchange="checkConsent()"/>
             <label for="chkDisclaimer">I understand and accept the <a href="legal.html" target="_blank">Content Disclaimer</a>: Engageneering™ is not responsible for user-uploaded videos. Content does not constitute professional advice. I am 18 years of age or older.</label>
-          </label>
-          <label class="consent-check-row" id="chk3row">
+          </div>
+          <div class="consent-check-row" id="chk3row">
             <input type="checkbox" id="chkYom" onchange="checkConsent()"/>
             <label for="chkYom">I understand that YOM Ψ points are a platform reward currency, not financial instruments. I accept the <a href="legal.html" target="_blank">YOM Wallet Policy</a> and <a href="legal.html" target="_blank">ARIA &amp; AI Policy</a>.</label>
-          </label>
+          </div>
           <div class="consent-warn" id="consentWarn">Please check all three boxes to proceed.</div>
         </div>
 
@@ -590,11 +590,15 @@ async function doLogin() {
 
 // ── SIGNUP ──
 function checkConsent(){
-  const all = document.getElementById('chkTerms').checked &&
-               document.getElementById('chkDisclaimer').checked &&
-               document.getElementById('chkYom').checked;
-  document.getElementById('joinBtn').style.opacity = all ? '1' : '0.5';
-  if(all) document.getElementById('consentWarn').style.display='none';
+  const t = document.getElementById('chkTerms');
+  const d = document.getElementById('chkDisclaimer');
+  const y = document.getElementById('chkYom');
+  if(!t||!d||!y) return false;
+  const all = t.checked && d.checked && y.checked;
+  const btn = document.getElementById('joinBtn');
+  if(btn) btn.style.opacity = all ? '1' : '0.5';
+  const warn = document.getElementById('consentWarn');
+  if(warn) warn.style.display = all ? 'none' : '';
   return all;
 }
 
@@ -603,8 +607,11 @@ function getConsentPayload(){
   return {
     terms_version: '1.0',
     accepted_at: new Date().toISOString(),
-    user_agent: navigator.userAgent,
-    screen: `${screen.width}x${screen.height}`,
+    user_agent: (navigator.userAgent||'').slice(0,500),
+    screen_res: screen.width+'x'+screen.height,
+    chk_terms: true,
+    chk_disclaimer: true,
+    chk_yom: true,
   };
 }
 
@@ -675,14 +682,14 @@ async function doSignup() {
       try{
         const cp = getConsentPayload();
         await getSupa().from('legal_consents').insert({
-          user_id: uid,
-          terms_version: cp.terms_version,
-          accepted_at: cp.accepted_at,
-          user_agent: cp.user_agent,
-          screen_res: cp.screen,
-          chk_terms: true,
-          chk_disclaimer: true,
-          chk_yom: true,
+          user_id:        uid,
+          terms_version:  cp.terms_version,
+          accepted_at:    cp.accepted_at,
+          user_agent:     cp.user_agent,
+          screen_res:     cp.screen_res,
+          chk_terms:      cp.chk_terms,
+          chk_disclaimer: cp.chk_disclaimer,
+          chk_yom:        cp.chk_yom,
         });
       }catch(ce){ console.warn('Consent record error (non-critical):',ce); }
       showSuccess(fullName, selectedRole, true);
