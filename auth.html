@@ -736,7 +736,12 @@ async function doSignup() {
     // We use signInWithOtp which sends a 6-digit code
     const { error: otpError } = await supa.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: true }
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: 'https://engageneering.org/platform.html'
+        // Supabase sends a 6-digit OTP code in the email body
+        // (not a magic link) when called from client SDK
+      }
     });
 
     if (otpError) {
@@ -842,7 +847,10 @@ async function resendOTP() {
 
   const { error } = await supa.auth.signInWithOtp({
     email: p.email,
-    options: { shouldCreateUser: true }
+    options: {
+      shouldCreateUser: true,
+      emailRedirectTo: 'https://engageneering.org/platform.html'
+    }
   });
 
   if(error){
@@ -935,10 +943,12 @@ async function verifyOTP() {
 // ══════════════════════════════════════════════════════════════
 async function signInWithGoogle() {
   try {
+    // Always redirect to production URL, not Netlify preview
+    const prodUrl = 'https://engageneering.org';
     const { error } = await supa.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/platform.html',
+        redirectTo: prodUrl + '/platform.html',
         queryParams: { access_type: 'offline', prompt: 'consent' }
       }
     });
