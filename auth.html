@@ -104,9 +104,16 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
 .consent-box strong{color:#e8f0fc}
 .consent-box a{color:#f0c040;text-decoration:none}
 .consent-box a:hover{text-decoration:underline}
-.consent-check-row{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.7rem}
-.consent-check-row input[type=checkbox]{width:16px;height:16px;accent-color:#c8922a;margin-top:3px;flex-shrink:0;cursor:pointer}
-.consent-check-row label{font-size:12px;color:#b8cce8;line-height:1.65;cursor:pointer}
+.consent-check-row{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.75rem;padding:.5rem .6rem;border-radius:6px;transition:background .15s}
+.consent-check-row:hover{background:rgba(200,146,42,.05)}
+.consent-check-row input[type=checkbox]{
+  width:17px;height:17px;accent-color:#c8922a;
+  margin-top:2px;flex-shrink:0;cursor:pointer;
+  appearance:checkbox;-webkit-appearance:checkbox;
+}
+.consent-check-row label{font-size:12px;color:#b8cce8;line-height:1.65;cursor:pointer;user-select:none}
+#joinBtn{opacity:.45;cursor:not-allowed;transition:opacity .2s,transform .2s,cursor .2s}
+#joinBtn.consent-ok{opacity:1;cursor:pointer}
 .consent-warn{font-size:11px;color:#e24b4a;margin-top:.4rem;display:none}
 
 /* step nav */
@@ -445,7 +452,11 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
 // ── CONFIG ──
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
-const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+// Note: persistSession:true is correct here (unlike admin panel) — users
+// should stay logged in across tabs on the main platform.
 
 // ── CHECK EXISTING SESSION ──
 window.addEventListener('DOMContentLoaded', async () => {
@@ -501,6 +512,8 @@ function showForm(type) {
 }
 
 function showStep(n) {
+  // When step 3 appears, initialise consent button state
+  if(n === 3) setTimeout(checkConsent, 50);
   currentStep = n;
   [1,2,3].forEach(i => {
     const el = document.getElementById('step' + i);
@@ -569,10 +582,15 @@ async function doLogin() {
   try {
     const { data, error } = await supa.auth.signInWithPassword({ email, password: pwd });
     if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        err.textContent = 'Email or password incorrect. Please check and try again, or join free if you are new.';
-      } else if (error.message.includes('Email not confirmed')) {
-        err.textContent = 'Please check your email and click the confirmation link before logging in.';
+      const m = error.message.toLowerCase();
+      if (m.includes('invalid login') || m.includes('invalid credentials') || m.includes('wrong password')) {
+        err.textContent = 'Email or password incorrect. Please check and try again.';
+      } else if (m.includes('email not confirmed') || m.includes('not confirmed')) {
+        err.textContent = 'Please confirm your email — check your inbox for the Engageneering™ link.';
+      } else if (m.includes('too many requests') || error.status === 429) {
+        err.textContent = 'Too many attempts. Please wait a minute and try again.';
+      } else if (!SUPA_ANON) {
+        err.textContent = 'Configuration error — API key missing. Contact support.';
       } else {
         err.textContent = error.message;
       }
@@ -596,7 +614,12 @@ function checkConsent(){
   if(!t||!d||!y) return false;
   const all = t.checked && d.checked && y.checked;
   const btn = document.getElementById('joinBtn');
-  if(btn) btn.style.opacity = all ? '1' : '0.5';
+  if(btn){
+    btn.style.opacity   = all ? '1' : '0.45';
+    btn.style.cursor    = all ? 'pointer' : 'not-allowed';
+    btn.style.transform = ''; // reset any hover state
+    btn.classList.toggle('consent-ok', all);
+  }
   const warn = document.getElementById('consentWarn');
   if(warn) warn.style.display = all ? 'none' : '';
   return all;
@@ -666,12 +689,37 @@ async function doSignup() {
     });
 
     if (error) {
-      if (error.message.includes('already registered')) {
+      const msg = error.message.toLowerCase();
+      // Catch all Supabase duplicate email variants
+      if (msg.includes('already registered') ||
+          msg.includes('already been registered') ||
+          msg.includes('already exists') ||
+          msg.includes('email address is already') ||
+          msg.includes('user already') ||
+          error.code === 'user_already_exists' ||
+          error.status === 422) {
         err.textContent = 'This email is already registered. Please log in instead.';
+      } else if (msg.includes('invalid email')) {
+        err.textContent = 'Please enter a valid email address.';
+      } else if (msg.includes('password')) {
+        err.textContent = 'Password must be at least 6 characters.';
       } else {
         err.textContent = error.message;
       }
       return;
+    }
+
+    // Supabase sometimes returns no error AND no session for duplicate emails
+    // when email confirmation is enabled (prevents email enumeration).
+    // Detect this by checking if user already exists.
+    if (!data?.session && !data?.user?.email_confirmed_at) {
+      // Could be: (a) email confirmation required, or (b) silent duplicate
+      // Check if the user object indicates they already existed
+      if (data?.user?.identities && data.user.identities.length === 0) {
+        // identities.length === 0 means the user already existed
+        err.textContent = 'This email is already registered. Please log in instead.';
+        return;
+      }
     }
 
     // If session exists — email confirmation is off, create profile immediately
@@ -681,7 +729,7 @@ async function doSignup() {
       // Record legal consent in DB
       try{
         const cp = getConsentPayload();
-        await getSupa().from('legal_consents').insert({
+        await supa.from('legal_consents').insert({
           user_id:        uid,
           terms_version:  cp.terms_version,
           accepted_at:    cp.accepted_at,
