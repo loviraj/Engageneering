@@ -1303,7 +1303,13 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 // ══ CONFIG ══
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
-const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
+  auth: {
+    persistSession:     true,   // keep session across tabs
+    autoRefreshToken:   true,   // auto-refresh JWT
+    detectSessionInUrl: true    // process OAuth/OTP hash fragments
+  }
+});
 
 // ══ STATE ══
 let U=null,P=null,R=null;
@@ -1329,6 +1335,11 @@ function tc(t){return TAGCLS[t]||'tgen';}
 
 // ══ INIT ══
 window.addEventListener('DOMContentLoaded',async()=>{
+  // Handle OAuth callback — Supabase processes the #hash fragment
+  // detectSessionInUrl:true (set in createClient) does this automatically.
+  // Wait a tick so Supabase can process the hash before getSession()
+  await new Promise(r=>setTimeout(r,100));
+
   const{data:{session}}=await supa.auth.getSession();
   if(!session){window.location.href='auth.html';return;}
   U=session.user;
@@ -1337,13 +1348,30 @@ window.addEventListener('DOMContentLoaded',async()=>{
   loadFeed();loadLeaderboard();
   loadInsight();loadEvtCount();loadYOMWallet();
   setTimeout(checkAndShowConsentModal, 1500);
+
+  // Clean the # from URL after OAuth (cosmetic — no functional effect)
+  if(window.location.hash){
+    history.replaceState(null,'',window.location.pathname+window.location.search);
+  }
+
   supa.auth.onAuthStateChange((_,s)=>{if(!s)window.location.href='auth.html';});
 });
 
 async function loadUserData(){
   let{data:prof}=await supa.from('profiles').select('*').eq('id',U.id).single();
   if(!prof){
-    await supa.from('profiles').upsert({id:U.id,display_name:U.user_metadata?.full_name||U.email?.split('@')[0]||'Engageneer™',status:'active'},{onConflict:'id'});
+    // New user (including Google OAuth) — auto-create profile from metadata
+    const meta = U.user_metadata || {};
+    const displayName = meta.full_name || meta.name ||
+                        U.email?.split('@')[0] || 'Engageneer™';
+    const avatarUrl = meta.avatar_url || meta.picture || null;
+    await supa.from('profiles').upsert({
+      id: U.id,
+      display_name: displayName,
+      avatar_url:   avatarUrl,
+      status:       'active',
+      joined_at:    new Date().toISOString()
+    },{onConflict:'id'});
     ({data:prof}=await supa.from('profiles').select('*').eq('id',U.id).single());
   }
   P=prof;
