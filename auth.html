@@ -134,6 +134,27 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
   .entry-cards{grid-template-columns:1fr 1fr}
   .field-row{grid-template-columns:1fr}
 }
+
+/* ── OTP STEP ── */
+#step4{display:none}
+.otp-heading{font-family:'Cormorant Garamond',serif;font-size:18px;color:#e8f0fc;font-weight:600;margin-bottom:.3rem}
+.otp-sub{font-size:12px;color:#7a9ab8;margin-bottom:1.4rem;line-height:1.65}
+.otp-boxes{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.2rem}
+.otp-box{width:44px;height:52px;background:#0a1628;border:1.5px solid #1e3a6a;border-radius:8px;text-align:center;font-size:22px;font-family:'Cormorant Garamond',serif;font-weight:700;color:#f0c040;outline:none;transition:border-color .2s;caret-color:#f0c040}
+.otp-box:focus{border-color:#c8922a;box-shadow:0 0 0 2px rgba(200,146,42,.2)}
+.otp-resend{font-size:11px;color:#4a6a8a;text-align:center;margin-bottom:.7rem}
+.otp-resend button{background:none;border:none;color:#c8922a;cursor:pointer;font-size:11px;padding:0;margin-left:.3rem;text-decoration:underline}
+.otp-resend button:disabled{color:#4a6a8a;cursor:not-allowed;text-decoration:none}
+
+/* ── GOOGLE BUTTON ── */
+.google-divider{display:flex;align-items:center;gap:.8rem;margin:1.2rem 0;color:#3a5070;font-size:11px}
+.google-divider::before,.google-divider::after{content:'';flex:1;height:1px;background:#1e3a6a}
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:.7rem;padding:11px 16px;background:#fff;border:1px solid #dadce0;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:#3c4043;transition:all .2s;margin-bottom:.5rem}
+.btn-google:hover{background:#f8f8f8;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.btn-google svg{flex-shrink:0}
+
+/* ── PROGRESS DOT 4 ── */
+#pd4{display:none}
 </style>
 </head>
 <body>
@@ -210,7 +231,13 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
         </div>
       </div>
 
-      <div style="text-align:center;font-size:12px;color:#3a5070">
+      <div class="google-divider" style="max-width:480px;width:100%">or</div>
+      <button class="btn-google" style="max-width:480px;width:100%" onclick="signInWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        Sign in with Google
+      </button>
+
+      <div style="text-align:center;font-size:12px;color:#3a5070;margin-top:1rem">
         <a href="index.html" style="color:#3a5070;text-decoration:none">← Back to Engageneering.org</a>
       </div>
     </div>
@@ -227,7 +254,13 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
       <button class="submit-btn" id="lBtn" onclick="doLogin()">Log In</button>
       <div class="err" id="lErr"></div>
 
-      <div style="text-align:center;font-size:12px;color:#4a6a8a;margin-top:1.2rem">
+      <div class="google-divider">or continue with</div>
+      <button class="btn-google" onclick="signInWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+
+      <div style="text-align:center;font-size:12px;color:#4a6a8a;margin-top:1rem">
         Not a member yet? <span style="color:#c8922a;cursor:pointer" onclick="showForm('signup')">Join free</span>
       </div>
     </div>
@@ -241,6 +274,7 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
         <div class="prog-dot active" id="pd1"></div>
         <div class="prog-dot" id="pd2"></div>
         <div class="prog-dot" id="pd3"></div>
+        <div class="prog-dot" id="pd4"></div>
       </div>
 
       <!-- STEP 1: Account -->
@@ -420,6 +454,31 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
         </div>
       </div>
 
+      <!-- ══ STEP 4: EMAIL OTP VERIFICATION ══ -->
+      <div id="step4" style="display:none">
+        <div class="otp-heading">Verify your email</div>
+        <div class="otp-sub" id="otpSubText">A 6-digit code was sent to your email address. Enter it below to confirm your account.</div>
+
+        <div class="otp-boxes">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" id="otp0" onkeyup="otpKey(event,0)"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" id="otp1" onkeyup="otpKey(event,1)"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" id="otp2" onkeyup="otpKey(event,2)"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" id="otp3" onkeyup="otpKey(event,3)"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" id="otp4" onkeyup="otpKey(event,4)"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" id="otp5" onkeyup="otpKey(event,5)"/>
+        </div>
+
+        <div class="otp-resend">
+          Didn't receive it?
+          <button id="resendBtn" onclick="resendOTP()" disabled>Resend code</button>
+          <span id="resendTimer"></span>
+        </div>
+
+        <button class="submit-btn" id="otpBtn" onclick="verifyOTP()">Verify &amp; Activate Account</button>
+        <div class="err" id="otpErr"></div>
+        <div class="err" style="color:#5dcaa5" id="otpOk"></div>
+      </div>
+
       <!-- SUCCESS -->
       <div class="success-box" id="successBox">
         <svg width="64" height="74" viewBox="0 0 52 60" style="margin:0 auto 1.2rem;display:block">
@@ -514,6 +573,8 @@ function showForm(type) {
 function showStep(n) {
   // When step 3 appears, initialise consent button state
   if(n === 3) setTimeout(checkConsent, 50);
+  // Show/hide step 4 OTP and its progress dot
+  document.getElementById('pd4').style.display = n >= 4 ? 'block' : 'none';
   currentStep = n;
   [1,2,3].forEach(i => {
     const el = document.getElementById('step' + i);
@@ -666,86 +727,45 @@ async function doSignup() {
     return;
   }
 
-  btn.textContent = 'Creating your account...'; btn.disabled = true;
+  btn.textContent = 'Sending verification code...'; btn.disabled = true;
 
   try {
     const fullName = `${first} ${last}`;
-    const { data, error } = await supa.auth.signUp({
-      email, password: pwd,
-      options: {
-        data: {
-          full_name: fullName,
-          profession: prof,
-          country,
-          years_in_role: years,
-          organisation: org,
-          source,
-          bio,
-          role: selectedRole,
-          expertise_tags: tags
-        },
-        emailRedirectTo: window.location.origin + '/assessment.html?new=1'
-      }
+
+    // Step 1: Send 6-digit OTP to email via Supabase
+    // We use signInWithOtp which sends a 6-digit code
+    const { error: otpError } = await supa.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true }
     });
 
-    if (error) {
-      const msg = error.message.toLowerCase();
-      // Catch all Supabase duplicate email variants
-      if (msg.includes('already registered') ||
-          msg.includes('already been registered') ||
-          msg.includes('already exists') ||
-          msg.includes('email address is already') ||
-          msg.includes('user already') ||
-          error.code === 'user_already_exists' ||
-          error.status === 422) {
+    if (otpError) {
+      const msg = otpError.message.toLowerCase();
+      if (msg.includes('already registered') || msg.includes('already exists') ||
+          msg.includes('user already') || otpError.status === 422) {
         err.textContent = 'This email is already registered. Please log in instead.';
       } else if (msg.includes('invalid email')) {
         err.textContent = 'Please enter a valid email address.';
-      } else if (msg.includes('password')) {
-        err.textContent = 'Password must be at least 6 characters.';
+      } else if (msg.includes('rate') || msg.includes('too many')) {
+        err.textContent = 'Too many requests. Please wait a minute and try again.';
       } else {
-        err.textContent = error.message;
+        err.textContent = otpError.message;
       }
       return;
     }
 
-    // Supabase sometimes returns no error AND no session for duplicate emails
-    // when email confirmation is enabled (prevents email enumeration).
-    // Detect this by checking if user already exists.
-    if (!data?.session && !data?.user?.email_confirmed_at) {
-      // Could be: (a) email confirmation required, or (b) silent duplicate
-      // Check if the user object indicates they already existed
-      if (data?.user?.identities && data.user.identities.length === 0) {
-        // identities.length === 0 means the user already existed
-        err.textContent = 'This email is already registered. Please log in instead.';
-        return;
-      }
-    }
+    // Store pending signup data — used after OTP verified
+    window._pendingSignup = {
+      email, pwd, fullName, prof, country, years, org, source, bio,
+      tags, role: selectedRole, consent: getConsentPayload()
+    };
 
-    // If session exists — email confirmation is off, create profile immediately
-    if (data?.session) {
-      const uid = data.session.user.id;
-      await createProfile(uid, fullName, data.session.user.user_metadata, tags);
-      // Record legal consent in DB
-      try{
-        const cp = getConsentPayload();
-        await supa.from('legal_consents').insert({
-          user_id:        uid,
-          terms_version:  cp.terms_version,
-          accepted_at:    cp.accepted_at,
-          user_agent:     cp.user_agent,
-          screen_res:     cp.screen_res,
-          chk_terms:      cp.chk_terms,
-          chk_disclaimer: cp.chk_disclaimer,
-          chk_yom:        cp.chk_yom,
-        });
-      }catch(ce){ console.warn('Consent record error (non-critical):',ce); }
-      showSuccess(fullName, selectedRole, true);
-      return;
-    }
-
-    // Email confirmation required
-    showSuccess(fullName, selectedRole, false);
+    // Show OTP step
+    document.getElementById('otpSubText').textContent =
+      `A 6-digit code was sent to ${email}. Enter it below to verify your account.`;
+    showStep(4);
+    startResendTimer();
+    document.getElementById('otp0').focus();
 
   } catch(e) {
     err.textContent = 'Connection error. Please check your internet and try again.';
@@ -764,6 +784,172 @@ async function sendEngEmail(type, toEmail, data){
       body:JSON.stringify({type, to:toEmail, data})
     });
   }catch(e){ console.warn('Email send error (non-critical):',e.message); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// OTP VERIFICATION
+// ══════════════════════════════════════════════════════════════
+
+// Navigate between OTP boxes
+function otpKey(e, idx) {
+  const boxes = document.querySelectorAll('.otp-box');
+  const val = e.target.value;
+  // Only allow digits
+  e.target.value = val.replace(/[^0-9]/g,'');
+  if(e.target.value && idx < 5) boxes[idx+1].focus();
+  if(e.key === 'Backspace' && !e.target.value && idx > 0) boxes[idx-1].focus();
+  // Auto-submit when all 6 filled
+  const code = [...boxes].map(b=>b.value).join('');
+  if(code.length === 6) verifyOTP();
+}
+
+function getOTPCode() {
+  return [0,1,2,3,4,5].map(i=>document.getElementById('otp'+i).value).join('');
+}
+
+function clearOTPBoxes() {
+  [0,1,2,3,4,5].forEach(i=>{ document.getElementById('otp'+i).value=''; });
+  document.getElementById('otp0').focus();
+}
+
+// Resend timer — 60 seconds
+let _resendInterval = null;
+function startResendTimer() {
+  const btn = document.getElementById('resendBtn');
+  const timer = document.getElementById('resendTimer');
+  btn.disabled = true;
+  let sec = 60;
+  timer.textContent = ` (${sec}s)`;
+  if(_resendInterval) clearInterval(_resendInterval);
+  _resendInterval = setInterval(()=>{
+    sec--;
+    timer.textContent = ` (${sec}s)`;
+    if(sec <= 0){
+      clearInterval(_resendInterval);
+      btn.disabled = false;
+      timer.textContent = '';
+    }
+  }, 1000);
+}
+
+async function resendOTP() {
+  const p = window._pendingSignup;
+  if(!p) return;
+  const errEl = document.getElementById('otpErr');
+  const okEl  = document.getElementById('otpOk');
+  errEl.textContent = ''; okEl.textContent = '';
+  document.getElementById('resendBtn').disabled = true;
+
+  const { error } = await supa.auth.signInWithOtp({
+    email: p.email,
+    options: { shouldCreateUser: true }
+  });
+
+  if(error){
+    errEl.textContent = error.message;
+  } else {
+    okEl.textContent = '✓ New code sent — check your inbox.';
+    clearOTPBoxes();
+    startResendTimer();
+  }
+}
+
+async function verifyOTP() {
+  const code  = getOTPCode();
+  const errEl = document.getElementById('otpErr');
+  const okEl  = document.getElementById('otpOk');
+  const btn   = document.getElementById('otpBtn');
+  errEl.textContent = ''; okEl.textContent = '';
+
+  if(code.length < 6) { errEl.textContent = 'Please enter all 6 digits.'; return; }
+
+  const p = window._pendingSignup;
+  if(!p) { errEl.textContent = 'Session expired. Please go back and start again.'; return; }
+
+  btn.textContent = 'Verifying...'; btn.disabled = true;
+
+  try {
+    // Verify OTP — this gives us a session
+    const { data, error } = await supa.auth.verifyOtp({
+      email: p.email,
+      token: code,
+      type: 'email'
+    });
+
+    if(error){
+      const msg = error.message.toLowerCase();
+      if(msg.includes('invalid') || msg.includes('expired') || msg.includes('incorrect')){
+        errEl.textContent = 'Incorrect or expired code. Please check your email or resend.';
+        clearOTPBoxes();
+      } else {
+        errEl.textContent = error.message;
+      }
+      btn.textContent = 'Verify & Activate Account'; btn.disabled = false;
+      return;
+    }
+
+    if(!data?.session) {
+      errEl.textContent = 'Verification failed — no session returned. Please try again.';
+      btn.textContent = 'Verify & Activate Account'; btn.disabled = false;
+      return;
+    }
+
+    // OTP verified — now set password and create profile
+    okEl.textContent = '✓ Email verified! Setting up your account...';
+
+    // Update password (OTP login doesn't set a password)
+    const { error: pwdErr } = await supa.auth.updateUser({ password: p.pwd });
+    if(pwdErr) console.warn('Password set error (non-critical):', pwdErr.message);
+
+    // Create profile
+    const uid = data.session.user.id;
+    await createProfile(uid, p.fullName, data.session.user.user_metadata, p.tags);
+
+    // Record consent
+    try {
+      await supa.from('legal_consents').insert({
+        user_id:        uid,
+        terms_version:  p.consent.terms_version,
+        accepted_at:    p.consent.accepted_at,
+        user_agent:     p.consent.user_agent,
+        screen_res:     p.consent.screen_res,
+        chk_terms:      p.consent.chk_terms,
+        chk_disclaimer: p.consent.chk_disclaimer,
+        chk_yom:        p.consent.chk_yom,
+      });
+    } catch(ce){ console.warn('Consent record error:', ce); }
+
+    window._pendingSignup = null;
+    if(_resendInterval) clearInterval(_resendInterval);
+
+    showSuccess(p.fullName, p.role, true);
+
+  } catch(e) {
+    errEl.textContent = 'Connection error — please check your internet.';
+    btn.textContent = 'Verify & Activate Account'; btn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// GOOGLE OAUTH
+// ══════════════════════════════════════════════════════════════
+async function signInWithGoogle() {
+  try {
+    const { error } = await supa.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/platform.html',
+        queryParams: { access_type: 'offline', prompt: 'consent' }
+      }
+    });
+    if(error) {
+      alert('Google sign-in failed: ' + error.message);
+    }
+    // Supabase redirects the browser — no further action needed here.
+    // On return, getSession() in platform.html picks up the session.
+  } catch(e) {
+    alert('Google sign-in error: ' + e.message);
+  }
 }
 
 async function createProfile(uid, fullName, meta, tags) {
