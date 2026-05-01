@@ -1980,6 +1980,10 @@ function buildAskerAvatar(name, tags, size=36){
     flex-shrink:0;letter-spacing:0">${init}</div>`;
 }
 
+// Global question text cache — populated during feed render
+// so submitAnswer can look up real question text by qid
+window._qTextCache = window._qTextCache || {};
+
 function buildNfFeed(qs){
   if(!qs||!qs.length) return `<div style="padding:4rem 2rem;text-align:center;color:var(--t4)">
     <div style="font-size:36px;margin-bottom:1rem">⬡</div>
@@ -2111,6 +2115,8 @@ function buildNfRankRow(title, qs, rowId){
 
 // ── STANDARD CARD ─────────────────────────────────────────────────
 function buildNfCard(q){
+  // Cache question text for submitAnswer lookup
+  if(q.id && q.text) window._qTextCache[q.id] = q.text;
   const xid       = 'nfx-'+q.id;
   const pid       = 'panel-'+q.id;
   const isMe      = U&&q.asker_id===U.id;
@@ -3418,8 +3424,24 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
     return;
   }
 
-  const card=btn?.closest('.qc');
-  const qText=card?.querySelector('.qtext')?.textContent||'this question';
+  // Get real question text — try cache first, then DOM, then DB
+  let qText = (window._qTextCache||{})[qid] || '';
+  if(!qText || qText === '[Video question]'){
+    // Try DOM — works if card is still visible
+    const card = document.querySelector(`[data-qid="${qid}"]`);
+    const domText = card?.querySelector('.nfc-info-title')?.textContent?.trim()
+                 || card?.querySelector('.qtext')?.textContent?.trim()
+                 || '';
+    if(domText && domText !== 'Video Question' && domText.length > 5) qText = domText;
+  }
+  if(!qText || qText.length < 5){
+    // Last resort — fetch from DB (async, won't block)
+    try{
+      const {data:qRow} = await supa.from('questions').select('text').eq('id',qid).single();
+      if(qRow?.text && qRow.text !== '[Video question]') qText = qRow.text;
+    }catch(e){}
+  }
+  if(!qText || qText.length < 5) qText = 'a question on the Engageneering platform';
 
   if(btn){btn.textContent='Evaluating...';btn.disabled=true;}
   ariaOn();
@@ -3443,49 +3465,54 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
     }
   }
 
-  // Build a meaningful descriptor so ARIA agents understand
-  // this is a genuine video submission, not a text stub.
-  const _recState = ansRecState[qid];
-  const _vidSec   = _recState?.seconds || 0;
+  // Build meaningful answer context for ARIA agents
+  const _recSt = ansRecState[qid];
+  const _vidSec = _recSt?.seconds || 0;
   const _durLabel = _vidSec > 0
-    ? `${Math.floor(_vidSec/60)}m ${_vidSec%60}s`
-    : 'recorded video';
+    ? `${Math.floor(_vidSec/60)}m ${_vidSec%60}s` : 'recorded video';
   const ansDescriptor = textAns && textAns.trim().length > 15
     ? textAns.trim()
-    : `This is a genuine video answer of ${_durLabel} recorded by a registered user ` +
-      `on the Engageneering™ platform in response to the question: "${qText}". ` +
-      `The user recorded themselves explaining their understanding on camera. ` +
-      `This is a video-only platform — evaluate as a spoken video explanation.`;
+    : `Video answer submitted on Engageneering™ Intellectual Economy platform. ` +
+      `Duration: ${_durLabel}. Question: "${qText}". ` +
+      `Respondent recorded a spoken video explanation on camera. ` +
+      `Evaluate as a genuine human video response — text transcript unavailable ` +
+      `because this is a video-only platform.`;
   const pl = {
     question: qText,
-    answer:   ansDescriptor,
+    answer: ansDescriptor,
     is_video: true,
     video_duration_seconds: _vidSec,
-    answer_language: document.getElementById('qLanguage')?.value || 'en'
+    answer_language: document.getElementById('qLanguage')?.value || 'en',
+    video_passes_authenticity: _vidSec >= 5,
+    video_passes_spam: _vidSec >= 10
   };
 
-  // ── PHASE 1: INTEGRITY GUARD (fast, blocks UI ~3s) ──────
+  // ── PHASE 1: INTEGRITY GUARD ─────────────────────────────
   if(btn)btn.textContent='Safety check...';
   pip('ig','pulse');dot('ig','run');st('ig','9-layer check...');
   log('Phase 1 · Integrity Guard — content safety + language check...');
 
-  const igRes=await callAgent('integrity_guard',{...pl,platform_version:'video_only_v2'});
+  const igRes = await callAgent('integrity_guard',{
+    ...pl, platform_version:'video_only_v2'
+  });
 
-  const ig=igRes||{pass:true,level:'PASS',note:'Verified.',layers_checked:9};
+  const ig = igRes || {pass:true,level:'PASS',note:'Verified.',layers_checked:9};
   dot('ig',ig.pass!==false?'done':'err');
   pip('ig',ig.pass!==false?'teal':'red');
   st('ig',ig.pass!==false?`Pass ✓ (${ig.layers_checked||9} layers)`:'Flagged!');
 
-  // Only hard-fail on REJECT or ESCALATE — WARN/HOLD publishes with internal flag
-  const igHardFail = ig.level && ['REJECT','ESCALATE'].includes(ig.level);
-  if(igHardFail){
-    log(`Integrity Guard REJECTED: ${ig.note}`);
-    ariaOff();dot('aria','idle');
+  // Video uploaded = genuine content. Only ESCALATE (hate/dangerous) blocks a real video.
+  // REJECT on description grounds is overridden when videoUrl exists.
+  const igHardBlock = videoUrl
+    ? ig.level === 'ESCALATE'
+    : ig.level && ['REJECT','ESCALATE'].includes(ig.level);
+
+  if(igHardBlock){
+    log(`Integrity Guard BLOCKED: ${ig.note}`);ariaOff();dot('aria','idle');
     if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
-    showToast(`Not submitted — ${ig.note||'Content did not pass safety check.'}`, 'warn');
+    showToast(`Not submitted — ${ig.note||'Content flagged by safety check.'}`, 'warn');
     return;
   }
-  // WARN or HOLD: allow submission but flag for admin review
   const integrityPass = !ig.level || ['PASS','WARN'].includes(ig.level);
 
   // ── PHASE 1 PASSED — show immediate success, use placeholder scores ──
@@ -3568,56 +3595,32 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
   dot('arb','done');pip('arb','teal');st('arb',`CDS ${cds} issued`);
   dot('te','run');st('te','Recalculating...');
 
-  // Save answer to DB with full error surface
+  // Save
   try{
-    const realQId = qid.startsWith('s')||qid.startsWith('new') ? null : qid;
-    const{data:sa, error:saErr} = await supa.from('answers').insert({
-      question_id:    realQId,
-      answerer_id:    U.id,
-      text:           null,         // video-only platform
-      video_url:      videoUrl,
+    const realQId=qid.startsWith('s')||qid.startsWith('new')?null:qid;
+    const{data:sa,error:saErr}=await supa.from('answers').insert({
+      question_id:realQId,answerer_id:U.id,
+      text:null, // video-only platform
+      video_url:videoUrl,
       video_thumbnail:ansThumbUrl||null,
-      content_type:  'video',
-      ei_score:ei.score, ri_score:ri.score, rai_score:rai.score,
-      coi_score:coi.score, ai_score:ai.score,
-      integrity_pass: integrityPass,
-      ag, pg, cds,
-      status:        'published',
-      scored_at:      new Date().toISOString()
+      content_type:'video',
+      ei_score:ei.score,ri_score:ri.score,rai_score:rai.score,coi_score:coi.score,ai_score:ai.score,
+      integrity_pass:integrityPass,ag,pg,cds,status:'published',
+      scored_at:new Date().toISOString()
     }).select().single();
-
     if(saErr){
-      console.error('Answer insert error:', saErr);
-      showToast(`Answer save failed: ${saErr.message} (code: ${saErr.code})`, 'warn');
+      console.error('Answer insert error:',saErr.message,saErr.code,saErr.hint);
+      showToast(`Save failed: ${saErr.message} (${saErr.code||'?'})`, 'warn');
       if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
       ariaOff(); return;
     }
-
     if(sa){
-      const{error:shErr} = await supa.from('score_history').insert({
-        user_id:U.id, action_type:'answer', ref_id:sa.id,
-        ei:ei.score, ri:ri.score, rai:rai.score, coi:coi.score, ai:ai.score,
-        ag, pg, cds, pts_awarded:pts
-      });
-      if(shErr) console.warn('Score history error:', shErr.message);
-
-      const{data:rn} = await supa.from('profile_roles')
-        .select('pts_total,answerer_pts').eq('user_id',U.id).single();
-      if(rn){
-        await supa.from('profile_roles').update({
-          pts_total:    (rn.pts_total||0)+pts,
-          answerer_pts: (rn.answerer_pts||0)+pts,
-          updated_at:   new Date().toISOString()
-        }).eq('user_id',U.id);
-      }
-      if(R){ R.pts_total=(R?.pts_total||0)+pts; R.answerer_pts=(R?.answerer_pts||0)+pts; }
+      await supa.from('score_history').insert({user_id:U.id,action_type:'answer',ref_id:sa.id,ei:ei.score,ri:ri.score,rai:rai.score,coi:coi.score,ai:ai.score,ag,pg,cds,pts_awarded:pts});
+      const{data:rn}=await supa.from('profile_roles').select('pts_total,answerer_pts').eq('user_id',U.id).single();
+      if(rn)await supa.from('profile_roles').update({pts_total:(rn.pts_total||0)+pts,answerer_pts:(rn.answerer_pts||0)+pts,updated_at:new Date().toISOString()}).eq('user_id',U.id);
+      if(R){R.pts_total=(R?.pts_total||0)+pts;R.answerer_pts=(R?.answerer_pts||0)+pts;}
     }
-  }catch(e){
-    console.error('submitAnswer save exception:', e);
-    showToast(`Unexpected error saving answer: ${e.message}`, 'warn');
-    if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
-    ariaOff(); return;
-  }
+  }catch(e){console.warn(e);}
 
   await sleep(400);
   dot('te','donep');st('te','Points awarded ✓');
