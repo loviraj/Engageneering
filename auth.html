@@ -522,9 +522,28 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
 // ── CONFIG ──
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
-const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-});
+let supa;
+try {
+  supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+  });
+} catch(initErr) {
+  console.error('Supabase init failed:', initErr);
+  supa = {
+    auth: {
+      getUser:              async () => ({ data: { user: null }, error: initErr }),
+      signOut:              async () => ({}),
+      signUp:               async () => ({ data: null, error: { message: 'Config error: ' + initErr.message } }),
+      signInWithPassword:   async () => ({ data: null, error: { message: 'Config error: ' + initErr.message } }),
+      signInWithOAuth:      async () => ({ data: null, error: initErr }),
+      resend:               async () => ({ error: initErr }),
+      verifyOtp:            async () => ({ data: null, error: initErr }),
+      setSession:           async () => ({ data: null, error: initErr }),
+      updateUser:           async () => ({ data: null, error: initErr })
+    },
+    from: () => ({ upsert: async () => ({}), insert: async () => ({}) })
+  };
+}
 
 // ── PAGE LOAD: verify session with server, never trust localStorage alone ──
 window.addEventListener('DOMContentLoaded', async () => {
@@ -793,8 +812,7 @@ function _showLinkVerifying() {
   var ob = document.getElementById('otpBtn'); if (ob) ob.style.display = 'none';
   var rr = document.querySelector('.resend-row'); if (rr) rr.style.display = 'none';
   var st = document.getElementById('otpSubText');
-  if (st) { st.style.cssText = 'text-align:center;padding:1rem 0';
-    st.innerHTML = '<div style="font-size:36px;margin-bottom:.7rem">&#9203;</div><div style="font-family:Cormorant Garamond,serif;font-size:18px;color:#e8f0fc;font-weight:600">Verifying your email&#8230;</div><div style="font-size:13px;color:#7a9ab8;margin-top:.5rem">Please wait a moment.</div>'; }
+  if (st) st.textContent = 'Verifying your email… please wait.';
 }
 
 function _showLinkError(msg) {
@@ -805,8 +823,9 @@ function _showLinkError(msg) {
   var ob = document.getElementById('otpBtn'); if (ob) ob.style.display = 'none';
   var rr = document.querySelector('.resend-row'); if (rr) rr.style.display = 'none';
   var st = document.getElementById('otpSubText');
-  if (st) { st.style.cssText = 'text-align:center;padding:1rem 0';
-    st.innerHTML = '<div style="font-size:36px;margin-bottom:.7rem">&#9888;</div><div style="font-family:Cormorant Garamond,serif;font-size:18px;color:#f56565;font-weight:600;margin-bottom:.5rem">Link expired or invalid</div><div style="font-size:13px;color:#f09595;margin-bottom:.6rem">' + msg + '</div><div style="font-size:13px;color:#7a9ab8">Please go back and sign up again, or request a new link below.</div>'; }
+  if (st) st.textContent = 'Verification failed.';
+  var er = document.getElementById('otpErr');
+  if (er) { er.textContent = msg + ' — The link may have expired. Please try signing up again.'; er.style.color = '#f09595'; }
 }
 
 async function _completeLinkSignup(session) {
@@ -1000,27 +1019,23 @@ async function doSignup() {
     localStorage.setItem('_eng_pending', JSON.stringify(_pending));
     window._pendingSignup = _pending;
 
-    // Show step 4 as a branded "check your email" screen
+    // Show step 4 as a "check your email" screen — hide the OTP input boxes
     var _st = document.getElementById('otpSubText');
     if (_st) {
       _st.style.cssText = 'text-align:center;padding:1rem 0;line-height:1.8';
-      _st.innerHTML = '' +
+      _st.innerHTML =
         '<div style="font-size:36px;margin-bottom:.7rem">&#128231;</div>' +
         '<div style="font-family:Cormorant Garamond,serif;font-size:20px;color:#e8f0fc;font-weight:600;margin-bottom:.5rem">Check your inbox</div>' +
         '<div style="font-size:13px;color:#b8cce8;margin-bottom:.4rem">A confirmation link was sent to</div>' +
         '<div style="color:#f0c040;font-size:14px;font-weight:600;margin-bottom:.8rem">' + email + '</div>' +
-        '<div style="font-size:13px;color:#7a9ab8;margin-bottom:.6rem">Click the link in that email to activate your account.<br>You will be brought straight back here automatically.</div>' +
+        '<div style="font-size:13px;color:#7a9ab8;margin-bottom:.6rem">Click the link to activate your account.<br>You will be brought straight back here automatically.</div>' +
         '<div style="font-size:11px;color:#4a6a8a">No email? Check your spam folder.</div>';
     }
     document.querySelectorAll('.otp-box').forEach(b => b.style.display = 'none');
     var _ob = document.getElementById('otpBtn'); if (_ob) _ob.style.display = 'none';
+    var _rr = document.querySelector('.otp-resend'); if (_rr) _rr.style.display = 'none';
     showStep(4);
-    var _rr = document.querySelector('.otp-resend');
-    if (_rr) {
-      _rr.innerHTML = 'Didn\'t get the link? ' +
-        '<button id="resendBtn" onclick="resendOTP()" disabled>Resend <span id="resendTimer">(60s)</span></button>';
-      startResendTimer();
-    }
+    startResendTimer();
 
   } catch(ex) {
     err.textContent = 'Unexpected error: ' + ex.message;
@@ -1204,6 +1219,6 @@ function showSuccess(name, role, loggedIn) {
   }
 }
 
-
+</script>
 </body>
 </html>
