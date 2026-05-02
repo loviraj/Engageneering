@@ -61,6 +61,9 @@ html,body{min-height:100%;font-family:'EB Garamond',Georgia,serif;background:#06
 
 /* field */
 .field{margin-bottom:.9rem}
+.email-wrap{position:relative}
+.email-wrap input{padding-right:38px}
+.email-status-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;display:none}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 label{font-size:9px;letter-spacing:3px;color:#c8922a;text-transform:uppercase;display:block;margin-bottom:.35rem}
 input,select,textarea{width:100%;background:#081420;border:1px solid #1e3a6a;border-radius:6px;padding:11px 14px;color:#e8f0fc;font-family:'EB Garamond',serif;font-size:15px;outline:none;transition:border-color .2s;-webkit-appearance:none}
@@ -286,7 +289,15 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
           <div class="field"><label>First Name</label><input type="text" id="sFirst" placeholder="First name" autocomplete="given-name"/></div>
           <div class="field"><label>Last Name</label><input type="text" id="sLast" placeholder="Last name" autocomplete="family-name"/></div>
         </div>
-        <div class="field"><label>Email Address</label><input type="email" id="sEmail" placeholder="you@school.edu" autocomplete="email" oninput="delete _emailCheckCache[this.value.trim().toLowerCase()]; document.getElementById('s1Err').textContent='';" onblur="checkEmailExists(this.value)"/></div>
+        <div class="field">
+          <label>Email Address</label>
+          <div class="email-wrap">
+            <input type="email" id="sEmail" placeholder="you@school.edu" autocomplete="email"
+              oninput="_emailOnInput(this.value)"
+              onblur="checkEmailExists(this.value)"/>
+            <span class="email-status-icon" id="emailIcon"></span>
+          </div>
+        </div>
         <div class="field"><label>Password</label><input type="password" id="sPwd" placeholder="Minimum 8 characters" autocomplete="new-password"/></div>
         <div class="field"><label>Confirm Password</label><input type="password" id="sPwd2" placeholder="Repeat your password" autocomplete="new-password" onkeydown="if(event.key==='Enter')nextStep(2)"/></div>
         <div class="err" id="s1Err"></div>
@@ -666,58 +677,121 @@ function validateStep2() {
 // which we also catch. Returns true if the email is blocked (already taken).
 let _emailCheckCache = {};
 
+function _emailOnInput(val) {
+  // Clear cache entry so next blur re-checks
+  delete _emailCheckCache[val.trim().toLowerCase()];
+  // Reset UI
+  var el = document.getElementById('s1Err');
+  el.textContent = '';
+  el.style.cssText = '';
+  var icon = document.getElementById('emailIcon');
+  icon.style.display = 'none';
+  icon.textContent = '';
+}
+
 async function checkEmailExists(email) {
-  const errEl = document.getElementById('s1Err');
   email = (email || '').trim().toLowerCase();
-  if (!email || !email.includes('@')) { errEl.textContent = ''; return false; }
+  if (!email || !email.includes('@')) return false;
 
+  var errEl = document.getElementById('s1Err');
+  var icon  = document.getElementById('emailIcon');
+
+  // Show spinner-like state
+  icon.style.display = 'none';
   errEl.style.color = '#7a9ab8';
-  errEl.textContent = 'Checking…';
+  errEl.textContent = 'Checking\u2026';
 
+  // Serve from cache
   if (_emailCheckCache[email] !== undefined) {
-    _renderEmailStatus(errEl, _emailCheckCache[email]);
+    _setEmailUI(errEl, icon, _emailCheckCache[email]);
     return _emailCheckCache[email];
   }
 
   try {
-    // Side-effect-free check: signInWithPassword with wrong password never
-    // creates a user or session. Error message tells us if email exists.
-    const { error } = await supa.auth.signInWithPassword({
+    // ── SIDE-EFFECT-FREE PROBE ────────────────────────────────
+    // signInWithPassword with a wrong password NEVER creates a
+    // user or a session. The error code tells us if the email
+    // exists in Supabase:
+    //   "invalid login credentials" → email EXISTS (wrong pwd)
+    //   "email not confirmed"       → email EXISTS (unconfirmed)
+    //   anything else               → email is FREE to register
+    // ─────────────────────────────────────────────────────────
+    var result = await supa.auth.signInWithPassword({
       email: email,
-      password: '____probe____'
+      password: '____probe_no_session____'
     });
-    let exists = false;
-    if (error) {
-      const m = error.message.toLowerCase();
-      if (m.includes('invalid login credentials') || m.includes('invalid credentials') ||
-          m.includes('email not confirmed') || m.includes('not confirmed')) {
+
+    var exists = false;
+    if (result.error) {
+      var m = result.error.message.toLowerCase();
+      if (m.indexOf('invalid login credentials') !== -1 ||
+          m.indexOf('invalid credentials')       !== -1 ||
+          m.indexOf('email not confirmed')        !== -1 ||
+          m.indexOf('not confirmed')              !== -1) {
         exists = true;
       }
+      // "user not found" or "no user" = email is free — exists stays false
     }
+
     _emailCheckCache[email] = exists;
-    _renderEmailStatus(errEl, exists);
+    _setEmailUI(errEl, icon, exists);
     return exists;
+
   } catch (e) {
+    // Network error — clear state, don't block the user
     errEl.textContent = '';
+    icon.style.display = 'none';
     return false;
   }
 }
 
-function _renderEmailStatus(el, exists) {
+function _setEmailUI(errEl, icon, exists) {
   if (exists) {
-    el.style.color = '#f09595';
-    el.textContent = 'This email is already registered.';
-    var link = document.createElement('span');
-    link.textContent = ' Log in instead →';
-    link.style.cssText = 'color:#c8922a;cursor:pointer;text-decoration:underline;margin-left:2px';
-    link.onclick = function() { showForm('login'); };
-    el.appendChild(link);
+    // Clear any text content first
+    errEl.textContent = '';
+    errEl.style.cssText = '';
+
+    // Big red message
+    var msg = document.createElement('div');
+    msg.style.cssText = 'background:#2a0a0a;border:1px solid #f09595;border-radius:6px;padding:10px 14px;margin-top:4px';
+
+    var line1 = document.createElement('div');
+    line1.style.cssText = 'color:#f56565;font-size:13px;font-weight:600;margin-bottom:4px';
+    line1.textContent = '\u26a0 This email is already registered.';
+
+    var line2 = document.createElement('div');
+    line2.style.cssText = 'color:#f09595;font-size:12px';
+    line2.textContent = 'Please log in with your existing account.';
+
+    var loginBtn = document.createElement('button');
+    loginBtn.textContent = 'Go to Log In \u2192';
+    loginBtn.style.cssText = 'margin-top:8px;background:#c8922a;color:#040c18;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700;letter-spacing:1px';
+    loginBtn.onclick = function() { showForm('login'); };
+
+    msg.appendChild(line1);
+    msg.appendChild(line2);
+    msg.appendChild(loginBtn);
+    errEl.appendChild(msg);
+
+    // Red X icon inside input
+    icon.textContent = '\u2715';
+    icon.style.cssText = 'display:block;color:#f56565;font-size:15px;position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none';
+
+    // Red border on input
+    var inp = document.getElementById('sEmail');
+    if (inp) inp.style.borderColor = '#f56565';
+
   } else {
-    el.style.color = '#5dcaa5';
-    el.textContent = '✓ Email available';
-    setTimeout(function() {
-      if (el.textContent === '✓ Email available') el.textContent = '';
-    }, 2000);
+    errEl.textContent = '';
+    errEl.style.cssText = '';
+
+    // Green tick icon inside input
+    icon.textContent = '\u2713';
+    icon.style.cssText = 'display:block;color:#5dcaa5;font-size:17px;font-weight:700;position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none';
+
+    // Green border on input
+    var inp = document.getElementById('sEmail');
+    if (inp) inp.style.borderColor = '#5dcaa5';
   }
 }
 
