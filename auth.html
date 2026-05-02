@@ -664,76 +664,75 @@ function validateStep2() {
 // Uses signUp with a dummy password; Supabase returns an error only for
 // *confirmed* existing users. For unconfirmed duplicates identities===[] 
 // which we also catch. Returns true if the email is blocked (already taken).
-let _emailCheckCache = {};   // avoid hammering API on repeated blur
+let _emailCheckCache = {};   // cache to avoid hammering API on repeated blur
+
 async function checkEmailExists(email) {
   const errEl = document.getElementById('s1Err');
   email = (email || '').trim().toLowerCase();
-  if (!email || !email.includes('@')) return false;   // let validateStep1 handle format
+  if (!email || !email.includes('@')) return false;
 
-  // Show a subtle checking indicator
   errEl.style.color = '#7a9ab8';
   errEl.textContent = 'Checking email…';
 
-  // Return cached result so repeated blurs don't re-call API
+  // Serve from cache
   if (_emailCheckCache[email] !== undefined) {
-    if (_emailCheckCache[email]) {
-      errEl.style.color = '#f09595';
-      errEl.innerHTML = 'This email is already registered. <span style="color:#c8922a;cursor:pointer;text-decoration:underline" onclick="showForm('login')">Log in instead →</span>';
-    } else {
-      errEl.textContent = '';
-    }
+    showEmailCheckResult(errEl, _emailCheckCache[email]);
     return _emailCheckCache[email];
   }
 
   try {
-    // Attempt signUp with a throwaway password — we will NOT create the user;
-    // we read the response to detect duplicates, then immediately sign out
-    // any accidental session so state stays clean.
-    const { data, error } = await supa.auth.signUp({
+    // ── SIDE-EFFECT-FREE CHECK ────────────────────────────────────────────
+    // signInWithPassword with a dummy password NEVER creates a session or
+    // a user account. The error message reveals whether the email exists:
+    //   "Invalid login credentials"  → email IS registered (wrong pwd, but found)
+    //   "Email not confirmed"        → email IS registered (unconfirmed)
+    //   Any other error              → email is NOT registered
+    // This is the only approach that has zero side effects on the auth state.
+    // ─────────────────────────────────────────────────────────────────────
+    const { error } = await supa.auth.signInWithPassword({
       email,
-      password: 'probe-' + Math.random().toString(36).slice(2) + 'Aa1!',
+      password: '____probe____'   // guaranteed wrong; we only read the error type
     });
 
     let alreadyExists = false;
-
     if (error) {
-      const msg = error.message.toLowerCase();
-      // Supabase explicitly rejects confirmed existing emails
-      if (msg.includes('already registered') || msg.includes('user already') || error.status === 422) {
+      const m = error.message.toLowerCase();
+      // These two messages mean the email exists in Supabase
+      if (
+        m.includes('invalid login credentials') ||
+        m.includes('invalid credentials') ||
+        m.includes('email not confirmed') ||
+        m.includes('not confirmed')
+      ) {
         alreadyExists = true;
       }
-    } else {
-      // No error but identities:[] → already-registered-but-unconfirmed user
-      if (data?.user?.identities && data.user.identities.length === 0) {
-        alreadyExists = true;
-      }
-      // If a ghost session was created for the probe, sign it out immediately
-      if (data?.session) {
-        await supa.auth.signOut();
-      }
+      // "user not found" / "no user" / anything else = email is free
     }
 
     _emailCheckCache[email] = alreadyExists;
-
-    if (alreadyExists) {
-      errEl.style.color = '#f09595';
-      errEl.innerHTML = 'This email is already registered. <span style="color:#c8922a;cursor:pointer;text-decoration:underline" onclick="showForm('login')">Log in instead →</span>';
-    } else {
-      errEl.style.color = '#5dcaa5';
-      errEl.textContent = '✓ Email available';
-      // Clear the green tick after 2s so it doesn't distract
-      setTimeout(() => { if (errEl.textContent === '✓ Email available') errEl.textContent = ''; }, 2000);
-    }
-
+    showEmailCheckResult(errEl, alreadyExists);
     return alreadyExists;
 
   } catch (e) {
-    // Network error — don't block the user, just clear the indicator
     errEl.textContent = '';
     return false;
   }
 }
-// ─────────────────────────────────────────────────────────────────────────────
+
+function showEmailCheckResult(errEl, alreadyExists) {
+  if (alreadyExists) {
+    errEl.style.color = '#f09595';
+    errEl.innerHTML = 'This email is already registered. ' +
+      '<span style="color:#c8922a;cursor:pointer;text-decoration:underline" ' +
+      'onclick="showForm('login')">Log in instead →</span>';
+  } else {
+    errEl.style.color = '#5dcaa5';
+    errEl.textContent = '✓ Email available';
+    setTimeout(() => {
+      if (errEl.textContent === '✓ Email available') errEl.textContent = '';
+    }, 2000);
+  }
+}
 
 // ── LOGIN ──
 async function doLogin() {
