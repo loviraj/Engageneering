@@ -576,7 +576,7 @@ function showStep(n) {
   // Show/hide step 4 OTP and its progress dot
   document.getElementById('pd4').style.display = n >= 4 ? 'block' : 'none';
   currentStep = n;
-  [1,2,3].forEach(i => {
+  [1,2,3,4].forEach(i => {
     const el = document.getElementById('step' + i);
     if (el) el.style.display = i === n ? 'block' : 'none';
     const dot = document.getElementById('pd' + i);
@@ -733,14 +733,12 @@ async function doSignup() {
     const fullName = `${first} ${last}`;
 
     // Step 1: Send 6-digit OTP to email via Supabase
-    // We use signInWithOtp which sends a 6-digit code
+    // channel:'email' + no emailRedirectTo → Supabase sends numeric OTP (not a magic link)
     const { error: otpError } = await supa.auth.signInWithOtp({
       email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: 'https://engageneering.org/platform.html'
-        // Supabase sends a 6-digit OTP code in the email body
-        // (not a magic link) when called from client SDK
+        channel: 'email'          // forces numeric OTP, not a magic-link email
       }
     });
 
@@ -849,7 +847,7 @@ async function resendOTP() {
     email: p.email,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: 'https://engageneering.org/platform.html'
+      channel: 'email'          // numeric OTP, not a magic link
     }
   });
 
@@ -877,7 +875,7 @@ async function verifyOTP() {
   btn.textContent = 'Verifying...'; btn.disabled = true;
 
   try {
-    // Verify OTP — this gives us a session
+    // Verify OTP — type 'email' covers both magic-link and numeric OTP flows
     const { data, error } = await supa.auth.verifyOtp({
       email: p.email,
       token: code,
