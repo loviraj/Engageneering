@@ -549,16 +549,22 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.body.prepend(banner);
   }
 
-  const { data: { session } } = await supa.auth.getSession();
-  if (session) {
-    // Only redirect confirmed users — signUp() creates an unconfirmed session
-    // that must NOT bypass the OTP step
-    if (session.user && session.user.email_confirmed_at) {
+  // getUser() always verifies with Supabase server — unlike getSession() which
+  // reads localStorage and returns stale data even for deleted users.
+  // This prevents deleted users from being redirected to platform.html.
+  const { data: { user }, error: userError } = await supa.auth.getUser();
+  if (user && !userError) {
+    if (user.email_confirmed_at) {
+      // Valid confirmed user — go to platform
       window.location.href = 'platform.html';
       return;
     }
-    // Unconfirmed leftover session — clear it
+    // Unconfirmed session (from incomplete signup) — clear it so auth page is clean
     await supa.auth.signOut();
+  } else {
+    // No valid user OR server returned error (deleted user, expired token, etc.)
+    // Clear any stale localStorage tokens silently
+    try { await supa.auth.signOut(); } catch(_) {}
   }
 
   // Autofill step 2 defaults
