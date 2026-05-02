@@ -521,19 +521,43 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
 // ── CONFIG ──
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
+
+// Validate anon key on boot — surfaces missing config.js clearly
+if (!SUPA_ANON) {
+  console.error(
+    '%c[Engageneering] SUPA_ANON key is missing!',
+    'color:red;font-size:14px;font-weight:bold'
+  );
+  console.error(
+    'config.js must export: window.ENG_CONFIG = { SUPA_URL:"...", SUPA_ANON:"eyJ..." }'
+  );
+}
+
 const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });
 
-// ── CHECK EXISTING SESSION + AUTOFILL ──
+// ── SESSION CHECK + AUTOFILL ──
 window.addEventListener('DOMContentLoaded', async () => {
+  // Show config error banner if key is missing
+  if (!SUPA_ANON) {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#7a0000;color:#fff;' +
+      'padding:10px 16px;font-size:13px;z-index:9999;text-align:center;font-family:monospace';
+    banner.textContent = 'CONFIG ERROR: SUPA_ANON key missing — auth will not work. ' +
+      'Ensure config.js sets window.ENG_CONFIG.SUPA_ANON.';
+    document.body.prepend(banner);
+  }
+
   const { data: { session } } = await supa.auth.getSession();
   if (session) {
-    // Only redirect if email is confirmed — signUp() creates an unconfirmed
-    // session which must NOT redirect to platform before OTP is verified.
-    const confirmed = session.user && session.user.email_confirmed_at;
-    if (confirmed) { window.location.href = 'platform.html'; return; }
-    // Unconfirmed session — sign it out silently so the auth page shows cleanly
+    // Only redirect confirmed users — signUp() creates an unconfirmed session
+    // that must NOT bypass the OTP step
+    if (session.user && session.user.email_confirmed_at) {
+      window.location.href = 'platform.html';
+      return;
+    }
+    // Unconfirmed leftover session — clear it
     await supa.auth.signOut();
   }
 
@@ -614,12 +638,13 @@ function showStep(n) {
   });
 }
 
+// Step navigation — Step1→2 is now pure validation only (no API call)
 async function nextStep(n) {
   if (n > currentStep) {
     if (currentStep === 1) {
       if (!validateStep1()) return;
-      const ok = await _attemptSignUp();
-      if (!ok) return;
+      // Pure client-side check — email existence verified at Join click via signUp()
+      _showEmailOk();
     }
     if (currentStep === 2 && !validateStep2()) return;
   }
@@ -641,11 +666,11 @@ function validateStep1() {
   const pwd   = document.getElementById('sPwd').value;
   const pwd2  = document.getElementById('sPwd2').value;
   const err   = document.getElementById('s1Err');
-  err.textContent = '';
-  if (!first || !last) { err.textContent = 'Please enter your first and last name.'; return false; }
-  if (!email || !email.includes('@')) { err.textContent = 'Please enter a valid email address.'; return false; }
-  if (pwd.length < 8) { err.textContent = 'Password must be at least 8 characters.'; return false; }
-  if (pwd !== pwd2) { err.textContent = 'Passwords do not match.'; return false; }
+  err.textContent = ''; err.style.cssText = '';
+  if (!first || !last) { err.textContent = 'Please enter your first and last name.'; err.style.color='#f09595'; return false; }
+  if (!email || !email.includes('@') || !email.includes('.')) { err.textContent = 'Please enter a valid email address.'; err.style.color='#f09595'; return false; }
+  if (pwd.length < 8) { err.textContent = 'Password must be at least 8 characters.'; err.style.color='#f09595'; return false; }
+  if (pwd !== pwd2)   { err.textContent = 'Passwords do not match.'; err.style.color='#f09595'; return false; }
   return true;
 }
 
@@ -659,25 +684,21 @@ function validateStep2() {
   return true;
 }
 
-// ── EMAIL INPUT ──
+// ── EMAIL INPUT HELPERS ──
 function _emailOnInput(val) {
-  document.getElementById('s1Err').textContent = '';
-  document.getElementById('s1Err').style.cssText = '';
+  const errEl = document.getElementById('s1Err');
+  errEl.textContent = ''; errEl.style.cssText = '';
   const icon = document.getElementById('emailIcon');
   if (icon) { icon.style.display = 'none'; icon.textContent = ''; }
   const inp = document.getElementById('sEmail');
   if (inp) inp.style.borderColor = '';
   const btn = document.querySelector('#step1 .step-next');
   if (btn) btn.style.display = '';
-  if (window._pendingSignup && window._pendingSignup.email !== val.trim().toLowerCase()) {
-    window._pendingSignup = null;
-  }
 }
 
 function _showEmailError(msg, showLoginBtn) {
   const errEl = document.getElementById('s1Err');
-  errEl.textContent = '';
-  errEl.style.cssText = '';
+  errEl.textContent = ''; errEl.style.cssText = '';
 
   const card = document.createElement('div');
   card.style.cssText = 'background:#2a0808;border:1.5px solid #f56565;border-radius:8px;padding:14px 16px;margin-top:6px';
@@ -692,7 +713,6 @@ function _showEmailError(msg, showLoginBtn) {
     sub.style.cssText = 'color:#f09595;font-size:12px;margin-bottom:10px';
     sub.textContent = 'An account with this email already exists.';
     card.appendChild(sub);
-
     const loginBtn = document.createElement('button');
     loginBtn.textContent = 'Go to Log In \u2192';
     loginBtn.style.cssText = 'background:#c8922a;color:#040c18;border:none;border-radius:5px;padding:8px 18px;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;width:100%';
@@ -701,7 +721,6 @@ function _showEmailError(msg, showLoginBtn) {
   }
 
   errEl.appendChild(card);
-
   const inp = document.getElementById('sEmail');
   if (inp) inp.style.borderColor = '#f56565';
   const ico = document.getElementById('emailIcon');
@@ -714,8 +733,8 @@ function _showEmailError(msg, showLoginBtn) {
 }
 
 function _showEmailOk() {
-  document.getElementById('s1Err').textContent = '';
-  document.getElementById('s1Err').style.cssText = '';
+  const errEl = document.getElementById('s1Err');
+  errEl.textContent = ''; errEl.style.cssText = '';
   const ico = document.getElementById('emailIcon');
   if (ico) {
     ico.textContent = '\u2713';
@@ -727,101 +746,54 @@ function _showEmailOk() {
   if (btn) btn.style.display = '';
 }
 
-// Called by nextStep — calls signUp() to check email availability + create user
-async function _attemptSignUp() {
-  const first    = document.getElementById('sFirst').value.trim();
-  const last     = document.getElementById('sLast').value.trim();
-  const email    = document.getElementById('sEmail').value.trim().toLowerCase();
-  const pwd      = document.getElementById('sPwd').value;
-  const fullName = first + ' ' + last;
-
-  const continueBtn = document.querySelector('#step1 .step-next');
-  const origText    = continueBtn ? continueBtn.textContent : '';
-  if (continueBtn) { continueBtn.textContent = 'Checking\u2026'; continueBtn.disabled = true; }
-
-  try {
-    const { data, error } = await supa.auth.signUp({
-      email,
-      password: pwd,
-      options: { data: { full_name: fullName, role: selectedRole } }
-    });
-
-    if (error) {
-      const m = error.message.toLowerCase();
-      if (m.includes('already registered') || m.includes('user already') || error.status === 422) {
-        _showEmailError('This email is already registered.', true);
-      } else {
-        const errEl = document.getElementById('s1Err');
-        errEl.textContent = error.message;
-        errEl.style.color = '#f09595';
-      }
-      if (continueBtn) { continueBtn.textContent = origText; continueBtn.disabled = false; }
-      return false;
-    }
-
-    // identities:[] = already registered but unconfirmed
-    const isNew = data && data.user && data.user.identities && data.user.identities.length > 0;
-    if (!isNew) {
-      _showEmailError('This email is already registered.', true);
-      if (continueBtn) { continueBtn.textContent = origText; continueBtn.disabled = false; }
-      return false;
-    }
-
-    // New user — green tick, store for doSignup
-    _showEmailOk();
-    window._pendingSignup = { email, pwd, fullName, role: selectedRole };
-    if (continueBtn) { continueBtn.textContent = origText; continueBtn.disabled = false; }
-    return true;
-
-  } catch(ex) {
-    const errEl = document.getElementById('s1Err');
-    errEl.textContent = 'Connection error. Please check your internet.';
-    errEl.style.color = '#f09595';
-    if (continueBtn) { continueBtn.textContent = origText; continueBtn.disabled = false; }
-    return false;
-  }
-}
-
 // ── LOGIN ──
 async function doLogin() {
   const email = document.getElementById('lEmail').value.trim();
   const pwd   = document.getElementById('lPwd').value;
   const err   = document.getElementById('lErr');
   const btn   = document.getElementById('lBtn');
-  err.textContent = '';
+  err.textContent = ''; err.style.color = '';
   if (!email) { err.textContent = 'Please enter your email address.'; return; }
   if (!pwd)   { err.textContent = 'Please enter your password.'; return; }
+
+  if (!SUPA_ANON) {
+    err.textContent = 'Configuration error: API key not loaded. Ensure config.js is present.';
+    err.style.color = '#f56565'; return;
+  }
+
   btn.textContent = 'Signing in...'; btn.disabled = true;
   try {
     const { data, error } = await supa.auth.signInWithPassword({ email, password: pwd });
     if (error) {
       const m = error.message.toLowerCase();
       if (m.includes('invalid login') || m.includes('invalid credentials')) {
-        err.textContent = 'Email or password incorrect. Please check and try again.';
+        err.textContent = 'Email or password incorrect.';
       } else if (m.includes('email not confirmed') || m.includes('not confirmed')) {
-        err.textContent = 'Your email is not yet confirmed. Check your inbox for the 6-digit code and complete signup.';
+        err.textContent = 'Your email is not yet confirmed. Complete signup by entering the 6-digit OTP sent to your inbox.';
       } else if (m.includes('too many') || error.status === 429) {
-        err.textContent = 'Too many attempts. Please wait a minute and try again.';
+        err.textContent = 'Too many attempts. Please wait a minute.';
       } else {
         err.textContent = error.message;
       }
+      err.style.color = '#f09595';
     } else if (data && data.session) {
       err.style.color = '#5dcaa5';
-      err.textContent = 'Signed in! Taking you to the platform...';
+      err.textContent = '\u2713 Signed in! Taking you to the platform...';
       setTimeout(() => { window.location.href = 'platform.html'; }, 800);
     }
   } catch(e) {
-    err.textContent = 'Connection error. Please check your internet and try again.';
+    err.textContent = 'Connection error. Please check your internet.';
+    err.style.color = '#f09595';
   } finally {
     btn.textContent = 'Log In'; btn.disabled = false;
   }
 }
 
-// ── SIGNUP ──
+// ── CONSENT ──
 function checkConsent() {
-  const t   = document.getElementById('chkTerms');
-  const d   = document.getElementById('chkDisclaimer');
-  const y   = document.getElementById('chkYom');
+  const t = document.getElementById('chkTerms');
+  const d = document.getElementById('chkDisclaimer');
+  const y = document.getElementById('chkYom');
   if (!t || !d || !y) return false;
   const all = t.checked && d.checked && y.checked;
   const btn = document.getElementById('joinBtn');
@@ -846,6 +818,10 @@ function getConsentPayload() {
   };
 }
 
+// ── SIGNUP ──
+// Called when user clicks "Join the Movement" on Step 3.
+// This is where signUp() is called — the ONLY place.
+// Profile data written to DB only AFTER OTP verified in verifyOTP().
 async function doSignup() {
   if (!validateStep1()) { showStep(1); return; }
   if (!validateStep2()) { showStep(2); return; }
@@ -864,7 +840,7 @@ async function doSignup() {
   const err     = document.getElementById('s3Err');
   const btn     = document.getElementById('joinBtn');
 
-  err.textContent = '';
+  err.textContent = ''; err.style.color = '';
 
   if (!checkConsent()) {
     document.getElementById('consentWarn').style.display = 'block';
@@ -872,47 +848,81 @@ async function doSignup() {
     return;
   }
 
-  // _pendingSignup must exist from _attemptSignUp in Step 1
-  if (!window._pendingSignup || window._pendingSignup.email !== email) {
-    err.textContent = 'Session expired — please go back to Step 1 and try again.';
-    return;
+  if (!SUPA_ANON) {
+    err.textContent = 'Configuration error: API key not loaded. Ensure config.js is present on the server.';
+    err.style.color = '#f56565'; return;
   }
 
-  // Enrich with Step 2+3 data
-  window._pendingSignup.prof    = prof;
-  window._pendingSignup.country = country;
-  window._pendingSignup.years   = years;
-  window._pendingSignup.org     = org;
-  window._pendingSignup.source  = source;
-  window._pendingSignup.bio     = bio;
-  window._pendingSignup.tags    = tags;
-  window._pendingSignup.consent = getConsentPayload();
-
-  btn.textContent = 'Sending verification code\u2026'; btn.disabled = true;
+  btn.textContent = 'Creating account\u2026'; btn.disabled = true;
 
   try {
-    // Resend the OTP — signUp() in _attemptSignUp already sent one, but we
-    // resend here to guarantee delivery at the moment the user clicks Join.
-    // This also handles cases where the first send was delayed.
-    const { error: resendErr } = await supa.auth.resend({
-      type:  'signup',
-      email: email
+    const fullName = first + ' ' + last;
+
+    // ── signUp() called HERE — only once, at Join click ─────────────────────
+    // Creates the auth.users record AND sends the OTP email in one call.
+    // Profile/consent data written to DB only after OTP verified.
+    // ─────────────────────────────────────────────────────────────────────────
+    const { data, error } = await supa.auth.signUp({
+      email,
+      password: pwd,
+      options: { data: { full_name: fullName, role: selectedRole } }
     });
-    if (resendErr) {
-      // Non-fatal — OTP from signUp() may still arrive; proceed anyway
-      console.warn('OTP resend warning:', resendErr.message);
+
+    if (error) {
+      const m = error.message.toLowerCase();
+      if (m.includes('already registered') || m.includes('user already') || error.status === 422) {
+        err.textContent = 'This email is already registered. Please log in instead.';
+        showStep(1);
+        _showEmailError('This email is already registered.', true);
+      } else if (m.includes('invalid email')) {
+        err.textContent = 'Please enter a valid email address.';
+        showStep(1);
+      } else if (m.includes('rate') || m.includes('too many') || error.status === 429) {
+        err.textContent = 'Too many attempts. Please wait a minute and try again.';
+      } else if (m.includes('weak') || m.includes('password')) {
+        err.textContent = 'Password is too weak. Please use at least 8 characters.';
+        showStep(1);
+      } else {
+        err.textContent = error.message;
+      }
+      err.style.color = '#f09595';
+      btn.textContent = 'Join the Movement'; btn.disabled = false;
+      return;
     }
-  } catch(e) {
-    console.warn('OTP resend error (non-fatal):', e.message);
+
+    // identities:[] = already registered but unconfirmed — resend OTP to them
+    const isNew = data && data.user && data.user.identities && data.user.identities.length > 0;
+    if (!isNew) {
+      // Resend OTP to the existing unconfirmed email
+      const { error: resendErr } = await supa.auth.resend({ type: 'signup', email });
+      if (resendErr) {
+        err.textContent = 'Account exists but OTP resend failed: ' + resendErr.message;
+        err.style.color = '#f09595';
+        btn.textContent = 'Join the Movement'; btn.disabled = false;
+        return;
+      }
+    }
+
+    // Store all collected data for createProfile() after OTP verified
+    window._pendingSignup = {
+      email, pwd, fullName, role: selectedRole,
+      prof, country, years, org, source, bio, tags,
+      consent: getConsentPayload()
+    };
+
+    document.getElementById('otpSubText').textContent =
+      'A 6-digit verification code was sent to ' + email +
+      '. Enter it below to activate your account.';
+    showStep(4);
+    startResendTimer();
+    document.getElementById('otp0').focus();
+
+  } catch(ex) {
+    err.textContent = 'Connection error. Please check your internet and try again.';
+    err.style.color = '#f09595';
+  } finally {
+    btn.textContent = 'Join the Movement'; btn.disabled = false;
   }
-
-  document.getElementById('otpSubText').textContent =
-    'A 6-digit verification code was sent to ' + email + '. Enter it below to activate your account.';
-  showStep(4);
-  startResendTimer();
-  document.getElementById('otp0').focus();
-
-  btn.textContent = 'Join the Movement'; btn.disabled = false;
 }
 
 // ── EMAIL TRIGGER ──
@@ -970,12 +980,26 @@ async function resendOTP() {
   const errEl = document.getElementById('otpErr');
   const okEl  = document.getElementById('otpOk');
   errEl.textContent = ''; okEl.textContent = '';
+
+  if (!SUPA_ANON) {
+    errEl.textContent = 'API key missing — cannot send OTP. Check config.js on the server.';
+    errEl.style.color = '#f56565';
+    return;
+  }
+
   document.getElementById('resendBtn').disabled = true;
+
   const { error } = await supa.auth.resend({ type: 'signup', email: p.email });
+
   if (error) {
-    errEl.textContent = error.message;
+    // Show the actual error — never swallow it silently
+    errEl.textContent = 'Resend failed: ' + error.message +
+      (error.status ? ' (status ' + error.status + ')' : '');
+    errEl.style.color = '#f09595';
+    document.getElementById('resendBtn').disabled = false;
   } else {
     okEl.textContent = '\u2713 New code sent \u2014 check your inbox.';
+    okEl.style.color = '#5dcaa5';
     clearOTPBoxes();
     startResendTimer();
   }
@@ -991,7 +1015,7 @@ async function verifyOTP() {
   if (code.length < 6) { errEl.textContent = 'Please enter all 6 digits.'; return; }
 
   const p = window._pendingSignup;
-  if (!p) { errEl.textContent = 'Session expired. Please go back and start again.'; return; }
+  if (!p) { errEl.textContent = 'Session expired. Please go back and try again.'; return; }
 
   btn.textContent = 'Verifying...'; btn.disabled = true;
 
@@ -1004,24 +1028,26 @@ async function verifyOTP() {
 
     if (error) {
       const m = error.message.toLowerCase();
-      if (m.includes('invalid') || m.includes('expired') || m.includes('incorrect')) {
-        errEl.textContent = 'Incorrect or expired code. Please check your email or resend.';
-        clearOTPBoxes();
-      } else {
-        errEl.textContent = error.message;
-      }
+      errEl.textContent = (m.includes('invalid') || m.includes('expired') || m.includes('incorrect'))
+        ? 'Incorrect or expired code. Please check your email or request a new code.'
+        : error.message;
+      errEl.style.color = '#f09595';
+      clearOTPBoxes();
       btn.textContent = 'Verify & Activate Account'; btn.disabled = false;
       return;
     }
 
     if (!data || !data.session) {
       errEl.textContent = 'Verification failed \u2014 no session returned. Please try again.';
+      errEl.style.color = '#f09595';
       btn.textContent = 'Verify & Activate Account'; btn.disabled = false;
       return;
     }
 
     okEl.textContent = '\u2713 Email verified! Setting up your account...';
+    okEl.style.color = '#5dcaa5';
 
+    // ── Write profile to DB NOW — only after confirmed OTP ──────────────────
     const uid = data.session.user.id;
     await createProfile(uid, p);
 
@@ -1040,14 +1066,13 @@ async function verifyOTP() {
 
     window._pendingSignup = null;
     if (_resendInterval) clearInterval(_resendInterval);
+
     showSuccess(p.fullName, p.role, true);
-    // Redirect to platform after 2.5s — session is now confirmed
-    setTimeout(function() {
-      window.location.href = 'platform.html';
-    }, 2500);
+    setTimeout(function() { window.location.href = 'platform.html'; }, 2500);
 
   } catch(e) {
     errEl.textContent = 'Connection error \u2014 please check your internet.';
+    errEl.style.color = '#f09595';
     btn.textContent = 'Verify & Activate Account'; btn.disabled = false;
   }
 }
@@ -1063,12 +1088,10 @@ async function signInWithGoogle() {
       }
     });
     if (error) alert('Google sign-in failed: ' + error.message);
-  } catch(e) {
-    alert('Google sign-in error: ' + e.message);
-  }
+  } catch(e) { alert('Google sign-in error: ' + e.message); }
 }
 
-// ── CREATE PROFILE (writes all Step 1-3 data to DB) ──
+// ── CREATE PROFILE — only called from verifyOTP after confirmed OTP ──
 async function createProfile(uid, p) {
   await supa.from('profiles').upsert({
     id:           uid,
@@ -1093,20 +1116,16 @@ async function createProfile(uid, p) {
     expertise_tags: p.tags    || []
   }, { onConflict: 'user_id' });
 
-  // Send welcome email
   try {
-    const userEmail = p.email;
-    if (userEmail) {
-      const tierMap  = { both: 'Curious Mind', seeker: 'Curious Mind', answerer: 'Responder', institution: 'Institution' };
-      const trackMap = { both: 'Both', seeker: 'Seeker', answerer: 'Answerer', institution: 'Both' };
-      await sendEngEmail('welcome', userEmail, {
-        name:      p.fullName,
-        tier_name: tierMap[p.role]  || 'Curious Mind',
-        tier_num:  1,
-        track:     trackMap[p.role] || 'Both',
-        join_date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-      });
-    }
+    const tierMap  = { both:'Curious Mind', seeker:'Curious Mind', answerer:'Responder', institution:'Institution' };
+    const trackMap = { both:'Both', seeker:'Seeker', answerer:'Answerer', institution:'Both' };
+    await sendEngEmail('welcome', p.email, {
+      name:      p.fullName,
+      tier_name: tierMap[p.role]  || 'Curious Mind',
+      tier_num:  1,
+      track:     trackMap[p.role] || 'Both',
+      join_date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
+    });
   } catch(e) { console.warn('Welcome email error:', e.message); }
 }
 
@@ -1128,8 +1147,7 @@ function showSuccess(name, role, loggedIn) {
   document.getElementById('successTier').textContent = TIER_LABELS[role] || TIER_LABELS.both;
   document.getElementById('successMsg').textContent  = loggedIn
     ? (MSGS[role] || MSGS.both)
-    : 'Account created! Check your email and click the confirmation link. Once confirmed, log in here.';
-
+    : 'Account created! Check your email for the confirmation link. Once confirmed, log in here.';
   if (!loggedIn) {
     document.querySelector('#successBox .submit-btn').textContent = 'Go to Log In \u2192';
     document.querySelector('#successBox .submit-btn').onclick = function() { showForm('login'); };
@@ -1138,4 +1156,3 @@ function showSuccess(name, role, loggedIn) {
 
 </script>
 </body>
-</html>
