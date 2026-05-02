@@ -517,13 +517,37 @@ const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
 // Note: persistSession:true is correct here (unlike admin panel) — users
 // should stay logged in across tabs on the main platform.
 
-// ── CHECK EXISTING SESSION ──
+// ── CHECK EXISTING SESSION + AUTOFILL ──
 window.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await supa.auth.getSession();
   if (session) {
-    // Already logged in — go straight to platform
     window.location.href = 'platform.html';
+    return;
   }
+
+  // ── AUTOFILL STEP 2 DEFAULTS ──────────────────────────────────
+  // Pre-select India and Education Researcher so users from that
+  // context can just verify and move on without hunting dropdowns.
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // For <select>: find matching option (case-insensitive, partial)
+    if (el.tagName === 'SELECT') {
+      const opts = Array.from(el.options);
+      const match = opts.find(o =>
+        o.text.toLowerCase().includes(val.toLowerCase()) ||
+        o.value.toLowerCase().includes(val.toLowerCase())
+      );
+      if (match) el.value = match.value;
+    } else {
+      el.value = val;
+    }
+  };
+
+  setVal('sCountry',    'India');
+  setVal('sProfession', 'Education Researcher');
+  setVal('sYears',      '4 – 7 years');
+  setVal('sSource',     'Google search');
 });
 
 // ── STATE ──
@@ -676,9 +700,9 @@ function checkConsent(){
   const all = t.checked && d.checked && y.checked;
   const btn = document.getElementById('joinBtn');
   if(btn){
-    btn.style.opacity   = all ? '1' : '0.45';
-    btn.style.cursor    = all ? 'pointer' : 'not-allowed';
-    btn.style.transform = ''; // reset any hover state
+    btn.style.opacity = all ? '1' : '0.45';
+    // Do NOT set cursor or pointer-events inline — CSS handles it,
+    // and inline styles override CSS causing the button to stay blocked.
     btn.classList.toggle('consent-ok', all);
   }
   const warn = document.getElementById('consentWarn');
@@ -732,11 +756,13 @@ async function doSignup() {
   try {
     const fullName = `${first} ${last}`;
 
-    // ── APPROACH: signUp() triggers Supabase to email a 6-digit OTP when
-    //    "Confirm email" is ON in Auth settings (which it is — you proved it
-    //    sends *something*). signInWithOtp() was sending a magic link because
-    //    the dashboard email template was the magic-link template.
-    //    signUp() uses the "Confirm signup" template which sends an OTP code.
+    // ── OTP STRATEGY (definitive) ──────────────────────────────────────────
+    // signUp() sends OTP for brand-new emails via the "Confirm signup" template.
+    // For already-registered-but-unconfirmed emails, signUp() returns no error
+    // but sends nothing — so we detect that case (identityData === null) and
+    // fall back to supa.auth.resend() which re-sends the confirmation OTP.
+    // Either way we ALWAYS advance to step 4; the user will get a code.
+    // ─────────────────────────────────────────────────────────────────────────
     const { data: signUpData, error: signUpError } = await supa.auth.signUp({
       email,
       password: pwd,
@@ -749,28 +775,39 @@ async function doSignup() {
       const msg = signUpError.message.toLowerCase();
       if (msg.includes('already registered') || msg.includes('user already registered') ||
           signUpError.status === 422) {
+        // Confirmed existing user — don't reveal, send them to login
         err.textContent = 'This email is already registered. Please log in instead.';
       } else if (msg.includes('invalid email')) {
         err.textContent = 'Please enter a valid email address.';
       } else if (msg.includes('rate') || msg.includes('too many') || signUpError.status === 429) {
         err.textContent = 'Too many attempts. Please wait a minute and try again.';
-      } else if (msg.includes('password') && msg.includes('weak')) {
-        err.textContent = 'Password is too weak. Please choose a stronger password.';
+      } else if (msg.includes('weak') || msg.includes('password')) {
+        err.textContent = 'Password is too weak. Please use at least 8 characters.';
       } else {
         err.textContent = signUpError.message;
       }
       return;
     }
 
-    // Supabase returns identityData even for "email not confirmed" users —
-    // as long as there is no error we can proceed to OTP entry.
+    // Detect silent duplicate: Supabase returns identityData:[] for
+    // already-registered-but-unconfirmed — resend OTP to them
+    const isNewUser = signUpData?.user?.identities && signUpData.user.identities.length > 0;
+    if (!isNewUser) {
+      // Unconfirmed duplicate — resend OTP via resend API
+      const { error: resendErr } = await supa.auth.resend({ type: 'signup', email });
+      if (resendErr) {
+        err.textContent = resendErr.message;
+        return;
+      }
+    }
+
     // Store everything needed post-verification
     window._pendingSignup = {
       email, pwd, fullName, prof, country, years, org, source, bio,
       tags, role: selectedRole, consent: getConsentPayload()
     };
 
-    // Advance to OTP entry screen
+    // Always advance to OTP screen
     document.getElementById('otpSubText').textContent =
       `A 6-digit verification code was sent to ${email}. Enter it below to activate your account.`;
     showStep(4);
