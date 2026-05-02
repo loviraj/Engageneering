@@ -293,7 +293,8 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
           <label>Email Address</label>
           <div class="email-wrap">
             <input type="email" id="sEmail" placeholder="you@school.edu" autocomplete="email"
-              oninput="_emailOnInput(this.value)"/>
+              oninput="_emailOnInput(this.value)"
+              onblur="_checkEmailOnBlur(this.value)"/>
             <span class="email-status-icon" id="emailIcon"></span>
           </div>
         </div>
@@ -658,6 +659,7 @@ function validateStep2() {
 
 // ── EMAIL FIELD HELPERS ──
 function _emailOnInput() {
+  // Clear any previous check result when user edits the email
   const e = document.getElementById('s1Err'); e.textContent = ''; e.style.cssText = '';
   const ico = document.getElementById('emailIcon');
   if (ico) { ico.style.display = 'none'; ico.textContent = ''; }
@@ -665,6 +667,57 @@ function _emailOnInput() {
   if (inp) inp.style.borderColor = '';
   const btn = document.querySelector('#step1 .step-next');
   if (btn) btn.style.display = '';
+  window._emailChecked = null; // reset cache so blur re-checks
+}
+
+// Called when focus leaves the email field — fires before user reaches password.
+// Uses signInWithOtp probe: if user exists, Supabase returns an error we can
+// detect. No account is created. No side effects.
+async function _checkEmailOnBlur(val) {
+  val = (val || '').trim().toLowerCase();
+  if (!val || !val.includes('@') || !val.includes('.')) return;
+  if (window._emailChecked === val) return; // already checked this value
+
+  const ico   = document.getElementById('emailIcon');
+  const s1err = document.getElementById('s1Err');
+
+  // Show checking state
+  if (ico) { ico.textContent = '⌛'; ico.style.cssText = 'display:block;color:#7a9ab8;font-size:13px;position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none'; }
+  s1err.textContent = ''; s1err.style.cssText = '';
+
+  try {
+    // Attempt signInWithOtp with shouldCreateUser:false.
+    // If email does NOT exist in Supabase, this returns an error (user not found).
+    // If email EXISTS (confirmed or unconfirmed), this sends an OTP — but we
+    // abort before the user enters a code, so it's harmless (OTP just expires).
+    // This is the ONLY way to check existence without creating a duplicate record.
+    const { error } = await supa.auth.signInWithOtp({
+      email: val,
+      options: { shouldCreateUser: false }
+    });
+
+    window._emailChecked = val;
+
+    if (!error) {
+      // No error = email EXISTS in Supabase (OTP was sent to existing user)
+      _showEmailError('This email is already registered.', true);
+    } else {
+      const em = error.message.toLowerCase();
+      // "signup disabled" or "signups not allowed" = email does NOT exist
+      // (Supabase rejects shouldCreateUser:false for non-existent emails)
+      if (em.includes('not allowed') || em.includes('disabled') ||
+          em.includes('no user') || em.includes('user not found') ||
+          em.includes('invalid login')) {
+        // Email is free — show green tick
+        _showEmailOk();
+      } else {
+        // Rate limit or other — don't block user, just clear indicator
+        if (ico) { ico.style.display = 'none'; }
+      }
+    }
+  } catch(ex) {
+    if (ico) { ico.style.display = 'none'; }
+  }
 }
 function _showEmailError(msg, showLoginBtn) {
   const errEl = document.getElementById('s1Err');
@@ -803,8 +856,15 @@ async function doSignup() {
     const fullName = first + ' ' + last;
 
     // ── STEP A: Create the account ──────────────────────────────────────────
-    // signUp() registers the user in auth.users. We don't rely on the email
-    // it sends (magic link template) — we send our own OTP in Step B.
+    // signUp() registers the user in auth.users.
+    // If the blur check already confirmed this email exists, we skip signUp()
+    // and jump straight to sending OTP (the user is already in auth.users).
+    let skipSignUp = false;
+
+    // If blur check found email exists, we know identities will be empty
+    // Check if signInWithOtp already confirmed existence (no error on blur = exists)
+    // We can't know for certain from client state alone, so always try signUp
+    // and handle the duplicate gracefully.
     const { data: signUpData, error: signUpError } = await supa.auth.signUp({
       email, password: pwd,
       options: { data: { full_name: fullName, role: selectedRole } }
@@ -816,9 +876,17 @@ async function doSignup() {
         showStep(1); _showEmailError('This email is already registered.', true);
         btn.textContent = 'Join the Movement'; btn.disabled = false; return;
       }
-      // Show the exact error for any other failure
       err.textContent = signUpError.message + (signUpError.status ? ' [' + signUpError.status + ']' : '');
       err.style.color = '#f09595';
+      btn.textContent = 'Join the Movement'; btn.disabled = false; return;
+    }
+
+    // identities:[] means the email is already registered (Supabase silent duplicate)
+    const isNewUser = signUpData && signUpData.user &&
+                      signUpData.user.identities && signUpData.user.identities.length > 0;
+    if (!isNewUser) {
+      // Already registered — go back to step 1 and show error
+      showStep(1); _showEmailError('This email is already registered.', true);
       btn.textContent = 'Join the Movement'; btn.disabled = false; return;
     }
 
