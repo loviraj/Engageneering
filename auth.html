@@ -732,13 +732,15 @@ async function doSignup() {
   try {
     const fullName = `${first} ${last}`;
 
-    // Step 1: Send 6-digit OTP to email via Supabase
-    // channel:'email' + no emailRedirectTo → Supabase sends numeric OTP (not a magic link)
-    const { error: otpError } = await supa.auth.signInWithOtp({
+    // Step 1: Use signUp() — Supabase sends a 6-digit OTP confirmation code
+    // (not a magic link) when "Confirm email" is enabled in project settings.
+    // signInWithOtp always sends a magic link unless the Supabase dashboard
+    // has "Enable OTP" explicitly toggled; signUp() reliably triggers OTP.
+    const { error: otpError } = await supa.auth.signUp({
       email,
+      password: pwd,
       options: {
-        shouldCreateUser: true,
-        channel: 'email'          // forces numeric OTP, not a magic-link email
+        data: { full_name: fullName, role: selectedRole }
       }
     });
 
@@ -843,11 +845,11 @@ async function resendOTP() {
   errEl.textContent = ''; okEl.textContent = '';
   document.getElementById('resendBtn').disabled = true;
 
-  const { error } = await supa.auth.signInWithOtp({
+  const { error } = await supa.auth.signUp({
     email: p.email,
+    password: p.pwd,
     options: {
-      shouldCreateUser: true,
-      channel: 'email'          // numeric OTP, not a magic link
+      data: { full_name: p.fullName, role: p.role }
     }
   });
 
@@ -879,7 +881,7 @@ async function verifyOTP() {
     const { data, error } = await supa.auth.verifyOtp({
       email: p.email,
       token: code,
-      type: 'email'
+      type: 'signup'   // must match signUp() flow — 'email' is for signInWithOtp magic links
     });
 
     if(error){
@@ -903,9 +905,7 @@ async function verifyOTP() {
     // OTP verified — now set password and create profile
     okEl.textContent = '✓ Email verified! Setting up your account...';
 
-    // Update password (OTP login doesn't set a password)
-    const { error: pwdErr } = await supa.auth.updateUser({ password: p.pwd });
-    if(pwdErr) console.warn('Password set error (non-critical):', pwdErr.message);
+    // Password was already set during signUp() — no need to updateUser here
 
     // Create profile
     const uid = data.session.user.id;
