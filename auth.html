@@ -537,15 +537,40 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.body.prepend(b);
   }
 
-  // getUser() always hits the server — catches deleted users, expired tokens.
-  // getSession() only reads localStorage and is NOT reliable for this check.
-  const { data: { user }, error: ue } = await supa.auth.getUser();
-  if (user && !ue && user.email_confirmed_at) {
-    window.location.href = 'platform.html';
-    return;
+  // ── Handle magic link token in URL hash (Supabase default email flow) ──────
+  // When user clicks the confirmation link in their email, Supabase redirects
+  // them back to this page with auth tokens in the URL hash or query string.
+  // We detect these tokens here and complete the signup automatically.
+  const _hash   = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const _query  = new URLSearchParams(window.location.search);
+  const _access = _hash.get('access_token');
+  const _refresh= _hash.get('refresh_token');
+  const _thash  = _query.get('token_hash') || _hash.get('token_hash');
+  const _ttype  = _query.get('type')       || _hash.get('type');
+  const _errMsg = _query.get('error_description') || _hash.get('error_description');
+
+  if (_errMsg) {
+    // Link was invalid or expired — show error on step 4
+    _showLinkError(_errMsg);
+  } else if (_access && _refresh) {
+    // Full token pair in hash — set session directly
+    _showLinkVerifying();
+    const { data: sd, error: se } = await supa.auth.setSession({ access_token: _access, refresh_token: _refresh });
+    if (se || !sd.session) { _showLinkError(se ? se.message : 'No session returned'); }
+    else { await _completeLinkSignup(sd.session); return; }
+  } else if (_thash && _ttype) {
+    // PKCE token_hash flow
+    _showLinkVerifying();
+    const vtype = (_ttype === 'signup') ? 'signup' : 'magiclink';
+    const { data: vd, error: ve } = await supa.auth.verifyOtp({ token_hash: _thash, type: vtype });
+    if (ve || !vd.session) { _showLinkError(ve ? ve.message : 'Verification failed'); }
+    else { await _completeLinkSignup(vd.session); return; }
+  } else {
+    // Normal load — check for existing confirmed session (server-verified)
+    const { data: { user }, error: ue } = await supa.auth.getUser();
+    if (user && !ue && user.email_confirmed_at) { window.location.href = 'platform.html'; return; }
+    try { await supa.auth.signOut(); } catch(_) {}
   }
-  // No valid confirmed user — clear any stale tokens silently
-  try { await supa.auth.signOut(); } catch(_) {}
 
   // Autofill step 2 defaults
   const setVal = (id, val) => {
@@ -758,6 +783,76 @@ function _showEmailOk() {
   if (btn) btn.style.display = '';
 }
 
+// ── MAGIC LINK COMPLETION HELPERS ───────────────────────────────────────────
+
+function _showLinkVerifying() {
+  document.getElementById('entrySelector').style.display = 'none';
+  document.getElementById('formSignup').classList.add('active');
+  showStep(4);
+  document.querySelectorAll('.otp-box').forEach(b => b.style.display = 'none');
+  var ob = document.getElementById('otpBtn'); if (ob) ob.style.display = 'none';
+  var rr = document.querySelector('.resend-row'); if (rr) rr.style.display = 'none';
+  var st = document.getElementById('otpSubText');
+  if (st) st.textContent = 'Verifying your email… please wait.';
+}
+
+function _showLinkError(msg) {
+  document.getElementById('entrySelector').style.display = 'none';
+  document.getElementById('formSignup').classList.add('active');
+  showStep(4);
+  document.querySelectorAll('.otp-box').forEach(b => b.style.display = 'none');
+  var ob = document.getElementById('otpBtn'); if (ob) ob.style.display = 'none';
+  var rr = document.querySelector('.resend-row'); if (rr) rr.style.display = 'none';
+  var st = document.getElementById('otpSubText');
+  if (st) st.textContent = 'Verification failed.';
+  var er = document.getElementById('otpErr');
+  if (er) { er.textContent = msg + ' — The link may have expired. Please try signing up again.'; er.style.color = '#f09595'; }
+}
+
+async function _completeLinkSignup(session) {
+  // Clean tokens from URL so they don\'t sit in the address bar
+  window.history.replaceState({}, document.title, window.location.pathname);
+
+  const uid = session.user.id;
+
+  // Retrieve pending signup data (written to localStorage in doSignup)
+  var p = window._pendingSignup;
+  if (!p) {
+    try { var raw = localStorage.getItem('_eng_pending'); if (raw) p = JSON.parse(raw); } catch(_) {}
+  }
+
+  _showLinkVerifying();
+  var ok = document.getElementById('otpOk');
+  var st = document.getElementById('otpSubText');
+  if (st) st.textContent = '✓ Email confirmed!';
+  if (ok) { ok.textContent = 'Setting up your account…'; ok.style.color = '#5dcaa5'; }
+
+  if (p) {
+    // Set the password the user chose during signup
+    try { await supa.auth.updateUser({ password: p.pwd }); } catch(_) {}
+
+    // Write profile to DB — only now, after email confirmed
+    await createProfile(uid, p);
+
+    try {
+      await supa.from('legal_consents').insert({
+        user_id: uid, terms_version: p.consent.terms_version,
+        accepted_at: p.consent.accepted_at, user_agent: p.consent.user_agent,
+        screen_res: p.consent.screen_res, chk_terms: p.consent.chk_terms,
+        chk_disclaimer: p.consent.chk_disclaimer, chk_yom: p.consent.chk_yom
+      });
+    } catch(_) {}
+
+    localStorage.removeItem('_eng_pending');
+    window._pendingSignup = null;
+    showSuccess(p.fullName, p.role, true);
+  } else {
+    // Signed up on another device/browser — data not in localStorage
+    if (st) st.textContent = '✓ Email confirmed! Redirecting…';
+  }
+  setTimeout(function() { window.location.href = 'platform.html'; }, 2000);
+}
+
 // ── LOGIN ──
 async function doLogin() {
   const email = document.getElementById('lEmail').value.trim();
@@ -890,33 +985,26 @@ async function doSignup() {
       btn.textContent = 'Join the Movement'; btn.disabled = false; return;
     }
 
-    // ── STEP B: Send 6-digit OTP via signInWithOtp ─────────────────────────
-    // signInWithOtp() uses the "OTP" email template which sends a numeric code.
-    // This works regardless of how the "Confirm signup" template is configured.
-    // shouldCreateUser:false — user already created in Step A.
-    const { error: otpError } = await supa.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false }
-    });
-
-    if (otpError) {
-      err.textContent = 'OTP send failed: ' + otpError.message + (otpError.status ? ' [' + otpError.status + ']' : '');
-      err.style.color = '#f09595';
-      btn.textContent = 'Join the Movement'; btn.disabled = false; return;
-    }
-
-    // Store all data — createProfile() called only after OTP verified
-    window._pendingSignup = {
+    // ── STEP B: Save data, show "check your email" screen ────────────────────
+    // signUp() above already sent a confirmation email (magic link).
+    // We store signup data in localStorage so it survives the page reload
+    // that happens when the user clicks the link in their email.
+    const _pending = {
       email, pwd, fullName, role: selectedRole,
       prof, country, years, org, source, bio, tags,
       consent: getConsentPayload()
     };
+    localStorage.setItem('_eng_pending', JSON.stringify(_pending));
+    window._pendingSignup = _pending;
 
+    // Show step 4 as a "check your email" screen — hide the OTP input boxes
     document.getElementById('otpSubText').textContent =
-      'A 6-digit verification code was sent to ' + email + '. Enter it below to activate your account.';
+      'A confirmation link was sent to ' + email +
+      '. Click it in your email — you\'ll be brought back here automatically.';
+    document.querySelectorAll('.otp-box').forEach(b => b.style.display = 'none');
+    var _ob = document.getElementById('otpBtn'); if (_ob) _ob.style.display = 'none';
+    var _rr = document.querySelector('.resend-row'); if (_rr) _rr.style.display = 'none';
     showStep(4);
-    startResendTimer();
-    document.getElementById('otp0').focus();
 
   } catch(ex) {
     err.textContent = 'Unexpected error: ' + ex.message;
@@ -966,20 +1054,16 @@ async function resendOTP() {
   errEl.textContent = ''; okEl.textContent = '';
   document.getElementById('resendBtn').disabled = true;
 
-  // Use signInWithOtp — same call as doSignup Step B
-  const { error } = await supa.auth.signInWithOtp({
-    email: p.email,
-    options: { shouldCreateUser: false }
-  });
+  // Resend the signup confirmation email (magic link)
+  const { error } = await supa.auth.resend({ type: 'signup', email: p.email });
 
   if (error) {
     errEl.textContent = 'Resend failed: ' + error.message + (error.status ? ' ['+error.status+']' : '');
     errEl.style.color = '#f09595';
     document.getElementById('resendBtn').disabled = false;
   } else {
-    okEl.textContent = '\u2713 New code sent \u2014 check your inbox.';
+    okEl.textContent = '\u2713 New confirmation link sent \u2014 check your inbox.';
     okEl.style.color = '#5dcaa5';
-    clearOTPBoxes();
     startResendTimer();
   }
 }
@@ -1106,3 +1190,4 @@ function showSuccess(name, role, loggedIn) {
 
 </script>
 </body>
+</html>
