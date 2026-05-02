@@ -297,7 +297,6 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
             <span class="email-status-icon" id="emailIcon"></span>
           </div>
         </div>
-        </div>
         <div class="field"><label>Password</label><input type="password" id="sPwd" placeholder="Minimum 8 characters" autocomplete="new-password"/></div>
         <div class="field"><label>Confirm Password</label><input type="password" id="sPwd2" placeholder="Repeat your password" autocomplete="new-password" onkeydown="if(event.key==='Enter')nextStep(2)"/></div>
         <div class="err" id="s1Err"></div>
@@ -529,7 +528,14 @@ const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
 // ── CHECK EXISTING SESSION + AUTOFILL ──
 window.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await supa.auth.getSession();
-  if (session) { window.location.href = 'platform.html'; return; }
+  if (session) {
+    // Only redirect if email is confirmed — signUp() creates an unconfirmed
+    // session which must NOT redirect to platform before OTP is verified.
+    const confirmed = session.user && session.user.email_confirmed_at;
+    if (confirmed) { window.location.href = 'platform.html'; return; }
+    // Unconfirmed session — sign it out silently so the auth page shows cleanly
+    await supa.auth.signOut();
+  }
 
   // Autofill step 2 defaults
   const setVal = (id, val) => {
@@ -793,7 +799,7 @@ async function doLogin() {
       if (m.includes('invalid login') || m.includes('invalid credentials')) {
         err.textContent = 'Email or password incorrect. Please check and try again.';
       } else if (m.includes('email not confirmed') || m.includes('not confirmed')) {
-        err.textContent = 'Please confirm your email — check your inbox.';
+        err.textContent = 'Your email is not yet confirmed. Check your inbox for the 6-digit code and complete signup.';
       } else if (m.includes('too many') || error.status === 429) {
         err.textContent = 'Too many attempts. Please wait a minute and try again.';
       } else {
@@ -883,6 +889,22 @@ async function doSignup() {
   window._pendingSignup.consent = getConsentPayload();
 
   btn.textContent = 'Sending verification code\u2026'; btn.disabled = true;
+
+  try {
+    // Resend the OTP — signUp() in _attemptSignUp already sent one, but we
+    // resend here to guarantee delivery at the moment the user clicks Join.
+    // This also handles cases where the first send was delayed.
+    const { error: resendErr } = await supa.auth.resend({
+      type:  'signup',
+      email: email
+    });
+    if (resendErr) {
+      // Non-fatal — OTP from signUp() may still arrive; proceed anyway
+      console.warn('OTP resend warning:', resendErr.message);
+    }
+  } catch(e) {
+    console.warn('OTP resend error (non-fatal):', e.message);
+  }
 
   document.getElementById('otpSubText').textContent =
     'A 6-digit verification code was sent to ' + email + '. Enter it below to activate your account.';
@@ -1019,6 +1041,10 @@ async function verifyOTP() {
     window._pendingSignup = null;
     if (_resendInterval) clearInterval(_resendInterval);
     showSuccess(p.fullName, p.role, true);
+    // Redirect to platform after 2.5s — session is now confirmed
+    setTimeout(function() {
+      window.location.href = 'platform.html';
+    }, 2500);
 
   } catch(e) {
     errEl.textContent = 'Connection error \u2014 please check your internet.';
@@ -1085,7 +1111,7 @@ async function createProfile(uid, p) {
 }
 
 function showSuccess(name, role, loggedIn) {
-  [1,2,3].forEach(i => { const el = document.getElementById('step' + i); if (el) el.style.display = 'none'; });
+  [1,2,3,4].forEach(i => { const el = document.getElementById('step' + i); if (el) el.style.display = 'none'; });
   document.getElementById('successBox').classList.add('show');
   const TIER_LABELS = {
     both:        '\u2746 Curious \u00b7 T1 \u00b7 Seeker + Answerer Track',
