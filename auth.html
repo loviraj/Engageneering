@@ -286,7 +286,7 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
           <div class="field"><label>First Name</label><input type="text" id="sFirst" placeholder="First name" autocomplete="given-name"/></div>
           <div class="field"><label>Last Name</label><input type="text" id="sLast" placeholder="Last name" autocomplete="family-name"/></div>
         </div>
-        <div class="field"><label>Email Address</label><input type="email" id="sEmail" placeholder="you@school.edu" autocomplete="email"/></div>
+        <div class="field"><label>Email Address</label><input type="email" id="sEmail" placeholder="you@school.edu" autocomplete="email" oninput="delete _emailCheckCache[this.value.trim().toLowerCase()]; document.getElementById('s1Err').textContent='';" onblur="checkEmailExists(this.value)"/></div>
         <div class="field"><label>Password</label><input type="password" id="sPwd" placeholder="Minimum 8 characters" autocomplete="new-password"/></div>
         <div class="field"><label>Confirm Password</label><input type="password" id="sPwd2" placeholder="Repeat your password" autocomplete="new-password" onkeydown="if(event.key==='Enter')nextStep(2)"/></div>
         <div class="err" id="s1Err"></div>
@@ -612,10 +612,15 @@ function showStep(n) {
   });
 }
 
-function nextStep(n) {
+async function nextStep(n) {
   // Validate current step before advancing
   if (n > currentStep) {
-    if (currentStep === 1 && !validateStep1()) return;
+    if (currentStep === 1) {
+      if (!validateStep1()) return;
+      // Also do async email-exists check before moving to step 2
+      const blocked = await checkEmailExists(document.getElementById('sEmail').value.trim());
+      if (blocked) return;
+    }
     if (currentStep === 2 && !validateStep2()) return;
   }
   showStep(n);
@@ -653,6 +658,82 @@ function validateStep2() {
   if (!country) { err.textContent = 'Please select your country.'; return false; }
   return true;
 }
+
+// ── EMAIL EXISTS CHECK ─────────────────────────────────────────────────────
+// Called onblur of the email field AND before advancing from step 1.
+// Uses signUp with a dummy password; Supabase returns an error only for
+// *confirmed* existing users. For unconfirmed duplicates identities===[] 
+// which we also catch. Returns true if the email is blocked (already taken).
+let _emailCheckCache = {};   // avoid hammering API on repeated blur
+async function checkEmailExists(email) {
+  const errEl = document.getElementById('s1Err');
+  email = (email || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) return false;   // let validateStep1 handle format
+
+  // Show a subtle checking indicator
+  errEl.style.color = '#7a9ab8';
+  errEl.textContent = 'Checking email…';
+
+  // Return cached result so repeated blurs don't re-call API
+  if (_emailCheckCache[email] !== undefined) {
+    if (_emailCheckCache[email]) {
+      errEl.style.color = '#f09595';
+      errEl.innerHTML = 'This email is already registered. <span style="color:#c8922a;cursor:pointer;text-decoration:underline" onclick="showForm('login')">Log in instead →</span>';
+    } else {
+      errEl.textContent = '';
+    }
+    return _emailCheckCache[email];
+  }
+
+  try {
+    // Attempt signUp with a throwaway password — we will NOT create the user;
+    // we read the response to detect duplicates, then immediately sign out
+    // any accidental session so state stays clean.
+    const { data, error } = await supa.auth.signUp({
+      email,
+      password: 'probe-' + Math.random().toString(36).slice(2) + 'Aa1!',
+    });
+
+    let alreadyExists = false;
+
+    if (error) {
+      const msg = error.message.toLowerCase();
+      // Supabase explicitly rejects confirmed existing emails
+      if (msg.includes('already registered') || msg.includes('user already') || error.status === 422) {
+        alreadyExists = true;
+      }
+    } else {
+      // No error but identities:[] → already-registered-but-unconfirmed user
+      if (data?.user?.identities && data.user.identities.length === 0) {
+        alreadyExists = true;
+      }
+      // If a ghost session was created for the probe, sign it out immediately
+      if (data?.session) {
+        await supa.auth.signOut();
+      }
+    }
+
+    _emailCheckCache[email] = alreadyExists;
+
+    if (alreadyExists) {
+      errEl.style.color = '#f09595';
+      errEl.innerHTML = 'This email is already registered. <span style="color:#c8922a;cursor:pointer;text-decoration:underline" onclick="showForm('login')">Log in instead →</span>';
+    } else {
+      errEl.style.color = '#5dcaa5';
+      errEl.textContent = '✓ Email available';
+      // Clear the green tick after 2s so it doesn't distract
+      setTimeout(() => { if (errEl.textContent === '✓ Email available') errEl.textContent = ''; }, 2000);
+    }
+
+    return alreadyExists;
+
+  } catch (e) {
+    // Network error — don't block the user, just clear the indicator
+    errEl.textContent = '';
+    return false;
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ── LOGIN ──
 async function doLogin() {
@@ -775,8 +856,8 @@ async function doSignup() {
       const msg = signUpError.message.toLowerCase();
       if (msg.includes('already registered') || msg.includes('user already registered') ||
           signUpError.status === 422) {
-        // Confirmed existing user — don't reveal, send them to login
-        err.textContent = 'This email is already registered. Please log in instead.';
+        // Should have been caught at step 1 — show with login link as fallback
+        err.innerHTML = 'This email is already registered. <span style="color:#c8922a;cursor:pointer;text-decoration:underline" onclick="showForm('login')">Log in instead →</span>';
       } else if (msg.includes('invalid email')) {
         err.textContent = 'Please enter a valid email address.';
       } else if (msg.includes('rate') || msg.includes('too many') || signUpError.status === 429) {
