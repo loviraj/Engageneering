@@ -16,7 +16,7 @@ html,body{min-height:100%;font-family:'EB Garamond',Georgia,serif;background:#06
 
 /* ── LAYOUT ── */
 .page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
-.left-panel{background:linear-gradient(145deg,#060c1a,#0a1628,#0f1e36);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;border-right:1px solid #1e3a6a;position:relative;overflow:hidden}
+.left-panel{background:linear-gradient(145deg,#060c1a,#0a1628,#0f1e36);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:3rem 2rem 3rem;border-right:1px solid #1e3a6a;position:relative;overflow:hidden;overflow-y:auto}
 .right-panel{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:2.5rem 2rem;overflow-y:auto}
 
 /* left decorative */
@@ -112,8 +112,8 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
   appearance:checkbox;-webkit-appearance:checkbox;
 }
 .consent-check-row label{font-size:12px;color:#b8cce8;line-height:1.65;cursor:pointer;user-select:none}
-#joinBtn{opacity:.45;cursor:not-allowed;transition:opacity .2s,transform .2s,cursor .2s}
-#joinBtn.consent-ok{opacity:1;cursor:pointer}
+#joinBtn{opacity:.45;transition:opacity .2s,transform .2s}
+#joinBtn.consent-ok{opacity:1}
 .consent-warn{font-size:11px;color:#e24b4a;margin-top:.4rem;display:none}
 
 /* step nav */
@@ -720,23 +720,24 @@ async function doSignup() {
 
   err.textContent = ''; ok.textContent = '';
 
-  // Consent check
-  if(!checkConsent()){
-    document.getElementById('consentWarn').style.display='block';
-    document.getElementById('chkTerms').scrollIntoView({behavior:'smooth',block:'center'});
+  // Consent gate — must tick all 3 boxes
+  if (!checkConsent()) {
+    document.getElementById('consentWarn').style.display = 'block';
+    document.getElementById('chkTerms').scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
-  btn.textContent = 'Sending verification code...'; btn.disabled = true;
+  btn.textContent = 'Sending verification code…'; btn.disabled = true;
 
   try {
     const fullName = `${first} ${last}`;
 
-    // Step 1: Use signUp() — Supabase sends a 6-digit OTP confirmation code
-    // (not a magic link) when "Confirm email" is enabled in project settings.
-    // signInWithOtp always sends a magic link unless the Supabase dashboard
-    // has "Enable OTP" explicitly toggled; signUp() reliably triggers OTP.
-    const { error: otpError } = await supa.auth.signUp({
+    // ── APPROACH: signUp() triggers Supabase to email a 6-digit OTP when
+    //    "Confirm email" is ON in Auth settings (which it is — you proved it
+    //    sends *something*). signInWithOtp() was sending a magic link because
+    //    the dashboard email template was the magic-link template.
+    //    signUp() uses the "Confirm signup" template which sends an OTP code.
+    const { data: signUpData, error: signUpError } = await supa.auth.signUp({
       email,
       password: pwd,
       options: {
@@ -744,36 +745,41 @@ async function doSignup() {
       }
     });
 
-    if (otpError) {
-      const msg = otpError.message.toLowerCase();
-      if (msg.includes('already registered') || msg.includes('already exists') ||
-          msg.includes('user already') || otpError.status === 422) {
+    if (signUpError) {
+      const msg = signUpError.message.toLowerCase();
+      if (msg.includes('already registered') || msg.includes('user already registered') ||
+          signUpError.status === 422) {
         err.textContent = 'This email is already registered. Please log in instead.';
       } else if (msg.includes('invalid email')) {
         err.textContent = 'Please enter a valid email address.';
-      } else if (msg.includes('rate') || msg.includes('too many')) {
-        err.textContent = 'Too many requests. Please wait a minute and try again.';
+      } else if (msg.includes('rate') || msg.includes('too many') || signUpError.status === 429) {
+        err.textContent = 'Too many attempts. Please wait a minute and try again.';
+      } else if (msg.includes('password') && msg.includes('weak')) {
+        err.textContent = 'Password is too weak. Please choose a stronger password.';
       } else {
-        err.textContent = otpError.message;
+        err.textContent = signUpError.message;
       }
       return;
     }
 
-    // Store pending signup data — used after OTP verified
+    // Supabase returns identityData even for "email not confirmed" users —
+    // as long as there is no error we can proceed to OTP entry.
+    // Store everything needed post-verification
     window._pendingSignup = {
       email, pwd, fullName, prof, country, years, org, source, bio,
       tags, role: selectedRole, consent: getConsentPayload()
     };
 
-    // Show OTP step
+    // Advance to OTP entry screen
     document.getElementById('otpSubText').textContent =
-      `A 6-digit code was sent to ${email}. Enter it below to verify your account.`;
+      `A 6-digit verification code was sent to ${email}. Enter it below to activate your account.`;
     showStep(4);
     startResendTimer();
     document.getElementById('otp0').focus();
 
-  } catch(e) {
+  } catch (e) {
     err.textContent = 'Connection error. Please check your internet and try again.';
+    console.error('doSignup error:', e);
   } finally {
     btn.textContent = 'Join the Movement'; btn.disabled = false;
   }
@@ -845,12 +851,9 @@ async function resendOTP() {
   errEl.textContent = ''; okEl.textContent = '';
   document.getElementById('resendBtn').disabled = true;
 
-  const { error } = await supa.auth.signUp({
-    email: p.email,
-    password: p.pwd,
-    options: {
-      data: { full_name: p.fullName, role: p.role }
-    }
+  const { error } = await supa.auth.resend({
+    type: 'signup',
+    email: p.email
   });
 
   if(error){
