@@ -572,7 +572,7 @@ function isGateOpen(){
     return true;
   }catch(e){ return false; }
 }
-function setGateToken(email){ sessionStorage.setItem(GATE_TOKEN_KEY,JSON.stringify({ts:Date.now(),email})); }
+function setGateToken(email,pwd){ sessionStorage.setItem(GATE_TOKEN_KEY,JSON.stringify({ts:Date.now(),email,_p:pwd||''})); }
 function clearGateToken(){ sessionStorage.removeItem(GATE_TOKEN_KEY); }
 
 (function enforceGate(){
@@ -583,7 +583,7 @@ function clearGateToken(){ sessionStorage.removeItem(GATE_TOKEN_KEY); }
       document.getElementById('gateL2').style.display='none';
     });
   } else {
-    document.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('DOMContentLoaded', async ()=>{
       const raw = JSON.parse(sessionStorage.getItem(GATE_TOKEN_KEY)||'{}');
       document.getElementById('gateL1').style.display='none';
       document.getElementById('gateL2').style.display='none';
@@ -591,6 +591,10 @@ function clearGateToken(){ sessionStorage.removeItem(GATE_TOKEN_KEY); }
       document.getElementById('adminInitial').textContent=(raw.email||'A').charAt(0).toUpperCase();
       document.getElementById('adminLabel').textContent=(raw.email||'admin').split('@')[0];
       sessionStart = new Date(raw.ts);
+      if(raw.email && raw._p){
+        try{ await getSupa().auth.signInWithPassword({email:raw.email,password:raw._p}); }
+        catch(e){ console.warn('Re-auth:',e.message); }
+      }
       initShell();
     });
   }
@@ -675,6 +679,7 @@ async function doL1(){
     }
     adminUser=data.user;
     secEvent('L1 PASS: '+email,'ok');
+    sessionStorage.setItem('_adm_p',pwd);
     document.getElementById('gateL1').style.display='none';
     document.getElementById('gateL2').style.display='flex';
     startTOTP();
@@ -701,7 +706,7 @@ async function doL2(){
     return;
   }
   clearInterval(_totpTimer);
-  setGateToken(adminUser?.email||ADMIN_EMAILS[0]);
+  setGateToken(adminUser?.email||ADMIN_EMAILS[0], sessionStorage.getItem('_adm_p')||''); sessionStorage.removeItem('_adm_p');
   secEvent('L2 PASS: admin authenticated','ok');
   document.getElementById('gateL2').style.display='none';
   document.getElementById('adminShell').style.display='block';
@@ -737,8 +742,9 @@ async function sendReset(){
 // ── SHELL INIT ──
 function initShell(){
   startClock();
+  updateBadges();
   nav('dashboard',document.querySelector('.sb-item.active'));
-  setInterval(()=>{ nav('dashboard',document.querySelector('.sb-item.active')); loadDashboard(); updateBadges(); },60000);
+  setInterval(()=>{ loadDashboard(); updateBadges(); },60000);
 }
 
 function startClock(){
@@ -875,13 +881,15 @@ async function loadActivity(){
 
 async function loadQuestions(){
   const s=getSupa();
-  const[{data:qd},{data:pr},{data:ac}]=await Promise.all([
+  document.getElementById('qTbl').innerHTML='<tr class="empty-row"><td colspan="11">Loading…</td></tr>';
+  const[{data:qd,error:qe},{data:pr},{data:ac}]=await Promise.all([
     s.from('questions')
       .select('id,title,body,user_id,cds,pts_awarded,flag_count,status,question_type,duration_seconds,video_url,created_at')
       .order('created_at',{ascending:false}).limit(200),
     s.from('profiles').select('id,display_name'),
     s.from('answers').select('question_id')
   ]);
+  if(qe){ document.getElementById('qTbl').innerHTML='<tr class="empty-row"><td colspan="11" style="color:var(--rdb)">DB Error: '+qe.message+'</td></tr>'; console.error('loadQuestions:',qe); return; }
   const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
   const am={}; (ac||[]).forEach(a=>{ am[a.question_id]=(am[a.question_id]||0)+1; });
   window._qStore={};
@@ -945,13 +953,15 @@ function filterQuestions(){
 
 async function loadAnswers(){
   const s=getSupa();
-  const[{data:ad},{data:pr},{data:qs}]=await Promise.all([
+  document.getElementById('aTbl').innerHTML='<tr class="empty-row"><td colspan="10">Loading…</td></tr>';
+  const[{data:ad,error:ae},{data:pr},{data:qs}]=await Promise.all([
     s.from('answers')
       .select('id,title,user_id,question_id,cds,pts_awarded,flag_count,status,video_url,answer_type,duration_seconds,transcript,created_at')
       .order('created_at',{ascending:false}).limit(200),
     s.from('profiles').select('id,display_name'),
     s.from('questions').select('id,title')
   ]);
+  if(ae){ document.getElementById('aTbl').innerHTML='<tr class="empty-row"><td colspan="10" style="color:var(--rdb)">DB Error: '+ae.message+'</td></tr>'; console.error('loadAnswers:',ae); return; }
   const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
   const qm={}; (qs||[]).forEach(q=>qm[q.id]=q.title||'—');
   window._aStore={};
