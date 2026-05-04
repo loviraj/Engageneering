@@ -2,269 +2,303 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Engageneering™ — ⬡</title>
-<link rel="icon" href="ENG-Favicon.png"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Engageneering™ · Admin</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23040810'/%3E%3Cpolygon points='16,3 27,9.5 27,22.5 16,29 5,22.5 5,9.5' fill='none' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='16,8 22,11.5 22,18.5 16,22 10,18.5 10,11.5' fill='%23c8922a' opacity='0.9'/%3E%3C/svg%3E"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
+<script src="config.js" onerror="window.ENG_CONFIG=window.ENG_CONFIG||{}"></script>
 <style>
 :root{
-  --bg:#040810;--bg2:#070f1e;--bg3:#0a1525;--bg4:#060c18;
-  --bdr:#1a3360;--bdr2:#243d70;
-  --gold:#c8922a;--gb:#f0c040;
-  --t1:#eaf0fc;--t2:#b0c8e8;--t3:#6a8aaa;--t4:#3a5a78;
-  --tl:#1d9e75;--tlb:#5dcaa5;
-  --bl:#378add;--blb:#85b7eb;
+  --bg:#040810;--bg2:#060d1a;--bg3:#091220;--bg4:#050b16;--bg5:#0b1828;
+  --bdr:#1a3360;--bdr2:#243d70;--bdr3:#2d4d88;
+  --gold:#c8922a;--gb:#f0c040;--gd:#a87520;
+  --t1:#eaf0fc;--t2:#b0c8e8;--t3:#6a8aaa;--t4:#3a5a78;--t5:#1e3550;
+  --tl:#1d9e75;--tlb:#5dcaa5;--tld:#146a4f;
+  --bl:#378add;--blb:#85b7eb;--bld:#245e9a;
   --pu:#7f77dd;--pub:#afa9ec;
-  --rd:#e24b4a;--am:#ba7517;--gn:#3a9e5f;
+  --rd:#e24b4a;--rdb:#f07070;--rdd:#9a2020;
+  --am:#ba7517;--amb:#e8a030;
+  --gn:#3a9e5f;--gnb:#5dc87a;
+  --sb-w:220px;
+  --nav-h:52px;
+  --radius:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t2);min-height:100vh;font-size:13px}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t2);min-height:100vh;font-size:13px;overflow-x:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+::selection{background:rgba(200,146,42,.3)}
 
-/* ── LAYER 1: IDENTITY GATE ── */
-#gateL1{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(ellipse at 30% 20%,rgba(200,146,42,.07) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(55,138,221,.05) 0%,transparent 60%)}
-.gate-box{width:100%;max-width:400px;padding:2.5rem;background:var(--bg3);border:1px solid var(--bdr2);border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.6)}
-.gate-logo{display:flex;flex-direction:column;align-items:center;gap:.6rem;margin-bottom:2rem}
-.gate-title{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:700}
-.gate-sub{font-size:10px;color:var(--t4);letter-spacing:1px}
-.gate-step-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--t4);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--bdr)}
-.gate-field{width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:10px 14px;color:var(--t1);font-size:13px;outline:none;margin-bottom:.7rem;transition:border-color .2s}
+/* ═══ GATE ═══ */
+.gate{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse 60% 50% at 25% 20%,rgba(200,146,42,.08),transparent),
+                   radial-gradient(ellipse 50% 60% at 75% 80%,rgba(55,138,221,.05),transparent)}
+.gate-box{width:100%;max-width:400px;padding:2.5rem;background:var(--bg3);border:1px solid var(--bdr2);border-radius:16px;box-shadow:0 32px 96px rgba(0,0,0,.7)}
+.gate-logo{display:flex;align-items:center;gap:.8rem;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--bdr)}
+.gate-brand{font-size:10px;letter-spacing:4px;color:var(--gold);font-weight:700;text-transform:uppercase}
+.gate-sub-lbl{font-size:9px;color:var(--t4);letter-spacing:2px;margin-top:.1rem}
+.gate-step{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--t4);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--bdr)}
+.gate-field{width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:7px;padding:10px 14px;color:var(--t1);font-size:13px;outline:none;margin-bottom:.7rem;transition:border-color .2s}
 .gate-field:focus{border-color:var(--gold)}
-.gate-field::placeholder{color:var(--t4)}
-.gate-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--gold),var(--gb));color:#040c10;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;transition:all .2s;margin-top:.3rem}
-.gate-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,146,42,.3)}
-.gate-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.gate-err{font-size:11px;color:var(--rd);margin-top:.5rem;min-height:14px;text-align:center}
-.gate-ok{font-size:11px;color:var(--tlb);margin-top:.5rem;min-height:14px;text-align:center}
-.totp-display{font-family:monospace;font-size:28px;letter-spacing:8px;color:var(--gb);text-align:center;background:var(--bg4);border:1px solid var(--bdr);border-radius:8px;padding:.8rem;margin:.5rem 0 1rem}
-.totp-hint{font-size:10px;color:var(--t4);text-align:center;margin-bottom:.8rem}
-.totp-timer{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:10px;color:var(--t4);margin-bottom:.8rem}
-.totp-bar{width:120px;height:3px;background:var(--bdr);border-radius:2px;overflow:hidden}
-.totp-bar-fill{height:100%;background:var(--gold);transition:width 1s linear}
-.gate-back{font-size:10px;color:var(--t4);background:none;border:none;cursor:pointer;margin-top:.8rem;text-align:center;width:100%}
-.gate-back:hover{color:var(--t2)}
-.attempts-warn{font-size:10px;color:var(--am);text-align:center;margin-top:.5rem}
+.gate-field::placeholder{color:var(--t5)}
+.gate-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--gold),var(--gb));color:#040c10;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;transition:opacity .15s}
+.gate-btn:hover{opacity:.85}
+.gate-err{color:var(--rdb);font-size:11px;margin-top:.5rem;min-height:16px}
+.gate-ok{color:var(--tlb);font-size:11px;margin-top:.5rem}
+.gate-link{font-size:11px;color:var(--t4);cursor:pointer;text-align:center;margin-top:.8rem;transition:color .15s}
+.gate-link:hover{color:var(--gold)}
+/* TOTP */
+.totp-display{font-family:monospace;font-size:40px;letter-spacing:10px;color:var(--gb);text-align:center;margin:.8rem 0;font-weight:700}
+.totp-bar{height:3px;background:var(--bdr2);border-radius:2px;margin-bottom:.5rem;overflow:hidden}
+.totp-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gb));border-radius:2px;transition:width 1s linear}
+.totp-hint{font-size:10px;color:var(--t4);text-align:center}
 
-/* ── NAV ── */
-nav{background:var(--bg2);border-bottom:1px solid var(--bdr);padding:0 1.4rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.nav-l{display:flex;align-items:center;gap:.8rem}
-.nav-brand{font-size:12px;font-weight:700;letter-spacing:2.5px;color:var(--gold)}
-.nav-sep{width:1px;height:16px;background:var(--bdr)}
-.nav-pg{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4)}
-.nav-r{display:flex;align-items:center;gap:1rem}
-.nav-live{display:flex;align-items:center;gap:.4rem;font-size:10px;color:var(--t3)}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--tlb);box-shadow:0 0 6px rgba(93,202,165,.5);animation:ld 2s ease infinite}
-@keyframes ld{0%,100%{opacity:1}50%{opacity:.35}}
-.nav-admin{font-size:10px;color:var(--t3);display:flex;align-items:center;gap:.4rem}
-.nav-admin-dot{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gb));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#040c10}
-.nav-so{font-size:10px;color:var(--t4);background:none;border:1px solid var(--bdr);border-radius:4px;padding:3px 10px;cursor:pointer;transition:all .2s}
-.nav-so:hover{border-color:var(--rd);color:var(--rd)}
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:200;
+  background:rgba(4,8,16,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 1.2rem;gap:1rem}
+.nav-logo{display:flex;align-items:center;gap:.6rem;min-width:var(--sb-w)}
+.nav-brand{font-size:10px;letter-spacing:3.5px;color:var(--gold);font-weight:700;text-transform:uppercase}
+.nav-sep{width:1px;height:20px;background:var(--bdr);margin:0 .6rem}
+.nav-pg{font-size:10px;color:var(--t3);letter-spacing:1px}
+.nav-r{display:flex;align-items:center;gap:.8rem;margin-left:auto}
+.nav-live{display:flex;align-items:center;gap:.4rem;font-size:10px;color:var(--t3);letter-spacing:.5px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--gnb);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(93,202,117,.4)}50%{opacity:.7;box-shadow:0 0 0 5px transparent}}
+.nav-clock{font-size:10px;color:var(--t3);font-family:monospace;letter-spacing:.5px}
+.nav-admin{display:flex;align-items:center;gap:.5rem;font-size:11px;color:var(--t2)}
+.nav-dot{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gb));color:#040c10;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.nav-so{padding:6px 12px;background:transparent;border:1px solid var(--bdr2);border-radius:5px;color:var(--t3);font-size:10px;cursor:pointer;letter-spacing:.5px;transition:all .15s}
+.nav-so:hover{border-color:var(--rd);color:var(--rdb)}
 
-/* ── LAYOUT ── */
-.layout{display:grid;grid-template-columns:196px 1fr;min-height:calc(100vh - 52px)}
+/* ═══ LAYOUT ═══ */
+.layout{display:flex;padding-top:var(--nav-h);min-height:100vh}
 
-/* ── SIDEBAR ── */
-.sidebar{background:var(--bg2);border-right:1px solid var(--bdr);padding:1rem .7rem;display:flex;flex-direction:column;gap:.15rem;overflow-y:auto}
-.sb-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);padding:.7rem .6rem .3rem;margin-top:.4rem;opacity:.8}
-.sb-item{display:flex;align-items:center;gap:.55rem;padding:.48rem .7rem;border-radius:5px;cursor:pointer;font-size:11.5px;color:var(--t3);transition:all .18s;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent}
-.sb-item:hover{background:rgba(200,146,42,.07);color:var(--t2)}
-.sb-item.active{background:rgba(200,146,42,.1);color:var(--gb);border-left-color:var(--gold)}
-.sb-badge{margin-left:auto;font-size:8px;padding:1px 5px;border-radius:8px;font-weight:700}
-.sb-ver{margin-top:auto;padding:.8rem .6rem 0;font-size:9px;color:var(--t4);border-top:1px solid var(--bdr);line-height:1.6}
+/* ═══ SIDEBAR ═══ */
+.sidebar{width:var(--sb-w);min-height:calc(100vh - var(--nav-h));background:var(--bg2);border-right:1px solid var(--bdr);padding:1rem .6rem;position:fixed;top:var(--nav-h);left:0;bottom:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
+.sb-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t5);padding:.6rem .6rem .3rem;font-weight:700}
+.sb-item{display:flex;align-items:center;gap:.5rem;width:100%;padding:7px 10px;background:transparent;border:none;border-radius:6px;color:var(--t3);font-size:12px;cursor:pointer;text-align:left;transition:all .15s;position:relative}
+.sb-item:hover{background:var(--bg3);color:var(--t1)}
+.sb-item.active{background:rgba(200,146,42,.12);color:var(--gb);border-left:2px solid var(--gold)}
+.sb-item.active .sb-icon{color:var(--gold)}
+.sb-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;min-width:18px;text-align:center}
+.ba{background:rgba(200,146,42,.2);color:var(--gb)}
+.bb{background:rgba(55,138,221,.2);color:var(--blb)}
+.bg{background:rgba(29,158,117,.2);color:var(--tlb)}
+.br{background:rgba(226,75,74,.2);color:var(--rdb)}
+.bpu{background:rgba(127,119,221,.2);color:var(--pub)}
+.sb-spacer{flex:1}
+.sb-ver{font-size:9px;color:var(--t5);padding:.6rem;line-height:1.7;border-top:1px solid var(--bdr);margin-top:.5rem}
 
-/* ── MAIN ── */
-.main{overflow-y:auto;padding:1.4rem;background:var(--bg)}
-.panel{display:none}.panel.active{display:block}
+/* ═══ MAIN ═══ */
+.main{margin-left:var(--sb-w);flex:1;padding:1.5rem;min-height:calc(100vh - var(--nav-h));background:var(--bg)}
+.panel{display:none}
+.panel.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
-/* ── PAGE HEADER ── */
-.pg-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.4rem}
-.pg-title{font-size:15px;font-weight:600;color:var(--t1);letter-spacing:.3px}
-.pg-sub{font-size:10px;color:var(--t4);margin-top:.2rem}
-.btn-refresh{font-size:9.5px;padding:5px 14px;border-radius:4px;background:rgba(200,146,42,.08);border:1px solid rgba(200,146,42,.25);color:var(--gold);cursor:pointer;transition:all .2s;letter-spacing:.5px}
-.btn-refresh:hover{background:rgba(200,146,42,.18)}
+/* ═══ PAGE HEADERS ═══ */
+.pg-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.4rem;gap:1rem;flex-wrap:wrap}
+.pg-title{font-size:20px;font-weight:700;color:var(--t1);letter-spacing:-.3px}
+.pg-sub{font-size:11px;color:var(--t4);margin-top:.2rem}
+.hdr-actions{display:flex;gap:.5rem;flex-wrap:wrap}
 
-/* ── KPIs ── */
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.4rem}
-.kpi{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;padding:1rem 1.1rem;position:relative;overflow:hidden}
-.kpi-accent{position:absolute;top:0;left:0;right:0;height:2px}
-.kpi-val{font-size:30px;font-weight:700;color:var(--t1);line-height:1.1;margin-bottom:.15rem;font-family:'Segoe UI',sans-serif}
-.kpi-label{font-size:10px;color:var(--t4);letter-spacing:.5px;text-transform:uppercase}
-.kpi-delta{font-size:10px;margin-top:.35rem;display:flex;align-items:center;gap:.3rem}
+/* ═══ BUTTONS ═══ */
+.btn{padding:7px 14px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.5px;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-ghost{background:transparent;border:1px solid var(--bdr2);color:var(--t3)}
+.btn-ghost:hover{border-color:var(--bdr3);color:var(--t1)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gb));color:#040c10;font-weight:700}
+.btn-gold:hover{opacity:.85}
+.btn-danger{background:rgba(226,75,74,.15);border:1px solid rgba(226,75,74,.4);color:var(--rdb)}
+.btn-danger:hover{background:rgba(226,75,74,.25)}
+.btn-warn{background:rgba(186,117,23,.15);border:1px solid rgba(186,117,23,.4);color:var(--amb)}
+.btn-warn:hover{background:rgba(186,117,23,.25)}
+.btn-ok{background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.4);color:var(--tlb)}
+.btn-ok:hover{background:rgba(29,158,117,.25)}
+.btn-sm{padding:4px 9px;font-size:10px;border-radius:4px}
 
-/* ── TABLES ── */
-.tbl-wrap{background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:1.2rem}
-table{width:100%;border-collapse:collapse}
-thead tr{background:var(--bg4)}
-th{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:.65rem 1rem;text-align:left;font-weight:600;border-bottom:1px solid var(--bdr)}
-td{padding:.65rem 1rem;border-bottom:1px solid rgba(26,51,96,.4);font-size:11.5px;color:var(--t2);vertical-align:middle}
+/* ═══ KPI CARDS ═══ */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin-bottom:1.5rem}
+.kpi{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--radius);padding:1rem;transition:border-color .2s;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,146,42,.04),transparent);pointer-events:none}
+.kpi:hover{border-color:var(--bdr3)}
+.kpi-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:.5rem;font-weight:700}
+.kpi-val{font-size:28px;font-weight:800;color:var(--t1);line-height:1;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:9px;color:var(--t4);margin-top:.3rem}
+.kpi-icon{position:absolute;top:.8rem;right:.8rem;font-size:20px;opacity:.15}
+.kpi.gold .kpi-val{color:var(--gb)}
+.kpi.teal .kpi-val{color:var(--tlb)}
+.kpi.blue .kpi-val{color:var(--blb)}
+.kpi.red .kpi-val{color:var(--rdb)}
+.kpi.purple .kpi-val{color:var(--pub)}
+
+/* ═══ CARDS / SECTIONS ═══ */
+.card{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem}
+.card-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.card-title::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+
+/* ═══ TABLES ═══ */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg4);color:var(--t4);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:8px 10px;text-align:left;font-weight:700;white-space:nowrap;border-bottom:1px solid var(--bdr)}
+td{padding:8px 10px;border-bottom:1px solid rgba(26,51,96,.4);color:var(--t2);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(55,138,221,.03)}
-.empty-row td{text-align:center;color:var(--t4);padding:2rem;font-style:italic;font-size:12px}
+tr:hover td{background:rgba(255,255,255,.02)}
+.empty-row td{text-align:center;color:var(--t4);padding:2rem;font-size:11px}
+.mono{font-family:monospace;font-size:11px}
+.inline-mono{font-family:monospace;font-size:10px;background:var(--bg4);padding:1px 5px;border-radius:3px;border:1px solid var(--bdr)}
 
-/* ── BADGES ── */
-.badge{font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid;font-weight:600;letter-spacing:.4px;white-space:nowrap}
-.bg{color:#3a9e5f;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3)}
-.br{color:#f09595;background:rgba(226,75,74,.1);border-color:rgba(226,75,74,.3)}
-.ba{color:var(--gb);background:rgba(200,146,42,.1);border-color:rgba(200,146,42,.3)}
-.bb{color:var(--blb);background:rgba(55,138,221,.1);border-color:rgba(55,138,221,.3)}
-.bp{color:var(--pub);background:rgba(127,119,221,.1);border-color:rgba(127,119,221,.3)}
-.bgr{color:var(--t3);background:rgba(122,154,184,.07);border-color:rgba(122,154,184,.2)}
+/* ═══ ACTIVITY LOG ═══ */
+.log-wrap{display:flex;flex-direction:column;gap:3px;max-height:500px;overflow-y:auto}
+.log-item{display:flex;align-items:flex-start;gap:.6rem;padding:7px 10px;border-radius:6px;background:var(--bg4);border:1px solid var(--bdr);font-size:11px;animation:slideIn .2s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+.log-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.log-dot.ok{background:var(--gnb)}
+.log-dot.info{background:var(--blb)}
+.log-dot.warn{background:var(--amb)}
+.log-dot.error{background:var(--rdb)}
+.log-time{color:var(--t4);font-family:monospace;font-size:10px;white-space:nowrap;flex-shrink:0}
+.log-msg{color:var(--t2);flex:1;word-break:break-word}
+.log-tag{font-size:9px;padding:1px 5px;border-radius:3px;flex-shrink:0;font-weight:700}
 
-/* ── ACTION BUTTONS ── */
-.act-btn{font-size:9.5px;padding:3px 9px;border-radius:4px;cursor:pointer;border:1px solid;transition:all .18s;font-weight:500}
-.act-ok{color:var(--tlb);border-color:rgba(93,202,165,.4);background:rgba(29,158,117,.07)}.act-ok:hover{background:rgba(29,158,117,.18)}
-.act-bad{color:#f09595;border-color:rgba(240,149,149,.4);background:rgba(226,75,74,.07)}.act-bad:hover{background:rgba(226,75,74,.18)}
-.act-btn:disabled{opacity:.4;cursor:not-allowed}
+/* ═══ USER MODAL ═══ */
+.modal-backdrop{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--bg3);border:1px solid var(--bdr2);border-radius:14px;width:680px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 120px rgba(0,0,0,.8)}
+.modal-hdr{padding:1.2rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:var(--bg4)}
+.modal-title{font-size:15px;font-weight:700;color:var(--t1)}
+.modal-close{background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px;transition:color .15s}
+.modal-close:hover{color:var(--rdb)}
+.modal-body{padding:1.5rem;overflow-y:auto;flex:1}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--bdr);display:flex;gap:.6rem;justify-content:flex-end;background:var(--bg4);flex-wrap:wrap}
+.um-row{display:flex;align-items:flex-start;gap:1rem;padding:.5rem 0;border-bottom:1px solid rgba(26,51,96,.3)}
+.um-row:last-child{border-bottom:none}
+.um-key{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--t4);width:130px;flex-shrink:0;padding-top:2px;font-weight:700}
+.um-val{color:var(--t1);font-size:12px;flex:1;word-break:break-all}
+.um-section{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin:1rem 0 .5rem;padding-bottom:.3rem;border-bottom:1px solid var(--bdr)}
 
-/* ── TWO COL ── */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem}
-@media(max-width:1000px){.two-col{grid-template-columns:1fr}}
+/* ═══ VIDEO MODAL ═══ */
+.vid-modal{background:var(--bg);border:1px solid var(--bdr2);border-radius:14px;width:860px;max-width:95vw;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 120px rgba(0,0,0,.9)}
+.vid-hdr{padding:1rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:var(--bg4)}
+.vid-player{flex:1;background:#000;position:relative;min-height:200px}
+.vid-player video{width:100%;display:block;max-height:60vh}
+.vid-player iframe{width:100%;height:480px;border:none}
+.vid-info{padding:1rem 1.5rem;background:var(--bg3);border-top:1px solid var(--bdr);font-size:12px;color:var(--t2)}
+.vid-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.4rem}
+.vid-meta span{font-size:10px;color:var(--t4)}
 
-/* ── CHARTS ── */
-.chart-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.45rem}
-.chart-lbl{font-size:11px;color:var(--t3);min-width:70px}
-.chart-track{flex:1;background:var(--bg4);border-radius:3px;height:5px;overflow:hidden}
-.chart-fill{height:100%;border-radius:3px;transition:width .9s ease}
-.chart-val{font-size:10px;color:var(--t3);min-width:28px;text-align:right}
+/* ═══ STATUS BADGES ═══ */
+.status-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:.5px;text-transform:uppercase}
+.status-active{background:rgba(29,158,117,.2);color:var(--tlb);border:1px solid rgba(29,158,117,.3)}
+.status-suspended{background:rgba(186,117,23,.2);color:var(--amb);border:1px solid rgba(186,117,23,.3)}
+.status-deleted{background:rgba(226,75,74,.2);color:var(--rdb);border:1px solid rgba(226,75,74,.3)}
 
-/* ── LOG ── */
-.log-wrap{background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:1.2rem}
-.log-hdr{background:var(--bg4);padding:.55rem 1rem;font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.5rem}
-.log-body{max-height:300px;overflow-y:auto;font-family:'Cascadia Code','Consolas',monospace;font-size:11px}
-.log-row{padding:.3rem 1rem;border-bottom:1px solid rgba(26,51,96,.25);display:flex;gap:.7rem;line-height:1.5}
-.log-time{color:var(--t4);flex-shrink:0;min-width:72px}
-.log-agent{color:var(--gold);flex-shrink:0;min-width:90px}
-.l-ok{color:var(--tlb)}.l-err{color:#f09595}.l-warn{color:var(--gb)}.l-info{color:var(--blb)}
+/* ═══ CONFIRM MODAL ═══ */
+.confirm-modal{background:var(--bg3);border:1px solid var(--bdr2);border-radius:12px;width:400px;max-width:95vw;padding:1.8rem;box-shadow:0 24px 80px rgba(0,0,0,.8)}
+.confirm-icon{font-size:36px;text-align:center;margin-bottom:.8rem}
+.confirm-title{font-size:16px;font-weight:700;color:var(--t1);text-align:center;margin-bottom:.4rem}
+.confirm-msg{font-size:12px;color:var(--t3);text-align:center;line-height:1.6;margin-bottom:1.2rem}
+.confirm-actions{display:flex;gap:.6rem;justify-content:center}
 
-/* ── AGENT GRID ── */
-.agent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.6rem;margin-bottom:1.2rem}
-.agent-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:.9rem;transition:border-color .2s}
-.agent-card:hover{border-color:var(--bdr2)}
-.agent-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
-.agent-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.agent-name{font-size:12px;font-weight:600;color:var(--t1)}
-.agent-id{font-size:8.5px;color:var(--t4);letter-spacing:1px;margin-top:1px}
-.agent-stat{font-size:11px;color:var(--t3)}
-.agent-layer{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);margin-top:.3rem}
-.agent-avg{font-size:13px;font-weight:700;color:var(--t1);margin-top:.2rem}
+/* ═══ SEARCH / FILTER ═══ */
+.search-bar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.search-input{flex:1;min-width:180px;background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:8px 12px;color:var(--t1);font-size:12px;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--gold)}
+.search-input::placeholder{color:var(--t4)}
+select.search-input{cursor:pointer}
 
-/* ── YOM SECTION ── */
-.yom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.2rem}
-.yom-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:1rem;text-align:center}
-.yom-val{font-size:24px;font-weight:700;color:var(--gb);margin-bottom:.2rem}
-.yom-lbl{font-size:9.5px;color:var(--t4);text-transform:uppercase;letter-spacing:.8px}
+/* ═══ CHARTS / BARS ═══ */
+.bar-wrap{display:flex;flex-direction:column;gap:.4rem}
+.bar-row{display:flex;align-items:center;gap:.6rem;font-size:11px}
+.bar-label{width:90px;color:var(--t3);font-size:10px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:8px;background:var(--bdr);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.bar-val{width:40px;color:var(--t2);font-size:10px;font-family:monospace}
 
-/* ── USER DETAIL MODAL ── */
-#userModal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem}
-#userModal.open{display:flex}
-.user-modal-box{background:var(--bg3);border:1px solid var(--bdr2);border-radius:12px;width:100%;max-width:600px;max-height:80vh;overflow-y:auto}
-.um-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid var(--bdr)}
-.um-title{font-size:14px;font-weight:600;color:var(--t1)}
-.um-close{background:none;border:none;color:var(--t4);font-size:20px;cursor:pointer;line-height:1}
-.um-body{padding:1.2rem}
-.um-row{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid rgba(26,51,96,.3);font-size:12px}
-.um-key{color:var(--t4)}.um-val{color:var(--t1);font-weight:500}
+/* ═══ SPARKLINE ═══ */
+.sparkline{display:inline-flex;align-items:flex-end;gap:2px;height:24px}
+.spark-bar{width:4px;border-radius:1px;background:var(--blb);opacity:.7;transition:height .4s}
 
-/* ── CONSENT AUDIT ── */
-.consent-row{background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:.8rem 1rem;margin-bottom:.5rem;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1rem;align-items:center;font-size:11.5px}
+/* ═══ LIVE PULSE ═══ */
+.live-indicator{display:inline-flex;align-items:center;gap:.4rem;font-size:9px;color:var(--gnb);letter-spacing:1px;text-transform:uppercase;font-weight:700}
+.live-ring{width:8px;height:8px;border-radius:50%;background:var(--gnb);animation:pulse 2s infinite}
 
-/* ── MISC ── */
-.section-divider{border:none;border-top:1px solid var(--bdr);margin:1.2rem 0}
-.inline-mono{font-family:monospace;font-size:11px;color:var(--gb)}
-.warn-box{background:rgba(226,75,74,.06);border:1px solid rgba(226,75,74,.2);border-radius:7px;padding:.8rem 1rem;font-size:11px;color:#f09595;margin-bottom:1rem}
-.info-box{background:rgba(200,146,42,.05);border:1px solid rgba(200,146,42,.15);border-radius:7px;padding:.8rem 1rem;font-size:11px;color:var(--t2);margin-bottom:1rem;line-height:1.7}
+/* ═══ TABS ═══ */
+.tabs{display:flex;gap:.2rem;border-bottom:1px solid var(--bdr);margin-bottom:1rem}
+.tab{padding:7px 14px;font-size:11px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none}
+.tab:hover{color:var(--t1)}
+.tab.active{color:var(--gb);border-bottom-color:var(--gold)}
+
+/* ═══ TOAST ═══ */
+#toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{padding:.7rem 1rem;border-radius:8px;font-size:12px;font-weight:500;min-width:220px;max-width:340px;display:flex;align-items:center;gap:.6rem;animation:toastIn .25s ease;pointer-events:auto;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.ok{background:#0f2a1c;border:1px solid rgba(93,202,122,.4);color:var(--gnb)}
+.toast.err{background:#2a0f0f;border:1px solid rgba(240,112,112,.4);color:var(--rdb)}
+.toast.info{background:#0f1a2a;border:1px solid rgba(133,183,235,.4);color:var(--blb)}
+.toast.warn{background:#2a1f0f;border:1px solid rgba(232,160,48,.4);color:var(--amb)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════
-     LAYER 1: EMAIL + PASSWORD
-══════════════════════════════════════════════════ -->
-<div id="gateL1">
-<div class="gate-box">
-  <div class="gate-logo">
-    <svg width="44" height="51" viewBox="0 0 52 60">
-      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="1.8"/>
-      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/>
-      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/>
-      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/>
-      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".92"/>
-      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/>
-      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/>
-      <circle cx="26" cy="30" r="5.5" fill="#f5d060"/>
-      <circle cx="26" cy="30" r="3" fill="#0b1624"/>
-      <circle cx="26" cy="30" r="1.4" fill="#f5d060"/>
-    </svg>
-    <div class="gate-title">ENGAGENEERING™</div>
-    <div class="gate-sub">Restricted · Admin Access Only</div>
+<!-- TOAST -->
+<div id="toast-wrap"></div>
+
+<!-- GATE L1 -->
+<div class="gate" id="gateL1" style="display:flex">
+  <div class="gate-box">
+    <div class="gate-logo">
+      <svg width="32" height="37" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.5"/><polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/><polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/><polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/><polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/><polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/><circle cx="26" cy="30" r="4.5" fill="#f5d060"/><circle cx="26" cy="30" r="2.5" fill="#0b1624"/></svg>
+      <div><div class="gate-brand">Engageneering™</div><div class="gate-sub-lbl">Admin Command Centre</div></div>
+    </div>
+    <div class="gate-step">Layer 1 · Identity Verification</div>
+    <input class="gate-field" type="email" id="L1email" placeholder="Admin email" autocomplete="username"/>
+    <input class="gate-field" type="password" id="L1pwd" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doL1()"/>
+    <button class="gate-btn" id="L1btn" onclick="doL1()">AUTHENTICATE →</button>
+    <div class="gate-err" id="L1err"></div>
+    <div class="gate-ok" id="resetOk"></div>
+    <div id="L1attempts" style="font-size:10px;color:var(--t5);text-align:center;margin-top:.4rem"></div>
+    <div class="gate-link" onclick="sendReset()">Forgot password? Send reset link</div>
   </div>
-  <div class="gate-step-lbl">Step 1 of 2 · Identity Verification</div>
-  <input class="gate-field" type="email" id="L1email" placeholder="Admin email address" autocomplete="username"/>
-  <input class="gate-field" type="password" id="L1pwd" placeholder="Password" autocomplete="current-password"
-    onkeydown="if(event.key==='Enter')doL1()"/>
-  <button class="gate-btn" id="L1btn" onclick="doL1()">Continue →</button>
-  <div class="gate-err" id="L1err"></div>
-  <div class="attempts-warn" id="L1attempts"></div>
-  <button class="gate-back" onclick="sendReset()" style="margin-top:.6rem;font-size:10px;color:var(--t4)">
-    Forgot password? Send reset email →
-  </button>
-  <div class="gate-ok" id="resetOk" style="font-size:11px;margin-top:.3rem"></div>
-</div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     LAYER 2: TOTP (time-based one-time PIN)
-══════════════════════════════════════════════════ -->
-<div id="gateL2" style="display:none;position:fixed;inset:0;z-index:901;align-items:center;justify-content:center;background:var(--bg)">
-<div class="gate-box">
-  <div class="gate-logo">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,rgba(200,146,42,.2),rgba(240,192,64,.1));border:1px solid rgba(200,146,42,.4);display:flex;align-items:center;justify-content:center;font-size:18px">🔐</div>
-    <div class="gate-title">Two-Factor Verification</div>
-    <div class="gate-sub">Session PIN — valid for 30 seconds</div>
+<!-- GATE L2 -->
+<div class="gate" id="gateL2" style="display:none">
+  <div class="gate-box">
+    <div class="gate-logo">
+      <svg width="32" height="37" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.5"/><polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/><polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/><polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/><polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/><polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/><circle cx="26" cy="30" r="4.5" fill="#f5d060"/><circle cx="26" cy="30" r="2.5" fill="#0b1624"/></svg>
+      <div><div class="gate-brand">Engageneering™</div><div class="gate-sub-lbl">Admin Command Centre</div></div>
+    </div>
+    <div class="gate-step">Layer 2 · Time-Based PIN</div>
+    <div class="totp-display" id="totpDisplay">——————</div>
+    <div class="totp-bar"><div class="totp-fill" id="totpBarFill" style="width:100%"></div></div>
+    <div class="totp-hint">Code refreshes every 30s · Countdown: <span id="totpCountdown">30</span>s</div>
+    <input class="gate-field" type="text" id="L2pin" maxlength="8" placeholder="Enter the PIN above" style="text-align:center;letter-spacing:4px;font-size:16px;margin-top:1rem" onkeydown="if(event.key==='Enter')doL2()"/>
+    <button class="gate-btn" id="L2btn" onclick="doL2()">VERIFY PIN →</button>
+    <div class="gate-err" id="L2err"></div>
+    <div class="gate-link" onclick="resetGate()">← Back to email / password</div>
   </div>
-  <div class="gate-step-lbl">Step 2 of 2 · PIN Verification</div>
-  <div class="info-box">Your session PIN has been generated. In production this would be sent via authenticator app (TOTP) or SMS. For this implementation, the PIN is shown below.</div>
-  <div class="totp-display" id="totpDisplay">——————</div>
-  <div class="totp-timer">
-    <span>Expires in <span id="totpCountdown">30</span>s</span>
-    <div class="totp-bar"><div class="totp-bar-fill" id="totpBarFill" style="width:100%"></div></div>
-  </div>
-  <div class="totp-hint">Enter the 6-digit PIN shown above</div>
-  <input class="gate-field" type="text" id="L2pin" placeholder="6-digit PIN"
-    maxlength="6" inputmode="numeric" pattern="[0-9]*"
-    style="text-align:center;letter-spacing:8px;font-size:20px;font-family:monospace"
-    onkeydown="if(event.key==='Enter')doL2()"/>
-  <button class="gate-btn" id="L2btn" onclick="doL2()">Verify &amp; Enter</button>
-  <div class="gate-err" id="L2err"></div>
-  <button class="gate-back" onclick="resetGate()">← Back to login</button>
-</div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     ADMIN SHELL (hidden until both layers pass)
-══════════════════════════════════════════════════ -->
+<!-- ADMIN SHELL -->
 <div id="adminShell" style="display:none">
 
 <nav>
-  <div class="nav-l">
-    <svg width="20" height="23" viewBox="0 0 52 60">
-      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.5"/>
-      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/>
-      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/>
-      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/>
-      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/>
-      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/>
-      <circle cx="26" cy="30" r="4.5" fill="#f5d060"/>
-      <circle cx="26" cy="30" r="2.5" fill="#0b1624"/>
-    </svg>
-    <div class="nav-brand">ENGAGENEERING™</div>
+  <div class="nav-logo">
+    <svg width="18" height="21" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.5"/><polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/><polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/><circle cx="26" cy="30" r="4.5" fill="#f5d060"/><circle cx="26" cy="30" r="2.5" fill="#0b1624"/></svg>
+    <div class="nav-brand">Engageneering™</div>
     <div class="nav-sep"></div>
     <div class="nav-pg">Admin · Secure Session</div>
   </div>
   <div class="nav-r">
     <div class="nav-live"><div class="live-dot"></div>Live · <span id="lastRef">—</span></div>
-    <div class="nav-admin"><div class="nav-admin-dot" id="adminInitial">A</div><span id="adminLabel">Admin</span></div>
+    <div class="nav-clock" id="liveClock">—</div>
+    <div class="nav-admin"><div class="nav-dot" id="adminInitial">A</div><span id="adminLabel">Admin</span></div>
     <button class="nav-so" onclick="doSignout()">Sign Out</button>
   </div>
 </nav>
@@ -273,228 +307,195 @@ tr:hover td{background:rgba(55,138,221,.03)}
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-lbl">Overview</div>
-    <button class="sb-item active" onclick="nav('dashboard',this)">📊 Dashboard</button>
-    <button class="sb-item" onclick="nav('agents',this)">⬡ ARIA Agents</button>
-    <button class="sb-item" onclick="nav('activity',this)">📡 Activity Log</button>
+    <button class="sb-item active" onclick="nav('dashboard',this)"><span class="sb-icon">◈</span>Dashboard</button>
+    <button class="sb-item" onclick="nav('activity',this)"><span class="sb-icon">◉</span>Live Activity<span class="sb-badge bg" id="bdgAct">0</span></button>
 
     <div class="sb-lbl">Content</div>
-    <button class="sb-item" onclick="nav('questions',this)">❓ Questions <span class="sb-badge ba" id="bdgQ">0</span></button>
-    <button class="sb-item" onclick="nav('answers',this)">🎥 Answers <span class="sb-badge br" id="bdgA">0</span></button>
-
-    <div class="sb-lbl">Economy</div>
-    <button class="sb-item" onclick="nav('yom',this)">Ψ YOM Wallet</button>
-    <button class="sb-item" onclick="nav('consents',this)">✅ Consent Audit</button>
+    <button class="sb-item" onclick="nav('questions',this)"><span class="sb-icon">?</span>Questions<span class="sb-badge ba" id="bdgQ">0</span></button>
+    <button class="sb-item" onclick="nav('answers',this)"><span class="sb-icon">▶</span>Answers<span class="sb-badge bb" id="bdgA">0</span></button>
+    <button class="sb-item" onclick="nav('agents',this)"><span class="sb-icon">⬡</span>ARIA Agents</button>
 
     <div class="sb-lbl">Community</div>
-    <button class="sb-item" onclick="nav('users',this)">👥 Users</button>
-    <button class="sb-item" onclick="nav('tiers',this)">⭐ Tier Events</button>
-    <button class="sb-item" onclick="nav('insights',this)">💡 Insights</button>
+    <button class="sb-item" onclick="nav('users',this)"><span class="sb-icon">◎</span>Users<span class="sb-badge bpu" id="bdgU">0</span></button>
+    <button class="sb-item" onclick="nav('tiers',this)"><span class="sb-icon">★</span>Tier Events</button>
+    <button class="sb-item" onclick="nav('consents',this)"><span class="sb-icon">✓</span>Consents<span class="sb-badge bg" id="bdgCon">0</span></button>
+
+    <div class="sb-lbl">Economy</div>
+    <button class="sb-item" onclick="nav('yom',this)"><span class="sb-icon">Ψ</span>YOM Wallet</button>
+    <button class="sb-item" onclick="nav('insights',this)"><span class="sb-icon">◆</span>Insights</button>
 
     <div class="sb-lbl">Platform</div>
-    <button class="sb-item" onclick="nav('security',this)">🔒 Security Log</button>
-    <button class="sb-item" onclick="nav('diagnostics',this)">🔧 Diagnostics</button>
+    <button class="sb-item" onclick="nav('security',this)"><span class="sb-icon">⊕</span>Security Log<span class="sb-badge br" id="bdgSec">0</span></button>
+    <button class="sb-item" onclick="nav('diagnostics',this)"><span class="sb-icon">⚙</span>Diagnostics</button>
 
+    <div class="sb-spacer"></div>
     <div class="sb-ver">
-      v2.0 · Secure<br>
+      v3.0 · Command Centre<br>
       Session: <span id="sessionTime">—</span><br>
       <span style="color:var(--tlb)">2FA ✓ Active</span>
     </div>
   </div>
 
-  <!-- MAIN -->
+  <!-- MAIN CONTENT -->
   <div class="main">
 
-    <!-- DASHBOARD -->
+    <!-- ══ DASHBOARD ══ -->
     <div class="panel active" id="panel-dashboard">
       <div class="pg-hdr">
         <div><div class="pg-title">Platform Overview</div><div class="pg-sub" id="dashSub">Loading…</div></div>
-        <button class="btn-refresh" onclick="loadDashboard()">↺ Refresh</button>
+        <div class="hdr-actions">
+          <div class="live-indicator"><div class="live-ring"></div>Live</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↺ Refresh</button>
+        </div>
       </div>
-      <div class="kpi-row" id="kpiRow">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--bl)"></div><div class="kpi-val" id="kpiU">—</div><div class="kpi-label">Total Users</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--tl)"></div><div class="kpi-val" id="kpiQ">—</div><div class="kpi-label">Questions</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--pu)"></div><div class="kpi-val" id="kpiA">—</div><div class="kpi-label">Answers</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--gold)"></div><div class="kpi-val" id="kpiCDS">—</div><div class="kpi-label">Avg CDS</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--rd)"></div><div class="kpi-val" id="kpiFlags">—</div><div class="kpi-label">Integrity Flags</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--gn)"></div><div class="kpi-val" id="kpiPsi">—</div><div class="kpi-label">Total Ψ Earned</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--tlb)"></div><div class="kpi-val" id="kpiConsents">—</div><div class="kpi-label">Consents Recorded</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--am)"></div><div class="kpi-val" id="kpiPurchased">—</div><div class="kpi-label">Ψ Purchased</div></div>
+      <div class="kpi-grid" id="kpiRow">
+        <div class="kpi gold"><div class="kpi-icon">◎</div><div class="kpi-label">Total Users</div><div class="kpi-val" id="kpiU">—</div><div class="kpi-sub">Registered members</div></div>
+        <div class="kpi blue"><div class="kpi-icon">?</div><div class="kpi-label">Questions</div><div class="kpi-val" id="kpiQ">—</div><div class="kpi-sub">All time</div></div>
+        <div class="kpi teal"><div class="kpi-icon">▶</div><div class="kpi-label">Answers</div><div class="kpi-val" id="kpiA">—</div><div class="kpi-sub">All time</div></div>
+        <div class="kpi red"><div class="kpi-icon">⚑</div><div class="kpi-label">Flags</div><div class="kpi-val" id="kpiFlags">—</div><div class="kpi-sub">Pending review</div></div>
+        <div class="kpi purple"><div class="kpi-icon">Ψ</div><div class="kpi-label">Avg Ψ Score</div><div class="kpi-val" id="kpiPsi">—</div><div class="kpi-sub">Platform average</div></div>
+        <div class="kpi gold"><div class="kpi-icon">✓</div><div class="kpi-label">Consents</div><div class="kpi-val" id="kpiConsents">—</div><div class="kpi-sub">Recorded</div></div>
+        <div class="kpi teal"><div class="kpi-icon">◈</div><div class="kpi-label">Avg CDS</div><div class="kpi-val" id="kpiCDS">—</div><div class="kpi-sub">Content score</div></div>
+        <div class="kpi blue"><div class="kpi-icon">$</div><div class="kpi-label">Purchases</div><div class="kpi-val" id="kpiPurchased">—</div><div class="kpi-sub">Completed</div></div>
       </div>
       <div class="two-col">
-        <div>
-          <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Recent Questions</div></div>
-          <div class="tbl-wrap"><table><thead><tr><th>Question</th><th>Quality</th><th>Status</th></tr></thead>
-          <tbody id="rqTbl"><tr class="empty-row"><td colspan="3">Loading…</td></tr></tbody></table></div>
+        <div class="card">
+          <div class="card-title">Recent Questions</div>
+          <div class="tbl-wrap"><table><thead><tr><th>Title</th><th>User</th><th>CDS</th><th>When</th></tr></thead><tbody id="rqTbl"><tr class="empty-row"><td colspan="4">Loading…</td></tr></tbody></table></div>
         </div>
-        <div>
-          <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Recent Answers</div></div>
-          <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>CDS</th><th>Integrity</th></tr></thead>
-          <tbody id="raTbl"><tr class="empty-row"><td colspan="3">Loading…</td></tr></tbody></table></div>
+        <div class="card">
+          <div class="card-title">Recent Answers</div>
+          <div class="tbl-wrap"><table><thead><tr><th>Title</th><th>User</th><th>CDS</th><th>When</th></tr></thead><tbody id="raTbl"><tr class="empty-row"><td colspan="4">Loading…</td></tr></tbody></table></div>
         </div>
       </div>
-      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">CDS Distribution</div></div>
-      <div class="tbl-wrap" style="padding:1.1rem 1.3rem"><div id="distChart">Loading…</div></div>
-    </div>
-
-    <!-- ARIA AGENTS -->
-    <div class="panel" id="panel-agents">
-      <div class="pg-hdr">
-        <div><div class="pg-title">ARIA Agent Network</div><div class="pg-sub">12 specialist agents · Live performance metrics</div></div>
-        <button class="btn-refresh" onclick="loadAgents()">↺ Refresh</button>
-      </div>
-      <div class="agent-grid" id="agentGrid">Loading…</div>
-      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Index Averages (all scored answers)</div></div>
-      <div class="tbl-wrap" style="padding:1.1rem 1.3rem">
-        <div style="font-family:monospace;font-size:11px;color:var(--gb);line-height:2.2;margin-bottom:.8rem">
-          AG = (EI×0.25) + (RI×0.20) + (RAI×0.25) + (COI×0.15) + (AI×0.15)<br>
-          CDS = AG×0.60 + PG×0.40 &nbsp;|&nbsp; Integrity fail → ×0.5 &nbsp;|&nbsp; Multilingual → +2
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Role Distribution</div>
+          <div id="distChart" class="bar-wrap" style="padding:.5rem 0"></div>
         </div>
-        <div id="avgIdxChart">Loading…</div>
+        <div class="card">
+          <div class="card-title">Tier Distribution</div>
+          <div id="tierChart" class="bar-wrap" style="padding:.5rem 0"></div>
+        </div>
       </div>
     </div>
 
-    <!-- ACTIVITY LOG -->
+    <!-- ══ LIVE ACTIVITY ══ -->
     <div class="panel" id="panel-activity">
       <div class="pg-hdr">
-        <div><div class="pg-title">Live Activity Log</div><div class="pg-sub">score_history · tier_events · consent_records</div></div>
-        <button class="btn-refresh" onclick="loadActivity()">↺ Refresh</button>
-      </div>
-      <div class="log-wrap">
-        <div class="log-hdr"><div class="live-dot"></div>Event stream</div>
-        <div class="log-body" id="actLog"><div style="padding:1rem;color:var(--t4);text-align:center">Loading…</div></div>
-      </div>
-      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Tier Events</div></div>
-      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Track</th><th>From</th><th>To</th><th>Direction</th><th>Evidence</th><th>Date</th></tr></thead>
-      <tbody id="tierActTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- QUESTIONS -->
-    <div class="panel" id="panel-questions">
-      <div class="pg-hdr">
-        <div><div class="pg-title">Question Management</div><div class="pg-sub">Review, moderate and approve submitted questions</div></div>
-        <button class="btn-refresh" onclick="loadQuestions()">↺ Refresh</button>
-      </div>
-      <div class="tbl-wrap"><table><thead><tr><th>Question</th><th>Asker</th><th>Tags</th><th>Quality</th><th>Gatekeeper</th><th>Language</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody id="qTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- ANSWERS -->
-    <div class="panel" id="panel-answers">
-      <div class="pg-hdr">
-        <div><div class="pg-title">Answer Management</div><div class="pg-sub">Scored answers with full ARIA index breakdown</div></div>
-        <button class="btn-refresh" onclick="loadAnswers()">↺ Refresh</button>
-      </div>
-      <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>EI</th><th>RI</th><th>RAI</th><th>COI</th><th>AI</th><th>AG</th><th>CDS</th><th>Integrity</th><th>Pts</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody id="aTbl"><tr class="empty-row"><td colspan="12">Loading…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- YOM WALLET -->
-    <div class="panel" id="panel-yom">
-      <div class="pg-hdr">
-        <div><div class="pg-title">Ψ YOM Economy</div><div class="pg-sub">Wallet balances · transaction history · purchase records</div></div>
-        <button class="btn-refresh" onclick="loadYOM()">↺ Refresh</button>
-      </div>
-      <div class="yom-grid" id="yomKpi"></div>
-      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Top Ψ Earners</div></div>
-      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Total Ψ</th><th>Q Ψ</th><th>A Ψ</th><th>Purchased Ψ</th><th>Tier</th></tr></thead>
-      <tbody id="yomTbl"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody></table></div>
-      <div class="pg-hdr"><div class="pg-title" style="font-size:12px">Recent Transactions</div></div>
-      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Type</th><th>Ψ</th><th>Action</th><th>Date</th></tr></thead>
-      <tbody id="txTbl"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- CONSENT AUDIT -->
-    <div class="panel" id="panel-consents">
-      <div class="pg-hdr">
-        <div><div class="pg-title">Legal Consent Audit</div><div class="pg-sub">All recorded acceptances · Legal evidence trail · Policy v1.0</div></div>
-        <button class="btn-refresh" onclick="loadConsents()">↺ Refresh</button>
-      </div>
-      <div class="info-box">Every user who accepts the Terms & Conditions, Content Disclaimer, and YOM Policy during signup or the existing-user modal has a timestamped record here. This is your legal evidence trail.</div>
-      <div class="tbl-wrap"><table><thead><tr><th>User ID</th><th>Policy Version</th><th>Terms ✓</th><th>Disclaimer ✓</th><th>YOM ✓</th><th>Accepted At (IST)</th><th>Device</th></tr></thead>
-      <tbody id="consentTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- USERS -->
-    <div class="panel" id="panel-users">
-      <div class="pg-hdr">
-        <div><div class="pg-title">User Registry</div><div class="pg-sub">All registered profiles · tier states · wallet balances</div></div>
-        <button class="btn-refresh" onclick="loadUsers()">↺ Refresh</button>
-      </div>
-      <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Seeker T</th><th>Answerer T</th><th>Total Ψ</th><th>Consented</th><th>Joined</th><th>Actions</th></tr></thead>
-      <tbody id="uTbl"><tr class="empty-row"><td colspan="9">Loading…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- TIER EVENTS -->
-    <div class="panel" id="panel-tiers">
-      <div class="pg-hdr">
-        <div><div class="pg-title">Tier Progression Audit</div><div class="pg-sub">Full immutable audit trail of all promotions and demotions</div></div>
-        <button class="btn-refresh" onclick="loadTiers()">↺ Refresh</button>
-      </div>
-      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Track</th><th>From</th><th>To</th><th>Direction</th><th>Avg CDS</th><th>Date</th></tr></thead>
-      <tbody id="tierTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- INSIGHTS -->
-    <div class="panel" id="panel-insights">
-      <div class="pg-hdr">
-        <div><div class="pg-title">Insight Reports</div><div class="pg-sub">Weekly Narrator output per user</div></div>
-        <button class="btn-refresh" onclick="loadInsights()">↺ Refresh</button>
-      </div>
-      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Week</th><th>Strengths</th><th>Growth Edge</th><th>Next Action</th><th>Delivered</th></tr></thead>
-      <tbody id="insTbl"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- SECURITY LOG -->
-    <div class="panel" id="panel-security">
-      <div class="pg-hdr">
-        <div><div class="pg-title">Security &amp; Access Log</div><div class="pg-sub">Admin login events · 2FA attempts · session audit</div></div>
-        <button class="btn-refresh" onclick="loadSecurity()">↺ Refresh</button>
-      </div>
-      <div class="log-wrap">
-        <div class="log-hdr">Security event stream</div>
-        <div class="log-body" id="secLog"><div style="padding:1rem;color:var(--t4);text-align:center">Loading…</div></div>
-      </div>
-      <hr class="section-divider"/>
-
-      <!-- CHANGE PASSWORD -->
-      <div class="tbl-wrap" style="padding:1.1rem;margin-bottom:1rem">
-        <div class="pg-title" style="font-size:12px;margin-bottom:.8rem">Change Admin Password</div>
-        <div style="display:flex;flex-direction:column;gap:.5rem;max-width:340px">
-          <input class="gate-field" type="password" id="newPwd1" placeholder="New password (min 8 characters)"/>
-          <input class="gate-field" type="password" id="newPwd2" placeholder="Confirm new password"
-            onkeydown="if(event.key==='Enter')changePwd()"/>
-          <button class="btn-refresh" onclick="changePwd()"
-            style="width:fit-content;background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3);color:var(--tlb)">
-            Update Password
-          </button>
-          <div id="pwdMsg" style="font-size:11px;min-height:14px"></div>
+        <div><div class="pg-title">Live Activity</div><div class="pg-sub">Real-time platform events</div></div>
+        <div class="hdr-actions">
+          <div class="live-indicator"><div class="live-ring"></div>Streaming</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadActivity()">↺ Refresh</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('actLog').innerHTML=''">Clear</button>
         </div>
       </div>
-
-      <hr class="section-divider"/>
-      <div class="info-box">
-        <strong style="color:var(--gb)">2FA Implementation:</strong> The current implementation uses a server-generated TOTP displayed on-screen (suitable for testing/internal use). For production, integrate with Google Authenticator or Authy via the TOTP standard (RFC 6238), or use SMS OTP via Twilio. The Supabase MFA API at <span class="inline-mono">supa.auth.mfa.*</span> supports TOTP natively — enable it in Supabase Dashboard → Authentication → MFA.
+      <div class="two-col" style="margin-bottom:1rem">
+        <div class="card" style="margin:0">
+          <div class="card-title">Score Events</div>
+          <div class="log-wrap" id="actLog"><div style="color:var(--t4);font-size:11px;text-align:center;padding:2rem">Loading…</div></div>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="card-title">Tier Promotions</div>
+          <div class="log-wrap" id="tierLog"><div style="color:var(--t4);font-size:11px;text-align:center;padding:2rem">Loading…</div></div>
+        </div>
       </div>
     </div>
 
-    <!-- DIAGNOSTICS -->
-    <div class="panel" id="panel-diagnostics">
+    <!-- ══ QUESTIONS ══ -->
+    <div class="panel" id="panel-questions">
       <div class="pg-hdr">
-        <div><div class="pg-title">Platform Diagnostics</div><div class="pg-sub">Connection health · table counts · configuration</div></div>
-        <button class="btn-refresh" onclick="loadDiag()">↺ Refresh</button>
+        <div><div class="pg-title">Questions</div><div class="pg-sub">All platform questions</div></div>
+        <div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadQuestions()">↺ Refresh</button></div>
       </div>
+      <div class="search-bar">
+        <input class="search-input" id="qSearch" placeholder="Search title or user…" oninput="filterQuestions()"/>
+        <select class="search-input" id="qFilter" onchange="filterQuestions()" style="max-width:140px">
+          <option value="">All status</option><option value="flagged">Flagged</option><option value="active">Active</option>
+        </select>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Title</th><th>User ID</th><th>CDS</th><th>Ψ</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="qTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- ══ ANSWERS ══ -->
+    <div class="panel" id="panel-answers">
+      <div class="pg-hdr">
+        <div><div class="pg-title">Answers</div><div class="pg-sub">All platform answers · click ▶ to watch</div></div>
+        <div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadAnswers()">↺ Refresh</button></div>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" id="aSearch" placeholder="Search…" oninput="filterAnswers()"/>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>User ID</th><th>CDS</th><th>Ψ</th><th>Flags</th><th>Date</th><th>Watch</th><th>Actions</th></tr></thead><tbody id="aTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- ══ ARIA AGENTS ══ -->
+    <div class="panel" id="panel-agents">
+      <div class="pg-hdr"><div><div class="pg-title">ARIA Agent Matrix</div><div class="pg-sub">12 scoring agents · live index tracking</div></div><div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadAgents()">↺ Refresh</button></div></div>
+      <div class="card"><div class="card-title">Agent Performance</div><div id="agentGrid" class="three-col" style="gap:.8rem"></div></div>
+    </div>
+
+    <!-- ══ USERS ══ -->
+    <div class="panel" id="panel-users">
+      <div class="pg-hdr">
+        <div><div class="pg-title">User Management</div><div class="pg-sub">Click a user to view details, suspend, or delete</div></div>
+        <div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadUsers()">↺ Refresh</button></div>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" id="uSearch" placeholder="Search name or email…" oninput="filterUsers()"/>
+        <select class="search-input" id="uStatusFilter" onchange="filterUsers()" style="max-width:140px">
+          <option value="">All status</option><option value="active">Active</option><option value="suspended">Suspended</option>
+        </select>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Tier S/A</th><th>Ψ</th><th>Consent</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="uTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- ══ TIER EVENTS ══ -->
+    <div class="panel" id="panel-tiers">
+      <div class="pg-hdr"><div><div class="pg-title">Tier Events</div><div class="pg-sub">Promotion and demotion log</div></div><div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadTiers()">↺ Refresh</button></div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Track</th><th>From</th><th>To</th><th>Direction</th><th>When</th></tr></thead><tbody id="tierTbl"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- ══ CONSENTS ══ -->
+    <div class="panel" id="panel-consents">
+      <div class="pg-hdr"><div><div class="pg-title">Consent Audit</div><div class="pg-sub">Legal consent records</div></div><div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadConsents()">↺ Refresh</button></div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>User ID</th><th>Version</th><th>Accepted At (IST)</th><th>T&amp;C</th><th>Disclaimer</th><th>YOM</th></tr></thead><tbody id="conTbl"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- ══ YOM ══ -->
+    <div class="panel" id="panel-yom">
+      <div class="pg-hdr"><div><div class="pg-title">YOM Wallet</div><div class="pg-sub">Ψ economy transactions</div></div><div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadYOM()">↺ Refresh</button></div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>User</th><th>Action</th><th>Ψ Awarded</th><th>CDS</th><th>When</th></tr></thead><tbody id="yomTbl"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- ══ INSIGHTS ══ -->
+    <div class="panel" id="panel-insights">
+      <div class="pg-hdr"><div><div class="pg-title">Insight Reports</div><div class="pg-sub">AI-generated platform insights</div></div><div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadInsights()">↺ Refresh</button></div></div>
+      <div id="insightsList" class="log-wrap"></div>
+    </div>
+
+    <!-- ══ SECURITY ══ -->
+    <div class="panel" id="panel-security">
+      <div class="pg-hdr"><div><div class="pg-title">Security Log</div><div class="pg-sub">Admin access and authentication events</div></div><div class="hdr-actions"><button class="btn btn-ghost btn-sm" onclick="loadSecurity()">↺ Refresh</button></div></div>
+      <div class="log-wrap" id="secLog" style="max-height:600px"></div>
+    </div>
+
+    <!-- ══ DIAGNOSTICS ══ -->
+    <div class="panel" id="panel-diagnostics">
+      <div class="pg-hdr"><div><div class="pg-title">Diagnostics</div><div class="pg-sub">System health and account tools</div></div></div>
       <div class="two-col">
-        <div class="tbl-wrap" style="padding:1.1rem"><div class="pg-title" style="font-size:12px;margin-bottom:.7rem">Supabase Connection</div><div id="diagConn" style="font-family:monospace;font-size:11px;color:var(--t3);line-height:2">Checking…</div></div>
-        <div class="tbl-wrap" style="padding:1.1rem"><div class="pg-title" style="font-size:12px;margin-bottom:.7rem">Table Row Counts</div><div id="diagTables" style="font-family:monospace;font-size:11px;color:var(--t3);line-height:2">Checking…</div></div>
-      </div>
-      <div class="tbl-wrap" style="padding:1.1rem">
-        <div class="pg-title" style="font-size:12px;margin-bottom:.7rem">Configuration</div>
-        <div style="font-size:11.5px;color:var(--t3);line-height:2">
-          <div><span style="color:var(--gb)">Supabase URL:</span> https://tbqnkcjftxfbxujxsqkj.supabase.co</div>
-          <div><span style="color:var(--gb)">ARIA Agent:</span> /functions/v1/aria-agent · Model: claude-sonnet-4-5</div>
-          <div><span style="color:var(--gb)">CDS Formula:</span> AG×0.60 + PG×0.40 · Integrity fail ×0.5 · Multilingual +2</div>
-          <div><span style="color:var(--gb)">Admin 2FA:</span> TOTP (server-generated) → Supabase MFA for production</div>
-          <div><span style="color:var(--gb)">Policy Version:</span> 1.0</div>
+        <div class="card">
+          <div class="card-title">Admin Account</div>
+          <div id="diagInfo" style="font-size:12px;color:var(--t2);line-height:2"></div>
+          <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.5rem">
+            <input class="search-input" type="password" id="diagPwd" placeholder="New password…"/>
+            <input class="search-input" type="password" id="diagPwd2" placeholder="Confirm new password…"/>
+            <button class="btn btn-gold btn-sm" onclick="changePwd()">Update Password</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Platform Health</div>
+          <div id="diagHealth" style="font-size:12px;line-height:2.2;color:var(--t2)">Loading…</div>
         </div>
       </div>
     </div>
@@ -503,759 +504,751 @@ tr:hover td{background:rgba(55,138,221,.03)}
 </div><!-- /layout -->
 </div><!-- /adminShell -->
 
-<!-- USER DETAIL MODAL -->
-<div id="userModal">
-  <div class="user-modal-box">
-    <div class="um-hdr"><div class="um-title" id="umTitle">User Detail</div><button class="um-close" onclick="closeUserModal()">×</button></div>
-    <div class="um-body" id="umBody"></div>
+<!-- ══ USER DETAIL MODAL ══ -->
+<div class="modal-backdrop" id="userModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="umTitle">User Detail</div>
+      <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+    </div>
+    <div class="modal-body" id="umBody"></div>
+    <div class="modal-footer" id="umFooter"></div>
+  </div>
+</div>
+
+<!-- ══ VIDEO MODAL ══ -->
+<div class="modal-backdrop" id="videoModal">
+  <div class="vid-modal">
+    <div class="vid-hdr">
+      <div class="modal-title" id="vidTitle">Video Playback</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <span class="status-badge status-active" id="vidBadge">ANSWER</span>
+        <button class="modal-close" onclick="closeVideo()">✕</button>
+      </div>
+    </div>
+    <div class="vid-player" id="vidPlayer"></div>
+    <div class="vid-info">
+      <div id="vidDesc" style="font-weight:600;color:var(--t1)">—</div>
+      <div class="vid-meta">
+        <span>CDS: <strong id="vidCDS" style="color:var(--tlb)">—</strong></span>
+        <span>Ψ: <strong id="vidPsi" style="color:var(--gb)">—</strong></span>
+        <span>Flags: <strong id="vidFlags" style="color:var(--rdb)">—</strong></span>
+        <span>Posted: <strong id="vidDate">—</strong></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM MODAL ══ -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="confirm-modal">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn" id="confirmOkBtn" onclick="">Confirm</button>
+    </div>
   </div>
 </div>
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// CONFIGURATION
+// ENGAGENEERING ADMIN v3.0 — Command Centre
 // ══════════════════════════════════════════════════════════════
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
-
-// ── GATE TOKEN — tab-scoped, cleared on tab close ────────────
-// The admin shell is ONLY shown when this token is present.
-// It is set ONLY after both L1 (password) + L2 (TOTP) pass.
+const ADMIN_EMAILS = ['admin@engageneering.org','yom@engageneering.org'];
 const GATE_TOKEN_KEY = '_VAI2BEBO_GATE_';
-const SESSION_TTL_MS = 4 * 60 * 60 * 1000; // 4-hour session max
+const SESSION_TTL_MS = 4 * 60 * 60 * 1000;
 
+// ── GATE ──
 function isGateOpen(){
   try{
     const raw = sessionStorage.getItem(GATE_TOKEN_KEY);
     if(!raw) return false;
-    const {ts, email} = JSON.parse(raw);
-    if(!ts || !email) return false;
-    if(Date.now() - ts > SESSION_TTL_MS){ clearGateToken(); return false; }
+    const {ts,email} = JSON.parse(raw);
+    if(!ts||!email) return false;
+    if(Date.now()-ts > SESSION_TTL_MS){ clearGateToken(); return false; }
     return true;
   }catch(e){ return false; }
 }
+function setGateToken(email){ sessionStorage.setItem(GATE_TOKEN_KEY,JSON.stringify({ts:Date.now(),email})); }
+function clearGateToken(){ sessionStorage.removeItem(GATE_TOKEN_KEY); }
 
-function setGateToken(email){
-  sessionStorage.setItem(GATE_TOKEN_KEY, JSON.stringify({ts: Date.now(), email}));
-}
-
-function clearGateToken(){
-  sessionStorage.removeItem(GATE_TOKEN_KEY);
-}
-
-// ── PAGE LOAD: enforce gate — no exceptions ────────────────────
-// Run before anything else renders.
-// If gate token absent → show L1, hide everything else.
 (function enforceGate(){
   if(!isGateOpen()){
-    // Make absolutely sure shell is hidden
-    document.addEventListener('DOMContentLoaded', ()=>{
-      document.getElementById('adminShell').style.display = 'none';
-      document.getElementById('gateL1').style.display = 'flex';
-      document.getElementById('gateL2').style.display = 'none';
+    document.addEventListener('DOMContentLoaded',()=>{
+      document.getElementById('adminShell').style.display='none';
+      document.getElementById('gateL1').style.display='flex';
+      document.getElementById('gateL2').style.display='none';
     });
   } else {
-    // Valid token — auto-admit (same tab, session still valid)
-    document.addEventListener('DOMContentLoaded', ()=>{
+    document.addEventListener('DOMContentLoaded',()=>{
       const raw = JSON.parse(sessionStorage.getItem(GATE_TOKEN_KEY)||'{}');
-      document.getElementById('gateL1').style.display = 'none';
-      document.getElementById('gateL2').style.display = 'none';
-      document.getElementById('adminShell').style.display = 'block';
-      // We still need a valid Supabase session — re-auth silently is not
-      // possible without password. Show "session restored" notice.
-      // For security, require full re-login if page is refreshed.
-      // Uncomment the next line to force full re-auth on every page load:
-      // clearGateToken(); location.reload(); return;
-      document.getElementById('adminInitial').textContent = (raw.email||'A').charAt(0).toUpperCase();
-      document.getElementById('adminLabel').textContent = (raw.email||'admin').split('@')[0];
+      document.getElementById('gateL1').style.display='none';
+      document.getElementById('gateL2').style.display='none';
+      document.getElementById('adminShell').style.display='block';
+      document.getElementById('adminInitial').textContent=(raw.email||'A').charAt(0).toUpperCase();
+      document.getElementById('adminLabel').textContent=(raw.email||'admin').split('@')[0];
       sessionStart = new Date(raw.ts);
-      loadAll();
-      setInterval(loadAll, 60000);
+      initShell();
     });
   }
 })();
 
-// ADMIN ROLE CHECK — only users with this email domain or specific emails are admins
-// Add your admin email(s) here
-const ADMIN_EMAILS = ['admin@engageneering.org','yom@engageneering.org'];
-// OR use a domain check: email.endsWith('@engageneering.org')
+let supa=null, adminUser=null, sessionStart=null, _totpTimer=null;
+let _secLog=[], _allUsers=[], _allQuestions=[], _allAnswers=[];
 
-let supa = null;
-let adminUser = null;
-let sessionStart = null;
-
-// ── SUPABASE CLIENT ─────────────────────────────────────────
 function getSupa(){
-  if(!supa && SUPA_ANON) supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
-    auth: {
-      persistSession: false,      // Never store session in localStorage
-      autoRefreshToken: false,    // Never auto-refresh
-      detectSessionInUrl: false,  // Ignore URL tokens from platform.html
-      storage: { getItem:()=>null, setItem:()=>{}, removeItem:()=>{} } // No-op storage
-    }
+  if(!supa && SUPA_ANON) supa = supabase.createClient(SUPA_URL, SUPA_ANON,{
+    auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,
+          storage:{getItem:()=>null,setItem:()=>{},removeItem:()=>{}}}
   });
   return supa;
 }
 
-// ── SECURITY LOG (in-memory) ────────────────────────────────
-const secLog = [];
-function secEvent(msg, type='info'){
-  const ts = new Date().toISOString();
-  secLog.unshift({ts, msg, type});
-  if(secLog.length>200) secLog.pop();
-  renderSecLog();
+// ── SECURITY LOG ──
+function secEvent(msg,type='info'){
+  const now = new Date();
+  _secLog.unshift({time:now,msg,type});
+  if(_secLog.length>200) _secLog.pop();
+  const el = document.getElementById('bdgSec');
+  if(el){ const n=_secLog.filter(e=>e.type==='error'||e.type==='warn').length; el.textContent=n; }
 }
 function renderSecLog(){
   const el = document.getElementById('secLog');
   if(!el) return;
-  el.innerHTML = secLog.length
-    ? secLog.map(e=>`<div class="log-row"><span class="log-time">${new Date(e.ts).toLocaleTimeString()}</span><span class="log-agent">Security</span><span class="log-msg l-${e.type}">${e.msg}</span></div>`).join('')
-    : '<div style="padding:1rem;color:var(--t4);text-align:center">No events</div>';
+  el.innerHTML = _secLog.length
+    ? _secLog.map(e=>`
+      <div class="log-item">
+        <div class="log-dot ${e.type}"></div>
+        <div class="log-time">${e.time.toLocaleTimeString('en-IN')}</div>
+        <div class="log-msg">${esc(e.msg)}</div>
+        <div class="log-tag ${e.type==='error'?'br':e.type==='warn'?'ba':e.type==='ok'?'bg':'bb'}">${e.type.toUpperCase()}</div>
+      </div>`).join('')
+    : '<div style="color:var(--t4);font-size:11px;text-align:center;padding:2rem">No security events yet</div>';
 }
 
-// ══════════════════════════════════════════════════════════════
-// 2FA — SERVER-SIDE TOTP GENERATION
-// In production: integrate Supabase MFA (supa.auth.mfa.enroll)
-// or Twilio SMS OTP. This implementation generates a
-// cryptographically-seeded 6-digit PIN server-side using
-// time-windowed TOTP algorithm (RFC 6238 compatible logic).
-// ══════════════════════════════════════════════════════════════
-let _totpCode   = null;
-let _totpExpiry = 0;
-let _totpTimer  = null;
-let _l1attempts = 0;
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_MS = 300000; // 5 minutes
-let _lockoutUntil = 0;
-
+// ── TOTP ──
 function genTOTP(){
-  // 30-second window TOTP — seed from current time window + secret
-  const window30 = Math.floor(Date.now() / 30000);
-  // XOR-based pseudorandom with time seed — sufficient for in-app 2FA
-  const seed = window30 ^ 0x4E474E52; // 'NGNR' in hex
-  const n = ((seed * 1664525 + 1013904223) >>> 0) % 1000000;
-  return String(n).padStart(6,'0');
+  const seed = 'ENG2024ADM' + ADMIN_EMAILS[0];
+  let hash = 0;
+  for(let i=0;i<seed.length;i++) hash=(Math.imul(31,hash)+seed.charCodeAt(i))|0;
+  const slot = Math.floor(Date.now()/30000);
+  let code = ((hash^slot)*2654435761)>>>0;
+  code = (code % 900000) + 100000;
+  return String(code);
 }
-
 function startTOTP(){
-  _totpCode   = genTOTP();
-  _totpExpiry = Date.now() + 30000;
-  document.getElementById('totpDisplay').textContent = _totpCode;
-  updateTOTPTimer();
-  if(_totpTimer) clearInterval(_totpTimer);
-  _totpTimer = setInterval(()=>{
-    const remaining = Math.max(0, Math.ceil((_totpExpiry - Date.now())/1000));
-    document.getElementById('totpCountdown').textContent = remaining;
-    document.getElementById('totpBarFill').style.width = (remaining/30*100)+'%';
-    if(remaining<=0){
-      _totpCode = genTOTP();
-      _totpExpiry = Date.now() + 30000;
-      document.getElementById('totpDisplay').textContent = _totpCode;
-    }
-  }, 1000);
+  function update(){
+    const code = genTOTP();
+    document.getElementById('totpDisplay').textContent = code.split('').join(' ');
+    const sec = 30 - (Math.floor(Date.now()/1000) % 30);
+    document.getElementById('totpCountdown').textContent = sec;
+    document.getElementById('totpBarFill').style.width = (sec/30*100)+'%';
+  }
+  update();
+  _totpTimer = setInterval(update,1000);
 }
 
-function updateTOTPTimer(){
-  const remaining = Math.ceil((_totpExpiry - Date.now())/1000);
-  document.getElementById('totpCountdown').textContent = remaining;
-}
-
-// ══════════════════════════════════════════════════════════════
-// LAYER 1 — EMAIL + PASSWORD
-// ══════════════════════════════════════════════════════════════
+// ── L1 AUTH ──
+let _l1Attempts=0;
 async function doL1(){
-  const email = document.getElementById('L1email').value.trim().toLowerCase();
-  const pwd   = document.getElementById('L1pwd').value;
-  const errEl = document.getElementById('L1err');
-  const btn   = document.getElementById('L1btn');
-  errEl.textContent = '';
-
-  // Lockout check
-  if(Date.now() < _lockoutUntil){
-    const mins = Math.ceil((_lockoutUntil - Date.now())/60000);
-    errEl.textContent = `Too many attempts. Try again in ${mins} minute(s).`;
-    secEvent(`LOGIN BLOCKED — locked out: ${email}`, 'err');
-    return;
-  }
-
-  if(!email || !pwd){ errEl.textContent = 'Email and password required.'; return; }
-
-  btn.disabled = true; btn.textContent = 'Verifying…';
-
+  const email=document.getElementById('L1email').value.trim();
+  const pwd=document.getElementById('L1pwd').value;
+  const errEl=document.getElementById('L1err');
+  const btn=document.getElementById('L1btn');
+  errEl.textContent='';
+  if(!email||!pwd){errEl.textContent='Enter email and password.';return;}
+  if(!ADMIN_EMAILS.includes(email)){errEl.textContent='Not an authorised admin account.';secEvent('L1 FAIL: unauthorised email '+email,'error');return;}
+  btn.textContent='Authenticating…';btn.disabled=true;
   try{
-    const s = getSupa();
-    if(!s){ errEl.textContent = 'Configuration error — Supabase not initialised.'; btn.disabled=false; btn.textContent='Continue →'; return; }
-
-    const {data, error} = await s.auth.signInWithPassword({email, password:pwd});
+    const s=getSupa();
+    const{data,error}=await s.auth.signInWithPassword({email,password:pwd});
     if(error){
-      _l1attempts++;
-      document.getElementById('L1attempts').textContent = `${_l1attempts}/${MAX_ATTEMPTS} attempts`;
-      if(_l1attempts >= MAX_ATTEMPTS){
-        _lockoutUntil = Date.now() + LOCKOUT_MS;
-        errEl.textContent = 'Account locked for 5 minutes.';
-        secEvent(`LOCKOUT triggered: ${email} — ${_l1attempts} failed attempts`, 'err');
-      } else {
-        errEl.textContent = 'Invalid credentials.';
-        secEvent(`Failed login attempt: ${email}`, 'warn');
-      }
-      btn.disabled=false; btn.textContent='Continue →';
+      _l1Attempts++;
+      document.getElementById('L1attempts').textContent=`Attempt ${_l1Attempts}/5`;
+      if(_l1Attempts>=5){errEl.textContent='Too many attempts. Wait 30 minutes.';btn.disabled=true;setTimeout(()=>{_l1Attempts=0;btn.disabled=false;document.getElementById('L1attempts').textContent='';},1800000);return;}
+      errEl.textContent=error.message.includes('Invalid')?'Incorrect email or password.':error.message;
+      secEvent('L1 FAIL: '+email,'error');
       return;
     }
-
-    // Admin role check
-    const userEmail = data.user.email.toLowerCase();
-    const isAdmin = ADMIN_EMAILS.includes(userEmail) || userEmail.endsWith('@engageneering.org');
-    if(!isAdmin){
-      await s.auth.signOut();
-      errEl.textContent = 'Access denied — not an admin account.';
-      secEvent(`ACCESS DENIED (non-admin): ${userEmail}`, 'err');
-      btn.disabled=false; btn.textContent='Continue →';
-      return;
-    }
-
-    adminUser = data.user;
-    _l1attempts = 0;
-    secEvent(`L1 passed: ${userEmail}`, 'ok');
-
-    // Proceed to Layer 2
-    document.getElementById('gateL1').style.display = 'none';
-    document.getElementById('gateL2').style.display = 'flex';
+    adminUser=data.user;
+    secEvent('L1 PASS: '+email,'ok');
+    document.getElementById('gateL1').style.display='none';
+    document.getElementById('gateL2').style.display='flex';
     startTOTP();
-    document.getElementById('L2pin').focus();
-
-  }catch(e){
-    errEl.textContent = 'Connection error — check your internet.';
-    btn.disabled=false; btn.textContent='Continue →';
-  }
+  }catch(e){errEl.textContent='Connection error: '+e.message;}
+  finally{btn.textContent='AUTHENTICATE →';btn.disabled=false;}
 }
 
-// ══════════════════════════════════════════════════════════════
-// LAYER 2 — TOTP PIN
-// ══════════════════════════════════════════════════════════════
-let _l2attempts = 0;
-
+// ── L2 TOTP ──
 async function doL2(){
-  const pin   = document.getElementById('L2pin').value.trim();
-  const errEl = document.getElementById('L2err');
-  const btn   = document.getElementById('L2btn');
-  errEl.textContent = '';
-
-  if(pin.length !== 6 || !/^\d{6}$/.test(pin)){
-    errEl.textContent = 'Enter a valid 6-digit PIN.';
+  const pin=document.getElementById('L2pin').value.replace(/\s/g,'');
+  const errEl=document.getElementById('L2err');
+  errEl.textContent='';
+  const expected=genTOTP();
+  const prev=(()=>{
+    const seed='ENG2024ADM'+ADMIN_EMAILS[0]; let hash=0;
+    for(let i=0;i<seed.length;i++) hash=(Math.imul(31,hash)+seed.charCodeAt(i))|0;
+    const slot=Math.floor(Date.now()/30000)-1;
+    let code=((hash^slot)*2654435761)>>>0;
+    return String((code%900000)+100000);
+  })();
+  if(pin!==expected && pin!==prev){
+    errEl.textContent='Incorrect PIN. Try again.';
+    secEvent('L2 FAIL: wrong TOTP','error');
     return;
   }
-
-  if(pin !== _totpCode){
-    _l2attempts++;
-    errEl.textContent = `Incorrect PIN. ${3 - _l2attempts} attempt(s) remaining.`;
-    secEvent(`2FA FAIL (attempt ${_l2attempts}): ${adminUser?.email}`, 'warn');
-    if(_l2attempts >= 3){
-      await getSupa().auth.signOut();
-      secEvent(`2FA LOCKED OUT: ${adminUser?.email}`, 'err');
-      setTimeout(()=>resetGate(), 1500);
-      errEl.textContent = 'Too many incorrect PINs. Returning to login.';
-    }
-    return;
-  }
-
-  // Both layers passed — set gate token then admit
   clearInterval(_totpTimer);
-  setGateToken(adminUser?.email || 'admin');  // ← token set HERE only
-  document.getElementById('gateL2').style.display = 'none';
-  document.getElementById('adminShell').style.display = 'block';
-
-  sessionStart = new Date();
-  secEvent(`ADMIN SESSION STARTED: ${adminUser?.email}`, 'ok');
-  secEvent(`2FA verified successfully`, 'ok');
-
-  // Populate nav
-  const initial = (adminUser?.email||'A').charAt(0).toUpperCase();
-  document.getElementById('adminInitial').textContent = initial;
-  document.getElementById('adminLabel').textContent = adminUser?.email?.split('@')[0] || 'Admin';
-
-  // Session expiry — force re-auth after TTL
-  setTimeout(()=>{
-    clearGateToken();
-    secEvent('SESSION EXPIRED — auto-logout after 4h','warn');
-    alert('Your admin session has expired. Please log in again.');
-    doSignout();
-  }, SESSION_TTL_MS);
-
-  // Session clock
-  setInterval(()=>{
-    if(sessionStart){
-      const mins = Math.floor((Date.now()-sessionStart)/60000);
-      document.getElementById('sessionTime').textContent = mins<60 ? `${mins}m` : `${Math.floor(mins/60)}h${mins%60}m`;
-    }
-  }, 30000);
-
-  loadAll();
-  setInterval(loadAll, 60000); // auto-refresh every minute
+  setGateToken(adminUser?.email||ADMIN_EMAILS[0]);
+  secEvent('L2 PASS: admin authenticated','ok');
+  document.getElementById('gateL2').style.display='none';
+  document.getElementById('adminShell').style.display='block';
+  document.getElementById('adminInitial').textContent=(adminUser?.email||'A').charAt(0).toUpperCase();
+  document.getElementById('adminLabel').textContent=(adminUser?.email||'admin').split('@')[0];
+  sessionStart=new Date();
+  initShell();
 }
 
 function resetGate(){
   clearInterval(_totpTimer);
-  clearGateToken();              // ← wipe token on any gate reset
-  _l2attempts = 0;
-  _totpCode = null;
-  document.getElementById('gateL2').style.display = 'none';
-  document.getElementById('gateL1').style.display = 'flex';
-  document.getElementById('L1pwd').value = '';
-  document.getElementById('L2pin').value = '';
-  document.getElementById('L2err').textContent = '';
-  document.getElementById('L1err').textContent = '';
+  document.getElementById('gateL2').style.display='none';
+  document.getElementById('gateL1').style.display='flex';
+  document.getElementById('L2pin').value='';
+  document.getElementById('L2err').textContent='';
 }
 
 async function doSignout(){
-  secEvent(`SIGNOUT: ${adminUser?.email}`, 'warn');
+  secEvent('SIGNOUT: '+adminUser?.email,'warn');
   clearInterval(_totpTimer);
-  clearGateToken();              // ← wipe token immediately
+  clearGateToken();
   await getSupa()?.auth.signOut();
   location.reload();
 }
 
-// ══════════════════════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════════════════════
-const panelLoaders = {
-  dashboard:loadDashboard, agents:loadAgents, activity:loadActivity,
-  questions:loadQuestions, answers:loadAnswers, yom:loadYOM,
-  consents:loadConsents, users:loadUsers, tiers:loadTiers,
-  insights:loadInsights, security:loadSecurity, diagnostics:loadDiag
-};
+async function sendReset(){
+  const email=document.getElementById('L1email').value.trim();
+  if(!email){document.getElementById('L1err').textContent='Enter your email first.';return;}
+  await getSupa()?.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
+  document.getElementById('resetOk').textContent='Reset link sent to '+email;
+}
 
-function nav(id, btn){
+// ── SHELL INIT ──
+function initShell(){
+  startClock();
+  nav('dashboard',document.querySelector('.sb-item.active'));
+  setInterval(()=>{ nav('dashboard',document.querySelector('.sb-item.active')); loadDashboard(); updateBadges(); },60000);
+}
+
+function startClock(){
+  function tick(){
+    const now=new Date();
+    document.getElementById('liveClock').textContent=now.toLocaleTimeString('en-IN',{hour12:false});
+    const elapsed=sessionStart?Math.floor((now-sessionStart)/60000):0;
+    const h=Math.floor(elapsed/60),m=elapsed%60;
+    document.getElementById('sessionTime').textContent=(h?h+'h ':'')+m+'m';
+  }
+  tick(); setInterval(tick,1000);
+}
+
+// ── NAVIGATION ──
+function nav(panel, btn){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
-  const p = document.getElementById('panel-'+id);
-  if(p) p.classList.add('active');
+  const el=document.getElementById('panel-'+panel);
+  if(el) el.classList.add('active');
   if(btn) btn.classList.add('active');
-  if(panelLoaders[id]) panelLoaders[id]();
+  document.getElementById('lastRef').textContent=new Date().toLocaleTimeString('en-IN',{hour12:false});
+  const loaders={
+    dashboard:loadDashboard,activity:loadActivity,questions:loadQuestions,
+    answers:loadAnswers,agents:loadAgents,users:loadUsers,tiers:loadTiers,
+    consents:loadConsents,yom:loadYOM,insights:loadInsights,
+    security:loadSecurity,diagnostics:loadDiag
+  };
+  if(loaders[panel]) loaders[panel]();
 }
 
-async function loadAll(){
-  updateRef();
-  await Promise.all([loadDashboard(), updateBadges()]);
-}
-
-function updateRef(){
-  document.getElementById('lastRef').textContent = new Date().toLocaleTimeString();
-}
-
-// ══════════════════════════════════════════════════════════════
-// BADGES
-// ══════════════════════════════════════════════════════════════
 async function updateBadges(){
-  const s = getSupa();
-  const [rq, fa] = await Promise.all([
-    s.from('questions').select('*',{count:'exact',head:true}).eq('status','pending'),
-    s.from('answers').select('*',{count:'exact',head:true}).eq('integrity_pass',false)
-  ]);
-  document.getElementById('bdgQ').textContent = rq.count||0;
-  document.getElementById('bdgA').textContent = fa.count||0;
-}
-
-// ══════════════════════════════════════════════════════════════
-// DASHBOARD
-// ══════════════════════════════════════════════════════════════
-async function loadDashboard(){
-  updateRef();
-  const s = getSupa();
-  document.getElementById('dashSub').textContent = 'Last refreshed: '+new Date().toLocaleString();
-
-  const [profiles,questions,answers,scoreHist,flags,consents,purchases] = await Promise.all([
+  const s=getSupa();
+  const[{count:u},{count:q},{count:a},{count:flags},{count:con}]=await Promise.all([
     s.from('profiles').select('*',{count:'exact',head:true}),
     s.from('questions').select('*',{count:'exact',head:true}),
     s.from('answers').select('*',{count:'exact',head:true}),
-    s.from('score_history').select('cds,pts_awarded,action_type').not('cds','is',null),
-    s.from('answers').select('*',{count:'exact',head:true}).eq('integrity_pass',false),
+    s.from('answers').select('*',{count:'exact',head:true}).gt('flag_count',0),
+    s.from('legal_consents').select('*',{count:'exact',head:true})
+  ]);
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v??0; };
+  set('bdgU',u); set('bdgQ',q); set('bdgA',a); set('bdgCon',con);
+  document.getElementById('bdgAct').textContent = Math.min(99, (q??0)+(a??0));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOADERS
+// ═══════════════════════════════════════════════════════════════
+
+async function loadDashboard(){
+  document.getElementById('dashSub').textContent='Last refreshed: '+new Date().toLocaleString('en-IN');
+  const s=getSupa();
+  const[{count:u},{count:q},{count:a},{data:sh},{count:flags},{count:con},{count:pur}]=await Promise.all([
+    s.from('profiles').select('*',{count:'exact',head:true}),
+    s.from('questions').select('*',{count:'exact',head:true}),
+    s.from('answers').select('*',{count:'exact',head:true}),
+    s.from('score_history').select('cds,pts_awarded').not('cds','is',null),
+    s.from('answers').select('*',{count:'exact',head:true}).gt('flag_count',0),
     s.from('legal_consents').select('*',{count:'exact',head:true}),
-    s.from('score_history').select('pts_awarded').eq('action_type','psi_purchase')
+    s.from('score_history').select('*',{count:'exact',head:true}).eq('action_type','purchase')
   ]);
-
-  document.getElementById('kpiU').textContent = profiles.count||0;
-  document.getElementById('kpiQ').textContent = questions.count||0;
-  document.getElementById('kpiA').textContent = answers.count||0;
-  document.getElementById('kpiFlags').textContent = flags.count||0;
-  document.getElementById('kpiConsents').textContent = consents.count||0;
-
-  const sh = scoreHist.data||[];
-  const answerRows = sh.filter(r=>r.action_type==='answer');
-  const cdsList = answerRows.map(r=>r.cds).filter(Boolean);
-  const avgCDS = cdsList.length ? Math.round(cdsList.reduce((a,b)=>a+b,0)/cdsList.length) : 0;
-  document.getElementById('kpiCDS').textContent = avgCDS||'—';
-
-  const totalPsi = sh.filter(r=>r.action_type!=='psi_purchase').reduce((a,r)=>a+(r.pts_awarded||0),0);
-  document.getElementById('kpiPsi').textContent = totalPsi;
-
-  const psiPurchased = (purchases.data||[]).reduce((a,r)=>a+(r.pts_awarded||0),0);
-  document.getElementById('kpiPurchased').textContent = psiPurchased;
-
-  // Recent questions
-  const {data:rq} = await s.from('questions').select('text,status,quality_score,created_at').order('created_at',{ascending:false}).limit(6);
-  document.getElementById('rqTbl').innerHTML = (rq||[]).length
-    ? rq.map(q=>`<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(q.text)}">${esc(q.text)}</td><td>${q.quality_score!=null?`<span style="color:var(--gb)">${q.quality_score}</span>`:'—'}</td><td>${sBadge(q.status)}</td></tr>`).join('')
-    : '<tr class="empty-row"><td colspan="3">No questions yet</td></tr>';
-
-  // Recent answers
-  const {data:ra} = await s.from('answers').select('text,cds,integrity_pass,created_at').order('created_at',{ascending:false}).limit(6);
-  document.getElementById('raTbl').innerHTML = (ra||[]).length
-    ? ra.map(a=>`<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.text||'[Video]')}</td><td>${cdsCol(a.cds)}</td><td>${a.integrity_pass===false?'<span class="badge br">Flagged</span>':'<span class="badge bg">Pass</span>'}</td></tr>`).join('')
-    : '<tr class="empty-row"><td colspan="3">No answers yet</td></tr>';
-
-  // Distribution chart
-  const buckets = {'0-20':0,'21-40':0,'41-60':0,'61-75':0,'76-85':0,'86-100':0};
-  const colors  = {'0-20':'#e24b4a','21-40':'#e24b4a','41-60':'var(--gold)','61-75':'var(--gold)','76-85':'var(--tl)','86-100':'var(--tlb)'};
-  cdsList.forEach(v=>{
-    if(v<=20)buckets['0-20']++;else if(v<=40)buckets['21-40']++;else if(v<=60)buckets['41-60']++;
-    else if(v<=75)buckets['61-75']++;else if(v<=85)buckets['76-85']++;else buckets['86-100']++;
-  });
-  const maxB = Math.max(...Object.values(buckets),1);
-  document.getElementById('distChart').innerHTML = Object.entries(buckets).map(([lbl,cnt])=>`
-    <div class="chart-row">
-      <div class="chart-lbl">${lbl}</div>
-      <div class="chart-track"><div class="chart-fill" style="width:${(cnt/maxB*100).toFixed(0)}%;background:${colors[lbl]}"></div></div>
-      <div class="chart-val">${cnt}</div>
-    </div>`).join('');
-}
-
-// ══════════════════════════════════════════════════════════════
-// ARIA AGENTS
-// ══════════════════════════════════════════════════════════════
-async function loadAgents(){
-  const s = getSupa();
-  const {data:sh} = await s.from('score_history').select('ei,ri,rai,coi,ai,ag,cds,action_type').not('cds','is',null);
-  const rows = sh||[];
-  const answerRows = rows.filter(r=>r.action_type==='answer');
-  const qRows = rows.filter(r=>r.action_type==='question');
-  const avg = key => answerRows.length ? +(answerRows.reduce((s,r)=>s+(r[key]||0),0)/answerRows.length).toFixed(1) : 0;
-
-  const agents = [
-    {id:'01',name:'Gatekeeper',layer:'Intake',color:'var(--bl)',stat:`${qRows.length} questions screened`,avg:null},
-    {id:'02',name:'Question Rater',layer:'Intake · Quality 0-100',color:'var(--bl)',stat:`${qRows.length} scored`,avg:null},
-    {id:'03',name:'Smart Matcher',layer:'Intake · Routing',color:'var(--bl)',stat:'Language-aware routing',avg:null},
-    {id:'04',name:'Engagement Indexer',layer:'EI · 25% weight',color:'var(--gold)',stat:'Hook · Energy · Narrative',avg:avg('ei')},
-    {id:'05',name:'Retention Indexer',layer:'RI · 20% weight',color:'var(--gold)',stat:'Analogy · Stickiness',avg:avg('ri')},
-    {id:'06',name:'Applicability Indexer',layer:'RAI · 25% weight',color:'var(--gold)',stat:'Actionability · Bridge',avg:avg('rai')},
-    {id:'07',name:'Creativity Indexer',layer:'COI · 15% weight',color:'var(--gold)',stat:'Originality · Reframing',avg:avg('coi')},
-    {id:'08',name:'Accuracy Verifier',layer:'AI · 15% weight',color:'var(--gold)',stat:'Factual correctness',avg:avg('ai')},
-    {id:'09',name:'Integrity Guard v2',layer:'9-Layer binary gate',color:'var(--rd)',stat:`${answerRows.length} checked`,avg:null},
-    {id:'10',name:'Grade Arbiter',layer:'AG + CDS computation',color:'var(--tl)',stat:`Avg AG: ${avg('ag')} · Avg CDS: ${avg('cds')}`,avg:avg('cds')},
-    {id:'11',name:'Tier Engine',layer:'Promotion thresholds',color:'var(--pu)',stat:'Sustained CDS monitoring',avg:null},
-    {id:'12',name:'Insight Narrator',layer:'Weekly personal report',color:'var(--pu)',stat:'Multilingual · 150-200w',avg:null},
-  ];
-
-  document.getElementById('agentGrid').innerHTML = agents.map(a=>`
-    <div class="agent-card">
-      <div class="agent-hdr">
-        <div class="agent-dot" style="background:${a.color};box-shadow:0 0 6px ${a.color}"></div>
-        <div><div class="agent-name">${a.name}</div><div class="agent-id">Agent ${a.id}</div></div>
-      </div>
-      <div class="agent-stat">${a.stat}</div>
-      <div class="agent-layer">${a.layer}</div>
-      ${a.avg!==null?`<div class="agent-avg">${a.avg}</div>`:''}
-    </div>`).join('');
-
-  document.getElementById('avgIdxChart').innerHTML = answerRows.length
-    ? ['EI','RI','RAI','COI','AI','AG','CDS'].map(k=>`
-        <div class="chart-row">
-          <div class="chart-lbl">${k}</div>
-          <div class="chart-track"><div class="chart-fill" style="width:${avg(k.toLowerCase())}%;background:var(--gold);opacity:.75"></div></div>
-          <div class="chart-val">${avg(k.toLowerCase())}</div>
-        </div>`).join('')
-    : '<div style="color:var(--t4);font-size:11px;padding:.5rem 0">No scored answers yet. Submit answers on the platform to see index data here.</div>';
-}
-
-// ══════════════════════════════════════════════════════════════
-// ACTIVITY LOG
-// ══════════════════════════════════════════════════════════════
-async function loadActivity(){
-  const s = getSupa();
-  const [{data:sh},{data:te}] = await Promise.all([
-    s.from('score_history').select('action_type,pts_awarded,cds,created_at,user_id').order('created_at',{ascending:false}).limit(40),
-    s.from('tier_events').select('track,from_tier,to_tier,direction,created_at').order('created_at',{ascending:false}).limit(20)
-  ]);
-
-  const events = [
-    ...(sh||[]).map(r=>({time:r.created_at,type:r.action_type==='answer'?'ok':r.action_type==='question'?'info':'warn',msg:`${r.action_type} · CDS ${r.cds||'—'} · +${r.pts_awarded||0} Ψ`})),
-    ...(te||[]).map(r=>({time:r.created_at,type:'warn',msg:`Tier ${r.direction}: ${r.track} T${r.from_tier}→T${r.to_tier}`}))
-  ].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,60);
-
-  document.getElementById('actLog').innerHTML = events.length
-    ? events.map(e=>`<div class="log-row"><span class="log-time">${new Date(e.time).toLocaleTimeString()}</span><span class="log-agent">Platform</span><span class="log-msg l-${e.type}">${e.msg}</span></div>`).join('')
-    : '<div style="padding:1rem;color:var(--t4);text-align:center">No activity yet</div>';
-
-  loadTiers('tierActTbl');
-}
-
-// ══════════════════════════════════════════════════════════════
-// QUESTIONS
-// ══════════════════════════════════════════════════════════════
-async function loadQuestions(){
-  const s = getSupa();
-  const {data} = await s.from('questions').select('id,text,tags,quality_score,gatekeeper_verdict,status,language_name,created_at,profiles(display_name)').order('created_at',{ascending:false}).limit(60);
-  document.getElementById('qTbl').innerHTML = (data||[]).length
-    ? data.map(q=>`<tr>
-        <td style="max-width:220px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(q.text)}">${esc(q.text||'[Video]')}</div></td>
-        <td style="color:var(--t4);font-size:10px">${esc(q.profiles?.display_name||'—')}</td>
-        <td>${(q.tags||[]).slice(0,2).map(t=>`<span class="badge bgr">${t}</span>`).join(' ')}</td>
-        <td>${q.quality_score!=null?`<span style="color:var(--gb)">${q.quality_score}</span>`:'—'}</td>
-        <td>${gkBadge(q.gatekeeper_verdict)}</td>
-        <td style="font-size:10px;color:var(--t4)">${q.language_name||'en'}</td>
-        <td>${sBadge(q.status)}</td>
-        <td style="display:flex;gap:.35rem;flex-wrap:wrap">
-          ${q.status!=='published'?`<button class="act-btn act-ok" onclick="updQ('${q.id}','published')">Approve</button>`:''}
-          ${q.status!=='removed'?`<button class="act-btn act-bad" onclick="updQ('${q.id}','removed')">Remove</button>`:''}
-        </td>
-      </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="8">No questions yet</td></tr>';
-}
-async function updQ(id,status){ await getSupa().from('questions').update({status}).eq('id',id); loadQuestions(); updateBadges(); }
-
-// ══════════════════════════════════════════════════════════════
-// ANSWERS
-// ══════════════════════════════════════════════════════════════
-async function loadAnswers(){
-  const s = getSupa();
-  const {data} = await s.from('answers').select('id,text,ei_score,ri_score,rai_score,coi_score,ai_score,ag,pg,cds,integrity_pass,status,created_at').order('created_at',{ascending:false}).limit(60);
-  const sc = v => v!=null?`<span style="color:${v>=70?'#5dcaa5':v>=50?'#f0c040':'#f09595'}">${v}</span>`:'—';
-  document.getElementById('aTbl').innerHTML = (data||[]).length
-    ? data.map(a=>`<tr>
-        <td style="max-width:150px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.text||'[Video]')}</div></td>
-        <td>${sc(a.ei_score)}</td><td>${sc(a.ri_score)}</td><td>${sc(a.rai_score)}</td>
-        <td>${sc(a.coi_score)}</td><td>${sc(a.ai_score)}</td><td>${sc(a.ag)}</td>
-        <td>${a.cds!=null?`<span style="font-weight:700;color:${a.cds>=80?'#5dcaa5':a.cds>=60?'#f0c040':'#f09595'}">${a.cds}</span>`:'—'}</td>
-        <td>${a.integrity_pass===false?'<span class="badge br">Flagged</span>':'<span class="badge bg">Pass</span>'}</td>
-        <td>${a.cds!=null?`<span style="color:var(--gb)">+${Math.round((a.cds||0)*10)} Ψ</span>`:'—'}</td>
-        <td>${sBadge(a.status)}</td>
-        <td style="display:flex;gap:.35rem">
-          ${a.integrity_pass===false?`<button class="act-btn act-ok" onclick="clearFlag('${a.id}')">Clear</button>`:''}
-          ${a.status!=='removed'?`<button class="act-btn act-bad" onclick="updA('${a.id}','removed')">Remove</button>`:''}
-        </td>
-      </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="12">No answers yet</td></tr>';
-}
-async function updA(id,status){ await getSupa().from('answers').update({status}).eq('id',id); loadAnswers(); updateBadges(); }
-async function clearFlag(id){ await getSupa().from('answers').update({integrity_pass:true}).eq('id',id); loadAnswers(); updateBadges(); }
-
-// ══════════════════════════════════════════════════════════════
-// YOM ECONOMY
-// ══════════════════════════════════════════════════════════════
-async function loadYOM(){
-  const s = getSupa();
-  const [{data:sh},{data:pr}] = await Promise.all([
-    s.from('score_history').select('action_type,pts_awarded,user_id,created_at').order('created_at',{ascending:false}).limit(100),
-    s.from('profile_roles').select('user_id,pts_total,seeker_pts,answerer_pts,profiles(display_name)').order('pts_total',{ascending:false}).limit(20)
-  ]);
-
-  const rows = sh||[];
-  const totalEarned  = rows.filter(r=>r.action_type!=='psi_purchase').reduce((a,r)=>a+(r.pts_awarded||0),0);
-  const totalPurch   = rows.filter(r=>r.action_type==='psi_purchase').reduce((a,r)=>a+(r.pts_awarded||0),0);
-  const totalSpent   = rows.filter(r=>r.action_type==='psi_spend').reduce((a,r)=>a+Math.abs(r.pts_awarded||0),0);
-  const bonuses      = rows.filter(r=>r.action_type==='signup_bonus').length;
-  const ariaQueries  = rows.filter(r=>r.action_type==='aria_query').length;
-
-  document.getElementById('yomKpi').innerHTML = [
-    ['Total Ψ Earned', totalEarned],['Ψ Purchased', totalPurch],
-    ['Ψ Spent', totalSpent],['Signup Bonuses', bonuses*10+'Ψ ('+bonuses+')'],
-    ['Ask ARIA Queries', ariaQueries]
-  ].map(([lbl,val])=>`<div class="yom-card"><div class="yom-val">${val}</div><div class="yom-lbl">${lbl}</div></div>`).join('');
-
-  document.getElementById('yomTbl').innerHTML = (pr||[]).length
-    ? pr.map(r=>`<tr>
-        <td style="color:var(--t1);font-weight:500">${esc(r.profiles?.display_name||'—')}</td>
-        <td style="color:var(--gb);font-weight:700">${r.pts_total||0}</td>
-        <td style="color:var(--blb)">${r.seeker_pts||0}</td>
-        <td style="color:var(--tlb)">${r.answerer_pts||0}</td>
-        <td style="color:var(--pub)">${(r.pts_total||0)-(r.seeker_pts||0)-(r.answerer_pts||0)}</td>
-        <td>—</td>
-      </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="6">No wallet data yet</td></tr>';
-
-  document.getElementById('txTbl').innerHTML = rows.slice(0,30).map(r=>`<tr>
-    <td style="font-family:monospace;font-size:10px;color:var(--t4)">${(r.user_id||'').slice(0,8)}…</td>
-    <td>${txBadge(r.action_type)}</td>
-    <td style="color:${(r.pts_awarded||0)>=0?'var(--tlb)':'var(--rd)'}">
-      ${(r.pts_awarded||0)>=0?'+':''}${r.pts_awarded||0} Ψ</td>
-    <td style="color:var(--t4)">${r.action_type}</td>
-    <td style="font-size:10px;color:var(--t4)">${new Date(r.created_at).toLocaleDateString('en-IN')}</td>
-  </tr>`).join('');
-}
-function txBadge(t){ const m={signup_bonus:'ba',question:'bb',answer:'bg',psi_purchase:'ba',psi_spend:'br',aria_query:'bp'}; return `<span class="badge ${m[t]||'bgr'}">${t}</span>`; }
-
-// ══════════════════════════════════════════════════════════════
-// CONSENT AUDIT
-// ══════════════════════════════════════════════════════════════
-async function loadConsents(){
-  const s = getSupa();
-  const {data} = await s.from('legal_consents').select('user_id,terms_version,chk_terms,chk_disclaimer,chk_yom,accepted_at,user_agent,screen_res').order('accepted_at',{ascending:false});
-  document.getElementById('consentTbl').innerHTML = (data||[]).length
-    ? data.map(r=>{
-        const ist = new Date(new Date(r.accepted_at).getTime()+5.5*3600000);
-        const ua  = (r.user_agent||'').slice(0,40)+'…';
-        return `<tr>
-          <td style="font-family:monospace;font-size:10px;color:var(--t4)">${(r.user_id||'').slice(0,8)}…</td>
-          <td><span class="badge ba">v${r.terms_version||'1.0'}</span></td>
-          <td>${r.chk_terms?'<span class="badge bg">✓</span>':'<span class="badge br">✗</span>'}</td>
-          <td>${r.chk_disclaimer?'<span class="badge bg">✓</span>':'<span class="badge br">✗</span>'}</td>
-          <td>${r.chk_yom?'<span class="badge bg">✓</span>':'<span class="badge br">✗</span>'}</td>
-          <td style="font-size:10px;color:var(--t2)">${ist.toLocaleString('en-IN')} IST</td>
-          <td style="font-size:9px;color:var(--t4)" title="${esc(r.user_agent||'')}">${ua}</td>
-        </tr>`;
-      }).join('')
-    : '<tr class="empty-row"><td colspan="7">No consent records yet</td></tr>';
-}
-
-// ══════════════════════════════════════════════════════════════
-// USERS
-// ══════════════════════════════════════════════════════════════
-async function loadUsers(){
-  const s = getSupa();
-  const {data} = await s.from('profiles').select('id,display_name,joined_at,status,profile_roles(role,seeker_tier,answerer_tier,pts_total)').order('joined_at',{ascending:false}).limit(60);
-  // Consent check per user
-  const {data:consents} = await s.from('legal_consents').select('user_id');
-  const consentedIds = new Set((consents||[]).map(c=>c.user_id));
-
-  document.getElementById('uTbl').innerHTML = (data||[]).length
-    ? data.map(u=>{
-        const r = Array.isArray(u.profile_roles) ? u.profile_roles[0] : u.profile_roles || {};
-        return `<tr>
-          <td style="color:var(--t1);font-weight:500;cursor:pointer" onclick="showUser('${u.id}','${esc(u.display_name||'')}')"><u>${esc(u.display_name||'—')}</u></td>
-          <td style="font-size:10px;color:var(--t4)">${esc((u.email||''))}</td>
-          <td>${r.role?`<span class="badge bb">${r.role}</span>`:'—'}</td>
-          <td><span style="color:var(--blb)">T${r.seeker_tier||1}</span></td>
-          <td><span style="color:var(--tlb)">T${r.answerer_tier||1}</span></td>
-          <td style="color:var(--gb)">${r.pts_total??'—'}</td>
-          <td>${consentedIds.has(u.id)?'<span class="badge bg">✓</span>':'<span class="badge br">Pending</span>'}</td>
-          <td style="font-size:10px;color:var(--t4)">${u.joined_at?new Date(u.joined_at).toLocaleDateString('en-IN'):'—'}</td>
-          <td><button class="act-btn act-ok" onclick="showUser('${u.id}','${esc(u.display_name||'')}')">View</button></td>
-        </tr>`;
-      }).join('')
-    : '<tr class="empty-row"><td colspan="9">No users yet</td></tr>';
-}
-
-async function showUser(uid, name){
-  const s = getSupa();
-  const [{data:pr},{data:sh},{data:lc}] = await Promise.all([
-    s.from('profile_roles').select('*').eq('user_id',uid).single(),
-    s.from('score_history').select('action_type,pts_awarded,cds,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(10),
-    s.from('legal_consents').select('accepted_at,terms_version').eq('user_id',uid).limit(1)
-  ]);
-  const r = pr||{};
-  const consent = lc&&lc.length?lc[0]:null;
-  document.getElementById('umTitle').textContent = name||'User Detail';
-  document.getElementById('umBody').innerHTML = [
-    ['User ID', `<span class="inline-mono">${uid}</span>`],
-    ['Role', r.role||'—'],
-    ['Seeker Tier', `T${r.seeker_tier||1}`],
-    ['Answerer Tier', `T${r.answerer_tier||1}`],
-    ['Total Ψ', `<span style="color:var(--gb)">${r.pts_total??0}</span>`],
-    ['Q Ψ', r.seeker_pts??0], ['A Ψ', r.answerer_pts??0],
-    ['Consent', consent?`v${consent.terms_version} · ${new Date(new Date(consent.accepted_at).getTime()+5.5*3600000).toLocaleString('en-IN')} IST`:'<span class="badge br">Not Recorded</span>'],
-    ['Recent Events', (sh||[]).length+' score events'],
-  ].map(([k,v])=>`<div class="um-row"><div class="um-key">${k}</div><div class="um-val">${v}</div></div>`).join('');
-  document.getElementById('userModal').classList.add('open');
-}
-function closeUserModal(){ document.getElementById('userModal').classList.remove('open'); }
-
-// ══════════════════════════════════════════════════════════════
-// TIER EVENTS
-// ══════════════════════════════════════════════════════════════
-async function loadTiers(tableId='tierTbl'){
-  const {data} = await getSupa().from('tier_events').select('user_id,track,from_tier,to_tier,direction,evidence,created_at').order('created_at',{ascending:false}).limit(40);
-  const el = document.getElementById(tableId);
-  if(!el) return;
-  el.innerHTML = (data||[]).length
-    ? data.map(t=>`<tr>
-        <td style="font-family:monospace;font-size:10px;color:var(--t4)">${(t.user_id||'').slice(0,8)}…</td>
-        <td><span class="badge ${t.track==='seeker'?'bb':'bp'}">${t.track}</span></td>
-        <td style="color:var(--t3)">T${t.from_tier}</td>
-        <td style="color:var(--t1);font-weight:600">T${t.to_tier}</td>
-        <td>${t.direction==='promotion'?'<span class="badge bg">Promotion</span>':'<span class="badge br">Demotion</span>'}</td>
-        <td style="font-size:10px;color:var(--t4)">${t.evidence?.avg_cds?`avg CDS ${t.evidence.avg_cds}`:'—'}</td>
-        <td style="font-size:10px;color:var(--t4)">${t.created_at?new Date(t.created_at).toLocaleDateString('en-IN'):'—'}</td>
-      </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="7">No tier events yet</td></tr>';
-}
-
-// ══════════════════════════════════════════════════════════════
-// INSIGHTS
-// ══════════════════════════════════════════════════════════════
-async function loadInsights(){
-  const {data} = await getSupa().from('insight_reports').select('user_id,week_of,strengths,growth_edge,next_action,delivered').order('created_at',{ascending:false}).limit(30);
-  document.getElementById('insTbl').innerHTML = (data||[]).length
-    ? data.map(i=>`<tr>
-        <td style="font-family:monospace;font-size:10px;color:var(--t4)">${(i.user_id||'').slice(0,8)}…</td>
-        <td style="color:var(--t3)">${i.week_of||'—'}</td>
-        <td style="color:var(--t2)">${esc(i.strengths||'—')}</td>
-        <td style="color:var(--t3)">${esc(i.growth_edge||'—')}</td>
-        <td style="font-size:11px;color:var(--t2)">${esc(i.next_action||'—')}</td>
-        <td>${i.delivered?'<span class="badge bg">Delivered</span>':'<span class="badge ba">Pending</span>'}</td>
-      </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="6">No insight reports yet</td></tr>';
-}
-
-// ══════════════════════════════════════════════════════════════
-// SECURITY LOG
-// ══════════════════════════════════════════════════════════════
-async function loadSecurity(){
-  renderSecLog();
-}
-
-// ══════════════════════════════════════════════════════════════
-// DIAGNOSTICS
-// ══════════════════════════════════════════════════════════════
-async function loadDiag(){
-  const s = getSupa();
-  const start = Date.now();
-  const {error} = await s.from('profiles').select('id').limit(1);
-  const ms = Date.now()-start;
-  document.getElementById('diagConn').innerHTML = error
-    ? `<span style="color:var(--rd)">✗ Failed: ${esc(error.message)}</span>`
-    : `<span style="color:var(--tlb)">✓ Connected</span> · ${ms}ms<br>Project: tbqnkcjftxfbxujxsqkj<br>Auth: ${adminUser?.email||'—'}`;
-
-  const tables = ['profiles','profile_roles','questions','answers','score_history','tier_events','legal_consents','insight_reports'];
-  const counts = await Promise.all(tables.map(t=>s.from(t).select('*',{count:'exact',head:true})));
-  document.getElementById('diagTables').innerHTML = tables.map((t,i)=>
-    `<span style="color:var(--t4)">${t}:</span> <span style="color:var(--t1)">${counts[i].count??'—'}</span>`
-  ).join('<br>');
-}
-
-// ══════════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════════
-async function changePwd(){
-  const p1  = document.getElementById('newPwd1').value;
-  const p2  = document.getElementById('newPwd2').value;
-  const msg = document.getElementById('pwdMsg');
-  if(p1.length < 8){ msg.style.color='var(--rd)'; msg.textContent='Minimum 8 characters.'; return; }
-  if(p1 !== p2){ msg.style.color='var(--rd)'; msg.textContent='Passwords do not match.'; return; }
-  const {error} = await getSupa().auth.updateUser({password: p1});
-  if(error){ msg.style.color='var(--rd)'; msg.textContent=error.message; }
-  else {
-    msg.style.color='var(--tlb)';
-    msg.textContent='✓ Password updated. Use the new password on next login.';
-    document.getElementById('newPwd1').value='';
-    document.getElementById('newPwd2').value='';
-    secEvent('Admin password changed','warn');
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v??'—'; };
+  set('kpiU',u); set('kpiQ',q); set('kpiA',a); set('kpiFlags',flags);
+  set('kpiConsents',con); set('kpiPurchased',pur??0);
+  if(sh&&sh.length){
+    const avgCDS=(sh.reduce((s,r)=>s+(r.cds||0),0)/sh.length).toFixed(1);
+    const avgPsi=(sh.reduce((s,r)=>s+(r.pts_awarded||0),0)/sh.length).toFixed(1);
+    set('kpiCDS',avgCDS); set('kpiPsi',avgPsi);
   }
+  loadRecentContent(); loadDistCharts();
 }
 
-async function sendReset(){
-  const email = document.getElementById('L1email').value.trim();
-  if(!email){ document.getElementById('L1err').textContent='Enter your email first.'; return; }
-  const {error} = await getSupa().auth.resetPasswordForEmail(email,{
-    redirectTo: window.location.href
+async function loadRecentContent(){
+  const s=getSupa();
+  const[{data:rq},{data:ra}]=await Promise.all([
+    s.from('questions').select('title,user_id,cds,created_at').order('created_at',{ascending:false}).limit(6),
+    s.from('answers').select('title,user_id,cds,created_at').order('created_at',{ascending:false}).limit(6)
+  ]);
+  const fmt=(d)=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
+  const row=(r)=>`<tr><td style="color:var(--t1);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.title||'—')}</td><td class="mono" style="color:var(--t4)">${(r.user_id||'').slice(0,8)}…</td><td style="color:var(--tlb)">${r.cds||'—'}</td><td style="color:var(--t4)">${fmt(r.created_at)}</td></tr>`;
+  document.getElementById('rqTbl').innerHTML=(rq||[]).map(row).join('')||'<tr class="empty-row"><td colspan="4">No questions</td></tr>';
+  document.getElementById('raTbl').innerHTML=(ra||[]).map(row).join('')||'<tr class="empty-row"><td colspan="4">No answers</td></tr>';
+}
+
+async function loadDistCharts(){
+  const s=getSupa();
+  const[{data:roles},{data:tiers}]=await Promise.all([
+    s.from('profile_roles').select('role'),
+    s.from('profile_roles').select('seeker_tier,answerer_tier')
+  ]);
+  const roleCounts={both:0,seeker:0,answerer:0,institution:0};
+  (roles||[]).forEach(r=>{if(roleCounts[r.role]!==undefined)roleCounts[r.role]++;});
+  const maxR=Math.max(...Object.values(roleCounts),1);
+  const colors={both:'var(--gb)',seeker:'var(--blb)',answerer:'var(--tlb)',institution:'var(--pub)'};
+  document.getElementById('distChart').innerHTML=Object.entries(roleCounts).map(([k,v])=>`
+    <div class="bar-row">
+      <div class="bar-label">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${v/maxR*100}%;background:${colors[k]}"></div></div>
+      <div class="bar-val">${v}</div>
+    </div>`).join('');
+  const tc={1:0,2:0,3:0,4:0,5:0};
+  (tiers||[]).forEach(r=>{const t=r.seeker_tier||1;if(tc[t]!==undefined)tc[t]++;});
+  const maxT=Math.max(...Object.values(tc),1);
+  document.getElementById('tierChart').innerHTML=Object.entries(tc).map(([k,v])=>`
+    <div class="bar-row">
+      <div class="bar-label">Tier ${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${v/maxT*100}%;background:var(--gold)"></div></div>
+      <div class="bar-val">${v}</div>
+    </div>`).join('');
+}
+
+async function loadActivity(){
+  const s=getSupa();
+  const[{data:sh},{data:te}]=await Promise.all([
+    s.from('score_history').select('action_type,pts_awarded,cds,created_at,user_id').order('created_at',{ascending:false}).limit(50),
+    s.from('tier_events').select('track,from_tier,to_tier,direction,created_at').order('created_at',{ascending:false}).limit(30)
+  ]);
+  const fmt=d=>new Date(d).toLocaleTimeString('en-IN',{hour12:false});
+  const typeColor={answer:'ok',question:'info',purchase:'ok',flag:'error'};
+  document.getElementById('actLog').innerHTML=(sh||[]).map(r=>`
+    <div class="log-item">
+      <div class="log-dot ${typeColor[r.action_type]||'info'}"></div>
+      <div class="log-time">${fmt(r.created_at)}</div>
+      <div class="log-msg"><strong>${r.action_type}</strong> · CDS <strong style="color:var(--tlb)">${r.cds||'—'}</strong> · <span style="color:var(--gb)">+${r.pts_awarded||0} Ψ</span></div>
+      <div class="log-tag bb">${(r.user_id||'').slice(0,6)}</div>
+    </div>`).join('')||'<div style="color:var(--t4);text-align:center;padding:2rem;font-size:11px">No activity</div>';
+  document.getElementById('tierLog').innerHTML=(te||[]).map(r=>`
+    <div class="log-item">
+      <div class="log-dot ${r.direction==='up'?'ok':'warn'}"></div>
+      <div class="log-time">${fmt(r.created_at)}</div>
+      <div class="log-msg"><strong>${r.track}</strong> track · T${r.from_tier} → <strong style="color:${r.direction==='up'?'var(--gnb)':'var(--rdb)'}">T${r.to_tier}</strong></div>
+      <div class="log-tag ${r.direction==='up'?'bg':'br'}">${r.direction==='up'?'▲ UP':'▼ DOWN'}</div>
+    </div>`).join('')||'<div style="color:var(--t4);text-align:center;padding:2rem;font-size:11px">No tier events</div>';
+}
+
+async function loadQuestions(){
+  const s=getSupa();
+  const{data}=await s.from('questions').select('id,title,user_id,cds,pts_awarded,flag_count,status,created_at').order('created_at',{ascending:false}).limit(100);
+  _allQuestions=data||[];
+  renderQuestions(_allQuestions);
+}
+function renderQuestions(data){
+  const fmt=d=>new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  document.getElementById('qTbl').innerHTML=data.length?data.map(q=>`
+    <tr>
+      <td style="color:var(--t1);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(q.title||'—')}</td>
+      <td class="mono" style="color:var(--t4)">${(q.user_id||'').slice(0,8)}…</td>
+      <td style="color:var(--tlb)">${q.cds||'—'}</td>
+      <td style="color:var(--gb)">${q.pts_awarded||0}</td>
+      <td>${q.flag_count>0?`<span class="status-badge status-suspended">⚑ ${q.flag_count}</span>`:'<span class="status-badge status-active">Clean</span>'}</td>
+      <td style="color:var(--t4)">${fmt(q.created_at)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="clearFlag('${q.id}','question')">Clear Flag</button></td>
+    </tr>`).join(''):'<tr class="empty-row"><td colspan="7">No questions</td></tr>';
+}
+function filterQuestions(){
+  const q=document.getElementById('qSearch').value.toLowerCase();
+  const f=document.getElementById('qFilter').value;
+  const filtered=_allQuestions.filter(r=>{
+    const matchSearch=!q||((r.title||'').toLowerCase().includes(q)||(r.user_id||'').toLowerCase().includes(q));
+    const matchFilter=!f||(f==='flagged'?r.flag_count>0:r.status===f);
+    return matchSearch&&matchFilter;
   });
-  const el = document.getElementById('resetOk');
-  if(error){ document.getElementById('L1err').textContent=error.message; }
-  else { el.textContent='✓ Reset link sent to '+email; }
+  renderQuestions(filtered);
 }
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function sBadge(s){ const m={published:'bg',pending:'ba',flagged:'br',removed:'br',suspended:'br',closed:'bgr',approved:'bg'}; return `<span class="badge ${m[s]||'bgr'}">${s||'—'}</span>`; }
-function gkBadge(v){ const m={approved:'bg',pending:'ba',revise:'ba',rejected:'br'}; return `<span class="badge ${m[v]||'ba'}">${v||'pending'}</span>`; }
-function cdsCol(v){ if(v==null)return'—'; const c=v>=80?'#5dcaa5':v>=60?'#f0c040':'#f09595'; return `<span style="color:${c};font-weight:700">${v}</span>`; }
+async function loadAnswers(){
+  const s=getSupa();
+  const{data}=await s.from('answers').select('id,title,user_id,cds,pts_awarded,flag_count,status,video_url,created_at').order('created_at',{ascending:false}).limit(100);
+  _allAnswers=data||[];
+  renderAnswers(_allAnswers);
+}
+function renderAnswers(data){
+  const fmt=d=>new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  document.getElementById('aTbl').innerHTML=data.length?data.map(a=>`
+    <tr>
+      <td style="color:var(--t1);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.title||'—')}</td>
+      <td class="mono" style="color:var(--t4)">${(a.user_id||'').slice(0,8)}…</td>
+      <td style="color:var(--tlb)">${a.cds||'—'}</td>
+      <td style="color:var(--gb)">${a.pts_awarded||0}</td>
+      <td>${a.flag_count>0?`<span class="status-badge status-suspended">⚑ ${a.flag_count}</span>`:'—'}</td>
+      <td style="color:var(--t4)">${fmt(a.created_at)}</td>
+      <td>${a.video_url?`<button class="btn btn-ok btn-sm" onclick="playVideo(${JSON.stringify(esc(a.video_url))},${JSON.stringify(esc(a.title||''))},${a.cds||0},${a.pts_awarded||0},${a.flag_count||0},${JSON.stringify(a.created_at)})">▶ Watch</button>`:'<span style="color:var(--t4);font-size:10px">No video</span>'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="clearFlag('${a.id}','answer')">Clear Flag</button></td>
+    </tr>`).join(''):'<tr class="empty-row"><td colspan="8">No answers</td></tr>';
+}
+function filterAnswers(){
+  const q=document.getElementById('aSearch').value.toLowerCase();
+  const filtered=_allAnswers.filter(r=>!q||((r.title||'').toLowerCase().includes(q)||(r.user_id||'').includes(q)));
+  renderAnswers(filtered);
+}
+
+async function clearFlag(id,table){
+  const s=getSupa();
+  const{error}=await s.from(table+'s').update({flag_count:0}).eq('id',id);
+  if(error) toast('Failed: '+error.message,'err');
+  else{ toast('Flag cleared','ok'); table==='question'?loadQuestions():loadAnswers(); }
+}
+
+async function loadAgents(){
+  const s=getSupa();
+  const{data:reports}=await s.from('insight_reports').select('agent_name,score,created_at').order('created_at',{ascending:false}).limit(60);
+  const agents=['Clarity','Depth','Evidence','Novelty','Relevance','Logic','Engagement','Accuracy','Structure','Tone','Originality','Impact'];
+  const byAgent={};
+  (reports||[]).forEach(r=>{ if(!byAgent[r.agent_name]) byAgent[r.agent_name]=[]; byAgent[r.agent_name].push(r.score||0); });
+  document.getElementById('agentGrid').innerHTML=agents.map(name=>{
+    const scores=byAgent[name]||[];
+    const avg=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2):null;
+    const trend=scores.slice(0,8).reverse();
+    const maxS=Math.max(...trend,1);
+    const bars=trend.map(v=>`<div class="spark-bar" style="height:${Math.max(4,v/maxS*22)}px"></div>`).join('');
+    return `<div class="card" style="margin:0;padding:.8rem">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+        <div style="font-size:11px;font-weight:700;color:var(--t1)">${name}</div>
+        <div style="font-size:18px;font-weight:800;color:${avg>=7?'var(--gnb)':avg>=5?'var(--gb)':'var(--rdb)'}">${avg??'—'}</div>
+      </div>
+      <div class="sparkline">${bars||'<span style="font-size:10px;color:var(--t4)">No data</span>'}</div>
+      <div style="font-size:9px;color:var(--t4);margin-top:.3rem">${scores.length} evaluations</div>
+    </div>`;
+  }).join('');
+}
+
+async function loadUsers(){
+  const s=getSupa();
+  const[{data:profiles},{data:roles},{data:consents}]=await Promise.all([
+    s.from('profiles').select('id,display_name,joined_at,status').order('joined_at',{ascending:false}).limit(200),
+    s.from('profile_roles').select('user_id,role,seeker_tier,answerer_tier,pts_total'),
+    s.from('legal_consents').select('user_id')
+  ]);
+  const roleMap={}; (roles||[]).forEach(r=>roleMap[r.user_id]=r);
+  const conSet=new Set((consents||[]).map(c=>c.user_id));
+  _allUsers=(profiles||[]).map(u=>({...u,role:roleMap[u.id]||{},hasConsent:conSet.has(u.id)}));
+  renderUsers(_allUsers);
+}
+function renderUsers(data){
+  const fmt=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'}):'—';
+  document.getElementById('uTbl').innerHTML=data.length?data.map(u=>{
+    const r=u.role||{};
+    const status=u.status||'active';
+    return `<tr>
+      <td style="color:var(--t1);font-weight:500;cursor:pointer" onclick="showUser('${u.id}','${esc(u.display_name||'')}')"><u>${esc(u.display_name||'—')}</u></td>
+      <td>${r.role?`<span class="status-badge" style="background:rgba(55,138,221,.15);color:var(--blb);border-color:rgba(55,138,221,.3)">${r.role}</span>`:'—'}</td>
+      <td style="color:var(--t3);font-family:monospace">S:T${r.seeker_tier||1} / A:T${r.answerer_tier||1}</td>
+      <td style="color:var(--gb);font-weight:700">${r.pts_total??'0'}</td>
+      <td>${u.hasConsent?'<span class="status-badge status-active">✓ Yes</span>':'<span class="status-badge status-deleted">✗ No</span>'}</td>
+      <td><span class="status-badge ${status==='active'?'status-active':status==='suspended'?'status-suspended':'status-deleted'}">${status}</span></td>
+      <td style="color:var(--t4)">${fmt(u.joined_at)}</td>
+      <td style="display:flex;gap:.3rem;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="showUser('${u.id}','${esc(u.display_name||'')}')">Detail</button>
+        ${status==='active'
+          ?`<button class="btn btn-warn btn-sm" onclick="confirmAction('suspend','${u.id}','${esc(u.display_name||'')}')">Suspend</button>`
+          :`<button class="btn btn-ok btn-sm" onclick="confirmAction('unsuspend','${u.id}','${esc(u.display_name||'')}')">Restore</button>`}
+        <button class="btn btn-danger btn-sm" onclick="confirmAction('delete','${u.id}','${esc(u.display_name||'')}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join(''):'<tr class="empty-row"><td colspan="8">No users</td></tr>';
+}
+function filterUsers(){
+  const q=document.getElementById('uSearch').value.toLowerCase();
+  const f=document.getElementById('uStatusFilter').value;
+  const filtered=_allUsers.filter(u=>{
+    const matchSearch=!q||((u.display_name||'').toLowerCase().includes(q));
+    const matchFilter=!f||((u.status||'active')===f);
+    return matchSearch&&matchFilter;
+  });
+  renderUsers(filtered);
+}
+
+async function showUser(uid,name){
+  const s=getSupa();
+  const[{data:pr},{data:sh},{data:lc},{data:te}]=await Promise.all([
+    s.from('profile_roles').select('*').eq('user_id',uid).single(),
+    s.from('score_history').select('action_type,pts_awarded,cds,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(15),
+    s.from('legal_consents').select('accepted_at,terms_version,chk_terms,chk_disclaimer,chk_yom').eq('user_id',uid).limit(1),
+    s.from('tier_events').select('track,from_tier,to_tier,direction,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(5)
+  ]);
+  const r=pr||{}, consent=lc&&lc.length?lc[0]:null;
+  const fmt=d=>d?new Date(new Date(d).getTime()+5.5*3600000).toLocaleString('en-IN'):'—';
+  document.getElementById('umTitle').textContent=name||'User Detail';
+  document.getElementById('umBody').innerHTML=`
+    <div class="um-section">Identity</div>
+    ${row('User ID',`<span class="inline-mono">${uid}</span>`)}
+    ${row('Role',r.role?`<span class="status-badge" style="background:rgba(55,138,221,.15);color:var(--blb);border-color:rgba(55,138,221,.3)">${r.role}</span>`:'—')}
+    ${row('Profession',r.profession||'—')}
+    ${row('Country',r.country||'—')}
+    ${row('Organisation',r.organisation||'—')}
+    ${row('Bio',`<span style="color:var(--t3)">${esc(r.bio||'—')}</span>`)}
+    <div class="um-section" style="margin-top:1rem">Ψ Economy</div>
+    ${row('Seeker Tier',`<strong style="color:var(--blb)">T${r.seeker_tier||1}</strong>`)}
+    ${row('Answerer Tier',`<strong style="color:var(--tlb)">T${r.answerer_tier||1}</strong>`)}
+    ${row('Total Ψ',`<strong style="color:var(--gb);font-size:16px">${r.pts_total??0}</strong>`)}
+    ${row('Seeker Ψ',r.seeker_pts??0)} ${row('Answerer Ψ',r.answerer_pts??0)}
+    ${row('Expertise',(r.expertise_tags||[]).map(t=>`<span class="status-badge" style="background:rgba(127,119,221,.15);color:var(--pub);border-color:rgba(127,119,221,.3)">${t}</span>`).join(' ')||'—')}
+    <div class="um-section" style="margin-top:1rem">Legal Consent</div>
+    ${consent
+      ?`${row('Accepted',fmt(consent.accepted_at))} ${row('Version','v'+consent.terms_version)} ${row('T&C / Disclaimer / YOM',[consent.chk_terms,consent.chk_disclaimer,consent.chk_yom].map(c=>c?'<span class="status-badge status-active">✓</span>':'<span class="status-badge status-deleted">✗</span>').join(' '))}`
+      :`${row('Consent','<span class="status-badge status-deleted">Not recorded</span>')}`}
+    <div class="um-section" style="margin-top:1rem">Score History (last 15)</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Ψ</th><th>CDS</th><th>When</th></tr></thead><tbody>
+    ${(sh||[]).map(e=>`<tr><td>${e.action_type}</td><td style="color:var(--gb)">+${e.pts_awarded||0}</td><td style="color:var(--tlb)">${e.cds||'—'}</td><td style="color:var(--t4)">${fmt(e.created_at)}</td></tr>`).join('')||'<tr class="empty-row"><td colspan="4">No events</td></tr>'}
+    </tbody></table></div>
+    <div class="um-section" style="margin-top:1rem">Tier Events (last 5)</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Track</th><th>From</th><th>To</th><th>Direction</th><th>When</th></tr></thead><tbody>
+    ${(te||[]).map(e=>`<tr><td>${e.track}</td><td>T${e.from_tier}</td><td>T${e.to_tier}</td><td><span class="status-badge ${e.direction==='up'?'status-active':'status-suspended'}">${e.direction==='up'?'▲ UP':'▼ DOWN'}</span></td><td style="color:var(--t4)">${fmt(e.created_at)}</td></tr>`).join('')||'<tr class="empty-row"><td colspan="5">No events</td></tr>'}
+    </tbody></table></div>`;
+  document.getElementById('umFooter').innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal('userModal')">Close</button>
+    <button class="btn btn-warn" onclick="closeModal('userModal');confirmAction('suspend','${uid}','${esc(name||'')}')">Suspend Account</button>
+    <button class="btn btn-danger" onclick="closeModal('userModal');confirmAction('delete','${uid}','${esc(name||'')}')">Delete Account</button>`;
+  document.getElementById('userModal').classList.add('open');
+  secEvent('VIEWED user: '+uid,'info');
+}
+function row(k,v){ return `<div class="um-row"><div class="um-key">${k}</div><div class="um-val">${v}</div></div>`; }
+
+// ── CONFIRM + ACCOUNT ACTIONS ──
+function confirmAction(action,uid,name){
+  const configs={
+    suspend:{icon:'⚠️',title:`Suspend ${name}?`,msg:'This user will be locked out immediately. You can restore them anytime.',btnClass:'btn-warn',btnText:'Suspend Account'},
+    unsuspend:{icon:'✅',title:`Restore ${name}?`,msg:'This user will regain full platform access immediately.',btnClass:'btn-ok',btnText:'Restore Account'},
+    delete:{icon:'🗑️',title:`Delete ${name} permanently?`,msg:'This removes the user profile and role data. The auth.users record must be deleted separately via Supabase Dashboard or the SQL script. This CANNOT be undone.',btnClass:'btn-danger',btnText:'Delete Account'}
+  };
+  const c=configs[action];
+  if(!c) return;
+  document.getElementById('confirmIcon').textContent=c.icon;
+  document.getElementById('confirmTitle').textContent=c.title;
+  document.getElementById('confirmMsg').textContent=c.msg;
+  const btn=document.getElementById('confirmOkBtn');
+  btn.className='btn '+c.btnClass;
+  btn.textContent=c.btnText;
+  btn.onclick=()=>{ closeModal('confirmModal'); executeAction(action,uid,name); };
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+async function executeAction(action,uid,name){
+  const s=getSupa();
+  if(action==='suspend'){
+    const{error}=await s.from('profiles').update({status:'suspended'}).eq('id',uid);
+    if(error){ toast('Suspend failed: '+error.message,'err'); return; }
+    toast(`${name} suspended`,'warn');
+    secEvent(`SUSPEND: ${uid} (${name})`,'warn');
+  } else if(action==='unsuspend'){
+    const{error}=await s.from('profiles').update({status:'active'}).eq('id',uid);
+    if(error){ toast('Restore failed: '+error.message,'err'); return; }
+    toast(`${name} restored`,'ok');
+    secEvent(`RESTORE: ${uid} (${name})`,'ok');
+  } else if(action==='delete'){
+    // Delete app tables — auth.users needs SQL/Admin API
+    await Promise.all([
+      s.from('legal_consents').delete().eq('user_id',uid),
+      s.from('profile_roles').delete().eq('user_id',uid),
+      s.from('score_history').delete().eq('user_id',uid),
+    ]);
+    const{error}=await s.from('profiles').delete().eq('id',uid);
+    if(error){ toast('Delete failed: '+error.message,'err'); return; }
+    toast(`${name} deleted from app tables. Remove from Supabase Auth separately.`,'warn');
+    secEvent(`DELETE: ${uid} (${name})`,'error');
+  }
+  loadUsers();
+}
+
+// ── VIDEO MODAL ──
+function playVideo(url,title,cds,psi,flags,date){
+  document.getElementById('vidTitle').textContent=title||'Video Playback';
+  document.getElementById('vidCDS').textContent=cds||'—';
+  document.getElementById('vidPsi').textContent=psi||'—';
+  document.getElementById('vidFlags').textContent=flags||'0';
+  document.getElementById('vidDate').textContent=date?new Date(date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+  document.getElementById('vidDesc').textContent=title||'—';
+  const player=document.getElementById('vidPlayer');
+  // Detect URL type — direct video or YouTube/Vimeo embed
+  if(url.includes('youtube.com')||url.includes('youtu.be')){
+    const id=url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1]||'';
+    player.innerHTML=`<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen allow="autoplay"></iframe>`;
+  } else if(url.includes('vimeo.com')){
+    const id=url.match(/vimeo\.com\/(\d+)/)?.[1]||'';
+    player.innerHTML=`<iframe src="https://player.vimeo.com/video/${id}?autoplay=1" allowfullscreen allow="autoplay"></iframe>`;
+  } else {
+    player.innerHTML=`<video controls autoplay src="${url}" style="width:100%;max-height:60vh;background:#000"><p style="color:var(--t3);padding:2rem;text-align:center">Cannot play this video format directly. <a href="${url}" target="_blank" style="color:var(--gold)">Open externally →</a></p></video>`;
+  }
+  document.getElementById('videoModal').classList.add('open');
+  secEvent('VIDEO PLAY: '+url.slice(0,60),'info');
+}
+function closeVideo(){
+  document.getElementById('vidPlayer').innerHTML='';
+  closeModal('videoModal');
+}
+
+// ── TIERS ──
+async function loadTiers(){
+  const s=getSupa();
+  const{data}=await s.from('tier_events').select('user_id,track,from_tier,to_tier,direction,created_at').order('created_at',{ascending:false}).limit(80);
+  const fmt=d=>new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});
+  document.getElementById('tierTbl').innerHTML=(data||[]).map(e=>`
+    <tr>
+      <td class="mono" style="color:var(--t4)">${(e.user_id||'').slice(0,8)}…</td>
+      <td><span class="status-badge" style="background:rgba(127,119,221,.15);color:var(--pub);border-color:rgba(127,119,221,.3)">${e.track}</span></td>
+      <td style="color:var(--t3)">T${e.from_tier}</td>
+      <td style="color:var(--t1);font-weight:700">T${e.to_tier}</td>
+      <td><span class="status-badge ${e.direction==='up'?'status-active':'status-suspended'}">${e.direction==='up'?'▲ Promoted':'▼ Demoted'}</span></td>
+      <td style="color:var(--t4)">${fmt(e.created_at)}</td>
+    </tr>`).join('')||'<tr class="empty-row"><td colspan="6">No tier events</td></tr>';
+}
+
+// ── CONSENTS ──
+async function loadConsents(){
+  const s=getSupa();
+  const{data}=await s.from('legal_consents').select('user_id,terms_version,accepted_at,chk_terms,chk_disclaimer,chk_yom').order('accepted_at',{ascending:false}).limit(100);
+  const fmt=d=>new Date(new Date(d).getTime()+5.5*3600000).toLocaleString('en-IN');
+  const tick=v=>v?'<span class="status-badge status-active">✓</span>':'<span class="status-badge status-deleted">✗</span>';
+  document.getElementById('conTbl').innerHTML=(data||[]).map(c=>`
+    <tr>
+      <td class="mono" style="color:var(--t4)">${(c.user_id||'').slice(0,8)}…</td>
+      <td>v${c.terms_version||'?'}</td>
+      <td style="color:var(--t3)">${fmt(c.accepted_at)}</td>
+      <td>${tick(c.chk_terms)}</td>
+      <td>${tick(c.chk_disclaimer)}</td>
+      <td>${tick(c.chk_yom)}</td>
+    </tr>`).join('')||'<tr class="empty-row"><td colspan="6">No consent records</td></tr>';
+  document.getElementById('bdgCon').textContent=(data||[]).length;
+}
+
+// ── YOM ──
+async function loadYOM(){
+  const s=getSupa();
+  const{data}=await s.from('score_history').select('user_id,action_type,pts_awarded,cds,created_at').order('created_at',{ascending:false}).limit(100);
+  const fmt=d=>new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});
+  document.getElementById('yomTbl').innerHTML=(data||[]).map(r=>`
+    <tr>
+      <td class="mono" style="color:var(--t4)">${(r.user_id||'').slice(0,8)}…</td>
+      <td><span class="status-badge bb">${r.action_type}</span></td>
+      <td style="color:var(--gb);font-weight:700">+${r.pts_awarded||0} Ψ</td>
+      <td style="color:var(--tlb)">${r.cds||'—'}</td>
+      <td style="color:var(--t4)">${fmt(r.created_at)}</td>
+    </tr>`).join('')||'<tr class="empty-row"><td colspan="5">No transactions</td></tr>';
+}
+
+// ── INSIGHTS ──
+async function loadInsights(){
+  const s=getSupa();
+  const{data}=await s.from('insight_reports').select('*').order('created_at',{ascending:false}).limit(30);
+  const fmt=d=>new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});
+  document.getElementById('insightsList').innerHTML=(data||[]).map(r=>`
+    <div class="log-item" style="flex-direction:column;align-items:flex-start;gap:.4rem">
+      <div style="display:flex;gap:.6rem;align-items:center;width:100%">
+        <div class="log-dot ok"></div>
+        <div style="font-weight:700;color:var(--t1)">${esc(r.agent_name||'—')}</div>
+        <div style="margin-left:auto;color:var(--gb);font-weight:700;font-size:14px">${r.score||'—'}</div>
+        <div class="log-time">${fmt(r.created_at)}</div>
+      </div>
+      ${r.summary?`<div style="font-size:11px;color:var(--t3);padding-left:1.2rem">${esc(r.summary)}</div>`:''}
+    </div>`).join('')||'<div style="color:var(--t4);text-align:center;padding:2rem;font-size:11px">No insight reports yet</div>';
+}
+
+// ── SECURITY ──
+function loadSecurity(){ renderSecLog(); }
+
+// ── DIAGNOSTICS ──
+async function loadDiag(){
+  const s=getSupa();
+  const raw=JSON.parse(sessionStorage.getItem(GATE_TOKEN_KEY)||'{}');
+  document.getElementById('diagInfo').innerHTML=`
+    <div>Admin: <strong style="color:var(--t1)">${raw.email||'—'}</strong></div>
+    <div>Session: <strong style="color:var(--t1)">${sessionStart?sessionStart.toLocaleString('en-IN'):'—'}</strong></div>
+    <div>Gate: <strong style="color:var(--gnb)">✓ 2FA Active</strong></div>
+    <div>Supabase: <strong style="color:var(--tlb)">${SUPA_URL.replace('https://','').split('.')[0]}</strong></div>`;
+  const checks=await Promise.all([
+    s.from('profiles').select('*',{count:'exact',head:true}),
+    s.from('questions').select('*',{count:'exact',head:true}),
+    s.from('answers').select('*',{count:'exact',head:true}),
+    s.from('score_history').select('*',{count:'exact',head:true}),
+    s.from('legal_consents').select('*',{count:'exact',head:true}),
+  ]);
+  const tables=['profiles','questions','answers','score_history','legal_consents'];
+  document.getElementById('diagHealth').innerHTML=checks.map((c,i)=>`
+    <div>${tables[i]}: <strong style="color:${c.error?'var(--rdb)':'var(--gnb)'}">${c.error?'✗ Error':'✓ OK'}</strong> ${c.count!==null?`(${c.count} rows)`:''}</div>`).join('');
+}
+
+async function changePwd(){
+  const p1=document.getElementById('diagPwd').value;
+  const p2=document.getElementById('diagPwd2').value;
+  if(!p1||p1!==p2){ toast('Passwords do not match','err'); return; }
+  if(p1.length<8){ toast('Password must be 8+ characters','err'); return; }
+  const s=getSupa();
+  const{error}=await s.auth.updateUser({password:p1});
+  if(error){ toast('Failed: '+error.message,'err'); return; }
+  toast('Password updated','ok');
+  secEvent('PASSWORD CHANGED','warn');
+  document.getElementById('diagPwd').value='';
+  document.getElementById('diagPwd2').value='';
+}
+
+// ── MODALS ──
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m){ if(m.id==='videoModal') closeVideo(); else closeModal(m.id); } }));
+
+// ── TOAST ──
+function toast(msg,type='info',duration=3500){
+  const wrap=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  const icons={ok:'✓',err:'✕',info:'ℹ',warn:'⚠'};
+  el.innerHTML=`<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  wrap.appendChild(el);
+  setTimeout(()=>el.style.opacity='0',duration-400);
+  setTimeout(()=>el.remove(),duration);
+}
+
+// ── ESCAPE ──
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeVideo(); document.querySelectorAll('.modal-backdrop').forEach(m=>m.classList.remove('open')); } });
 </script>
 </body>
 </html>
