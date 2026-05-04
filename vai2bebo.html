@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Engageneering™ · Admin</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23040810'/%3E%3Cpolygon points='16,3 27,9.5 27,22.5 16,29 5,22.5 5,9.5' fill='none' stroke='%23c8922a' stroke-width='2'/%3E%3Cpolygon points='16,8 22,11.5 22,18.5 16,22 10,18.5 10,11.5' fill='%23c8922a' opacity='0.9'/%3E%3C/svg%3E"/>
+<link rel="icon" href="ENG-Favicon.png" type="image/png"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js" onerror="window.ENG_CONFIG=window.ENG_CONFIG||{}"></script>
 <style>
@@ -410,11 +410,15 @@ select.search-input{cursor:pointer}
       </div>
       <div class="search-bar">
         <input class="search-input" id="qSearch" placeholder="Search title or user…" oninput="filterQuestions()"/>
-        <select class="search-input" id="qFilter" onchange="filterQuestions()" style="max-width:140px">
-          <option value="">All status</option><option value="flagged">Flagged</option><option value="active">Active</option>
+        <select class="search-input" id="qFilter" onchange="filterQuestions()" style="max-width:150px">
+          <option value="">All</option>
+          <option value="flagged">⚑ Flagged</option>
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
+          <option value="video">Has Video</option>
         </select>
       </div>
-      <div class="tbl-wrap"><table><thead><tr><th>Question</th><th>Asked By</th><th>CDS</th><th>Ψ</th><th>Answers</th><th>Flags</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="qTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Question</th><th>Asked By</th><th>Type</th><th>Duration</th><th>CDS</th><th>Ψ</th><th>Answers</th><th>Flags</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="qTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- ══ ANSWERS ══ -->
@@ -426,7 +430,7 @@ select.search-input{cursor:pointer}
       <div class="search-bar">
         <input class="search-input" id="aSearch" placeholder="Search…" oninput="filterAnswers()"/>
       </div>
-      <div class="tbl-wrap"><table><thead><tr><th>Answer / Question</th><th>Answered By</th><th>CDS</th><th>Ψ</th><th>Flags</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="aTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Answer / For Question</th><th>By</th><th>Type</th><th>Duration</th><th>CDS</th><th>Ψ</th><th>Flags</th><th>Status</th><th>Posted</th><th>Watch / Actions</th></tr></thead><tbody id="aTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- ══ ARIA AGENTS ══ -->
@@ -528,8 +532,8 @@ select.search-input{cursor:pointer}
     </div>
     <div class="vid-player" id="vidPlayer"></div>
     <div class="vid-info">
-      <div id="vidDesc" style="font-weight:600;color:var(--t1);margin-bottom:.3rem">—</div>
-      <div id="vidInfoExtra" style="font-size:11px;color:var(--t3);line-height:1.8;margin-bottom:.4rem"></div>
+      <div id="vidDesc" style="font-weight:600;color:var(--t1);margin-bottom:.2rem">—</div>
+      <div id="vidInfoExtra" style="font-size:11px;color:var(--t3);line-height:1.8;margin-bottom:.3rem"></div>
       <div class="vid-meta">
         <span>CDS: <strong id="vidCDS" style="color:var(--tlb)">—</strong></span>
         <span>Ψ: <strong id="vidPsi" style="color:var(--gb)">—</strong></span>
@@ -548,7 +552,7 @@ select.search-input{cursor:pointer}
     <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
     <div class="confirm-actions">
       <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
-      <button class="btn" id="confirmOkBtn">Confirm</button>
+      <button class="btn" id="confirmOkBtn" onclick="">Confirm</button>
     </div>
   </div>
 </div>
@@ -877,210 +881,123 @@ async function loadActivity(){
 
 async function loadQuestions(){
   const s=getSupa();
-  // Fetch questions with profile names joined
-  const[{data:qData},{data:profiles},{data:answerCounts}] = await Promise.all([
-    s.from('questions').select('id,title,user_id,cds,pts_awarded,flag_count,status,question_type,duration_seconds,created_at,body').order('created_at',{ascending:false}).limit(200),
+  const[{data:qd},{data:pr},{data:ac}]=await Promise.all([
+    s.from('questions').select('id,title,body,user_id,cds,pts_awarded,flag_count,status,question_type,duration_seconds,video_url,created_at').order('created_at',{ascending:false}).limit(200),
     s.from('profiles').select('id,display_name'),
     s.from('answers').select('question_id')
   ]);
-  // Build lookup maps
-  const nameMap={};
-  (profiles||[]).forEach(p=>nameMap[p.id]=p.display_name||'Unknown');
-  const ansMap={};
-  (answerCounts||[]).forEach(a=>{ansMap[a.question_id]=(ansMap[a.question_id]||0)+1;});
-  _allQuestions=(qData||[]).map(q=>({...q,display_name:nameMap[q.user_id]||'Unknown',answer_count:ansMap[q.id]||0}));
+  const nm={};(pr||[]).forEach(p=>nm[p.id]=p.display_name||'—');
+  const am={};(ac||[]).forEach(a=>{am[a.question_id]=(am[a.question_id]||0)+1;});
+  _allQuestions=(qd||[]).map(q=>({...q,_name:nm[q.user_id]||'Unknown',_ans:am[q.id]||0}));
   renderQuestions(_allQuestions);
 }
 function renderQuestions(data){
   const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
-  const dur=s=>s?`${Math.floor(s/60)}m ${s%60}s`:'—';
-  const qTypeColor={video:'var(--blb)',text:'var(--pub)',audio:'var(--tlb)'};
+  const dur=s=>s?Math.floor(s/60)+'m '+(s%60)+'s':'—';
+  window._qMap={};data.forEach(q=>{window._qMap[q.id]=q;});
   document.getElementById('qTbl').innerHTML=data.length?data.map(q=>`
     <tr>
-      <td style="min-width:220px">
-        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(q.title||'Untitled')}</div>
-        ${q.body?`<div style="color:var(--t4);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px">${esc(q.body.slice(0,80))}${q.body.length>80?'…':''}</div>`:''}
-        <div style="margin-top:3px;display:flex;gap:4px;flex-wrap:wrap">
-          ${q.question_type?`<span style="font-size:9px;font-weight:700;color:${qTypeColor[q.question_type]||'var(--t3)'};letter-spacing:.5px;text-transform:uppercase">${q.question_type}</span>`:''}
-          ${q.duration_seconds?`<span style="font-size:9px;color:var(--t4)">⏱ ${dur(q.duration_seconds)}</span>`:''}
-        </div>
+      <td style="min-width:200px;max-width:280px">
+        <div style="color:var(--t1);font-weight:600;line-height:1.4;margin-bottom:2px">${esc(q.title||'Untitled')}</div>
+        ${q.body?`<div style="color:var(--t4);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">${esc(q.body.slice(0,80))}${q.body.length>80?'…':''}</div>`:''}
       </td>
       <td>
-        <div style="color:var(--t1);font-weight:500">${esc(q.display_name||'Unknown')}</div>
-        <div class="mono" style="color:var(--t5);font-size:9px">${(q.user_id||'').slice(0,10)}…</div>
+        <div style="color:var(--t1)">${esc(q._name)}</div>
+        <div class="mono" style="color:var(--t5);font-size:9px">${(q.user_id||'').slice(0,8)}…</div>
       </td>
-      <td style="text-align:center">
-        <div style="color:var(--tlb);font-size:16px;font-weight:800">${q.cds||'—'}</div>
-        <div style="color:var(--t5);font-size:9px">CDS</div>
-      </td>
-      <td style="text-align:center">
-        <div style="color:var(--gb);font-size:15px;font-weight:800">${q.pts_awarded||0}</div>
-        <div style="color:var(--t5);font-size:9px">Ψ pts</div>
-      </td>
-      <td style="text-align:center">
-        <div style="color:var(--blb);font-size:16px;font-weight:700">${q.answer_count||0}</div>
-        <div style="color:var(--t5);font-size:9px">answers</div>
-      </td>
-      <td>${q.flag_count>0
-        ?`<span class="status-badge status-suspended">⚑ ${q.flag_count} flag${q.flag_count>1?'s':''}</span>`
-        :'<span class="status-badge status-active">✓ Clean</span>'}
-      </td>
-      <td><span class="status-badge ${q.status==='active'?'status-active':q.status==='suspended'?'status-suspended':'status-deleted'}">${q.status||'active'}</span></td>
-      <td style="color:var(--t4);font-size:11px;white-space:nowrap">${fmt(q.created_at)}</td>
+      <td>${q.question_type?`<span class="status-badge bb" style="text-transform:uppercase">${q.question_type}</span>`:'<span style="color:var(--t4);font-size:10px">—</span>'}</td>
+      <td style="color:var(--t3);font-size:11px">${dur(q.duration_seconds)}</td>
+      <td style="text-align:center"><div style="color:var(--tlb);font-size:15px;font-weight:800">${q.cds??'—'}</div><div style="color:var(--t5);font-size:9px">CDS</div></td>
+      <td style="text-align:center"><div style="color:var(--gb);font-size:14px;font-weight:800">${q.pts_awarded??0}</div><div style="color:var(--t5);font-size:9px">Ψ</div></td>
+      <td style="text-align:center"><div style="color:var(--blb);font-size:15px;font-weight:700">${q._ans}</div><div style="color:var(--t5);font-size:9px">answers</div></td>
+      <td>${q.flag_count>0?`<span class="status-badge status-suspended">⚑ ${q.flag_count}</span>`:'<span class="status-badge status-active">Clean</span>'}</td>
+      <td><span class="status-badge ${(q.status||'active')==='active'?'status-active':'status-suspended'}">${q.status||'active'}</span></td>
+      <td style="color:var(--t4);font-size:10px;white-space:nowrap">${fmt(q.created_at)}</td>
       <td>
         <div style="display:flex;gap:3px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="showQuestionDetail('${q.id}')">Detail</button>
-          ${q.flag_count>0?`<button class="btn btn-warn btn-sm" onclick="clearFlag('${q.id}','question')">Clear ⚑</button>`:''}
-          <button class="btn btn-danger btn-sm" onclick="confirmDeleteContent('${q.id}','question',${JSON.stringify(esc(q.title||''))})">Delete</button>
+          ${q.video_url?`<button class="btn btn-ok btn-sm" data-qplay="${q.id}">▶ Watch</button>`:''}
+          <button class="btn btn-ghost btn-sm" onclick="showQDetail('${q.id}')">Detail</button>
+          ${q.flag_count>0?`<button class="btn btn-warn btn-sm" onclick="clearFlag('${q.id}','question')">⚑</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="delContent('${q.id}','question')">✕</button>
         </div>
       </td>
-    </tr>`).join(''):'<tr class="empty-row"><td colspan="9">No questions found</td></tr>';
+    </tr>`).join(''):`<tr class="empty-row"><td colspan="11">No questions found</td></tr>`;
+  // Video play delegation for questions
+  document.getElementById('qTbl').onclick=function(e){
+    const b=e.target.closest('[data-qplay]');
+    if(!b)return;
+    const q=window._qMap[b.dataset.qplay];
+    if(q)openVideoModal(q.video_url,q.title,'QUESTION',q.cds,q.pts_awarded,q.flag_count,q.created_at,q._name,'',q.duration_seconds,q.body);
+  };
 }
 function filterQuestions(){
-  const q=document.getElementById('qSearch').value.toLowerCase();
+  const q=(document.getElementById('qSearch').value||'').toLowerCase();
   const f=document.getElementById('qFilter').value;
-  const filtered=_allQuestions.filter(r=>{
-    const matchSearch=!q||((r.title||'').toLowerCase().includes(q)||(r.display_name||'').toLowerCase().includes(q)||(r.body||'').toLowerCase().includes(q));
-    const matchFilter=!f||(f==='flagged'?r.flag_count>0:r.status===f);
-    return matchSearch&&matchFilter;
-  });
-  renderQuestions(filtered);
+  renderQuestions(_allQuestions.filter(r=>{
+    const ms=!q||[r.title,r._name,r.body].some(v=>(v||'').toLowerCase().includes(q));
+    const mf=!f||(f==='flagged'?r.flag_count>0:f==='video'?!!r.video_url:(r.status||'active')===f);
+    return ms&&mf;
+  }));
 }
 
 async function loadAnswers(){
   const s=getSupa();
-  const[{data:aData},{data:profiles},{data:questions}] = await Promise.all([
-    s.from('answers').select('id,title,user_id,question_id,cds,pts_awarded,flag_count,status,video_url,duration_seconds,answer_type,transcript,created_at').order('created_at',{ascending:false}).limit(200),
+  const[{data:ad},{data:pr},{data:qs}]=await Promise.all([
+    s.from('answers').select('id,title,user_id,question_id,cds,pts_awarded,flag_count,status,video_url,answer_type,duration_seconds,transcript,created_at').order('created_at',{ascending:false}).limit(200),
     s.from('profiles').select('id,display_name'),
     s.from('questions').select('id,title')
   ]);
-  const nameMap={};
-  (profiles||[]).forEach(p=>nameMap[p.id]=p.display_name||'Unknown');
-  const qMap={};
-  (questions||[]).forEach(q=>qMap[q.id]=q.title||'Unknown Question');
-  _allAnswers=(aData||[]).map(a=>({...a,display_name:nameMap[a.user_id]||'Unknown',question_title:qMap[a.question_id]||'—'}));
+  const nm={};(pr||[]).forEach(p=>nm[p.id]=p.display_name||'—');
+  const qm={};(qs||[]).forEach(q=>qm[q.id]=q.title||'—');
+  window._aMap={};
+  _allAnswers=(ad||[]).map(a=>{
+    const r={...a,_name:nm[a.user_id]||'Unknown',_qtitle:qm[a.question_id]||'—'};
+    window._aMap[a.id]=r; return r;
+  });
   renderAnswers(_allAnswers);
 }
 function renderAnswers(data){
   const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
-  const dur=s=>s?`${Math.floor(s/60)}m ${s%60}s`:'—';
-  // Store answer data in a lookup for event delegation (avoids all quote-escaping issues)
-  window._answerMap={};
-  data.forEach(a=>{ window._answerMap[a.id]=a; });
-
+  const dur=s=>s?Math.floor(s/60)+'m '+(s%60)+'s':'—';
+  // Ensure _aMap is populated for delegation
+  data.forEach(a=>{window._aMap=window._aMap||{};window._aMap[a.id]=a;});
   document.getElementById('aTbl').innerHTML=data.length?data.map(a=>`
     <tr>
-      <td style="min-width:220px">
-        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(a.title||'Untitled Answer')}</div>
-        <div style="color:var(--t4);font-size:10px;margin-bottom:2px">↳ ${esc(a.question_title||'—')}</div>
-        ${a.transcript?`<div style="color:var(--t5);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;font-style:italic">"${esc(a.transcript.slice(0,70))}${a.transcript.length>70?'…':''}"</div>`:''}
-        <div style="margin-top:3px;display:flex;gap:4px;flex-wrap:wrap">
-          ${a.answer_type?`<span style="font-size:9px;font-weight:700;color:var(--blb);letter-spacing:.5px;text-transform:uppercase">${a.answer_type}</span>`:''}
-          ${a.duration_seconds?`<span style="font-size:9px;color:var(--t4)">⏱ ${dur(a.duration_seconds)}</span>`:''}
-          ${a.video_url?'<span style="font-size:9px;color:var(--gnb)">● Has Video</span>':'<span style="font-size:9px;color:var(--t5)">○ No Video</span>'}
-        </div>
+      <td style="min-width:200px;max-width:280px">
+        <div style="color:var(--t1);font-weight:600;line-height:1.4;margin-bottom:2px">${esc(a.title||'Untitled Answer')}</div>
+        <div style="color:var(--t4);font-size:10px;margin-bottom:2px">↳ ${esc(a._qtitle||'—')}</div>
+        ${a.transcript?`<div style="color:var(--t5);font-size:10px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">"${esc(a.transcript.slice(0,70))}${a.transcript.length>70?'…':''}"</div>`:''}
       </td>
       <td>
-        <div style="color:var(--t1);font-weight:500">${esc(a.display_name||'Unknown')}</div>
-        <div class="mono" style="color:var(--t5);font-size:9px">${(a.user_id||'').slice(0,10)}…</div>
+        <div style="color:var(--t1)">${esc(a._name)}</div>
+        <div class="mono" style="color:var(--t5);font-size:9px">${(a.user_id||'').slice(0,8)}…</div>
       </td>
-      <td style="text-align:center">
-        <div style="color:var(--tlb);font-size:16px;font-weight:800">${a.cds||'—'}</div>
-        <div style="color:var(--t5);font-size:9px">CDS</div>
-      </td>
-      <td style="text-align:center">
-        <div style="color:var(--gb);font-size:15px;font-weight:800">${a.pts_awarded||0}</div>
-        <div style="color:var(--t5);font-size:9px">Ψ pts</div>
-      </td>
-      <td>${a.flag_count>0
-        ?`<span class="status-badge status-suspended">⚑ ${a.flag_count}</span>`
-        :'<span class="status-badge status-active">✓ Clean</span>'}
-      </td>
-      <td><span class="status-badge ${a.status==='active'?'status-active':a.status==='suspended'?'status-suspended':'status-deleted'}">${a.status||'active'}</span></td>
-      <td style="color:var(--t4);font-size:11px;white-space:nowrap">${fmt(a.created_at)}</td>
+      <td>${a.answer_type?`<span class="status-badge bb" style="text-transform:uppercase">${a.answer_type}</span>`:'<span style="color:var(--t4);font-size:10px">—</span>'}</td>
+      <td style="color:var(--t3);font-size:11px">${dur(a.duration_seconds)}</td>
+      <td style="text-align:center"><div style="color:var(--tlb);font-size:15px;font-weight:800">${a.cds??'—'}</div><div style="color:var(--t5);font-size:9px">CDS</div></td>
+      <td style="text-align:center"><div style="color:var(--gb);font-size:14px;font-weight:800">${a.pts_awarded??0}</div><div style="color:var(--t5);font-size:9px">Ψ</div></td>
+      <td>${a.flag_count>0?`<span class="status-badge status-suspended">⚑ ${a.flag_count}</span>`:'<span class="status-badge status-active">Clean</span>'}</td>
+      <td><span class="status-badge ${(a.status||'active')==='active'?'status-active':'status-suspended'}">${a.status||'active'}</span></td>
+      <td style="color:var(--t4);font-size:10px;white-space:nowrap">${fmt(a.created_at)}</td>
       <td>
         <div style="display:flex;gap:3px;flex-wrap:wrap">
-          ${a.video_url
-            ?`<button class="btn btn-ok btn-sm" data-play-id="${a.id}">▶ Watch</button>`
-            :'<span style="color:var(--t5);font-size:10px">No video</span>'}
-          ${a.flag_count>0?`<button class="btn btn-warn btn-sm" onclick="clearFlag('${a.id}','answer')">Clear ⚑</button>`:''}
-          <button class="btn btn-danger btn-sm" onclick="confirmDeleteContent('${a.id}','answer',${JSON.stringify(esc(a.title||''))})">Delete</button>
+          ${a.video_url?`<button class="btn btn-ok btn-sm" data-aplay="${a.id}">▶ Watch</button>`:'<span style="color:var(--t5);font-size:9px">No video</span>'}
+          ${a.flag_count>0?`<button class="btn btn-warn btn-sm" onclick="clearFlag('${a.id}','answer')">⚑</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="delContent('${a.id}','answer')">✕</button>
         </div>
       </td>
-    </tr>`).join(''):'<tr class="empty-row"><td colspan="8">No answers found</td></tr>';
-
-  // Event delegation for play buttons — no inline onclick needed
-  document.getElementById('aTbl').onclick = function(e){
-    const btn = e.target.closest('[data-play-id]');
-    if(!btn) return;
-    const a = window._answerMap[btn.dataset.playId];
-    if(a) playVideo(a.video_url, a.title, a.cds, a.pts_awarded, a.flag_count, a.created_at, a.display_name, a.question_title, a.duration_seconds, a.transcript);
+    </tr>`).join(''):`<tr class="empty-row"><td colspan="10">No answers found</td></tr>`;
+  // Play delegation — no inline onclick, no quote issues
+  document.getElementById('aTbl').onclick=function(e){
+    const b=e.target.closest('[data-aplay]');
+    if(!b)return;
+    const a=window._aMap[b.dataset.aplay];
+    if(a)openVideoModal(a.video_url,a.title,'ANSWER',a.cds,a.pts_awarded,a.flag_count,a.created_at,a._name,a._qtitle,a.duration_seconds,a.transcript);
   };
 }
 function filterAnswers(){
-  const q=document.getElementById('aSearch').value.toLowerCase();
-  const filtered=_allAnswers.filter(r=>!q||((r.title||'').toLowerCase().includes(q)||(r.display_name||'').toLowerCase().includes(q)||(r.question_title||'').toLowerCase().includes(q)));
-  renderAnswers(filtered);
-}
-
-async function showQuestionDetail(qid){
-  const q = _allQuestions.find(x=>x.id===qid);
-  if(!q) return;
-  const s=getSupa();
-  const{data:answers}=await s.from('answers').select('id,title,user_id,cds,pts_awarded,created_at').eq('question_id',qid).order('cds',{ascending:false}).limit(20);
-  const nameMap={};
-  _allUsers.forEach(u=>nameMap[u.id]=u.display_name||'Unknown');
-  const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
-  document.getElementById('umTitle').textContent='Question Detail';
-  document.getElementById('umBody').innerHTML=`
-    <div class="um-section">Question</div>
-    ${row('Title',`<strong style="color:var(--t1);font-size:14px">${esc(q.title||'—')}</strong>`)}
-    ${q.body?row('Body',`<div style="color:var(--t3);line-height:1.7;white-space:pre-wrap">${esc(q.body)}</div>`):''}
-    ${row('Type',q.question_type||'—')}
-    ${row('Duration',q.duration_seconds?Math.floor(q.duration_seconds/60)+'m '+q.duration_seconds%60+'s':'—')}
-    ${row('Status',`<span class="status-badge ${q.status==='active'?'status-active':'status-suspended'}">${q.status||'active'}</span>`)}
-    ${row('Posted',fmt(q.created_at))}
-    <div class="um-section" style="margin-top:1rem">Author</div>
-    ${row('Name',`<strong style="color:var(--t1)">${esc(q.display_name||'Unknown')}</strong>`)}
-    ${row('User ID',`<span class="inline-mono">${q.user_id||'—'}</span>`)}
-    <div class="um-section" style="margin-top:1rem">Scores</div>
-    ${row('CDS',`<span style="color:var(--tlb);font-size:18px;font-weight:800">${q.cds||'—'}</span>`)}
-    ${row('Ψ Points',`<span style="color:var(--gb);font-size:18px;font-weight:800">${q.pts_awarded||0}</span>`)}
-    ${row('Flags',q.flag_count>0?`<span class="status-badge status-suspended">⚑ ${q.flag_count}</span>`:'<span class="status-badge status-active">Clean</span>')}
-    <div class="um-section" style="margin-top:1rem">Answers (${(answers||[]).length})</div>
-    <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>By</th><th>CDS</th><th>Ψ</th><th>When</th></tr></thead><tbody>
-    ${(answers||[]).map(a=>`<tr>
-      <td style="color:var(--t1)">${esc(a.title||'Untitled')}</td>
-      <td style="color:var(--t3)">${esc(nameMap[a.user_id]||a.user_id.slice(0,8)+'…')}</td>
-      <td style="color:var(--tlb)">${a.cds||'—'}</td>
-      <td style="color:var(--gb)">${a.pts_awarded||0}</td>
-      <td style="color:var(--t4)">${fmt(a.created_at)}</td>
-    </tr>`).join('')||'<tr class="empty-row"><td colspan="5">No answers yet</td></tr>'}
-    </tbody></table></div>`;
-  document.getElementById('umFooter').innerHTML=`
-    <button class="btn btn-ghost" onclick="closeModal('userModal')">Close</button>
-    ${q.flag_count>0?`<button class="btn btn-warn" onclick="closeModal('userModal');clearFlag('${q.id}','question')">Clear Flag</button>`:''}
-    <button class="btn btn-danger" onclick="closeModal('userModal');confirmDeleteContent('${q.id}','question','${esc(q.title||'')}')">Delete Question</button>`;
-  document.getElementById('userModal').classList.add('open');
-}
-
-function confirmDeleteContent(id, type, title){
-  document.getElementById('confirmIcon').textContent='🗑️';
-  document.getElementById('confirmTitle').textContent=`Delete ${type}?`;
-  document.getElementById('confirmMsg').textContent=`"${title}" will be permanently deleted. This cannot be undone.`;
-  const btn=document.getElementById('confirmOkBtn');
-  btn.className='btn btn-danger';
-  btn.textContent='Delete Permanently';
-  btn.onclick=async()=>{
-    closeModal('confirmModal');
-    const s=getSupa();
-    const{error}=await s.from(type+'s').delete().eq('id',id);
-    if(error){ toast('Delete failed: '+error.message,'err'); return; }
-    toast(`${type} deleted`,'ok');
-    secEvent(`DELETE ${type.toUpperCase()}: ${id}`,'error');
-    type==='question'?loadQuestions():loadAnswers();
-  };
-  document.getElementById('confirmModal').classList.add('open');
+  const q=(document.getElementById('aSearch').value||'').toLowerCase();
+  renderAnswers(_allAnswers.filter(r=>!q||[r.title,r._name,r._qtitle,r.transcript].some(v=>(v||'').toLowerCase().includes(q))));
 }
 
 async function clearFlag(id,table){
@@ -1252,42 +1169,58 @@ async function executeAction(action,uid,name){
 }
 
 // ── VIDEO MODAL ──
-function playVideo(url, title, cds, psi, flags, date, answeredBy, questionTitle, duration, transcript){
-  document.getElementById('vidTitle').textContent = title || 'Video Playback';
-  document.getElementById('vidCDS').textContent   = cds   || '—';
-  document.getElementById('vidPsi').textContent   = psi   || '—';
-  document.getElementById('vidFlags').textContent = flags || '0';
+// Unified video modal — handles both Q and A
+function openVideoModal(url, title, contentType, cds, psi, flags, date, byName, forQuestion, durationSec, transcriptOrBody){
+  const badgeEl = document.getElementById('vidBadge');
+  if(badgeEl){
+    badgeEl.textContent = contentType||'VIDEO';
+    badgeEl.className   = 'status-badge '+(contentType==='QUESTION'?'status-suspended':'status-active');
+  }
+  document.getElementById('vidTitle').textContent = title||'Playback';
+  document.getElementById('vidCDS').textContent   = cds??'—';
+  document.getElementById('vidPsi').textContent   = psi??'—';
+  document.getElementById('vidFlags').textContent = flags??'0';
   document.getElementById('vidDate').textContent  = date
-    ? new Date(date).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})
-    : '—';
+    ? new Date(date).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}) : '—';
+  document.getElementById('vidDesc').textContent  = title||'—';
 
-  // Rich info panel
-  document.getElementById('vidDesc').textContent = title || '—';
-  const infoEl = document.getElementById('vidInfoExtra');
-  if(infoEl){
-    infoEl.innerHTML = [
-      answeredBy  ? `<span>By: <strong style="color:var(--t1)">${esc(answeredBy)}</strong></span>` : '',
-      questionTitle && questionTitle !== '—' ? `<span>Q: <strong style="color:var(--blb)">${esc(questionTitle)}</strong></span>` : '',
-      duration    ? `<span>⏱ ${Math.floor(duration/60)}m ${duration%60}s</span>` : '',
-      transcript  ? `<span style="font-style:italic;color:var(--t4)">"${esc(transcript.slice(0,100))}${transcript.length>100?'…':''}"</span>` : ''
-    ].filter(Boolean).join('<br>');
+  // Extra metadata
+  const extra = document.getElementById('vidInfoExtra');
+  if(extra){
+    const dur = durationSec ? Math.floor(durationSec/60)+'m '+(durationSec%60)+'s' : null;
+    extra.innerHTML = [
+      byName      ? `<span>By: <strong style="color:var(--t1)">${esc(byName)}</strong></span>` : '',
+      forQuestion && forQuestion!=='—' && contentType==='ANSWER'
+                  ? `<span>Answers: <strong style="color:var(--blb)">${esc(forQuestion)}</strong></span>` : '',
+      dur         ? `<span>⏱ ${dur}</span>` : '',
+      transcriptOrBody
+                  ? `<span style="color:var(--t4);font-style:italic">"${esc(String(transcriptOrBody).slice(0,120))}${String(transcriptOrBody).length>120?'…':''}"</span>` : ''
+    ].filter(Boolean).join('&emsp;·&emsp;');
   }
 
   const player = document.getElementById('vidPlayer');
-  if(!url){ player.innerHTML = '<div style="padding:3rem;text-align:center;color:var(--t4)">No video URL available</div>'; }
-  else if(url.includes('youtube.com') || url.includes('youtu.be')){
-    const id = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1] || '';
-    player.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0" allowfullscreen allow="autoplay; fullscreen"></iframe>`;
-  } else if(url.includes('vimeo.com')){
-    const id = url.match(/vimeo\.com\/(\d+)/)?.[1] || '';
-    player.innerHTML = `<iframe src="https://player.vimeo.com/video/${id}?autoplay=1" allowfullscreen allow="autoplay; fullscreen"></iframe>`;
+  if(!url){
+    player.innerHTML = '<div style="padding:3rem;text-align:center;color:var(--t4);font-size:13px">No video URL for this entry</div>';
+  } else if(/youtube\.com|youtu\.be/.test(url)){
+    const id=(url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)||[])[1]||'';
+    player.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0" allowfullscreen allow="autoplay; fullscreen" style="width:100%;height:480px;border:none"></iframe>`;
+  } else if(/vimeo\.com/.test(url)){
+    const id=(url.match(/vimeo\.com\/(\d+)/)||[])[1]||'';
+    player.innerHTML = `<iframe src="https://player.vimeo.com/video/${id}?autoplay=1" allowfullscreen allow="autoplay; fullscreen" style="width:100%;height:480px;border:none"></iframe>`;
   } else {
-    // Direct video — mp4, webm, etc.
-    player.innerHTML = `<video controls autoplay src="${esc(url)}" style="width:100%;max-height:62vh;background:#000" onerror="this.outerHTML='<div style=\"padding:2rem;text-align:center;color:var(--t3)\">Cannot play inline. <a href=\"${esc(url)}\" target=\"_blank\" style=\"color:var(--gold)\">Open externally →</a></div>'"></video>`;
+    const safeUrl = url.replace(/"/g,'&quot;');
+    player.innerHTML = `<video controls autoplay style="width:100%;max-height:65vh;background:#000;display:block"
+      onerror="this.insertAdjacentHTML('afterend','<div style=\"padding:1.5rem;text-align:center;color:var(--t3)\">Cannot play inline — <a href=\"${safeUrl}\" target=\"_blank\" style=\"color:var(--gold)\">open in new tab →</a></div>');this.remove()">
+      <source src="${safeUrl}"><source src="${safeUrl}">
+      Cannot play: <a href="${safeUrl}" target="_blank" style="color:var(--gold)">Open externally →</a>
+    </video>`;
   }
   document.getElementById('videoModal').classList.add('open');
-  secEvent('VIDEO PLAY: ' + (url||'no-url').slice(0,60), 'info');
+  secEvent('VIDEO PLAY ['+(contentType||'?')+']: '+(url||'no-url').slice(0,60),'info');
 }
+// Keep playVideo as alias for backward-compat
+function playVideo(url,title,cds,psi,flags,date){ openVideoModal(url,title,'ANSWER',cds,psi,flags,date,'','',null,null); }
+function closeVideo(){ document.getElementById('vidPlayer').innerHTML=''; closeModal('videoModal'); }
 function closeVideo(){
   document.getElementById('vidPlayer').innerHTML='';
   closeModal('videoModal');
@@ -1411,6 +1344,66 @@ function toast(msg,type='info',duration=3500){
   wrap.appendChild(el);
   setTimeout(()=>el.style.opacity='0',duration-400);
   setTimeout(()=>el.remove(),duration);
+}
+
+// ── QUESTION DETAIL MODAL ──
+async function showQDetail(qid){
+  const q=window._qMap&&window._qMap[qid];
+  if(!q){toast('Question not in current view — refresh first','warn');return;}
+  const s=getSupa();
+  const{data:ans}=await s.from('answers').select('id,title,user_id,cds,pts_awarded,video_url,created_at').eq('question_id',qid).order('cds',{ascending:false}).limit(20);
+  const nm={};_allUsers&&_allUsers.forEach(u=>nm[u.id]=u.display_name||u.id.slice(0,8));
+  const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
+  const dur=s=>s?Math.floor(s/60)+'m '+s%60+'s':'—';
+  document.getElementById('umTitle').textContent='Question Detail';
+  document.getElementById('umBody').innerHTML=`
+    <div class="um-section">Question</div>
+    <div class="um-row"><div class="um-key">Title</div><div class="um-val" style="color:var(--t1);font-weight:600;font-size:14px">${esc(q.title||'—')}</div></div>
+    ${q.body?`<div class="um-row"><div class="um-key">Body</div><div class="um-val" style="color:var(--t3);white-space:pre-wrap;line-height:1.7">${esc(q.body)}</div></div>`:''}
+    <div class="um-row"><div class="um-key">Type</div><div class="um-val">${q.question_type?`<span class="status-badge bb">${q.question_type}</span>`:'—'}</div></div>
+    <div class="um-row"><div class="um-key">Duration</div><div class="um-val">${dur(q.duration_seconds)}</div></div>
+    <div class="um-row"><div class="um-key">Asked By</div><div class="um-val" style="color:var(--t1)">${esc(q._name)}</div></div>
+    <div class="um-row"><div class="um-key">Posted</div><div class="um-val">${fmt(q.created_at)}</div></div>
+    <div class="um-section" style="margin-top:1rem">Scores</div>
+    <div class="um-row"><div class="um-key">CDS</div><div class="um-val" style="color:var(--tlb);font-size:18px;font-weight:800">${q.cds??'—'}</div></div>
+    <div class="um-row"><div class="um-key">Ψ Points</div><div class="um-val" style="color:var(--gb);font-size:18px;font-weight:800">${q.pts_awarded??0}</div></div>
+    <div class="um-row"><div class="um-key">Flags</div><div class="um-val">${q.flag_count>0?`<span class="status-badge status-suspended">⚑ ${q.flag_count}</span>`:'<span class="status-badge status-active">Clean</span>'}</div></div>
+    <div class="um-row"><div class="um-key">Status</div><div class="um-val"><span class="status-badge ${(q.status||'active')==='active'?'status-active':'status-suspended'}">${q.status||'active'}</span></div></div>
+    ${q.video_url?`<div class="um-row"><div class="um-key">Video</div><div class="um-val"><button class="btn btn-ok btn-sm" onclick="openVideoModal('${q.video_url}','${esc(q.title||'')}','QUESTION',${q.cds??'null'},${q.pts_awarded??0},${q.flag_count||0},'${q.created_at}','${esc(q._name)}','','','')">▶ Watch Question Video</button></div></div>`:''}
+    <div class="um-section" style="margin-top:1rem">Answers (${(ans||[]).length})</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>By</th><th>CDS</th><th>Ψ</th><th>Watch</th><th>When</th></tr></thead><tbody>
+    ${(ans||[]).map(a=>`<tr>
+      <td style="color:var(--t1)">${esc(a.title||'Untitled')}</td>
+      <td style="color:var(--t3)">${esc(nm[a.user_id]||a.user_id.slice(0,8))}</td>
+      <td style="color:var(--tlb)">${a.cds??'—'}</td>
+      <td style="color:var(--gb)">${a.pts_awarded??0}</td>
+      <td>${a.video_url?`<button class="btn btn-ok btn-sm" onclick="openVideoModal('${a.video_url}','${esc(a.title||'')}','ANSWER',${a.cds??'null'},${a.pts_awarded??0},0,'${a.created_at}','${esc(nm[a.user_id]||'')}','${esc(q.title||'')}','','')">▶</button>`:'—'}</td>
+      <td style="color:var(--t4)">${fmt(a.created_at)}</td>
+    </tr>`).join('')||'<tr class="empty-row"><td colspan="6">No answers yet</td></tr>'}
+    </tbody></table></div>`;
+  document.getElementById('umFooter').innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal('userModal')">Close</button>
+    ${q.flag_count>0?`<button class="btn btn-warn" onclick="closeModal('userModal');clearFlag('${q.id}','question')">Clear Flag</button>`:''}
+    <button class="btn btn-danger" onclick="closeModal('userModal');delContent('${q.id}','question')">Delete Question</button>`;
+  document.getElementById('userModal').classList.add('open');
+}
+
+function delContent(id,type){
+  document.getElementById('confirmIcon').textContent='🗑️';
+  document.getElementById('confirmTitle').textContent='Delete '+type+'?';
+  document.getElementById('confirmMsg').textContent='This permanently deletes the '+type+' and cannot be undone.';
+  const btn=document.getElementById('confirmOkBtn');
+  btn.className='btn btn-danger'; btn.textContent='Delete';
+  btn.onclick=async()=>{
+    closeModal('confirmModal');
+    const s=getSupa();
+    const{error}=await s.from(type+'s').delete().eq('id',id);
+    if(error){toast('Delete failed: '+error.message,'err');return;}
+    toast(type+' deleted','ok');
+    secEvent('DELETE '+type.toUpperCase()+': '+id,'error');
+    type==='question'?loadQuestions():loadAnswers();
+  };
+  document.getElementById('confirmModal').classList.add('open');
 }
 
 // ── ESCAPE ──
