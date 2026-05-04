@@ -572,7 +572,7 @@ function isGateOpen(){
     return true;
   }catch(e){ return false; }
 }
-function setGateToken(email,pwd){ sessionStorage.setItem(GATE_TOKEN_KEY,JSON.stringify({ts:Date.now(),email,_p:pwd||''})); }
+function setGateToken(email){ sessionStorage.setItem(GATE_TOKEN_KEY,JSON.stringify({ts:Date.now(),email})); }
 function clearGateToken(){ sessionStorage.removeItem(GATE_TOKEN_KEY); }
 
 (function enforceGate(){
@@ -583,7 +583,7 @@ function clearGateToken(){ sessionStorage.removeItem(GATE_TOKEN_KEY); }
       document.getElementById('gateL2').style.display='none';
     });
   } else {
-    document.addEventListener('DOMContentLoaded', async ()=>{
+    document.addEventListener('DOMContentLoaded',()=>{
       const raw = JSON.parse(sessionStorage.getItem(GATE_TOKEN_KEY)||'{}');
       document.getElementById('gateL1').style.display='none';
       document.getElementById('gateL2').style.display='none';
@@ -591,10 +591,6 @@ function clearGateToken(){ sessionStorage.removeItem(GATE_TOKEN_KEY); }
       document.getElementById('adminInitial').textContent=(raw.email||'A').charAt(0).toUpperCase();
       document.getElementById('adminLabel').textContent=(raw.email||'admin').split('@')[0];
       sessionStart = new Date(raw.ts);
-      if(raw.email && raw._p){
-        try{ await getSupa().auth.signInWithPassword({email:raw.email,password:raw._p}); }
-        catch(e){ console.warn('Re-auth:',e.message); }
-      }
       initShell();
     });
   }
@@ -679,7 +675,6 @@ async function doL1(){
     }
     adminUser=data.user;
     secEvent('L1 PASS: '+email,'ok');
-    sessionStorage.setItem('_adm_p',pwd);
     document.getElementById('gateL1').style.display='none';
     document.getElementById('gateL2').style.display='flex';
     startTOTP();
@@ -706,7 +701,7 @@ async function doL2(){
     return;
   }
   clearInterval(_totpTimer);
-  setGateToken(adminUser?.email||ADMIN_EMAILS[0], sessionStorage.getItem('_adm_p')||''); sessionStorage.removeItem('_adm_p');
+  setGateToken(adminUser?.email||ADMIN_EMAILS[0]);
   secEvent('L2 PASS: admin authenticated','ok');
   document.getElementById('gateL2').style.display='none';
   document.getElementById('adminShell').style.display='block';
@@ -742,9 +737,8 @@ async function sendReset(){
 // ── SHELL INIT ──
 function initShell(){
   startClock();
-  updateBadges();
   nav('dashboard',document.querySelector('.sb-item.active'));
-  setInterval(()=>{ loadDashboard(); updateBadges(); },60000);
+  setInterval(()=>{ nav('dashboard',document.querySelector('.sb-item.active')); loadDashboard(); updateBadges(); },60000);
 }
 
 function startClock(){
@@ -883,13 +877,14 @@ async function loadQuestions(){
   const s=getSupa();
   document.getElementById('qTbl').innerHTML='<tr class="empty-row"><td colspan="11">Loading…</td></tr>';
   const[{data:qd,error:qe},{data:pr},{data:ac}]=await Promise.all([
-    s.from('questions')
-      .select('id,title,body,user_id,cds,pts_awarded,flag_count,status,question_type,duration_seconds,video_url,created_at')
-      .order('created_at',{ascending:false}).limit(200),
+    s.from('questions').select('*').order('created_at',{ascending:false}).limit(200),
     s.from('profiles').select('id,display_name'),
     s.from('answers').select('question_id')
   ]);
-  if(qe){ document.getElementById('qTbl').innerHTML='<tr class="empty-row"><td colspan="11" style="color:var(--rdb)">DB Error: '+qe.message+'</td></tr>'; console.error('loadQuestions:',qe); return; }
+  if(qe){
+    document.getElementById('qTbl').innerHTML='<tr class="empty-row"><td colspan="11" style="color:var(--rdb)">DB Error: '+qe.message+'</td></tr>';
+    console.error('loadQuestions:',qe); return;
+  }
   const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
   const am={}; (ac||[]).forEach(a=>{ am[a.question_id]=(am[a.question_id]||0)+1; });
   window._qStore={};
@@ -905,8 +900,8 @@ function renderQuestions(data){
   document.getElementById('qTbl').innerHTML=data.length?data.map(q=>`
     <tr>
       <td style="min-width:200px;max-width:260px">
-        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(q.title||'Untitled')}</div>
-        ${q.body?`<div style="color:var(--t4);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px">${esc(q.body.slice(0,80))}${q.body.length>80?'…':''}</div>`:''}
+        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(q.title||q.question||q.question_text||q.heading||Object.values(q).find(v=>typeof v==='string'&&v.length>2)||'Untitled')}</div>
+        ${(q.body||q.description||q.details||q.content||'')?`<div style="color:var(--t4);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px">${esc((q.body||q.description||q.details||q.content||'').slice(0,80))+(( q.body||q.description||q.details||q.content||'').length>80?'…':'')}</div>`:''}
       </td>
       <td>
         <div style="color:var(--t1)">${esc(q._name)}</div>
@@ -955,15 +950,16 @@ async function loadAnswers(){
   const s=getSupa();
   document.getElementById('aTbl').innerHTML='<tr class="empty-row"><td colspan="10">Loading…</td></tr>';
   const[{data:ad,error:ae},{data:pr},{data:qs}]=await Promise.all([
-    s.from('answers')
-      .select('id,title,user_id,question_id,cds,pts_awarded,flag_count,status,video_url,answer_type,duration_seconds,transcript,created_at')
-      .order('created_at',{ascending:false}).limit(200),
+    s.from('answers').select('*').order('created_at',{ascending:false}).limit(200),
     s.from('profiles').select('id,display_name'),
-    s.from('questions').select('id,title')
+    s.from('questions').select('*')
   ]);
-  if(ae){ document.getElementById('aTbl').innerHTML='<tr class="empty-row"><td colspan="10" style="color:var(--rdb)">DB Error: '+ae.message+'</td></tr>'; console.error('loadAnswers:',ae); return; }
+  if(ae){
+    document.getElementById('aTbl').innerHTML='<tr class="empty-row"><td colspan="10" style="color:var(--rdb)">DB Error: '+ae.message+'</td></tr>';
+    console.error('loadAnswers:',ae); return;
+  }
   const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
-  const qm={}; (qs||[]).forEach(q=>qm[q.id]=q.title||'—');
+  const qm={}; (qs||[]).forEach(q=>qm[q.id]=q.title||q.question||q.question_text||q.heading||'Question');
   window._aStore={};
   _allAnswers=(ad||[]).map(a=>{
     const r={...a,_name:nm[a.user_id]||'Unknown',_qtitle:qm[a.question_id]||'—'};
@@ -977,7 +973,7 @@ function renderAnswers(data){
   document.getElementById('aTbl').innerHTML=data.length?data.map(a=>`
     <tr>
       <td style="min-width:200px;max-width:260px">
-        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(a.title||'Untitled Answer')}</div>
+        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(a.title||a.answer||a.answer_text||a.content||'Untitled Answer')}</div>
         <div style="color:var(--t4);font-size:10px;margin-bottom:2px">↳ ${esc(a._qtitle)}</div>
         ${a.transcript?`<div style="color:var(--t5);font-size:10px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px">"${esc(a.transcript.slice(0,70))}${a.transcript.length>70?'…':''}"</div>`:''}
       </td>
@@ -1034,13 +1030,41 @@ async function loadAgents(){
     const trend=scores.slice(0,8).reverse();
     const maxS=Math.max(...trend,1);
     const bars=trend.map(v=>`<div class="spark-bar" style="height:${Math.max(4,v/maxS*22)}px"></div>`).join('');
-    return `<div class="card" style="margin:0;padding:.8rem">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
-        <div style="font-size:11px;font-weight:700;color:var(--t1)">${name}</div>
-        <div style="font-size:18px;font-weight:800;color:${avg>=7?'var(--gnb)':avg>=5?'var(--gb)':'var(--rdb)'}">${avg??'—'}</div>
+    const minS=scores.length?Math.min(...scores).toFixed(1):null;
+    const maxV=scores.length?Math.max(...scores).toFixed(1):null;
+    const last=scores.length?scores[0].toFixed(1):null;
+    const trend7=scores.length>1?(scores[0]-scores[Math.min(6,scores.length-1)]).toFixed(1):null;
+    const trendColor=trend7>0?'var(--gnb)':trend7<0?'var(--rdb)':'var(--t3)';
+    const grade=avg>=8?'A':avg>=7?'B':avg>=5?'C':avg>=3?'D':'F';
+    const gc=avg>=8?'var(--gnb)':avg>=7?'var(--tlb)':avg>=5?'var(--gb)':avg>=3?'var(--amb)':'var(--rdb)';
+    return `<div class="card" style="margin:0;padding:1rem;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-.5rem;right:-.3rem;font-size:52px;font-weight:900;color:${gc};opacity:.07;line-height:1;pointer-events:none">${grade}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--t1)">${name}</div>
+          <div style="font-size:9px;color:var(--t4);margin-top:1px">${scores.length} evals</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:800;color:${gc};line-height:1">${avg??'—'}</div>
+          <div style="font-size:9px;color:var(--t4)">/10</div>
+        </div>
       </div>
-      <div class="sparkline">${bars||'<span style="font-size:10px;color:var(--t4)">No data</span>'}</div>
-      <div style="font-size:9px;color:var(--t4);margin-top:.3rem">${scores.length} evaluations</div>
+      <div class="sparkline" style="margin-bottom:.5rem">${bars||'<span style="font-size:10px;color:var(--t4)">No data yet</span>'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.3rem">
+        <div style="background:var(--bg4);border-radius:4px;padding:3px 5px;text-align:center">
+          <div style="font-size:11px;font-weight:700;color:var(--t2)">${minS??'—'}</div>
+          <div style="font-size:8px;color:var(--t5);letter-spacing:.5px">MIN</div>
+        </div>
+        <div style="background:var(--bg4);border-radius:4px;padding:3px 5px;text-align:center">
+          <div style="font-size:11px;font-weight:700;color:var(--t2)">${last??'—'}</div>
+          <div style="font-size:8px;color:var(--t5);letter-spacing:.5px">LAST</div>
+        </div>
+        <div style="background:var(--bg4);border-radius:4px;padding:3px 5px;text-align:center">
+          <div style="font-size:11px;font-weight:700;color:var(--t2)">${maxV??'—'}</div>
+          <div style="font-size:8px;color:var(--t5);letter-spacing:.5px">MAX</div>
+        </div>
+      </div>
+      ${trend7!==null?`<div style="font-size:9px;margin-top:.4rem;color:${trendColor};font-weight:600">${Number(trend7)>0?'▲ +':'▼ '}${trend7} vs 7 evals ago</div>`:''}
     </div>`;
   }).join('');
 }
