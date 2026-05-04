@@ -737,8 +737,9 @@ async function sendReset(){
 // ── SHELL INIT ──
 function initShell(){
   startClock();
+  updateBadges();
   nav('dashboard',document.querySelector('.sb-item.active'));
-  setInterval(()=>{ nav('dashboard',document.querySelector('.sb-item.active')); loadDashboard(); updateBadges(); },60000);
+  // No auto-refresh — use Refresh buttons
 }
 
 function startClock(){
@@ -775,7 +776,7 @@ async function updateBadges(){
     s.from('profiles').select('*',{count:'exact',head:true}),
     s.from('questions').select('*',{count:'exact',head:true}),
     s.from('answers').select('*',{count:'exact',head:true}),
-    s.from('answers').select('*',{count:'exact',head:true}).gt('flag_count',0),
+    s.from('answers').select('*',{count:'exact',head:true}).eq('divergence_flag',true),
     s.from('legal_consents').select('*',{count:'exact',head:true})
   ]);
   const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v??0; };
@@ -790,18 +791,18 @@ async function updateBadges(){
 async function loadDashboard(){
   document.getElementById('dashSub').textContent='Last refreshed: '+new Date().toLocaleString('en-IN');
   const s=getSupa();
-  const[{count:u},{count:q},{count:a},{data:sh},{count:flags},{count:con},{count:pur}]=await Promise.all([
+  const[{count:u},{count:q},{count:a},{data:sh},{count:flags},{count:con},{data:aids}]=await Promise.all([
     s.from('profiles').select('*',{count:'exact',head:true}),
     s.from('questions').select('*',{count:'exact',head:true}),
     s.from('answers').select('*',{count:'exact',head:true}),
     s.from('score_history').select('cds,pts_awarded').not('cds','is',null),
-    s.from('answers').select('*',{count:'exact',head:true}).gt('flag_count',0),
+    s.from('answers').select('*',{count:'exact',head:true}).eq('divergence_flag',true),
     s.from('legal_consents').select('*',{count:'exact',head:true}),
-    s.from('score_history').select('*',{count:'exact',head:true}).eq('action_type','purchase')
+    s.from('answers').select('cds,ei_score').not('cds','is',null).limit(500)
   ]);
   const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v??'—'; };
   set('kpiU',u); set('kpiQ',q); set('kpiA',a); set('kpiFlags',flags);
-  set('kpiConsents',con); set('kpiPurchased',pur??0);
+  set('kpiConsents',con); set('kpiPurchased','—');
   if(sh&&sh.length){
     const avgCDS=(sh.reduce((s,r)=>s+(r.cds||0),0)/sh.length).toFixed(1);
     const avgPsi=(sh.reduce((s,r)=>s+(r.pts_awarded||0),0)/sh.length).toFixed(1);
@@ -812,14 +813,18 @@ async function loadDashboard(){
 
 async function loadRecentContent(){
   const s=getSupa();
-  const[{data:rq},{data:ra}]=await Promise.all([
-    s.from('questions').select('title,user_id,cds,created_at').order('created_at',{ascending:false}).limit(6),
-    s.from('answers').select('title,user_id,cds,created_at').order('created_at',{ascending:false}).limit(6)
+  const[{data:rq},{data:ra},{data:pr}]=await Promise.all([
+    s.from('questions').select('id,text,asker_id,cds,created_at').order('created_at',{ascending:false}).limit(6),
+    s.from('answers').select('id,text,answerer_id,cds,is_best_answer,created_at').order('created_at',{ascending:false}).limit(6),
+    s.from('profiles').select('id,display_name')
   ]);
-  const fmt=(d)=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
-  const row=(r)=>`<tr><td style="color:var(--t1);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.title||'—')}</td><td class="mono" style="color:var(--t4)">${(r.user_id||'').slice(0,8)}…</td><td style="color:var(--tlb)">${r.cds||'—'}</td><td style="color:var(--t4)">${fmt(r.created_at)}</td></tr>`;
-  document.getElementById('rqTbl').innerHTML=(rq||[]).map(row).join('')||'<tr class="empty-row"><td colspan="4">No questions</td></tr>';
-  document.getElementById('raTbl').innerHTML=(ra||[]).map(row).join('')||'<tr class="empty-row"><td colspan="4">No answers</td></tr>';
+  const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
+  const fmt=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
+  const t55=t=>t&&t.length>55?t.slice(0,55)+'…':t||'—';
+  const qrow=r=>`<tr><td style="color:var(--t1)" title="${esc(r.text||'')}">${esc(t55(r.text))}</td><td style="color:var(--t3);font-size:11px">${esc(nm[r.asker_id]||'Unknown')}</td><td style="color:var(--tlb);font-weight:700">${r.cds??'—'}</td><td style="color:var(--t4)">${fmt(r.created_at)}</td></tr>`;
+  const arow=r=>`<tr><td style="color:var(--t1)" title="${esc(r.text||'')}">${esc(t55(r.text))}${r.is_best_answer?'<span style="color:var(--gb);margin-left:3px">★</span>':''}</td><td style="color:var(--t3);font-size:11px">${esc(nm[r.answerer_id]||'Unknown')}</td><td style="color:var(--tlb);font-weight:700">${r.cds??'—'}</td><td style="color:var(--t4)">${fmt(r.created_at)}</td></tr>`;
+  document.getElementById('rqTbl').innerHTML=(rq||[]).map(qrow).join('')||'<tr class="empty-row"><td colspan="4">No questions yet</td></tr>';
+  document.getElementById('raTbl').innerHTML=(ra||[]).map(arow).join('')||'<tr class="empty-row"><td colspan="4">No answers yet</td></tr>';
 }
 
 async function loadDistCharts(){
@@ -832,21 +837,14 @@ async function loadDistCharts(){
   (roles||[]).forEach(r=>{if(roleCounts[r.role]!==undefined)roleCounts[r.role]++;});
   const maxR=Math.max(...Object.values(roleCounts),1);
   const colors={both:'var(--gb)',seeker:'var(--blb)',answerer:'var(--tlb)',institution:'var(--pub)'};
-  document.getElementById('distChart').innerHTML=Object.entries(roleCounts).map(([k,v])=>`
-    <div class="bar-row">
-      <div class="bar-label">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${v/maxR*100}%;background:${colors[k]}"></div></div>
-      <div class="bar-val">${v}</div>
-    </div>`).join('');
+  const rTotal=Object.values(roleCounts).reduce((a,b)=>a+b,0);
+  document.getElementById('distChart').innerHTML=Object.entries(roleCounts).map(([k,v])=>`<div class="bar-row"><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${rTotal?v/maxR*100:0}%;background:${colors[k]}"></div></div><div class="bar-val" style="color:${colors[k]};font-weight:700">${v}</div></div>`).join('')+'<div style="font-size:9px;color:var(--t4);text-align:right;margin-top:.3rem">Total: '+rTotal+' roles</div>';
   const tc={1:0,2:0,3:0,4:0,5:0};
   (tiers||[]).forEach(r=>{const t=r.seeker_tier||1;if(tc[t]!==undefined)tc[t]++;});
   const maxT=Math.max(...Object.values(tc),1);
-  document.getElementById('tierChart').innerHTML=Object.entries(tc).map(([k,v])=>`
-    <div class="bar-row">
-      <div class="bar-label">Tier ${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${v/maxT*100}%;background:var(--gold)"></div></div>
-      <div class="bar-val">${v}</div>
-    </div>`).join('');
+  const tColors={'1':'var(--t3)','2':'var(--blb)','3':'var(--tlb)','4':'var(--gb)','5':'var(--amb)'};
+  const tTotal=Object.values(tc).reduce((a,b)=>a+b,0);
+  document.getElementById('tierChart').innerHTML=Object.entries(tc).map(([k,v])=>`<div class="bar-row"><div class="bar-label">Tier ${k}</div><div class="bar-track"><div class="bar-fill" style="width:${tTotal?v/maxT*100:0}%;background:${tColors[k]||'var(--gold)'}"></div></div><div class="bar-val" style="color:${tColors[k]||'var(--gold)'};font-weight:700">${v}</div></div>`).join('')+'<div style="font-size:9px;color:var(--t4);text-align:right;margin-top:.3rem">Total: '+tTotal+' users</div>';
 }
 
 async function loadActivity(){
@@ -897,10 +895,11 @@ async function loadQuestions(){
 function renderQuestions(data){
   const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
   const dur=s=>s?(Math.floor(s/60)+'m '+(s%60)+'s'):'—';
+  const trunc=(t,n=70)=>{ if(!t)return '—'; if(t.length<=n)return esc(t); return esc(t.slice(0,n))+'<a class="_more" style="color:var(--gold);cursor:pointer;font-size:9px;margin-left:3px">…more</a>'; };
   document.getElementById('qTbl').innerHTML=data.length?data.map(q=>`
     <tr>
       <td style="min-width:210px;max-width:280px">
-        <div style="color:var(--t1);font-weight:600;margin-bottom:3px;line-height:1.4;font-size:13px">${esc(q.text||'Untitled')}</div>
+        <div style="color:var(--t1);font-weight:600;margin-bottom:3px;line-height:1.4;font-size:13px">${trunc(q.text||'Untitled')}</div>
         ${q.tags?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px">${String(q.tags).split(',').slice(0,3).map(t=>`<span style="font-size:9px;background:rgba(55,138,221,.15);color:var(--blb);padding:1px 5px;border-radius:3px">${esc(t.trim())}</span>`).join('')}</div>`:''}
         ${q.transcript?`<div style="color:var(--t5);font-size:9px;font-style:italic;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">"${esc(q.transcript.slice(0,60))}…"</div>`:''}
         <div style="display:flex;gap:6px;margin-top:3px;font-size:9px;color:var(--t4)">
@@ -989,10 +988,11 @@ async function loadAnswers(){
 function renderAnswers(data){
   const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
   const dur=s=>s?(Math.floor(s/60)+'m '+(s%60)+'s'):'—';
+  const trunc=(t,n=70)=>{ if(!t)return '—'; if(t.length<=n)return esc(t); return esc(t.slice(0,n))+'<a class="_more" style="color:var(--gold);cursor:pointer;font-size:9px;margin-left:3px">…more</a>'; };
   document.getElementById('aTbl').innerHTML=data.length?data.map(a=>`
     <tr>
       <td style="min-width:210px;max-width:280px">
-        <div style="color:var(--t1);font-weight:600;margin-bottom:3px;line-height:1.4;font-size:13px">${esc(a.text||'Untitled Answer')}</div>
+        <div style="color:var(--t1);font-weight:600;margin-bottom:3px;line-height:1.4;font-size:13px">${trunc(a.text||'Untitled Answer')}</div>
         <div style="color:var(--t4);font-size:10px;margin-bottom:2px">↳ ${esc(a._qtitle)}</div>
         ${a.video_transcript?`<div style="color:var(--t5);font-size:9px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">"${esc(a.video_transcript.slice(0,60))}…"</div>`:''}
         <div style="display:flex;gap:5px;margin-top:3px;font-size:9px;color:var(--t4);flex-wrap:wrap">
@@ -1479,6 +1479,14 @@ function delContent(id,type){
   };
   document.getElementById('confirmModal').classList.add('open');
 }
+
+// ── EXPAND TRUNCATED TEXT ──
+document.addEventListener('click',function(e){
+  const a=e.target;
+  if(!a.classList.contains('_more'))return;
+  const cell=a.parentNode; const full=cell.title||cell.textContent;
+  cell.textContent=full; cell.style.whiteSpace='normal';
+});
 
 // ── ESCAPE ──
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
