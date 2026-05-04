@@ -410,13 +410,7 @@ select.search-input{cursor:pointer}
       </div>
       <div class="search-bar">
         <input class="search-input" id="qSearch" placeholder="Search title or user…" oninput="filterQuestions()"/>
-        <select class="search-input" id="qFilter" onchange="filterQuestions()" style="max-width:150px">
-          <option value="">All</option>
-          <option value="flagged">⚑ Flagged</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-          <option value="video">Has Video</option>
-        </select>
+        <select class="search-input" id="qFilter" onchange="filterQuestions()" style="max-width:150px"><option value="">All</option><option value="flagged">⚑ Flagged</option><option value="video">Has Video</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
       </div>
       <div class="tbl-wrap"><table><thead><tr><th>Question</th><th>Asked By</th><th>Type</th><th>Duration</th><th>CDS</th><th>Ψ</th><th>Answers</th><th>Flags</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="qTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
     </div>
@@ -430,7 +424,7 @@ select.search-input{cursor:pointer}
       <div class="search-bar">
         <input class="search-input" id="aSearch" placeholder="Search…" oninput="filterAnswers()"/>
       </div>
-      <div class="tbl-wrap"><table><thead><tr><th>Answer / For Question</th><th>By</th><th>Type</th><th>Duration</th><th>CDS</th><th>Ψ</th><th>Flags</th><th>Status</th><th>Posted</th><th>Watch / Actions</th></tr></thead><tbody id="aTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Answer / For Question</th><th>By</th><th>Type</th><th>Duration</th><th>CDS</th><th>Ψ</th><th>Flags</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="aTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- ══ ARIA AGENTS ══ -->
@@ -882,24 +876,29 @@ async function loadActivity(){
 async function loadQuestions(){
   const s=getSupa();
   const[{data:qd},{data:pr},{data:ac}]=await Promise.all([
-    s.from('questions').select('id,title,body,user_id,cds,pts_awarded,flag_count,status,question_type,duration_seconds,video_url,created_at').order('created_at',{ascending:false}).limit(200),
+    s.from('questions')
+      .select('id,title,body,user_id,cds,pts_awarded,flag_count,status,question_type,duration_seconds,video_url,created_at')
+      .order('created_at',{ascending:false}).limit(200),
     s.from('profiles').select('id,display_name'),
     s.from('answers').select('question_id')
   ]);
-  const nm={};(pr||[]).forEach(p=>nm[p.id]=p.display_name||'—');
-  const am={};(ac||[]).forEach(a=>{am[a.question_id]=(am[a.question_id]||0)+1;});
-  _allQuestions=(qd||[]).map(q=>({...q,_name:nm[q.user_id]||'Unknown',_ans:am[q.id]||0}));
+  const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
+  const am={}; (ac||[]).forEach(a=>{ am[a.question_id]=(am[a.question_id]||0)+1; });
+  window._qStore={};
+  _allQuestions=(qd||[]).map(q=>{
+    const r={...q,_name:nm[q.user_id]||'Unknown',_ans:am[q.id]||0};
+    window._qStore[q.id]=r; return r;
+  });
   renderQuestions(_allQuestions);
 }
 function renderQuestions(data){
   const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
-  const dur=s=>s?Math.floor(s/60)+'m '+(s%60)+'s':'—';
-  window._qMap={};data.forEach(q=>{window._qMap[q.id]=q;});
+  const dur=s=>s?(Math.floor(s/60)+'m '+(s%60)+'s'):'—';
   document.getElementById('qTbl').innerHTML=data.length?data.map(q=>`
     <tr>
-      <td style="min-width:200px;max-width:280px">
-        <div style="color:var(--t1);font-weight:600;line-height:1.4;margin-bottom:2px">${esc(q.title||'Untitled')}</div>
-        ${q.body?`<div style="color:var(--t4);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">${esc(q.body.slice(0,80))}${q.body.length>80?'…':''}</div>`:''}
+      <td style="min-width:200px;max-width:260px">
+        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(q.title||'Untitled')}</div>
+        ${q.body?`<div style="color:var(--t4);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px">${esc(q.body.slice(0,80))}${q.body.length>80?'…':''}</div>`:''}
       </td>
       <td>
         <div style="color:var(--t1)">${esc(q._name)}</div>
@@ -915,19 +914,23 @@ function renderQuestions(data){
       <td style="color:var(--t4);font-size:10px;white-space:nowrap">${fmt(q.created_at)}</td>
       <td>
         <div style="display:flex;gap:3px;flex-wrap:wrap">
-          ${q.video_url?`<button class="btn btn-ok btn-sm" data-qplay="${q.id}">▶ Watch</button>`:''}
-          <button class="btn btn-ghost btn-sm" onclick="showQDetail('${q.id}')">Detail</button>
+          ${q.video_url?`<button class="btn btn-ok btn-sm" data-qv="${q.id}">▶</button>`:''}
+          <button class="btn btn-ghost btn-sm" data-qd="${q.id}">Detail</button>
           ${q.flag_count>0?`<button class="btn btn-warn btn-sm" onclick="clearFlag('${q.id}','question')">⚑</button>`:''}
-          <button class="btn btn-danger btn-sm" onclick="delContent('${q.id}','question')">✕</button>
+          <button class="btn btn-danger btn-sm" data-qdel="${q.id}">✕</button>
         </div>
       </td>
-    </tr>`).join(''):`<tr class="empty-row"><td colspan="11">No questions found</td></tr>`;
-  // Video play delegation for questions
-  document.getElementById('qTbl').onclick=function(e){
-    const b=e.target.closest('[data-qplay]');
-    if(!b)return;
-    const q=window._qMap[b.dataset.qplay];
-    if(q)openVideoModal(q.video_url,q.title,'QUESTION',q.cds,q.pts_awarded,q.flag_count,q.created_at,q._name,'',q.duration_seconds,q.body);
+    </tr>`).join(''):'<tr class="empty-row"><td colspan="11">No questions found</td></tr>';
+
+  // ONE event listener on the tbody — no inline onclick needed
+  const tbody=document.getElementById('qTbl');
+  tbody.onclick=function(e){
+    const btn=e.target.closest('button');
+    if(!btn)return;
+    const q=window._qStore;
+    if(btn.dataset.qv){ const r=q[btn.dataset.qv]; if(r) openVid(r.video_url,r.title,'QUESTION',r.cds,r.pts_awarded,r.flag_count,r.created_at,r._name,'',r.duration_seconds,r.body); }
+    else if(btn.dataset.qd){ showQDetail(btn.dataset.qd); }
+    else if(btn.dataset.qdel){ delContent(btn.dataset.qdel,'question'); }
   };
 }
 function filterQuestions(){
@@ -943,30 +946,30 @@ function filterQuestions(){
 async function loadAnswers(){
   const s=getSupa();
   const[{data:ad},{data:pr},{data:qs}]=await Promise.all([
-    s.from('answers').select('id,title,user_id,question_id,cds,pts_awarded,flag_count,status,video_url,answer_type,duration_seconds,transcript,created_at').order('created_at',{ascending:false}).limit(200),
+    s.from('answers')
+      .select('id,title,user_id,question_id,cds,pts_awarded,flag_count,status,video_url,answer_type,duration_seconds,transcript,created_at')
+      .order('created_at',{ascending:false}).limit(200),
     s.from('profiles').select('id,display_name'),
     s.from('questions').select('id,title')
   ]);
-  const nm={};(pr||[]).forEach(p=>nm[p.id]=p.display_name||'—');
-  const qm={};(qs||[]).forEach(q=>qm[q.id]=q.title||'—');
-  window._aMap={};
+  const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
+  const qm={}; (qs||[]).forEach(q=>qm[q.id]=q.title||'—');
+  window._aStore={};
   _allAnswers=(ad||[]).map(a=>{
     const r={...a,_name:nm[a.user_id]||'Unknown',_qtitle:qm[a.question_id]||'—'};
-    window._aMap[a.id]=r; return r;
+    window._aStore[a.id]=r; return r;
   });
   renderAnswers(_allAnswers);
 }
 function renderAnswers(data){
   const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
-  const dur=s=>s?Math.floor(s/60)+'m '+(s%60)+'s':'—';
-  // Ensure _aMap is populated for delegation
-  data.forEach(a=>{window._aMap=window._aMap||{};window._aMap[a.id]=a;});
+  const dur=s=>s?(Math.floor(s/60)+'m '+(s%60)+'s'):'—';
   document.getElementById('aTbl').innerHTML=data.length?data.map(a=>`
     <tr>
-      <td style="min-width:200px;max-width:280px">
-        <div style="color:var(--t1);font-weight:600;line-height:1.4;margin-bottom:2px">${esc(a.title||'Untitled Answer')}</div>
-        <div style="color:var(--t4);font-size:10px;margin-bottom:2px">↳ ${esc(a._qtitle||'—')}</div>
-        ${a.transcript?`<div style="color:var(--t5);font-size:10px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">"${esc(a.transcript.slice(0,70))}${a.transcript.length>70?'…':''}"</div>`:''}
+      <td style="min-width:200px;max-width:260px">
+        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(a.title||'Untitled Answer')}</div>
+        <div style="color:var(--t4);font-size:10px;margin-bottom:2px">↳ ${esc(a._qtitle)}</div>
+        ${a.transcript?`<div style="color:var(--t5);font-size:10px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px">"${esc(a.transcript.slice(0,70))}${a.transcript.length>70?'…':''}"</div>`:''}
       </td>
       <td>
         <div style="color:var(--t1)">${esc(a._name)}</div>
@@ -981,18 +984,20 @@ function renderAnswers(data){
       <td style="color:var(--t4);font-size:10px;white-space:nowrap">${fmt(a.created_at)}</td>
       <td>
         <div style="display:flex;gap:3px;flex-wrap:wrap">
-          ${a.video_url?`<button class="btn btn-ok btn-sm" data-aplay="${a.id}">▶ Watch</button>`:'<span style="color:var(--t5);font-size:9px">No video</span>'}
+          ${a.video_url?`<button class="btn btn-ok btn-sm" data-av="${a.id}">▶ Watch</button>`:'<span style="color:var(--t5);font-size:9px">No video</span>'}
           ${a.flag_count>0?`<button class="btn btn-warn btn-sm" onclick="clearFlag('${a.id}','answer')">⚑</button>`:''}
-          <button class="btn btn-danger btn-sm" onclick="delContent('${a.id}','answer')">✕</button>
+          <button class="btn btn-danger btn-sm" data-adel="${a.id}">✕</button>
         </div>
       </td>
-    </tr>`).join(''):`<tr class="empty-row"><td colspan="10">No answers found</td></tr>`;
-  // Play delegation — no inline onclick, no quote issues
-  document.getElementById('aTbl').onclick=function(e){
-    const b=e.target.closest('[data-aplay]');
-    if(!b)return;
-    const a=window._aMap[b.dataset.aplay];
-    if(a)openVideoModal(a.video_url,a.title,'ANSWER',a.cds,a.pts_awarded,a.flag_count,a.created_at,a._name,a._qtitle,a.duration_seconds,a.transcript);
+    </tr>`).join(''):'<tr class="empty-row"><td colspan="10">No answers found</td></tr>';
+
+  const tbody=document.getElementById('aTbl');
+  tbody.onclick=function(e){
+    const btn=e.target.closest('button');
+    if(!btn)return;
+    const a=window._aStore;
+    if(btn.dataset.av){ const r=a[btn.dataset.av]; if(r) openVid(r.video_url,r.title,'ANSWER',r.cds,r.pts_awarded,r.flag_count,r.created_at,r._name,r._qtitle,r.duration_seconds,r.transcript); }
+    else if(btn.dataset.adel){ delContent(btn.dataset.adel,'answer'); }
   };
 }
 function filterAnswers(){
@@ -1169,58 +1174,46 @@ async function executeAction(action,uid,name){
 }
 
 // ── VIDEO MODAL ──
-// Unified video modal — handles both Q and A
-function openVideoModal(url, title, contentType, cds, psi, flags, date, byName, forQuestion, durationSec, transcriptOrBody){
-  const badgeEl = document.getElementById('vidBadge');
-  if(badgeEl){
-    badgeEl.textContent = contentType||'VIDEO';
-    badgeEl.className   = 'status-badge '+(contentType==='QUESTION'?'status-suspended':'status-active');
+function openVid(url,title,kind,cds,psi,flags,date,by,forQ,dur,extra){
+  // Badge
+  const badge=document.getElementById('vidBadge');
+  if(badge){ badge.textContent=kind||'VIDEO'; badge.className='status-badge '+(kind==='QUESTION'?'status-suspended':'status-active'); }
+  // Title + meta
+  document.getElementById('vidTitle').textContent=title||'Playback';
+  document.getElementById('vidCDS').textContent=cds??'—';
+  document.getElementById('vidPsi').textContent=psi??'—';
+  document.getElementById('vidFlags').textContent=flags??'0';
+  document.getElementById('vidDate').textContent=date?new Date(date).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
+  document.getElementById('vidDesc').textContent=title||'—';
+  // Extra info row
+  const ex=document.getElementById('vidInfoExtra');
+  if(ex){
+    const ds=dur?(Math.floor(dur/60)+'m '+dur%60+'s'):null;
+    ex.innerHTML=[
+      by?('<span>By: <strong style="color:var(--t1)">'+esc(by)+'</strong></span>'):'',
+      (forQ&&forQ!=='—'&&kind==='ANSWER')?('<span>Answers: <strong style="color:var(--blb)">'+esc(forQ)+'</strong></span>'):'',
+      ds?('<span>⏱ '+ds+'</span>'):'',
+      extra?('<span style="color:var(--t4);font-style:italic">"'+esc(String(extra).slice(0,100))+(String(extra).length>100?'…':'')+'\"</span>'):''
+    ].filter(Boolean).join(' &nbsp;·&nbsp; ');
   }
-  document.getElementById('vidTitle').textContent = title||'Playback';
-  document.getElementById('vidCDS').textContent   = cds??'—';
-  document.getElementById('vidPsi').textContent   = psi??'—';
-  document.getElementById('vidFlags').textContent = flags??'0';
-  document.getElementById('vidDate').textContent  = date
-    ? new Date(date).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}) : '—';
-  document.getElementById('vidDesc').textContent  = title||'—';
-
-  // Extra metadata
-  const extra = document.getElementById('vidInfoExtra');
-  if(extra){
-    const dur = durationSec ? Math.floor(durationSec/60)+'m '+(durationSec%60)+'s' : null;
-    extra.innerHTML = [
-      byName      ? `<span>By: <strong style="color:var(--t1)">${esc(byName)}</strong></span>` : '',
-      forQuestion && forQuestion!=='—' && contentType==='ANSWER'
-                  ? `<span>Answers: <strong style="color:var(--blb)">${esc(forQuestion)}</strong></span>` : '',
-      dur         ? `<span>⏱ ${dur}</span>` : '',
-      transcriptOrBody
-                  ? `<span style="color:var(--t4);font-style:italic">"${esc(String(transcriptOrBody).slice(0,120))}${String(transcriptOrBody).length>120?'…':''}"</span>` : ''
-    ].filter(Boolean).join('&emsp;·&emsp;');
-  }
-
-  const player = document.getElementById('vidPlayer');
+  // Player
+  const player=document.getElementById('vidPlayer');
   if(!url){
-    player.innerHTML = '<div style="padding:3rem;text-align:center;color:var(--t4);font-size:13px">No video URL for this entry</div>';
+    player.innerHTML='<div style="padding:3rem;text-align:center;color:var(--t4)">No video URL for this entry</div>';
   } else if(/youtube\.com|youtu\.be/.test(url)){
     const id=(url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)||[])[1]||'';
-    player.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0" allowfullscreen allow="autoplay; fullscreen" style="width:100%;height:480px;border:none"></iframe>`;
+    player.innerHTML='<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0" allowfullscreen allow="autoplay; fullscreen" style="width:100%;height:480px;border:none"></iframe>';
   } else if(/vimeo\.com/.test(url)){
     const id=(url.match(/vimeo\.com\/(\d+)/)||[])[1]||'';
-    player.innerHTML = `<iframe src="https://player.vimeo.com/video/${id}?autoplay=1" allowfullscreen allow="autoplay; fullscreen" style="width:100%;height:480px;border:none"></iframe>`;
+    player.innerHTML='<iframe src="https://player.vimeo.com/video/'+id+'?autoplay=1" allowfullscreen allow="autoplay; fullscreen" style="width:100%;height:480px;border:none"></iframe>';
   } else {
-    const safeUrl = url.replace(/"/g,'&quot;');
-    player.innerHTML = `<video controls autoplay style="width:100%;max-height:65vh;background:#000;display:block"
-      onerror="this.insertAdjacentHTML('afterend','<div style=\"padding:1.5rem;text-align:center;color:var(--t3)\">Cannot play inline — <a href=\"${safeUrl}\" target=\"_blank\" style=\"color:var(--gold)\">open in new tab →</a></div>');this.remove()">
-      <source src="${safeUrl}"><source src="${safeUrl}">
-      Cannot play: <a href="${safeUrl}" target="_blank" style="color:var(--gold)">Open externally →</a>
-    </video>`;
+    const su=url.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    player.innerHTML='<video controls autoplay style="width:100%;max-height:65vh;background:#000;display:block"><source src="'+su+'">Cannot play: <a href="'+su+'" target="_blank" style="color:var(--gold)">Open externally →</a></video>';
   }
   document.getElementById('videoModal').classList.add('open');
-  secEvent('VIDEO PLAY ['+(contentType||'?')+']: '+(url||'no-url').slice(0,60),'info');
+  secEvent('VIDEO PLAY ['+kind+']: '+(url||'no-url').slice(0,60),'info');
 }
-// Keep playVideo as alias for backward-compat
-function playVideo(url,title,cds,psi,flags,date){ openVideoModal(url,title,'ANSWER',cds,psi,flags,date,'','',null,null); }
-function closeVideo(){ document.getElementById('vidPlayer').innerHTML=''; closeModal('videoModal'); }
+function playVideo(url,title,cds,psi,flags,date){ openVid(url,title,'ANSWER',cds,psi,flags,date,'','',null,null); }
 function closeVideo(){
   document.getElementById('vidPlayer').innerHTML='';
   closeModal('videoModal');
@@ -1346,15 +1339,15 @@ function toast(msg,type='info',duration=3500){
   setTimeout(()=>el.remove(),duration);
 }
 
-// ── QUESTION DETAIL MODAL ──
+// ── QUESTION DETAIL ──
 async function showQDetail(qid){
-  const q=window._qMap&&window._qMap[qid];
-  if(!q){toast('Question not in current view — refresh first','warn');return;}
+  const q=window._qStore&&window._qStore[qid];
+  if(!q){toast('Load questions first','warn');return;}
   const s=getSupa();
   const{data:ans}=await s.from('answers').select('id,title,user_id,cds,pts_awarded,video_url,created_at').eq('question_id',qid).order('cds',{ascending:false}).limit(20);
-  const nm={};_allUsers&&_allUsers.forEach(u=>nm[u.id]=u.display_name||u.id.slice(0,8));
+  const nm={}; (_allUsers||[]).forEach(u=>nm[u.id]=u.display_name||u.id.slice(0,8));
   const fmt=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
-  const dur=s=>s?Math.floor(s/60)+'m '+s%60+'s':'—';
+  const dur=s=>s?(Math.floor(s/60)+'m '+s%60+'s'):'—';
   document.getElementById('umTitle').textContent='Question Detail';
   document.getElementById('umBody').innerHTML=`
     <div class="um-section">Question</div>
@@ -1367,20 +1360,35 @@ async function showQDetail(qid){
     <div class="um-section" style="margin-top:1rem">Scores</div>
     <div class="um-row"><div class="um-key">CDS</div><div class="um-val" style="color:var(--tlb);font-size:18px;font-weight:800">${q.cds??'—'}</div></div>
     <div class="um-row"><div class="um-key">Ψ Points</div><div class="um-val" style="color:var(--gb);font-size:18px;font-weight:800">${q.pts_awarded??0}</div></div>
+    <div class="um-row"><div class="um-key">Answers</div><div class="um-val" style="color:var(--blb);font-size:16px;font-weight:700">${q._ans}</div></div>
     <div class="um-row"><div class="um-key">Flags</div><div class="um-val">${q.flag_count>0?`<span class="status-badge status-suspended">⚑ ${q.flag_count}</span>`:'<span class="status-badge status-active">Clean</span>'}</div></div>
-    <div class="um-row"><div class="um-key">Status</div><div class="um-val"><span class="status-badge ${(q.status||'active')==='active'?'status-active':'status-suspended'}">${q.status||'active'}</span></div></div>
-    ${q.video_url?`<div class="um-row"><div class="um-key">Video</div><div class="um-val"><button class="btn btn-ok btn-sm" onclick="openVideoModal('${q.video_url}','${esc(q.title||'')}','QUESTION',${q.cds??'null'},${q.pts_awarded??0},${q.flag_count||0},'${q.created_at}','${esc(q._name)}','','','')">▶ Watch Question Video</button></div></div>`:''}
+    ${q.video_url?`<div class="um-row"><div class="um-key">Video</div><div class="um-val"><button class="btn btn-ok btn-sm" id="qDetailPlayBtn">▶ Watch Question Video</button></div></div>`:''}
     <div class="um-section" style="margin-top:1rem">Answers (${(ans||[]).length})</div>
-    <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>By</th><th>CDS</th><th>Ψ</th><th>Watch</th><th>When</th></tr></thead><tbody>
-    ${(ans||[]).map(a=>`<tr>
+    <div class="tbl-wrap"><table><thead><tr><th>Answer</th><th>By</th><th>CDS</th><th>Ψ</th><th>Watch</th><th>When</th></tr></thead><tbody id="qDetailAns">
+    ${(ans||[]).map((a,i)=>`<tr>
       <td style="color:var(--t1)">${esc(a.title||'Untitled')}</td>
       <td style="color:var(--t3)">${esc(nm[a.user_id]||a.user_id.slice(0,8))}</td>
       <td style="color:var(--tlb)">${a.cds??'—'}</td>
       <td style="color:var(--gb)">${a.pts_awarded??0}</td>
-      <td>${a.video_url?`<button class="btn btn-ok btn-sm" onclick="openVideoModal('${a.video_url}','${esc(a.title||'')}','ANSWER',${a.cds??'null'},${a.pts_awarded??0},0,'${a.created_at}','${esc(nm[a.user_id]||'')}','${esc(q.title||'')}','','')">▶</button>`:'—'}</td>
+      <td>${a.video_url?`<button class="btn btn-ok btn-sm" data-ansidx="${i}">▶</button>`:'—'}</td>
       <td style="color:var(--t4)">${fmt(a.created_at)}</td>
     </tr>`).join('')||'<tr class="empty-row"><td colspan="6">No answers yet</td></tr>'}
     </tbody></table></div>`;
+  // Store answers for delegation
+  window._detailAns=ans||[];
+  window._detailQ=q;
+  // Bind play buttons after render
+  setTimeout(()=>{
+    const playBtn=document.getElementById('qDetailPlayBtn');
+    if(playBtn) playBtn.onclick=()=>openVid(q.video_url,q.title,'QUESTION',q.cds,q.pts_awarded,q.flag_count,q.created_at,q._name,'',q.duration_seconds,q.body);
+    const ansBody=document.getElementById('qDetailAns');
+    if(ansBody) ansBody.onclick=e=>{
+      const b=e.target.closest('[data-ansidx]');
+      if(!b)return;
+      const a=window._detailAns[+b.dataset.ansidx];
+      if(a) openVid(a.video_url,a.title,'ANSWER',a.cds,a.pts_awarded,a.flag_count,a.created_at,nm[a.user_id]||'',q.title,null,null);
+    };
+  },50);
   document.getElementById('umFooter').innerHTML=`
     <button class="btn btn-ghost" onclick="closeModal('userModal')">Close</button>
     ${q.flag_count>0?`<button class="btn btn-warn" onclick="closeModal('userModal');clearFlag('${q.id}','question')">Clear Flag</button>`:''}
@@ -1391,7 +1399,7 @@ async function showQDetail(qid){
 function delContent(id,type){
   document.getElementById('confirmIcon').textContent='🗑️';
   document.getElementById('confirmTitle').textContent='Delete '+type+'?';
-  document.getElementById('confirmMsg').textContent='This permanently deletes the '+type+' and cannot be undone.';
+  document.getElementById('confirmMsg').textContent='This permanently deletes the '+type+'. Cannot be undone.';
   const btn=document.getElementById('confirmOkBtn');
   btn.className='btn btn-danger'; btn.textContent='Delete';
   btn.onclick=async()=>{
