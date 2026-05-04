@@ -412,7 +412,7 @@ select.search-input{cursor:pointer}
         <input class="search-input" id="qSearch" placeholder="Search title or user…" oninput="filterQuestions()"/>
         <select class="search-input" id="qFilter" onchange="filterQuestions()" style="max-width:150px"><option value="">All</option><option value="flagged">⚑ Flagged</option><option value="video">Has Video</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
       </div>
-      <div class="tbl-wrap"><table><thead><tr><th>Question</th><th>Asked By</th><th>Type</th><th>Duration</th><th>CDS</th><th>Ψ</th><th>Answers</th><th>Flags</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="qTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Question / Tags</th><th>Asked By</th><th>Type</th><th>Duration</th><th>CDS / Quality</th><th>Ψ Bounty</th><th>Answers</th><th>Gatekeeper</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="qTbl"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- ══ ANSWERS ══ -->
@@ -424,7 +424,7 @@ select.search-input{cursor:pointer}
       <div class="search-bar">
         <input class="search-input" id="aSearch" placeholder="Search…" oninput="filterAnswers()"/>
       </div>
-      <div class="tbl-wrap"><table><thead><tr><th>Answer / For Question</th><th>By</th><th>Type</th><th>Duration</th><th>CDS</th><th>Ψ</th><th>Flags</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="aTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Answer / For Question</th><th>By</th><th>Type</th><th>Duration</th><th>CDS / AG·PG</th><th>EI Score</th><th>Divergence</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="aTbl"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody></table></div>
     </div>
 
     <!-- ══ ARIA AGENTS ══ -->
@@ -876,20 +876,20 @@ async function loadActivity(){
 async function loadQuestions(){
   const s=getSupa();
   document.getElementById('qTbl').innerHTML='<tr class="empty-row"><td colspan="11">Loading…</td></tr>';
-  const[{data:qd,error:qe},{data:pr},{data:ac}]=await Promise.all([
+  const[{data:qd,error:qe},{data:pr}]=await Promise.all([
     s.from('questions').select('*').order('created_at',{ascending:false}).limit(200),
-    s.from('profiles').select('id,display_name'),
-    s.from('answers').select('question_id')
+    s.from('profiles').select('id,display_name,org_name,is_institution')
   ]);
   if(qe){
     document.getElementById('qTbl').innerHTML='<tr class="empty-row"><td colspan="11" style="color:var(--rdb)">DB Error: '+qe.message+'</td></tr>';
     console.error('loadQuestions:',qe); return;
   }
   const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
-  const am={}; (ac||[]).forEach(a=>{ am[a.question_id]=(am[a.question_id]||0)+1; });
   window._qStore={};
+  // answer_count is already a column in questions table (from schema)
   _allQuestions=(qd||[]).map(q=>{
-    const r={...q,_name:nm[q.user_id]||'Unknown',_ans:am[q.id]||0};
+    // asker_id is the FK to profiles, not user_id
+    const r={...q,_name:nm[q.asker_id]||'Unknown',_ans:q.answer_count||0};
     window._qStore[q.id]=r; return r;
   });
   renderQuestions(_allQuestions);
@@ -899,39 +899,56 @@ function renderQuestions(data){
   const dur=s=>s?(Math.floor(s/60)+'m '+(s%60)+'s'):'—';
   document.getElementById('qTbl').innerHTML=data.length?data.map(q=>`
     <tr>
-      <td style="min-width:200px;max-width:260px">
-        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(q.title||q.question||q.question_text||q.heading||Object.values(q).find(v=>typeof v==='string'&&v.length>2)||'Untitled')}</div>
-        ${(q.body||q.description||q.details||q.content||'')?`<div style="color:var(--t4);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px">${esc((q.body||q.description||q.details||q.content||'').slice(0,80))+(( q.body||q.description||q.details||q.content||'').length>80?'…':'')}</div>`:''}
+      <td style="min-width:210px;max-width:280px">
+        <div style="color:var(--t1);font-weight:600;margin-bottom:3px;line-height:1.4;font-size:13px">${esc(q.text||'Untitled')}</div>
+        ${q.tags?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px">${String(q.tags).split(',').slice(0,3).map(t=>`<span style="font-size:9px;background:rgba(55,138,221,.15);color:var(--blb);padding:1px 5px;border-radius:3px">${esc(t.trim())}</span>`).join('')}</div>`:''}
+        ${q.transcript?`<div style="color:var(--t5);font-size:9px;font-style:italic;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">"${esc(q.transcript.slice(0,60))}…"</div>`:''}
+        <div style="display:flex;gap:6px;margin-top:3px;font-size:9px;color:var(--t4)">
+          ${q.views?`<span>👁 ${q.views}</span>`:''}
+          ${q.language_name?`<span>🌐 ${esc(q.language_name)}</span>`:''}
+        </div>
       </td>
       <td>
-        <div style="color:var(--t1)">${esc(q._name)}</div>
-        <div class="mono" style="color:var(--t5);font-size:9px">${(q.user_id||'').slice(0,8)}…</div>
+        <div style="color:var(--t1);font-weight:500">${esc(q._name)}</div>
+        <div class="mono" style="color:var(--t5);font-size:9px">${(q.asker_id||'').slice(0,8)}…</div>
       </td>
-      <td>${q.question_type?`<span class="status-badge bb" style="text-transform:uppercase">${q.question_type}</span>`:'<span style="color:var(--t4);font-size:10px">—</span>'}</td>
-      <td style="color:var(--t3);font-size:11px">${dur(q.duration_seconds)}</td>
-      <td style="text-align:center"><div style="color:var(--tlb);font-size:15px;font-weight:800">${q.cds??'—'}</div><div style="color:var(--t5);font-size:9px">CDS</div></td>
-      <td style="text-align:center"><div style="color:var(--gb);font-size:14px;font-weight:800">${q.pts_awarded??0}</div><div style="color:var(--t5);font-size:9px">Ψ</div></td>
-      <td style="text-align:center"><div style="color:var(--blb);font-size:15px;font-weight:700">${q._ans}</div><div style="color:var(--t5);font-size:9px">answers</div></td>
-      <td>${q.flag_count>0?`<span class="status-badge status-suspended">⚑ ${q.flag_count}</span>`:'<span class="status-badge status-active">Clean</span>'}</td>
-      <td><span class="status-badge ${(q.status||'active')==='active'?'status-active':'status-suspended'}">${q.status||'active'}</span></td>
+      <td>${q.content_type?`<span class="status-badge bb" style="text-transform:uppercase">${esc(q.content_type)}</span>`:'<span style="color:var(--t4);font-size:10px">—</span>'}</td>
+      <td style="color:var(--t3);font-size:11px">${dur(q.video_duration)}</td>
+      <td style="text-align:center">
+        <div style="color:var(--tlb);font-size:15px;font-weight:800">${q.cds??'—'}</div>
+        <div style="color:var(--t5);font-size:9px">CDS</div>
+        ${q.quality_score!=null?`<div style="color:var(--t4);font-size:9px">Q:${q.quality_score}</div>`:''}
+      </td>
+      <td style="text-align:center">
+        <div style="color:var(--gb);font-size:14px;font-weight:800">${q.bounty_pts??0}</div>
+        <div style="color:var(--t5);font-size:9px">Ψ bounty</div>
+      </td>
+      <td style="text-align:center">
+        <div style="color:var(--blb);font-size:15px;font-weight:700">${q._ans}</div>
+        <div style="color:var(--t5);font-size:9px">answers</div>
+      </td>
+      <td>
+        ${q.gatekeeper_verdict?`<span class="status-badge ${q.gatekeeper_verdict==='pass'?'status-active':q.gatekeeper_verdict==='fail'?'status-deleted':'status-suspended'}" title="${esc(q.gatekeeper_reason||'')}">GK: ${esc(q.gatekeeper_verdict)}</span>`:'<span class="status-badge status-active">—</span>'}
+      </td>
+      <td>
+        <span class="status-badge ${q.status==='published'?'status-active':q.status==='draft'?'status-suspended':'status-deleted'}">${q.status||'—'}</span>
+      </td>
       <td style="color:var(--t4);font-size:10px;white-space:nowrap">${fmt(q.created_at)}</td>
       <td>
         <div style="display:flex;gap:3px;flex-wrap:wrap">
           ${q.video_url?`<button class="btn btn-ok btn-sm" data-qv="${q.id}">▶</button>`:''}
           <button class="btn btn-ghost btn-sm" data-qd="${q.id}">Detail</button>
-          ${q.flag_count>0?`<button class="btn btn-warn btn-sm" onclick="clearFlag('${q.id}','question')">⚑</button>`:''}
           <button class="btn btn-danger btn-sm" data-qdel="${q.id}">✕</button>
         </div>
       </td>
     </tr>`).join(''):'<tr class="empty-row"><td colspan="11">No questions found</td></tr>';
 
-  // ONE event listener on the tbody — no inline onclick needed
   const tbody=document.getElementById('qTbl');
   tbody.onclick=function(e){
     const btn=e.target.closest('button');
     if(!btn)return;
     const q=window._qStore;
-    if(btn.dataset.qv){ const r=q[btn.dataset.qv]; if(r) openVid(r.video_url,r.title,'QUESTION',r.cds,r.pts_awarded,r.flag_count,r.created_at,r._name,'',r.duration_seconds,r.body); }
+    if(btn.dataset.qv){ const r=q[btn.dataset.qv]; if(r) openVid(r.video_url,r.text,'QUESTION',r.cds,r.bounty_pts,0,r.created_at,r._name,'',r.video_duration,r.transcript); }
     else if(btn.dataset.qd){ showQDetail(btn.dataset.qd); }
     else if(btn.dataset.qdel){ delContent(btn.dataset.qdel,'question'); }
   };
@@ -959,10 +976,12 @@ async function loadAnswers(){
     console.error('loadAnswers:',ae); return;
   }
   const nm={}; (pr||[]).forEach(p=>nm[p.id]=p.display_name||'Unknown');
-  const qm={}; (qs||[]).forEach(q=>qm[q.id]=q.title||q.question||q.question_text||q.heading||'Question');
+  // questions.text is the question content (from schema)
+  const qm={}; (qs||[]).forEach(q=>qm[q.id]=q.text||'—');
   window._aStore={};
   _allAnswers=(ad||[]).map(a=>{
-    const r={...a,_name:nm[a.user_id]||'Unknown',_qtitle:qm[a.question_id]||'—'};
+    // answerer_id is the FK to profiles (not user_id)
+    const r={...a,_name:nm[a.answerer_id]||'Unknown',_qtitle:qm[a.question_id]||'—'};
     window._aStore[a.id]=r; return r;
   });
   renderAnswers(_allAnswers);
@@ -972,26 +991,39 @@ function renderAnswers(data){
   const dur=s=>s?(Math.floor(s/60)+'m '+(s%60)+'s'):'—';
   document.getElementById('aTbl').innerHTML=data.length?data.map(a=>`
     <tr>
-      <td style="min-width:200px;max-width:260px">
-        <div style="color:var(--t1);font-weight:600;margin-bottom:2px;line-height:1.4">${esc(a.title||a.answer||a.answer_text||a.content||'Untitled Answer')}</div>
+      <td style="min-width:210px;max-width:280px">
+        <div style="color:var(--t1);font-weight:600;margin-bottom:3px;line-height:1.4;font-size:13px">${esc(a.text||'Untitled Answer')}</div>
         <div style="color:var(--t4);font-size:10px;margin-bottom:2px">↳ ${esc(a._qtitle)}</div>
-        ${a.transcript?`<div style="color:var(--t5);font-size:10px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px">"${esc(a.transcript.slice(0,70))}${a.transcript.length>70?'…':''}"</div>`:''}
+        ${a.video_transcript?`<div style="color:var(--t5);font-size:9px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">"${esc(a.video_transcript.slice(0,60))}…"</div>`:''}
+        <div style="display:flex;gap:5px;margin-top:3px;font-size:9px;color:var(--t4);flex-wrap:wrap">
+          ${a.is_best_answer?'<span style="color:var(--gb);font-weight:700">★ Best Answer</span>':''}
+          ${a.language_name?`<span>🌐 ${esc(a.language_name)}</span>`:''}
+          ${a.integrity_pass===true?'<span style="color:var(--gnb)">✓ Integrity</span>':a.integrity_pass===false?'<span style="color:var(--rdb)">✗ Integrity</span>':''}
+        </div>
       </td>
       <td>
-        <div style="color:var(--t1)">${esc(a._name)}</div>
-        <div class="mono" style="color:var(--t5);font-size:9px">${(a.user_id||'').slice(0,8)}…</div>
+        <div style="color:var(--t1);font-weight:500">${esc(a._name)}</div>
+        <div class="mono" style="color:var(--t5);font-size:9px">${(a.answerer_id||'').slice(0,8)}…</div>
       </td>
-      <td>${a.answer_type?`<span class="status-badge bb" style="text-transform:uppercase">${a.answer_type}</span>`:'<span style="color:var(--t4);font-size:10px">—</span>'}</td>
-      <td style="color:var(--t3);font-size:11px">${dur(a.duration_seconds)}</td>
-      <td style="text-align:center"><div style="color:var(--tlb);font-size:15px;font-weight:800">${a.cds??'—'}</div><div style="color:var(--t5);font-size:9px">CDS</div></td>
-      <td style="text-align:center"><div style="color:var(--gb);font-size:14px;font-weight:800">${a.pts_awarded??0}</div><div style="color:var(--t5);font-size:9px">Ψ</div></td>
-      <td>${a.flag_count>0?`<span class="status-badge status-suspended">⚑ ${a.flag_count}</span>`:'<span class="status-badge status-active">Clean</span>'}</td>
-      <td><span class="status-badge ${(a.status||'active')==='active'?'status-active':'status-suspended'}">${a.status||'active'}</span></td>
+      <td>${a.content_type?`<span class="status-badge bb" style="text-transform:uppercase">${esc(a.content_type)}</span>`:'<span style="color:var(--t4);font-size:10px">—</span>'}</td>
+      <td style="color:var(--t3);font-size:11px">${dur(a.video_duration)}</td>
+      <td style="text-align:center">
+        <div style="color:var(--tlb);font-size:15px;font-weight:800">${a.cds??'—'}</div>
+        <div style="color:var(--t5);font-size:9px">CDS</div>
+        ${a.ag!=null?`<div style="color:var(--t4);font-size:9px">AG:${a.ag} PG:${a.pg??'—'}</div>`:''}
+      </td>
+      <td style="text-align:center">
+        <div style="color:var(--gb);font-size:13px;font-weight:700">${a.ei_score??'—'}</div>
+        <div style="color:var(--t5);font-size:8px">EI</div>
+      </td>
+      <td>
+        ${a.divergence_flag?'<span class="status-badge status-suspended">⚑ Divergent</span>':'<span class="status-badge status-active">Clean</span>'}
+      </td>
+      <td><span class="status-badge ${a.status==='published'?'status-active':a.status==='draft'?'status-suspended':'status-deleted'}">${a.status||'—'}</span></td>
       <td style="color:var(--t4);font-size:10px;white-space:nowrap">${fmt(a.created_at)}</td>
       <td>
         <div style="display:flex;gap:3px;flex-wrap:wrap">
           ${a.video_url?`<button class="btn btn-ok btn-sm" data-av="${a.id}">▶ Watch</button>`:'<span style="color:var(--t5);font-size:9px">No video</span>'}
-          ${a.flag_count>0?`<button class="btn btn-warn btn-sm" onclick="clearFlag('${a.id}','answer')">⚑</button>`:''}
           <button class="btn btn-danger btn-sm" data-adel="${a.id}">✕</button>
         </div>
       </td>
@@ -1002,7 +1034,7 @@ function renderAnswers(data){
     const btn=e.target.closest('button');
     if(!btn)return;
     const a=window._aStore;
-    if(btn.dataset.av){ const r=a[btn.dataset.av]; if(r) openVid(r.video_url,r.title,'ANSWER',r.cds,r.pts_awarded,r.flag_count,r.created_at,r._name,r._qtitle,r.duration_seconds,r.transcript); }
+    if(btn.dataset.av){ const r=a[btn.dataset.av]; if(r) openVid(r.video_url,r.text,'ANSWER',r.cds,r.ei_score,r.divergence_flag?1:0,r.created_at,r._name,r._qtitle,r.video_duration,r.video_transcript); }
     else if(btn.dataset.adel){ delContent(btn.dataset.adel,'answer'); }
   };
 }
@@ -1225,7 +1257,7 @@ function openVid(url,title,kind,cds,psi,flags,date,by,forQ,dur,extra){
     const ds=dur?(Math.floor(dur/60)+'m '+dur%60+'s'):null;
     ex.innerHTML=[
       by?('<span>By: <strong style="color:var(--t1)">'+esc(by)+'</strong></span>'):'',
-      (forQ&&forQ!=='—'&&kind==='ANSWER')?('<span>Answers: <strong style="color:var(--blb)">'+esc(forQ)+'</strong></span>'):'',
+      (forQ&&forQ!=='—'&&kind==='ANSWER')?('<span>↳ <strong style="color:var(--blb)">'+esc(forQ)+'</strong></span>'):'',
       ds?('<span>⏱ '+ds+'</span>'):'',
       extra?('<span style="color:var(--t4);font-style:italic">"'+esc(String(extra).slice(0,100))+(String(extra).length>100?'…':'')+'\"</span>'):''
     ].filter(Boolean).join(' &nbsp;·&nbsp; ');
