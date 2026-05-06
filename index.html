@@ -21,7 +21,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:16px}
-body{font-family:'EB Garamond',Georgia,serif;background:var(--navy-mid);color:var(--steel);overflow-x:hidden}
+body{padding-top:66px;font-family:'EB Garamond',Georgia,serif;background:var(--navy-mid);color:var(--steel);overflow-x:hidden}
 ::selection{background:rgba(200,146,42,.3);color:#fff}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--gold)}
 
@@ -35,30 +35,108 @@ body{font-family:'EB Garamond',Georgia,serif;background:var(--navy-mid);color:va
 .dn-item:hover .dn-lbl,.dn-item.active .dn-lbl{opacity:.8;transform:translateX(0)}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;background:rgba(6,12,26,.97);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid rgba(30,58,106,.5);padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;will-change:transform}
-nav.sc{box-shadow:0 2px 24px rgba(0,0,0,.45)}
-.nav-left{display:flex;align-items:center;gap:11px;text-decoration:none}
-.nav-brand{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;letter-spacing:3.5px;color:var(--gold)}
-.nav-tag{font-size:7px;letter-spacing:2.5px;color:#7a6020;text-transform:uppercase}
-.nav-links{display:flex;gap:1.6rem;list-style:none}
-.nav-links a{font-size:10px;color:var(--steel);text-decoration:none;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;position:relative;padding-bottom:4px}
-.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--gold);transition:width .3s}
-.nav-links a:hover{color:var(--gold-b)}.nav-links a:hover::after{width:100%}
-.nav-right{display:flex;gap:.8rem;align-items:center}
-.btn-nav-login{background:transparent;color:var(--gold);border:1px solid rgba(200,146,42,.5);padding:7px 18px;border-radius:4px;font-size:10px;letter-spacing:1.5px;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:all .2s}
-.btn-nav-login:hover{background:rgba(200,146,42,.1);border-color:var(--gold)}
-.btn-nav-join{background:var(--gold);color:var(--navy);padding:8px 20px;border-radius:4px;font-size:10px;letter-spacing:1.5px;font-weight:700;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;text-transform:uppercase;transition:background .2s,transform .2s}
-.btn-nav-join:hover{background:var(--gold-b);transform:translateY(-1px)}
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;height:66px;
+  background:rgba(6,12,26,.96);
+  -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(200,146,42,.13);
+  padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  will-change:transform;transition:box-shadow .3s,background .3s;
+}
+nav.sc{
+  background:rgba(4,8,18,.99);
+  box-shadow:0 4px 32px rgba(0,0,0,.6),0 1px 0 rgba(200,146,42,.2);
+}
+.nav-left{display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0}
+.nav-hex-logo{transition:transform .4s cubic-bezier(.34,1.56,.64,1),filter .3s}
+.nav-left:hover .nav-hex-logo{transform:rotate(20deg) scale(1.1);filter:drop-shadow(0 0 10px rgba(200,146,42,.7))}
+.nav-brand{font-family:'Cormorant Garamond',serif;font-size:14.5px;font-weight:700;letter-spacing:3.5px;color:var(--gold);line-height:1.1}
+.nav-tag{font-size:6.5px;letter-spacing:2.5px;color:rgba(200,146,42,.42);text-transform:uppercase;margin-top:2px}
+
+.nav-links{display:flex;align-items:center;gap:0;list-style:none;margin:0;padding:0}
+.nav-links li a{
+  display:flex;align-items:center;gap:5px;
+  font-size:9.5px;color:var(--steel);text-decoration:none;
+  letter-spacing:1.3px;text-transform:uppercase;
+  padding:6px 10px;border-radius:6px;
+  transition:color .2s,background .2s;
+  position:relative;white-space:nowrap;
+}
+.nav-icon{font-size:11px;opacity:.65;transition:opacity .2s,transform .25s}
+.nav-links li a:hover .nav-icon,.nav-links li a.active .nav-icon{opacity:1;transform:scale(1.2) translateY(-1px)}
+.nav-links li a:hover{color:var(--gold-b);background:rgba(200,146,42,.07)}
+.nav-links li a.active{color:var(--gold-b);background:rgba(200,146,42,.1)}
+.nav-links li a::after{
+  content:'';position:absolute;bottom:1px;left:50%;
+  transform:translateX(-50%) scaleX(0);
+  width:16px;height:2px;border-radius:2px;
+  background:var(--gold);
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-links li a:hover::after,.nav-links li a.active::after{transform:translateX(-50%) scaleX(1)}
+.nav-divider{width:1px;height:16px;background:rgba(30,58,106,.8);margin:0 3px;flex-shrink:0;align-self:center}
+
+.nav-right{display:flex;gap:.5rem;align-items:center}
+.nav-psi-badge{
+  display:flex;align-items:center;gap:5px;
+  font-size:8.5px;letter-spacing:.8px;color:var(--teal-b);
+  border:1px solid rgba(93,202,165,.22);background:rgba(93,202,165,.05);
+  padding:4px 9px;border-radius:20px;font-family:'Cormorant Garamond',serif;
+  cursor:default;user-select:none;
+}
+.nav-psi-dot{width:5px;height:5px;border-radius:50%;background:#2e9e4f;flex-shrink:0;
+  box-shadow:0 0 6px #2e9e4f;animation:psiPulse 2.2s ease-in-out infinite}
+@keyframes psiPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.65)}}
+
+.btn-nav-login{
+  background:transparent;color:var(--gold);
+  border:1px solid rgba(200,146,42,.4);
+  padding:7px 15px;border-radius:5px;
+  font-size:9.5px;letter-spacing:1.3px;cursor:pointer;
+  font-family:'Cormorant Garamond',serif;text-transform:uppercase;
+  display:flex;align-items:center;gap:5px;transition:all .22s;
+}
+.btn-nav-login:hover{background:rgba(200,146,42,.1);border-color:var(--gold);transform:translateY(-1px)}
+.btn-nav-join{
+  background:linear-gradient(135deg,#c8922a,#e8a82a);color:var(--navy);
+  padding:8px 17px;border-radius:5px;
+  font-size:9.5px;letter-spacing:1.3px;font-weight:700;border:none;cursor:pointer;
+  font-family:'Cormorant Garamond',serif;text-transform:uppercase;
+  display:flex;align-items:center;gap:5px;transition:all .22s;
+  box-shadow:0 2px 14px rgba(200,146,42,.25);
+}
+.btn-nav-join:hover{
+  background:linear-gradient(135deg,#f0c040,#c8922a);
+  transform:translateY(-2px);box-shadow:0 6px 24px rgba(200,146,42,.45);
+}
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;-webkit-tap-highlight-color:transparent}
-.hamburger span{width:22px;height:1.5px;background:var(--gold);display:block;transition:transform .25s,opacity .25s}
+.hamburger span{width:24px;height:1.5px;background:var(--gold);display:block;border-radius:2px;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .2s,width .2s}
 .hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
-.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(2){opacity:0;width:0}
 .hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
 
 /* mobile menu */
-#mobileMenu{display:none;position:fixed;top:62px;left:0;right:0;background:rgba(4,8,18,.99);border-bottom:1px solid rgba(30,58,106,.6);z-index:199;padding:1.8rem 1.6rem;flex-direction:column;gap:1.2rem;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
-#mobileMenu a{font-size:13px;color:#8a9ab8;text-decoration:none;letter-spacing:2px;text-transform:uppercase;padding:.4rem 0;border-bottom:1px solid rgba(30,58,106,.3)}
-#mobileMenu a:last-child{border-bottom:none}
+#mobileMenu{
+  display:none;position:fixed;top:66px;left:0;right:0;
+  background:rgba(4,8,18,.99);
+  border-bottom:1px solid rgba(200,146,42,.18);
+  z-index:199;padding:1rem 1.2rem 1.4rem;
+  flex-direction:column;gap:.15rem;
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+#mobileMenu a{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;color:var(--steel);text-decoration:none;
+  letter-spacing:2px;text-transform:uppercase;
+  padding:.65rem .8rem;border-radius:7px;
+  transition:color .18s,background .18s;
+}
+#mobileMenu a:hover{color:var(--gold-b);background:rgba(200,146,42,.08)}
+.mob-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0;opacity:.8}
+.mob-divider{height:1px;background:rgba(30,58,106,.5);margin:.35rem 0}
+.mob-actions{display:flex;gap:.6rem;margin-top:.5rem;flex-wrap:wrap;padding:0 .4rem}
 
 /* ── HERO ── */
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7rem 2rem 4rem;position:relative;overflow:hidden;background:var(--navy)}
@@ -71,6 +149,15 @@ nav.sc{box-shadow:0 2px 24px rgba(0,0,0,.45)}
 #particleCanvas{position:absolute;inset:0;z-index:1;pointer-events:none}
 .hex-float{position:absolute;opacity:.06;pointer-events:none;z-index:2}
 .hero-content{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;width:100%}
+
+.scroll-cue{
+  position:absolute;bottom:2.2rem;left:50%;transform:translateX(-50%);
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;
+  opacity:.45;transition:opacity .25s;z-index:10;
+}
+.scroll-cue:hover{opacity:1}
+.scroll-cue-txt{font-size:7.5px;letter-spacing:3px;color:#c8922a;text-transform:uppercase;font-family:'Cormorant Garamond',serif}
+.scroll-cue-arr{animation:bounce 2s ease-in-out infinite}
 
 .hero-eyebrow{font-size:9px;letter-spacing:6px;color:var(--gold);text-transform:uppercase;margin-bottom:2.4rem;opacity:0;animation:fadeUp .9s ease .3s forwards}
 .hero-logo{margin-bottom:2.2rem;opacity:0;animation:fadeUp 1s ease .5s forwards}
@@ -107,6 +194,8 @@ nav.sc{box-shadow:0 2px 24px rgba(0,0,0,.45)}
 .marquee-bar{background:var(--gold);padding:11px 0;overflow:hidden;white-space:nowrap;z-index:4;position:relative}
 .marquee-inner{display:inline-block;animation:marquee 32s linear infinite}
 .marquee-inner span{font-size:10px;letter-spacing:3.5px;color:var(--navy);font-weight:700;font-family:'Cormorant Garamond',serif;margin:0 3rem;text-transform:uppercase}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+@keyframes bounce-fade{0%{opacity:.5;transform:translateY(0)}50%{opacity:1;transform:translateY(6px)}100%{opacity:.5;transform:translateY(0)}}
 @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
 /* ── SHARED SECTION STYLES ── */
@@ -375,6 +464,18 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   .nav-brand{font-size:12px;letter-spacing:2.5px}
   .nav-tag{display:none}
 }
+
+#scrollTopBtn{
+  position:fixed;bottom:2rem;right:2rem;z-index:300;
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(6,12,26,.88);border:1px solid rgba(200,146,42,.4);
+  color:#f0c040;font-size:18px;line-height:1;
+  cursor:pointer;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(10px);
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  transition:all .25s;
+}
+#scrollTopBtn:hover{background:rgba(200,146,42,.15);border-color:var(--gold);transform:translateY(-3px)}
 </style>
 </head>
 <body>
@@ -396,36 +497,72 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
 
 <!-- NAV -->
 <nav id="mainNav">
-  <a class="nav-left" href="#" style="text-decoration:none;display:flex;align-items:center;gap:11px">
-    <svg width="30" height="34" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.2"/><polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/><polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/><polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/><polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/><polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/><polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/><circle cx="26" cy="30" r="5.5" fill="#f5d060"/><circle cx="26" cy="30" r="3" fill="#0b1624"/><circle cx="26" cy="30" r="1.4" fill="#f5d060"/></svg>
-    <div><div class="nav-brand">ENGAGENEERING™</div><div class="nav-tag">Engineer the Engagement</div></div>
+
+  <a class="nav-left" href="#" onclick="scrollTo({top:0,behavior:'smooth'});return false">
+    <svg class="nav-hex-logo" width="32" height="36" viewBox="0 0 52 60">
+      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.2"/>
+      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
+      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
+      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
+      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
+      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
+      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
+      <circle cx="26" cy="30" r="5.5" fill="#f5d060"/>
+      <circle cx="26" cy="30" r="3" fill="#0b1624"/>
+      <circle cx="26" cy="30" r="1.4" fill="#f5d060"/>
+    </svg>
+    <div>
+      <div class="nav-brand">ENGAGENEERING™</div>
+      <div class="nav-tag">Engineer the Engagement</div>
+    </div>
   </a>
+
   <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#aria">ARIA</a></li>
-    <li><a href="#yom">Ψ The YOM Ecosystem</a></li>
-    <li><a href="#clusters">🌿 Clusters</a></li>
-    <li><a href="#pillars">Framework</a></li>
-    <li><a href="#crowd">Crowd Learning</a></li>
-    <li><a href="#documents">Documents</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#about"     data-section="about"><span class="nav-icon">⬡</span>About</a></li>
+    <li><a href="#aria"      data-section="aria"><span class="nav-icon">🤖</span>ARIA</a></li>
+    <li><a href="#yom"       data-section="yom"><span class="nav-icon" style="color:#2e9e4f;font-size:13px;font-weight:700">Ψ</span>YOM</a></li>
+    <li><a href="#clusters"  data-section="clusters"><span class="nav-icon">🌿</span>Clusters</a></li>
+    <div class="nav-divider"></div>
+    <li><a href="#pillars"   data-section="pillars"><span class="nav-icon">◈</span>Framework</a></li>
+    <li><a href="#crowd"     data-section="crowd"><span class="nav-icon">▶</span>Learning</a></li>
+    <li><a href="#documents" data-section="documents"><span class="nav-icon">📄</span>Docs</a></li>
+    <div class="nav-divider"></div>
+    <li><a href="#contact"   data-section="contact"><span class="nav-icon">✉</span>Contact</a></li>
   </ul>
+
   <div class="nav-right">
-    <button class="btn-nav-login" onclick="window.location.href='auth.html'">Log In</button>
-    <button class="btn-nav-join" onclick="window.location.href='auth.html'">Join the Movement</button>
+    <div class="nav-psi-badge" title="Knowledge Commons — Live">
+      <div class="nav-psi-dot"></div>
+      <span>Ψ Live</span>
+    </div>
+    <button class="btn-nav-login" onclick="window.location.href='auth.html'">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Log In
+    </button>
+    <button class="btn-nav-join" onclick="window.location.href='auth.html'">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Join
+    </button>
   </div>
-  <div class="hamburger" id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+
 </nav>
 
-<div id="mobileMenu" style="display:none">
-  <a href="#about" onclick="toggleMenu()">About</a>
-  <a href="#aria" onclick="toggleMenu()">ARIA</a>
-  <a href="#yom" onclick="toggleMenu()">Ψ The YOM Ecosystem</a>
-  <a href="#pillars" onclick="toggleMenu()">Framework</a>
-  <a href="#crowd" onclick="toggleMenu()">Crowd Learning</a>
-  <a href="#documents" onclick="toggleMenu()">Documents</a>
-  <a href="#contact" onclick="toggleMenu()">Contact</a>
-  <div style="display:flex;gap:.7rem;margin-top:.5rem;flex-wrap:wrap">
+<div id="mobileMenu">
+  <a href="#about"     onclick="toggleMenu()"><span class="mob-icon">⬡</span>About</a>
+  <a href="#aria"      onclick="toggleMenu()"><span class="mob-icon">🤖</span>ARIA</a>
+  <a href="#yom"       onclick="toggleMenu()"><span class="mob-icon" style="color:#2e9e4f;font-weight:700">Ψ</span>YOM Ecosystem</a>
+  <a href="#clusters"  onclick="toggleMenu()"><span class="mob-icon">🌿</span>Clusters</a>
+  <div class="mob-divider"></div>
+  <a href="#pillars"   onclick="toggleMenu()"><span class="mob-icon">◈</span>Framework</a>
+  <a href="#crowd"     onclick="toggleMenu()"><span class="mob-icon">▶</span>Crowd Learning</a>
+  <a href="#documents" onclick="toggleMenu()"><span class="mob-icon">📄</span>Documents</a>
+  <a href="#contact"   onclick="toggleMenu()"><span class="mob-icon">✉</span>Contact</a>
+  <div class="mob-divider"></div>
+  <div class="mob-actions">
     <button class="btn-nav-login" onclick="window.location.href='auth.html'">Log In</button>
     <button class="btn-nav-join" onclick="window.location.href='auth.html'">Join the Movement</button>
   </div>
@@ -491,6 +628,12 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   <div class="marquee-inner">
     <span>Stop Teaching. Start Engaging.</span><span>✦</span><span>Curiosity is the New Capital</span><span>✦</span><span>Ask it. Film it. Cultivate it.</span><span>✦</span><span>Engineer the Engagement.</span><span>✦</span><span>The World&#39;s First Video Crowd Learning Platform.</span><span>✦</span><span>Curiosity is the Curriculum.</span><span>✦</span><span>60 Seconds to Ask. 180 to Illuminate.</span><span>✦</span><span>Not a Reel. A Real Answer.</span><span>✦</span><span>Turn Attention into Intention.</span><span>✦</span><span>Ignite the Room.</span><span>✦</span><span>Your Question. The World Answers.</span><span>✦</span><span>Plant a Cluster. Cultivate Together.</span><span>✦</span>
   </div>
+</div>
+
+<!-- scroll cue -->
+<div class="scroll-cue" onclick="go('about')" role="button" tabindex="0" aria-label="Scroll to content">
+  <span class="scroll-cue-txt">Explore</span>
+  <svg class="scroll-cue-arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c8922a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 </div>
 
 <!-- ══ ABOUT ══ -->
@@ -1372,11 +1515,40 @@ window.addEventListener('scroll',()=>{
   mainNav.classList.toggle('sc',window.scrollY>60);
   document.getElementById('docNav').classList.toggle('show',window.scrollY>window.innerHeight*.55);
   updateDots();
+  _updateActiveNav();
+  // scroll-to-top button
+  const stb=document.getElementById('scrollTopBtn');
+  if(stb)stb.style.display=window.scrollY>700?'flex':'none';
 });
-function go(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
-function toggleMenu(){const m=document.getElementById('mobileMenu');m.style.display=m.style.display==='flex'?'none':'flex'}
 
-/* ── DOC NAV ── */
+function _updateActiveNav(){
+  const secs=['about','aria','yom','clusters','pillars','crowd','documents','contact'];
+  let current='';
+  secs.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && el.getBoundingClientRect().top<=110) current=id;
+  });
+  document.querySelectorAll('.nav-links a[data-section]').forEach(a=>{
+    a.classList.toggle('active', a.getAttribute('data-section')===current && current!=='');
+  });
+}
+function go(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
+function toggleMenu(){
+  const m=document.getElementById('mobileMenu');
+  const h=document.getElementById('hamburger');
+  const open=m.style.display==='flex';
+  m.style.display=open?'none':'flex';
+  h.classList.toggle('open',!open);
+}
+document.addEventListener('click',e=>{
+  const m=document.getElementById('mobileMenu');
+  const h=document.getElementById('hamburger');
+  if(m&&m.style.display==='flex'&&!m.contains(e.target)&&!h.contains(e.target)){
+    m.style.display='none';h.classList.remove('open');
+  }
+});
+
+
 const navSections=['hero','about','aria','pillars','crowd','documents','how','numbers','testimonials','contact'];
 function updateDots(){
   const items=document.querySelectorAll('.dn-item');
@@ -1449,7 +1621,7 @@ function handleContact(){
 }
 
 // ── SUPABASE — loaded after SDK and config.js ────────
-// SDK and config.js load just before </body> so both are ready here
+// SDK and config.js load before main script
 const SUPA_URL  = (typeof window !== 'undefined' && window.ENG_CONFIG?.SUPA_URL)  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = (typeof window !== 'undefined' && window.ENG_CONFIG?.SUPA_ANON) || '';
 let supa = null;
@@ -1679,5 +1851,8 @@ function resetSignup(){
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<!-- scroll-to-top -->
+<button id="scrollTopBtn" onclick="scrollTo({top:0,behavior:'smooth'})" title="Back to top" aria-label="Scroll to top">↑</button>
+
 </body>
 </html>
