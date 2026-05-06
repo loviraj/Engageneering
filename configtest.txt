@@ -1,0 +1,29 @@
+// ══════════════════════════════════════════════════════════════════
+// Engageneering™ — Runtime Configuration
+// Place this file in the ROOT of your deployment alongside index.html,
+// auth.html, and platform.html.
+//
+// ⚠️  NEVER commit the live SUPA_ANON or RAZORPAY_KEY to a public repo.
+//     Use environment injection (Netlify env vars, Vercel env, etc.)
+//     or keep this file in .gitignore.
+// ══════════════════════════════════════════════════════════════════
+
+window.ENG_CONFIG = {
+
+  // ── Supabase ───────────────────────────────────────────────────
+  // Project URL — safe to expose (it's in every Supabase request anyway)
+  SUPA_URL: 'https://tbqnkcjftxfbxujxsqkj.supabase.co',
+
+  // Anon/public key — safe to expose (Row Level Security protects your data)
+  // Find it: Supabase Dashboard → Project Settings → API → anon public
+  SUPA_ANON: 'eyY',
+
+  // ── Razorpay ──────────────────────────────────────────────────
+  // Test key starts with rzp_test_   Live key starts with rzp_live_
+  // Find it: Razorpay Dashboard → Settings → API Keys
+  RAZORPAY_KEY: 'rzp_test_',
+
+};
+
+
+

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Engageneering™ — Join the Knowledge Commons</title>
+<title>Engageneering™ — Join the Intellectual Economy</title>
 <link rel="icon" type="image/png" href="ENG-Favicon.png"/>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
@@ -241,10 +241,7 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
       </button>
 
       <div style="text-align:center;font-size:12px;color:#3a5070;margin-top:1rem">
-        <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;padding:9px 20px 9px 12px;background:rgba(200,146,42,.08);border:1px solid rgba(200,146,42,.25);border-radius:50px;transition:all .2s" onmouseover="this.style.background='rgba(200,146,42,.18)';this.style.borderColor='rgba(200,146,42,.5)'" onmouseout="this.style.background='rgba(200,146,42,.08)';this.style.borderColor='rgba(200,146,42,.25)'">
-          <svg width="30" height="30" viewBox="0 0 52 60" style="flex-shrink:0"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.5"/><polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/><polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".92"/><polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".92"/><polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".92"/><polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".92"/><circle cx="26" cy="30" r="4.5" fill="#f5d060"/><circle cx="26" cy="30" r="2.5" fill="#0b1624"/></svg>
-          <span style="font-size:11px;font-weight:600;letter-spacing:.5px;color:#c8922a;text-transform:uppercase">Back to Engageneering.org</span>
-        </a>
+        <a href="index.html" style="color:#3a5070;text-decoration:none">← Back to Engageneering.org</a>
       </div>
     </div>
 
@@ -457,7 +454,7 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
           </div>
           <div class="consent-check-row" id="chk3row">
             <input type="checkbox" id="chkYom" onchange="checkConsent()"/>
-            <label for="chkYom">I understand that YOM Ψ points are a platform contribution metric, not financial instruments. I accept the <a href="legal.html" target="_blank">YOM Field Policy</a> and <a href="legal.html" target="_blank">ARIA &amp; AI Policy</a>.</label>
+            <label for="chkYom">I understand that YOM Ψ points are a platform reward currency, not financial instruments. I accept the <a href="legal.html" target="_blank">YOM Wallet Policy</a> and <a href="legal.html" target="_blank">ARIA &amp; AI Policy</a>.</label>
           </div>
           <div class="consent-warn" id="consentWarn">Please check all three boxes to proceed.</div>
         </div>
@@ -508,10 +505,20 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
           <circle cx="26" cy="30" r="1.6" fill="#f5d060"/>
         </svg>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#f0c040;margin-bottom:.5rem;font-weight:600">Welcome to the Movement</div>
-        <div id="successTier" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3)">
-<script>
-function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+        <div id="successTier" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);border-radius:20px;padding:.35rem 1.1rem;font-size:12px;color:#f0c040;margin-bottom:1rem;letter-spacing:.5px"></div>
+        <div id="successMsg" style="font-size:14px;color:#8a9ab8;line-height:1.8;margin-bottom:1.5rem;max-width:360px;margin-left:auto;margin-right:auto"></div>
+        <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:.5rem">
+          <button class="submit-btn" onclick="window.location.href='assessment.html?new=1'" style="flex:1;max-width:240px;padding:12px 18px;font-size:11px;letter-spacing:1.5px">Take Assessment Now →</button>
+          <button class="submit-btn" onclick="window.location.href='platform.html'" style="flex:1;max-width:240px;padding:12px 18px;font-size:11px;letter-spacing:1.5px;background:transparent;color:var(--gold);border:1px solid rgba(200,146,42,.5)">Explore Platform First →</button>
+        </div>
+        <div style="font-size:11px;color:#4a6a88;margin-top:.8rem;text-align:center">Assessment takes 5 minutes · Sets your entry tier badge · Can be taken anytime</div>
+      </div>
 
+    </div>
+  </div>
+</div>
+
+<script>
 // ── CONFIG ──
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
@@ -565,23 +572,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Link was invalid or expired — show error on step 4
     _showLinkError(_errMsg);
   } else if (_access && _refresh) {
-    // Full token pair in hash — could be magic link OR Google OAuth implicit flow
+    // Full token pair in hash — set session directly
     _showLinkVerifying();
     const { data: sd, error: se } = await supa.auth.setSession({ access_token: _access, refresh_token: _refresh });
     if (se || !sd.session) { _showLinkError(se ? se.message : 'No session returned'); }
-    else {
-      const u = sd.session.user;
-      const isGoogle = u && u.app_metadata && u.app_metadata.provider === 'google';
-      if (isGoogle) {
-        // Google OAuth — check profile
-        const { data: prof } = await supa.from('profiles').select('id').eq('id', u.id).single();
-        if (prof) { window.history.replaceState({}, document.title, window.location.pathname); window.location.href = 'platform.html'; return; }
-        window._googleUser = { uid: u.id, email: u.email, fullName: (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || u.email.split('@')[0] };
-        window.history.replaceState({}, document.title, window.location.pathname);
-        _showGoogleOnboarding(); return;
-      }
-      await _completeLinkSignup(sd.session); return;
-    }
+    else { await _completeLinkSignup(sd.session); return; }
   } else if (_thash && _ttype) {
     // PKCE token_hash flow
     _showLinkVerifying();
@@ -592,27 +587,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   } else {
     // Normal load — check for existing confirmed session (server-verified)
     const { data: { user }, error: ue } = await supa.auth.getUser();
-    if (user && !ue) {
-      // Google OAuth users: auto-confirmed, check if they have a profile already
-      const isGoogle = user.app_metadata && user.app_metadata.provider === 'google';
-      if (isGoogle) {
-        const { data: prof } = await supa.from('profiles').select('id').eq('id', user.id).single();
-        if (prof) {
-          // Returning Google user with existing profile → platform
-          window.location.href = 'platform.html'; return;
-        } else {
-          // New Google user — collect role/details before entering platform
-          window._googleUser = {
-            uid:      user.id,
-            email:    user.email,
-            fullName: (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || user.email.split('@')[0]
-          };
-          _showGoogleOnboarding(); return;
-        }
-      }
-      // Regular email user — must be confirmed
-      if (user.email_confirmed_at) { window.location.href = 'platform.html'; return; }
-    }
+    if (user && !ue && user.email_confirmed_at) { window.location.href = 'platform.html'; return; }
     try { await supa.auth.signOut(); } catch(_) {}
   }
 
@@ -1195,88 +1170,11 @@ async function verifyOTP() {
 }
 
 // ── GOOGLE OAUTH ──
-// ── GOOGLE ONBOARDING ─────────────────────────────────────────────────────
-// New Google users skip step 1 (done by Google) and go straight to steps 2+3
-function _showGoogleOnboarding() {
-  var g = window._googleUser;
-  if (!g) return;
-  document.getElementById('entrySelector').style.display = 'none';
-  document.getElementById('formLogin').classList.remove('active');
-  document.getElementById('formSignup').classList.add('active');
-  // Hide step 1 (name/email/password — handled by Google)
-  var s1 = document.getElementById('step1'); if (s1) s1.style.display = 'none';
-  // Show welcome banner
-  var fw = document.getElementById('formSignup');
-  if (!document.getElementById('_gBanner')) {
-    var b = document.createElement('div');
-    b.id = '_gBanner';
-    b.style.cssText = 'background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);border-radius:8px;padding:12px 16px;margin-bottom:1rem;text-align:center';
-    var _row1=document.createElement('div');
-    _row1.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px';
-    var _ws=document.createElement('span');
-    _ws.style.cssText='font-size:13px;color:#e8f0fc;font-weight:600';
-    _ws.textContent='Welcome, '+g.fullName+'!';
-    _row1.appendChild(_ws);
-    var _row2=document.createElement('div');
-    _row2.style.cssText='font-size:11px;color:#7a9ab8';
-    _row2.textContent='Signed in via Google. Complete your profile to enter.';
-    b.appendChild(_row1); b.appendChild(_row2);
-    var dots = fw.querySelector('.prog-dots'); if (dots) dots.parentNode.insertBefore(b, dots); else fw.prepend(b);
-  }
-  // Show step 2, mark step 1 as done in progress dots
-  var pd1 = document.getElementById('pd1'); if (pd1) { pd1.className = 'prog-dot done'; }
-  showStep(2);
-  // Override Join button
-  var joinBtn = document.getElementById('joinBtn');
-  if (joinBtn) { joinBtn.textContent = 'Complete Profile & Enter →'; joinBtn.onclick = doGoogleOnboardingSave; }
-}
-
-async function doGoogleOnboardingSave() {
-  if (!validateStep2()) { showStep(2); return; }
-  var g = window._googleUser;
-  if (!g) { window.location.href = 'platform.html'; return; }
-  var prof    = document.getElementById('sProfession').value;
-  var country = document.getElementById('sCountry').value;
-  var years   = document.getElementById('sYears').value;
-  var org     = (document.getElementById('sOrg').value||'').trim();
-  var source  = document.getElementById('sSource').value;
-  var bio     = (document.getElementById('sBio').value||'').trim();
-  var tags    = Array.from(document.querySelectorAll('.int-tag.sel')).map(function(t){ return t.textContent; });
-  var err     = document.getElementById('s3Err');
-  var btn     = document.getElementById('joinBtn');
-  err.textContent = ''; err.style.color = '';
-  if (!checkConsent()) {
-    document.getElementById('consentWarn').style.display = 'block';
-    document.getElementById('chkTerms').scrollIntoView({ behavior:'smooth', block:'center' });
-    return;
-  }
-  btn.textContent = 'Saving…'; btn.disabled = true;
-  try {
-    var p = { email:g.email, fullName:g.fullName, role:selectedRole, pwd:'',
-              prof:prof, country:country, years:years, org:org, source:source, bio:bio, tags:tags,
-              consent:getConsentPayload() };
-    await createProfile(g.uid, p);
-    try {
-      await supa.from('legal_consents').insert({
-        user_id:g.uid, terms_version:p.consent.terms_version, accepted_at:p.consent.accepted_at,
-        user_agent:p.consent.user_agent, screen_res:p.consent.screen_res,
-        chk_terms:p.consent.chk_terms, chk_disclaimer:p.consent.chk_disclaimer, chk_yom:p.consent.chk_yom
-      });
-    } catch(_) {}
-    window._googleUser = null;
-    showSuccess(g.fullName, selectedRole, true);
-    setTimeout(function(){ window.location.href = 'platform.html'; }, 2500);
-  } catch(ex) {
-    err.textContent = 'Error: ' + ex.message; err.style.color = '#f09595';
-    btn.textContent = 'Complete Profile & Enter →'; btn.disabled = false;
-  }
-}
-
 async function signInWithGoogle() {
   try {
     const { error } = await supa.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/auth.html', queryParams: { access_type:'offline', prompt:'consent' } }
+      options: { redirectTo: 'https://engageneering.org/platform.html', queryParams: { access_type:'offline', prompt:'consent' } }
     });
     if (error) alert('Google sign-in failed: ' + error.message);
   } catch(e) { alert('Google sign-in error: ' + e.message); }
@@ -1327,3 +1225,4 @@ function showSuccess(name, role, loggedIn) {
 
 </script>
 </body>
+</html>
