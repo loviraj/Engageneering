@@ -810,6 +810,30 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .yw-split-q{background:linear-gradient(to right,#378add,#85b7eb);border-radius:2px 0 0 2px;transition:flex .8s ease}
 .yw-split-a{background:linear-gradient(to right,#1d9e75,#5dcaa5);border-radius:0 2px 2px 0;transition:flex .8s ease}
 
+
+/* ══ CLUSTER SYSTEM ══ */
+.cluster-bar{display:flex;align-items:center;gap:.4rem;padding:.5rem .8rem;background:rgba(46,158,79,.06);border:1px solid rgba(46,158,79,.2);border-radius:8px;margin-bottom:.8rem;flex-wrap:wrap}
+.cluster-btn{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;border:1px solid rgba(46,158,79,.3);background:transparent;color:#5dcaa5;cursor:pointer;transition:all .15s;white-space:nowrap}
+.cluster-btn.active{background:rgba(46,158,79,.2);border-color:#2e9e4f;color:#fff}
+.cluster-btn:hover{background:rgba(46,158,79,.15)}
+.cluster-btn.default-btn{color:var(--gold);border-color:rgba(200,146,42,.4)}
+.cluster-btn.default-btn.active{background:rgba(200,146,42,.15);border-color:var(--gold)}
+.cluster-modal-wrap{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}
+.cluster-modal{background:var(--bg2);border:1px solid rgba(46,158,79,.3);border-radius:14px;width:520px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.cluster-modal-hdr{padding:1rem 1.4rem;border-bottom:1px solid var(--bd1);display:flex;align-items:center;justify-content:space-between}
+.cluster-modal-title{font-size:15px;font-weight:700;color:var(--t1)}
+.cluster-modal-body{padding:1.4rem;overflow-y:auto;flex:1}
+.cluster-card{background:var(--bg3);border:1px solid var(--bd1);border-radius:8px;padding:.9rem 1rem;margin-bottom:.6rem;cursor:pointer;transition:border-color .15s}
+.cluster-card:hover{border-color:rgba(46,158,79,.4)}
+.cluster-card.joined{border-color:rgba(46,158,79,.5)}
+.cluster-card-name{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:2px}
+.cluster-card-meta{font-size:11px;color:var(--t4);display:flex;gap:.6rem;flex-wrap:wrap}
+.cluster-field-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:rgba(46,158,79,.12);color:#5dcaa5}
+.cluster-input{width:100%;background:var(--bg3);border:1px solid var(--bd1);border-radius:6px;padding:8px 12px;color:var(--t1);font-size:13px;outline:none;margin-bottom:.7rem;font-family:inherit}
+.cluster-input:focus{border-color:#2e9e4f}
+.cluster-input::placeholder{color:var(--t4)}
+.cluster-psi-cost{display:flex;align-items:center;gap:.5rem;font-size:12px;color:var(--t4);margin-bottom:.8rem;padding:8px 10px;background:rgba(46,158,79,.06);border-radius:6px;border:1px solid rgba(46,158,79,.15)}
+.cluster-psi-val{font-size:16px;font-weight:700;color:#2e9e4f}
 </style>
 
 <!-- SQL: Run in Supabase SQL Editor to add language support:
@@ -1173,6 +1197,14 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
       <a href="legal.html" target="_blank" style="color:#f0c040;text-decoration:none;white-space:nowrap;font-size:9px;letter-spacing:1px;flex-shrink:0">Legal ›</a>
     </div>
 
+    <!-- ══ CLUSTER BAR ══ -->
+    <div class="cluster-bar" id="clusterBar">
+      <span style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2e9e4f;font-weight:700;flex-shrink:0">🌿 Cluster:</span>
+      <button class="cluster-btn default-btn active" id="clusterBtnDefault" onclick="setCluster(null,this)">🌾 The Open Field</button>
+      <div id="clusterBtns" style="display:flex;gap:.3rem;flex-wrap:wrap"></div>
+      <button class="cluster-btn" style="margin-left:auto;font-size:10px;border-color:rgba(200,146,42,.3);color:var(--gold)" onclick="openClusterModal()">+ Plant · Join</button>
+    </div>
+
     <div class="q-feed" id="qFeed">
       <div style="text-align:center;padding:3rem;color:var(--t4)">Loading...</div>
     </div>
@@ -1314,6 +1346,8 @@ const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
 // ══ STATE ══
 let U=null,P=null,R=null;
 let view='all',topic='',fmt='all';
+let currentClusterId=null;
+let userClusters=[];
 let modalMode='question';  // 'question' or 'answer'
 let modalAnswerFor=null;   // question id when answering
 let contentType='video';   // VIDEO-ONLY platform
@@ -1347,6 +1381,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   buildNav();buildTierCard();
   loadFeed();loadLeaderboard();
   loadInsight();loadEvtCount();loadYOMField();
+  loadUserClusters();
   setTimeout(checkAndShowConsentModal, 1500);
 
   // Clean the # from URL after OAuth (cosmetic — no functional effect)
@@ -1496,6 +1531,214 @@ function setView(v,btn,fromTab=false){
   if(map[v]!==undefined)si[map[v]]?.classList.add('on');
   loadFeed();
 }
+
+// ═══════════════════════════════════════════════════════
+// CLUSTER SYSTEM
+// ═══════════════════════════════════════════════════════
+const CLUSTER_CREATE_COST=1000;
+const CLUSTER_JOIN_COST=50;
+
+function setCluster(id,btn){
+  currentClusterId=id||null;
+  document.querySelectorAll('.cluster-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  // Reload feed if not on personal views
+  if(view!=='mine'&&view!=='answered') loadFeed();
+}
+
+async function loadUserClusters(){
+  if(!U)return;
+  try{
+    const{data}=await supa
+      .from('cluster_members')
+      .select('cluster_id,role,psi_contributed,clusters(id,name,collective_pts,topic_tags,is_default,description)')
+      .eq('user_id',U.id);
+    userClusters=(data||[])
+      .map(m=>({...(m.clusters||{}),role:m.role,psi_contributed:m.psi_contributed}))
+      .filter(c=>c&&c.id&&!c.is_default);
+    renderClusterBar();
+    populateClusterSelect();
+  }catch(e){console.warn('loadUserClusters:',e.message);}
+}
+
+function renderClusterBar(){
+  const el=document.getElementById('clusterBtns');
+  if(!el)return;
+  el.innerHTML=userClusters.map(c=>
+    `<button class="cluster-btn" id="cBtn_${c.id}" onclick="setCluster('${c.id}',this)">`+
+    `🌿 ${esc(c.name)}${c.role==='keeper'?' 🔑':''}</button>`
+  ).join('');
+}
+
+function populateClusterSelect(){
+  const sel=document.getElementById('qClusterSelect');
+  if(!sel)return;
+  const opts=userClusters.map(c=>`<option value="${c.id}">🌿 ${esc(c.name)}</option>`).join('');
+  sel.innerHTML=`<option value="">🌾 The Open Field (default — public)</option>${opts}`;
+}
+
+function openClusterModal(){
+  if(!U){showToast('Sign in to use Clusters','error');return;}
+  let ov=document.getElementById('cModalOv');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='cModalOv';
+    ov.className='cluster-modal-wrap';
+    ov.onclick=function(e){if(e.target===ov)closeClusterModal();};
+    document.body.appendChild(ov);
+  }
+  // Build modal HTML without nested quote issues
+  const mineBtn=userClusters.length?'<button class="cluster-btn" id="cmT_mine" onclick="cmTab(\u0027mine\u0027)">My Clusters</button>':'';
+  ov.innerHTML='<div class="cluster-modal">'
+    +'<div class="cluster-modal-hdr">'
+    +'<div class="cluster-modal-title">🌿 Clusters</div>'
+    +'<button onclick="closeClusterModal()" style="background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer">×</button>'
+    +'</div>'
+    +'<div class="cluster-modal-body">'
+    +'<div style="display:flex;gap:.4rem;margin-bottom:1.2rem;flex-wrap:wrap">'
+    +'<button class="cluster-btn active" id="cmT_browse" onclick="cmTab(\u0027browse\u0027)">Browse & Join</button>'
+    +'<button class="cluster-btn" id="cmT_create" onclick="cmTab(\u0027create\u0027)">🌱 Plant a Cluster</button>'
+    +mineBtn
+    +'</div>'
+    +'<div id="cmContent">Loading…</div>'
+    +'</div>'
+    +'</div>';
+  ov.style.display='flex';
+  cmTab('browse');
+}
+
+function closeClusterModal(){
+  const o=document.getElementById('cModalOv');if(o)o.style.display='none';
+}
+
+async function cmTab(tab){
+  ['browse','create','mine'].forEach(t=>{
+    const b=document.getElementById('cmT_'+t);if(b)b.classList.remove('active');
+  });
+  const act=document.getElementById('cmT_'+tab);if(act)act.classList.add('active');
+  const cc=document.getElementById('cmContent');if(!cc)return;
+
+  if(tab==='browse'){
+    cc.innerHTML='<div style="color:var(--t4);text-align:center;padding:1rem">Loading…</div>';
+    const{data}=await supa.from('clusters')
+      .select('id,name,description,collective_pts,topic_tags,is_default')
+      .eq('is_public',true).eq('status','active')
+      .order('collective_pts',{ascending:false}).limit(20);
+    const joined=new Set(userClusters.map(c=>c.id));
+    const rows=(data||[]).filter(c=>!c.is_default);
+    cc.innerHTML=rows.length?rows.map(c=>`
+      <div class="cluster-card ${joined.has(c.id)?'joined':''}" onclick="joinClusterConfirm('${c.id}','${esc(c.name)}')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">
+          <div class="cluster-card-name">🌿 ${esc(c.name)}</div>
+          ${joined.has(c.id)?
+            '<span class="cluster-field-tag">Joined ✓</span>':
+            `<span style="font-size:11px;color:#2e9e4f;font-weight:600">Sow Ψ${CLUSTER_JOIN_COST}</span>`}
+        </div>
+        <div class="cluster-card-meta">
+          <span>🌾 Collective Ψ${c.collective_pts||0}</span>
+          ${(c.topic_tags||[]).slice(0,3).map(t=>`<span class="cluster-field-tag">${esc(t)}</span>`).join('')}
+        </div>
+        ${c.description?`<div style="font-size:11px;color:var(--t4);margin-top:4px;line-height:1.4">${esc(c.description.slice(0,90))}${c.description.length>90?'…':''}</div>`:''}
+      </div>`).join('')
+    :'<div style="color:var(--t4);text-align:center;padding:1.5rem;line-height:1.8">No public Clusters yet.<br>Be the first to plant one! 🌱</div>';
+
+  }else if(tab==='create'){
+    const pts=R?.pts_total||0;
+    const can=pts>=CLUSTER_CREATE_COST;
+    cc.innerHTML=`
+      <div class="cluster-psi-cost">
+        <span>Cost to plant:</span>
+        <span class="cluster-psi-val">Ψ${CLUSTER_CREATE_COST}</span>
+        <span style="margin-left:auto">Your Field: <strong style="color:${can?'#2e9e4f':'var(--rdb)'}">Ψ${pts}</strong></span>
+      </div>
+      ${!can?`<div style="font-size:12px;color:var(--rdb);margin-bottom:.8rem">Need more Ψ — <a onclick="openBuyModal();closeClusterModal()" style="color:var(--gold);cursor:pointer">buy Ψ</a> or cultivate more first.</div>`:''}
+      <input class="cluster-input" id="cmCName" placeholder="Cluster name (3–60 chars)" maxlength="60"/>
+      <textarea class="cluster-input" id="cmCDesc" placeholder="What will this Cluster cultivate? (optional)" rows="2" style="resize:vertical"></textarea>
+      <input class="cluster-input" id="cmCTags" placeholder="Topics — comma separated (e.g. Physics, Maths)"/>
+      <div style="font-size:10px;color:var(--t4);margin-bottom:1rem;line-height:1.5">Ψ${CLUSTER_CREATE_COST} seeds the Cluster's collective Field. You become the Keeper.</div>
+      <button onclick="createCluster()" class="nbtn" ${!can?'disabled':''} style="width:100%;background:rgba(46,158,79,.15);border:1px solid rgba(46,158,79,.4);color:#5dcaa5;padding:9px">
+        🌿 Plant This Cluster
+      </button>`;
+
+  }else if(tab==='mine'){
+    cc.innerHTML=userClusters.length?userClusters.map(c=>`
+      <div class="cluster-card joined">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div class="cluster-card-name">🌿 ${esc(c.name)}</div>
+          <span class="cluster-field-tag">${c.role==='keeper'?'Keeper 🔑':c.role==='tender'?'Tender':'Member'}</span>
+        </div>
+        <div class="cluster-card-meta">
+          <span>🌾 Collective Ψ${c.collective_pts||0}</span>
+          <span>Your contribution: Ψ${c.psi_contributed||0}</span>
+        </div>
+        ${c.role==='keeper'?`<button onclick="restCluster('${c.id}')" style="margin-top:6px;font-size:10px;color:var(--t4);background:none;border:none;cursor:pointer;text-decoration:underline">Rest this Cluster ›</button>`:''}
+      </div>`).join('')
+    :'<div style="color:var(--t4);text-align:center;padding:1.5rem">No Clusters yet — browse or plant one!</div>';
+  }
+}
+
+function joinClusterConfirm(id,name){
+  if(userClusters.some(c=>c.id===id)){showToast(`Already in ${name}`,'info');return;}
+  const pts=R?.pts_total||0;
+  if(pts<CLUSTER_JOIN_COST){
+    showToast(`Need Ψ${CLUSTER_JOIN_COST} to join. You have Ψ${pts}.`,'error');return;
+  }
+  if(!confirm(`Sow Ψ${CLUSTER_JOIN_COST} from your Field to join "${name}"?
+
+This seeds the Cluster's collective Field.`))return;
+  joinCluster(id,name);
+}
+
+async function joinCluster(id,name){
+  try{
+    const ok=await deductPsi(CLUSTER_JOIN_COST,'cluster_join');
+    if(!ok)return;
+    const{error}=await supa.from('cluster_members')
+      .insert({cluster_id:id,user_id:U.id,role:'member',psi_contributed:CLUSTER_JOIN_COST});
+    if(error){showToast('Join failed: '+error.message,'error');return;}
+    // Credit collective field
+    const{data:cl}=await supa.from('clusters').select('collective_pts').eq('id',id).single();
+    await supa.from('clusters').update({
+      collective_pts:(cl?.collective_pts||0)+CLUSTER_JOIN_COST,
+      last_active_at:new Date().toISOString()
+    }).eq('id',id);
+    showToast(`🌿 Joined "${name}"! Ψ${CLUSTER_JOIN_COST} sown into the collective Field.`,'gold');
+    await loadUserClusters();
+    closeClusterModal();
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+async function createCluster(){
+  const name=(document.getElementById('cmCName')?.value||'').trim();
+  const desc=(document.getElementById('cmCDesc')?.value||'').trim();
+  const tagsRaw=(document.getElementById('cmCTags')?.value||'').trim();
+  const tags=tagsRaw?tagsRaw.split(',').map(t=>t.trim()).filter(Boolean).slice(0,5):[];
+  if(name.length<3){showToast('Name must be at least 3 characters','error');return;}
+  const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Date.now().toString(36);
+  try{
+    const ok=await deductPsi(CLUSTER_CREATE_COST,'cluster_plant');
+    if(!ok)return;
+    const{data:cl,error}=await supa.from('clusters').insert({
+      name,slug,description:desc||null,topic_tags:tags,
+      keeper_id:U.id,collective_pts:CLUSTER_CREATE_COST,
+      is_default:false,is_public:true,status:'active'
+    }).select().single();
+    if(error){showToast('Plant failed: '+error.message,'error');return;}
+    await supa.from('cluster_members').insert({cluster_id:cl.id,user_id:U.id,role:'keeper',psi_contributed:CLUSTER_CREATE_COST});
+    showToast(`🌿 "${name}" is planted! Ψ${CLUSTER_CREATE_COST} seeds its collective Field.`,'gold');
+    await loadUserClusters();
+    closeClusterModal();
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+async function restCluster(id){
+  if(!confirm('Rest this Cluster? It will be hidden from the directory. Collective Field is preserved.'))return;
+  await supa.from('clusters').update({status:'rested'}).eq('id',id).eq('keeper_id',U.id);
+  showToast('Cluster rested — collective Field preserved','info');
+  await loadUserClusters();
+  closeClusterModal();
+}
+
 function setTopic(t,btn){
   topic=t;view='all';
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('on'));
@@ -1557,6 +1800,8 @@ async function loadFeed(){
       return; // My Answers rendered above
     }else{
       let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
+      if(currentClusterId) q=q.eq('cluster_id',currentClusterId);
+      else q=q.is('cluster_id',null);
       if(topic)q=q.contains('tags',[topic]);
       if(currentLangFilter)q=q.eq('language',currentLangFilter);
       if(fmt==='video')q=q.in('content_type',['video','both']);
