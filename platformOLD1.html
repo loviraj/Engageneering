@@ -775,7 +775,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .buy-secure{font-size:9px;color:var(--t4);text-align:center;margin-top:.7rem;letter-spacing:.5px}
 
 
-/* ══ YOM FIELD WIDGET ══ */
+/* ══ YOM WALLET WIDGET ══ */
 .yw-card{background:linear-gradient(135deg,#0d1e38 0%,#0a1628 60%,#0f1e36 100%);border:1px solid rgba(200,146,42,.35);border-radius:12px;padding:1.1rem 1.1rem .9rem;margin-bottom:1.4rem;position:relative;overflow:hidden}
 .yw-card::before{content:'';position:absolute;top:-30px;right:-30px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(200,146,42,.12) 0%,transparent 70%);pointer-events:none}
 .yw-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
@@ -1180,10 +1180,10 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 
   <!-- RIGHT SIDEBAR -->
   <div class="sidebar sb-r">
-    <!-- ══ YOM FIELD WIDGET ══ -->
+    <!-- ══ YOM WALLET WIDGET ══ -->
     <div class="yw-card" id="yomWalletWidget">
       <div class="yw-header">
-        <div class="yw-title">⌬ YOM Field</div>
+        <div class="yw-title">⌬ YOM Wallet</div>
         <div class="yw-live"><div class="yw-live-dot"></div>Live</div>
       </div>
 
@@ -1303,13 +1303,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 // ══ CONFIG ══
 const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
 const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
-const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
-  auth: {
-    persistSession:     true,   // keep session across tabs
-    autoRefreshToken:   true,   // auto-refresh JWT
-    detectSessionInUrl: true    // process OAuth/OTP hash fragments
-  }
-});
+const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
 
 // ══ STATE ══
 let U=null,P=null,R=null;
@@ -1335,43 +1329,21 @@ function tc(t){return TAGCLS[t]||'tgen';}
 
 // ══ INIT ══
 window.addEventListener('DOMContentLoaded',async()=>{
-  // Handle OAuth callback — Supabase processes the #hash fragment
-  // detectSessionInUrl:true (set in createClient) does this automatically.
-  // Wait a tick so Supabase can process the hash before getSession()
-  await new Promise(r=>setTimeout(r,100));
-
   const{data:{session}}=await supa.auth.getSession();
   if(!session){window.location.href='auth.html';return;}
   U=session.user;
   await loadUserData();
   buildNav();buildTierCard();
   loadFeed();loadLeaderboard();
-  loadInsight();loadEvtCount();loadYOMField();
+  loadInsight();loadEvtCount();loadYOMWallet();
   setTimeout(checkAndShowConsentModal, 1500);
-
-  // Clean the # from URL after OAuth (cosmetic — no functional effect)
-  if(window.location.hash){
-    history.replaceState(null,'',window.location.pathname+window.location.search);
-  }
-
   supa.auth.onAuthStateChange((_,s)=>{if(!s)window.location.href='auth.html';});
 });
 
 async function loadUserData(){
   let{data:prof}=await supa.from('profiles').select('*').eq('id',U.id).single();
   if(!prof){
-    // New user (including Google OAuth) — auto-create profile from metadata
-    const meta = U.user_metadata || {};
-    const displayName = meta.full_name || meta.name ||
-                        U.email?.split('@')[0] || 'Engageneer™';
-    const avatarUrl = meta.avatar_url || meta.picture || null;
-    await supa.from('profiles').upsert({
-      id: U.id,
-      display_name: displayName,
-      avatar_url:   avatarUrl,
-      status:       'active',
-      joined_at:    new Date().toISOString()
-    },{onConflict:'id'});
+    await supa.from('profiles').upsert({id:U.id,display_name:U.user_metadata?.full_name||U.email?.split('@')[0]||'Engageneer™',status:'active'},{onConflict:'id'});
     ({data:prof}=await supa.from('profiles').select('*').eq('id',U.id).single());
   }
   P=prof;
@@ -3335,7 +3307,7 @@ async function submitQuestion(){
         showToast(`Points update failed: ${ptErr.message}`);
       } else {
         if(R){R.pts_total=curPts+pts;R.seeker_pts=curSeekerPts+pts;}
-        console.log('✓ YOM Ψ updated:',curPts+pts);loadYOMField();
+        console.log('✓ YOM Ψ updated:',curPts+pts);loadYOMWallet();
       }
     }
   }catch(e){
@@ -3411,7 +3383,7 @@ async function submitQuestion(){
       log('Background scoring error (non-critical): '+e2.message);
     }
   }, 100);
-  dot('aria','idle');st('aria','Standby');ariaOff();loadYOMField();
+  dot('aria','idle');st('aria','Standby');ariaOff();loadYOMWallet();
 
   closeModal();
   buildNav();buildTierCard();
@@ -3500,7 +3472,7 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
     ? `${Math.floor(_vidSec/60)}m ${_vidSec%60}s` : 'recorded video';
   const ansDescriptor = textAns && textAns.trim().length > 15
     ? textAns.trim()
-    : `Video answer submitted on Engageneering™ Knowledge Commons platform. ` +
+    : `Video answer submitted on Engageneering™ Intellectual Economy platform. ` +
       `Duration: ${_durLabel}. Question: "${qText}". ` +
       `Respondent recorded a spoken video explanation on camera. ` +
       `Evaluate as a genuine human video response — text transcript unavailable ` +
@@ -3706,7 +3678,7 @@ async function loadInsight(){
   if(data){document.getElementById('insightBody').textContent=data.full_report||data.strengths||'Your insight is ready.';}
 }
 
-async function loadYOMField(){
+async function loadYOMWallet(){
   if(!U)return;
   try{
     // Fetch fresh profile_roles for accurate pts
@@ -3785,7 +3757,7 @@ async function loadYOMField(){
       if(timeEl)timeEl.textContent='';
     }
   }catch(e){
-    console.warn('YOM Field load error:',e);
+    console.warn('YOM wallet load error:',e);
   }
 }
 
@@ -3849,7 +3821,7 @@ async function grantSignupBonusIfNew(){
       return;
     }
 
-    // Credit the Field
+    // Credit the wallet
     const{data:rn}=await supa.from('profile_roles')
       .select('pts_total,seeker_pts').eq('user_id',U.id).single();
     if(rn){
@@ -3860,8 +3832,8 @@ async function grantSignupBonusIfNew(){
       }).eq('user_id',U.id);
       if(R){R.pts_total=(rn.pts_total||0)+SIGNUP_BONUS;R.seeker_pts=(rn.seeker_pts||0)+SIGNUP_BONUS;}
     }
-    showToast(`🎉 Welcome bonus: +Ψ${SIGNUP_BONUS} cultivated in your YOM Field!`,'gold');
-    setTimeout(()=>{buildTierCard();loadYOMField();},600);
+    showToast(`🎉 Welcome bonus: +Ψ${SIGNUP_BONUS} credited to your YOM Wallet!`,'gold');
+    setTimeout(()=>{buildTierCard();loadYOMWallet();},600);
   }catch(e){console.warn('Bonus grant error:',e);}
 }
 
@@ -3904,7 +3876,7 @@ async function deductPsi(amount, reason){
       ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
       ref_id:reason||null
     });
-    loadYOMField();
+    loadYOMWallet();
     return true;
   }catch(e){console.warn('Deduct error:',e);return false;}
 }
@@ -4046,7 +4018,7 @@ Language: ${lang}`;
       if(R) R.pts_total=(R.pts_total||0)+ARIA_COST;
       showToast('Ψ refunded — ARIA unavailable','error');
     }catch(e2){}
-    loadYOMField();
+    loadYOMWallet();
     if(btn) btn.disabled=false;
     console.warn('ARIA error:',err);
   }
@@ -4158,7 +4130,7 @@ function launchRazorpay(displayPrice,btn){
     amount:Math.round(selectedPack.inr*100), // paise
     currency:'INR',
     name:'Engageneering™',
-    description:`YOM Field · Ψ${selectedPack.psi} Points`,
+    description:`YOM Wallet · Ψ${selectedPack.psi} Points`,
     image:'ARIA-Avatar-Favicon.png',
     handler:async function(response){
       // Payment successful — credit Ψ
@@ -4192,7 +4164,7 @@ async function creditPsiAfterPayment(psi, gateway, txnId){
       ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
       ref_id:txnId||null
     });
-    // 2. Credit Field
+    // 2. Credit wallet
     const{data:rn}=await supa.from('profile_roles')
       .select('pts_total,seeker_pts').eq('user_id',U.id).single();
     if(rn){
@@ -4203,9 +4175,9 @@ async function creditPsiAfterPayment(psi, gateway, txnId){
       }).eq('user_id',U.id);
       if(R){R.pts_total=(R.pts_total||0)+psi;R.seeker_pts=(R.seeker_pts||0)+psi;}
     }
-    showToast(`✓ Ψ${psi} cultivated in your YOM Field!`,'gold');
+    showToast(`✓ Ψ${psi} credited to your YOM Wallet!`,'gold');
     closeBuyModal();
-    loadYOMField();
+    loadYOMWallet();
     buildTierCard();
     buildNav();
   }catch(e){
@@ -4502,7 +4474,7 @@ async function loadEvtCount(){
 }
 </script>
 
-<!-- ================= YOM FIELD PATCH ================= -->
+<!-- ================= YOM WALLET PATCH ================= -->
 
 
 <!-- ══ EXISTING USER CONSENT MODAL ══ -->
@@ -4516,9 +4488,9 @@ async function loadEvtCount(){
       <div class="cm-scroll">
         <strong>Content Disclaimer — Important</strong><br><br>
         Engageneering™ is a user-generated content platform. All videos, answers, and questions are uploaded by individual users. <strong>Engageneering™ does not review, verify, endorse, or take responsibility for any user-uploaded content.</strong> Content does not constitute professional medical, legal, financial, or other licensed advice. ARIA scores reflect automated pedagogical quality assessment only — not factual accuracy.<br><br>
-        <strong>YOM Ψ points</strong> are a platform contribution metric — not a financial instrument, cryptocurrency, or investment. Purchased Ψ are non-refundable.<br><br>
+        <strong>YOM Ψ points</strong> are a platform reward currency — not a financial instrument, cryptocurrency, or investment. Purchased Ψ are non-refundable.<br><br>
         <strong>ARIA</strong> is an automated AI system that may produce inaccurate assessments. Scores are final for Ψ purposes only.<br><br>
-        Full policies: <a href="legal.html" target="_blank">Terms &amp; Conditions</a> · <a href="legal.html" target="_blank">Privacy Policy</a> · <a href="legal.html" target="_blank">Content Disclaimer</a> · <a href="legal.html" target="_blank">YOM Field Policy</a>
+        Full policies: <a href="legal.html" target="_blank">Terms &amp; Conditions</a> · <a href="legal.html" target="_blank">Privacy Policy</a> · <a href="legal.html" target="_blank">Content Disclaimer</a> · <a href="legal.html" target="_blank">YOM Wallet Policy</a>
       </div>
 
       <div class="cm-chk">
@@ -4531,7 +4503,7 @@ async function loadEvtCount(){
       </div>
       <div class="cm-chk">
         <input type="checkbox" id="cmChk3" onchange="cmCheck()"/>
-        <label for="cmChk3">I accept the <a href="legal.html" target="_blank">YOM Field Policy</a> and <a href="legal.html" target="_blank">ARIA &amp; AI Policy</a>.</label>
+        <label for="cmChk3">I accept the <a href="legal.html" target="_blank">YOM Wallet Policy</a> and <a href="legal.html" target="_blank">ARIA &amp; AI Policy</a>.</label>
       </div>
 
       <div class="cm-warn" id="cmWarn">Please check all three boxes to continue.</div>
