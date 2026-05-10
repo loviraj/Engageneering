@@ -749,7 +749,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .aria-response-text .aria-kw{color:var(--gb);font-weight:600}
 .aria-sources{font-size:10px;color:var(--t4);margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(30,58,106,.3)}
 
-/* ══ BUY Ψ MODAL ══ */
+/* ══ CULTIVATE Ψ MODAL ══ */
 .buy-psi-overlay{position:fixed;inset:0;background:rgba(4,8,18,.95);z-index:600;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(12px)}
 .buy-psi-overlay.open{display:flex}
 .buy-psi-modal{background:linear-gradient(135deg,#0d1e38 0%,#0a1628 100%);border:1px solid rgba(200,146,42,.4);border-radius:16px;width:100%;max-width:480px;overflow:hidden;position:relative}
@@ -991,42 +991,42 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
   </div>
 </div>
 
-<!-- ══ BUY Ψ MODAL ══ -->
+<!-- ══ CULTIVATE Ψ MODAL ══ -->
 <div class="buy-psi-overlay" id="buyPsiModal">
   <div class="buy-psi-modal">
     <div class="buy-psi-hdr">
       <div class="buy-psi-title">
-        <span style="font-size:22px">Ψ</span> Buy YOM Points
+        <span style="font-size:22px;color:#2e9e4f">Ψ</span> Cultivate Your YOM Field
       </div>
       <button style="background:none;border:none;color:var(--t4);font-size:22px;cursor:pointer;line-height:1" onclick="closeBuyModal()">×</button>
     </div>
     <div class="buy-psi-body">
       <div style="font-size:11px;color:var(--t4);margin-bottom:1rem;line-height:1.7">
-        YOM Ψ powers Ask ARIA, boosts your questions, and unlocks platform features.<br>
-        <span style="color:var(--gold)">Ψ10 signing bonus</span> credited on first sign-in · <span style="color:var(--t4)">Ask ARIA costs Ψ20 — earn more by answering.</span>
+        Ψ YOM powers Ask ARIA, boosts questions, seeds Clusters, and unlocks advanced features.<br>
+        <span style="color:#2e9e4f">Ψ10 seeds your Field on sign-up</span> · <span style="color:var(--t4)">Ask ARIA costs Ψ20 — cultivate more by contributing.</span>
       </div>
 
-      <!-- Packs -->
+      <!-- Packs — prices include 18% GST -->
       <div class="psi-pack-grid" id="psiPackGrid">
         <div class="psi-pack" data-psi="50" data-inr="49" onclick="selectPack(this)">
           <div class="psi-pack-psi"><span>Ψ</span>50</div>
-          <div class="psi-pack-inr">₹49</div>
-          <div class="psi-pack-per">₹0.98 / Ψ</div>
+          <div class="psi-pack-inr">₹58 <span style="font-size:9px;opacity:.55">incl. GST</span></div>
+          <div class="psi-pack-per">₹1.16 / Ψ</div>
         </div>
         <div class="psi-pack best-val" data-psi="200" data-inr="149" onclick="selectPack(this)">
           <div class="psi-pack-psi"><span>Ψ</span>200</div>
-          <div class="psi-pack-inr">₹149</div>
-          <div class="psi-pack-per">₹0.74 / Ψ</div>
+          <div class="psi-pack-inr">₹176 <span style="font-size:9px;opacity:.55">incl. GST</span></div>
+          <div class="psi-pack-per">₹0.88 / Ψ</div>
         </div>
         <div class="psi-pack" data-psi="500" data-inr="299" onclick="selectPack(this)">
           <div class="psi-pack-psi"><span>Ψ</span>500</div>
-          <div class="psi-pack-inr">₹299</div>
-          <div class="psi-pack-per">₹0.60 / Ψ</div>
+          <div class="psi-pack-inr">₹353 <span style="font-size:9px;opacity:.55">incl. GST</span></div>
+          <div class="psi-pack-per">₹0.71 / Ψ</div>
         </div>
         <div class="psi-pack" data-psi="1500" data-inr="799" onclick="selectPack(this)">
           <div class="psi-pack-psi"><span>Ψ</span>1500</div>
-          <div class="psi-pack-inr">₹799</div>
-          <div class="psi-pack-per">₹0.53 / Ψ</div>
+          <div class="psi-pack-inr">₹943 <span style="font-size:9px;opacity:.55">incl. GST</span></div>
+          <div class="psi-pack-per">₹0.63 / Ψ</div>
         </div>
       </div>
 
@@ -1058,7 +1058,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
       <button class="buy-psi-btn" id="buyPsiConfirmBtn" disabled onclick="initiatePurchase()">
         Proceed to Pay
       </button>
-      <div class="buy-secure">🔒 Secured by Razorpay · All transactions encrypted</div>
+      <div class="buy-secure">🔒 Secured by Razorpay · 18% GST included · All transactions encrypted</div>
     </div>
   </div>
 </div>
@@ -1435,7 +1435,7 @@ function buildNav(){
       <div><div class="user-info-name">${P.display_name||'Engageneer™'}</div><div class="user-info-tier">${tier} · ${pts}  Ψ</div></div>
     </div>
     <button class="nbtn nbtn-ghost" onclick="doSignout()">Sign Out</button>
-    <button class="nbtn" style="background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.4);color:var(--gold);font-size:9px;letter-spacing:1.5px;padding:6px 14px;border-radius:4px" onclick="openBuyModal()" title="Buy YOM Ψ Points">+ Buy Ψ</button>`;
+    <button class="nbtn" style="background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.4);color:var(--gold);font-size:9px;letter-spacing:1.5px;padding:6px 14px;border-radius:4px" onclick="openBuyModal()" title="Cultivate Your YOM Field">🌾 Cultivate Ψ</button>`;
 }
 
 // Badge colour + shape map
@@ -1651,7 +1651,7 @@ async function cmTab(tab){
         <span class="cluster-psi-val">Ψ${CLUSTER_CREATE_COST}</span>
         <span style="margin-left:auto">Your Field: <strong style="color:${can?'#2e9e4f':'var(--rdb)'}">Ψ${pts}</strong></span>
       </div>
-      ${!can?`<div style="font-size:12px;color:var(--rdb);margin-bottom:.8rem">Need more Ψ — <a onclick="openBuyModal();closeClusterModal()" style="color:var(--gold);cursor:pointer">buy Ψ</a> or cultivate more first.</div>`:''}
+      ${!can?`<div style="font-size:12px;color:var(--rdb);margin-bottom:.8rem">Need more Ψ — <a onclick="openBuyModal();closeClusterModal()" style="color:var(--gold);cursor:pointer">Cultivate Ψ</a> or sow more first.</div>`:''}
       <input class="cluster-input" id="cmCName" placeholder="Cluster name (3–60 chars)" maxlength="60"/>
       <textarea class="cluster-input" id="cmCDesc" placeholder="What will this Cluster cultivate? (optional)" rows="2" style="resize:vertical"></textarea>
       <input class="cluster-input" id="cmCTags" placeholder="Topics — comma separated (e.g. Physics, Maths)"/>
@@ -4046,11 +4046,12 @@ const FX = { INR:1, USD:0.012, GBP:0.0096, AED:0.044 };
 const FX_SYM = { INR:'₹', USD:'$', GBP:'£', AED:'AED' };
 
 // Ψ packs base prices in INR
+const GST_RATE = 0.18;
 const PSI_PACKS = [
-  {psi:50,   inr:49},
-  {psi:200,  inr:149},
-  {psi:500,  inr:299},
-  {psi:1500, inr:799},
+  {psi:50,   inr:49,  inrWithGst:58},
+  {psi:200,  inr:149, inrWithGst:176},
+  {psi:500,  inr:299, inrWithGst:353},
+  {psi:1500, inr:799, inrWithGst:943},
 ];
 
 // ── BUY Ψ STATE ────────────────────────────────────────────────
@@ -4297,6 +4298,123 @@ Language: ${lang}`;
   }
 }
 
+// ── PAYMENT RECEIPT ─────────────────────────────────────────────
+function showPaymentReceipt({orderId,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date}){
+  document.getElementById('payReceiptOverlay')?.remove();
+  const fmt  = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const fmtT = d => d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const ov = document.createElement('div');
+  ov.id = 'payReceiptOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:1000;background:rgba(4,8,18,.96);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:1rem';
+  ov.innerHTML=`
+    <div id="payReceiptBox" style="background:linear-gradient(135deg,#0d1e38,#0a1628);border:1px solid rgba(200,146,42,.35);border-radius:14px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+      <div style="background:linear-gradient(135deg,rgba(200,146,42,.14),rgba(200,146,42,.04));padding:1.1rem 1.4rem;border-bottom:1px solid rgba(200,146,42,.2);display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:#f0c040">🌾 Cultivation Receipt</div>
+          <div style="font-size:9px;letter-spacing:2px;color:rgba(200,146,42,.55);text-transform:uppercase;margin-top:2px">Engageneering™ · YOM Field</div>
+        </div>
+        <div style="font-size:30px;color:#2e9e4f;font-weight:700;line-height:1">Ψ</div>
+      </div>
+      <div style="padding:1.3rem 1.4rem" id="receiptPrintArea">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.1rem">
+          <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Order ID</div><div style="font-size:11px;color:#e8f0fc;font-family:monospace">${orderId}</div></div>
+          <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Payment ID</div><div style="font-size:11px;color:#e8f0fc;font-family:monospace">${paymentId}</div></div>
+          <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Date</div><div style="font-size:11px;color:#e8f0fc">${fmt(date)} · ${fmtT(date)}</div></div>
+          <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Status</div><div style="font-size:11px;color:#2e9e4f;font-weight:600">✓ Paid &amp; Cultivated</div></div>
+        </div>
+        <div style="background:rgba(30,58,106,.2);border-radius:8px;padding:.7rem .9rem;margin-bottom:1rem">
+          <div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:3px">Billed To</div>
+          <div style="font-size:13px;color:#e8f0fc;font-weight:500">${esc(name)}</div>
+          <div style="font-size:11px;color:#7a9ab8">${esc(email)}</div>
+        </div>
+        <div style="border:1px solid rgba(30,58,106,.5);border-radius:8px;overflow:hidden;margin-bottom:1rem">
+          <div style="display:grid;grid-template-columns:1fr auto;padding:.55rem .9rem;background:rgba(30,58,106,.35);font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase"><span>Description</span><span>Amount (₹)</span></div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:.7rem .9rem;border-top:1px solid rgba(30,58,106,.3)">
+            <div><div style="font-size:13px;color:#e8f0fc">Ψ${psi} YOM Field Points</div><div style="font-size:10px;color:#7a9ab8;margin-top:2px">Platform contribution metric</div></div>
+            <div style="font-size:13px;color:#e8f0fc;text-align:right;align-self:center">₹${baseAmt}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:.5rem .9rem;border-top:1px solid rgba(30,58,106,.3);background:rgba(30,58,106,.12)">
+            <div style="font-size:11px;color:#7a9ab8">GST @ 18% (SAC: 998431)</div>
+            <div style="font-size:11px;color:#7a9ab8;text-align:right">₹${gstAmt}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:.7rem .9rem;border-top:1px solid rgba(200,146,42,.25);background:rgba(200,146,42,.07)">
+            <div style="font-size:14px;font-weight:700;color:#f0c040;font-family:'Cormorant Garamond',serif">Total Paid</div>
+            <div style="font-size:16px;font-weight:700;color:#f0c040;font-family:'Cormorant Garamond',serif">₹${totalAmt}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.8rem;background:rgba(46,158,79,.07);border:1px solid rgba(46,158,79,.25);border-radius:8px;padding:.8rem .9rem;margin-bottom:1rem">
+          <span style="font-size:28px;color:#2e9e4f;font-weight:700;line-height:1">Ψ</span>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#5dcaa5">Ψ${psi} cultivated in your YOM Field</div>
+            <div style="font-size:10px;color:#2e9e4f;margin-top:2px">Your intellectual capital has grown 🌾</div>
+          </div>
+        </div>
+        <div style="font-size:9px;color:rgba(120,154,184,.45);line-height:1.65;text-align:center">
+          Engageneering™ · YOM Private Limited · engageneering.org<br>
+          Ψ YOM points are a platform contribution metric, not a financial instrument.<br>
+          GST included at 18% · SAC 998431 · Transactions are final and non-refundable.
+        </div>
+      </div>
+      <div style="padding:.75rem 1.4rem 1.1rem;display:flex;gap:.6rem;justify-content:center;border-top:1px solid rgba(30,58,106,.3)">
+        <button onclick="downloadReceipt()" style="background:rgba(200,146,42,.12);border:1px solid rgba(200,146,42,.4);color:#f0c040;padding:8px 20px;border-radius:6px;font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:5px"
+          onmouseover="this.style.background='rgba(200,146,42,.22)'" onmouseout="this.style.background='rgba(200,146,42,.12)'">📄 Download Receipt</button>
+        <button onclick="document.getElementById('payReceiptOverlay').remove()" style="background:rgba(46,158,79,.1);border:1px solid rgba(46,158,79,.3);color:#5dcaa5;padding:8px 20px;border-radius:6px;font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:1px;cursor:pointer"
+          onmouseover="this.style.background='rgba(46,158,79,.2)'" onmouseout="this.style.background='rgba(46,158,79,.1)'">✓ Continue</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+function downloadReceipt(){
+  const area = document.getElementById('receiptPrintArea');
+  if(!area){ showToast('Receipt not found','error'); return; }
+  const w = window.open('','_blank','width=640,height=820');
+  if(!w){ showToast('Allow pop-ups to download the receipt','error'); return; }
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+<title>Engageneering — Cultivation Receipt</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:#fff;color:#111;padding:2.5rem;max-width:580px;margin:0 auto}
+.p-header{text-align:center;border-bottom:2px solid #c8922a;padding-bottom:1rem;margin-bottom:1.5rem}
+.p-brand{font-size:22px;font-weight:700;color:#a07820;letter-spacing:3px;font-family:'Cormorant Garamond',Georgia,serif}
+.p-sub{font-size:9px;letter-spacing:2px;color:#888;text-transform:uppercase;margin-top:3px}
+.p-title{font-size:18px;font-weight:700;color:#111;margin-top:.4rem;font-family:'Cormorant Garamond',Georgia,serif}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.2rem}
+.lbl{font-size:9px;letter-spacing:1.5px;color:#888;text-transform:uppercase;margin-bottom:2px}
+.val{font-size:12px;color:#111}.val.mono{font-family:monospace;font-size:11px}
+.bill-to{background:#f8f5ee;border-radius:6px;padding:.7rem .9rem;margin-bottom:1.1rem}
+table{width:100%;border-collapse:collapse;margin-bottom:1rem;font-size:13px}
+thead tr{background:#f5f0e4}
+th{padding:7px 10px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#9a7820;font-weight:600}
+td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}
+.total-row{background:#fdf5e0}
+.total-row td{font-size:15px;font-weight:700;color:#a07820;border:none}
+.psi-box{background:#f0faf4;border:1.5px solid #2e9e4f;border-radius:6px;padding:.9rem;text-align:center;margin-bottom:1rem}
+.psi-sym{font-size:30px;color:#2e9e4f;font-weight:700;font-family:'Cormorant Garamond',Georgia,serif}
+.psi-label{font-size:14px;color:#1a6a35;margin-top:4px;font-weight:600}
+.legal{font-size:8.5px;color:#aaa;line-height:1.65;text-align:center;border-top:1px solid #eee;padding-top:1rem;margin-top:.5rem}
+.status{color:#1a7a3a;font-weight:600}
+@media print{body{padding:1rem}button{display:none}}
+</style>
+</head>
+<body>
+<div class="p-header">
+  <div class="p-brand">ENGAGENEERING™</div>
+  <div class="p-sub">YOM Private Limited · engageneering.org</div>
+  <div class="p-title">🌾 Cultivation Receipt</div>
+</div>
+<div class="grid2">
+  <div><div class="lbl">Order ID</div><div class="val mono">${document.querySelector('#receiptPrintArea .val\.mono, #receiptPrintArea [style*=monospace]')?.textContent||''}</div></div>
+  <div><div class="lbl">Status</div><div class="val status">✓ Paid &amp; Cultivated</div></div>
+</div>
+${area.innerHTML}
+</body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(), 600);
+}
+
 // ── BUY Ψ MODAL ────────────────────────────────────────────────
 function openBuyModal(){
   document.getElementById('buyPsiModal').classList.add('open');
@@ -4354,12 +4472,19 @@ function updateBuySummary(){
   const rate=FX[selectedCurrency]||1;
   const sym=FX_SYM[selectedCurrency]||'₹';
   const convertedPrice=(selectedPack.inr*rate).toFixed(selectedCurrency==='INR'?0:2);
+  const gstBase = selectedPack.inrWithGst || Math.round(selectedPack.inr * 1.18);
+  const gstDisplayPrice = selectedCurrency==='INR'
+    ? gstBase
+    : (gstBase*(FX[selectedCurrency]||1)).toFixed(2);
   document.getElementById('buyPsiSummary').textContent=`Ψ${selectedPack.psi}`;
-  document.getElementById('buyInrSummary').textContent=`${sym}${convertedPrice}`;
+  const gstLine = selectedCurrency==='INR'
+    ? `₹${selectedPack.inr} + ₹${gstBase-selectedPack.inr} GST = ₹${gstBase}`
+    : `${sym}${gstDisplayPrice} (incl. 18% GST)`;
+  document.getElementById('buyInrSummary').textContent=gstLine;
   const btn=document.getElementById('buyPsiConfirmBtn');
   if(btn){
     btn.disabled=false;
-    btn.textContent=`Pay ${sym}${convertedPrice} → Get Ψ${selectedPack.psi}`;
+    btn.textContent=`🌱 Seed — Pay ${selectedCurrency==='INR'?'₹'+gstBase:sym+gstDisplayPrice} → Cultivate Ψ${selectedPack.psi}`;
   }
 }
 
@@ -4370,60 +4495,74 @@ async function initiatePurchase(){
 
   const rate=FX[selectedCurrency]||1;
   const sym=FX_SYM[selectedCurrency]||'₹';
-  const displayPrice=(selectedPack.inr*rate).toFixed(selectedCurrency==='INR'?0:2);
+  const gstBase = selectedPack.inrWithGst || Math.round(selectedPack.inr * 1.18);
+  const displayPrice = selectedCurrency==='INR'
+    ? gstBase
+    : (gstBase*rate).toFixed(2);
 
   if(selectedCurrency==='INR'){
-    // ── Razorpay (INR) ──────────────────────────────────────────
+    // ── Razorpay (INR) — LIVE ────────────────────────────────────
     if(typeof Razorpay==='undefined'){
       const s=document.createElement('script');
       s.src='https://checkout.razorpay.com/v1/checkout.js';
-      s.onload=()=>launchRazorpay(displayPrice,btn);
+      s.onload=()=>launchRazorpay(gstBase,btn);
       document.head.appendChild(s);
     } else {
-      launchRazorpay(displayPrice,btn);
+      launchRazorpay(gstBase,btn);
     }
   } else {
-    // ── Stripe (International) ──────────────────────────────────
-    // In production: call your backend to create a Stripe session
-    // For now show a clear placeholder
-    showToast(`International payments (${selectedCurrency}) — connect Stripe in backend config`,'default');
-    if(btn){btn.disabled=false;btn.textContent=`Pay ${sym}${displayPrice} → Get Ψ${selectedPack.psi}`;}
+    // ── International — Stripe coming soon ───────────────────────
+    showToast(`International payments (${selectedCurrency}) — Stripe integration coming soon`,'default');
+    if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ${sym}${displayPrice} → Cultivate Ψ${selectedPack.psi}`;}
   }
 }
 
-function launchRazorpay(displayPrice,btn){
+function launchRazorpay(amountWithGst,btn){
   const rzpKey=window.ENG_CONFIG?.RAZORPAY_KEY||'';
   if(!rzpKey){
     showToast('Razorpay key missing — add RAZORPAY_KEY to config.js','error');
-    if(btn){btn.disabled=false;btn.textContent=`Pay ₹${displayPrice} → Get Ψ${selectedPack?.psi||0}`;}
+    if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${amountWithGst} → Cultivate Ψ${selectedPack?.psi||0}`;}
     return;
   }
+  const pack = {...selectedPack};
+  const baseAmt  = pack.inr;
+  const gstAmt   = amountWithGst - baseAmt;
+  const totalAmt = amountWithGst;
+  const orderId  = 'ENG-' + Date.now().toString(36).toUpperCase();
+
   const options={
     key: rzpKey,
-    amount:Math.round(selectedPack.inr*100), // paise
-    currency:'INR',
-    name:'Engageneering™',
-    description:`YOM Field · Ψ${selectedPack.psi} Points`,
-    image:'ARIA-Avatar-Favicon.png',
-    handler:async function(response){
-      // Payment successful — credit Ψ
-      await creditPsiAfterPayment(selectedPack.psi,'razorpay',response.razorpay_payment_id);
+    amount: Math.round(totalAmt * 100), // paise — GST-inclusive
+    currency: 'INR',
+    name: 'Engageneering™',
+    description: `YOM Field · Ψ${pack.psi} Points`,
+    image: 'ENG-Favicon.png',
+    receipt: orderId,
+    notes:{ user_id:U?.id||'', email:U?.email||'', psi_pack:pack.psi },
+    handler: async function(response){
+      await creditPsiAfterPayment(pack.psi,'razorpay',response.razorpay_payment_id);
+      showPaymentReceipt({
+        orderId,
+        paymentId: response.razorpay_payment_id,
+        psi: pack.psi,
+        baseAmt, gstAmt, totalAmt,
+        name:  P?.display_name || U?.email || 'Engageneer™',
+        email: U?.email || '',
+        date:  new Date(),
+      });
     },
-    prefill:{
-      name:P?.display_name||'',
-      email:U?.email||''
-    },
-    theme:{color:'#c8922a'},
-    modal:{ondismiss:()=>{
-      if(btn){btn.disabled=false;btn.textContent=`Pay ₹${displayPrice} → Get Ψ${selectedPack.psi}`;}
-    }}
+    prefill:{ name:P?.display_name||'', email:U?.email||'' },
+    theme:{ color:'#c8922a' },
+    modal:{ ondismiss:()=>{
+      if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
+    }},
   };
   try{
     const rzp=new Razorpay(options);
     rzp.open();
   }catch(e){
-    showToast('Razorpay error — configure your API key in config.js','error');
-    if(btn){btn.disabled=false;btn.textContent=`Pay ₹${displayPrice} → Get Ψ${selectedPack.psi}`;}
+    showToast('Razorpay error — check your API key in config.js','error');
+    if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
   }
 }
 
