@@ -1,9 +1,22 @@
-[build]
-  command = "bash generate-config.sh"
-  publish = "."
+# netlify.toml — Engageneering™ / YOM Private Limited
+# Place in repo root and commit to Git
 
+[build]
+  publish   = "."
+  functions = "netlify/functions"
+  # No build command needed — secrets live in functions only
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+    Permissions-Policy     = "camera=(), microphone=(), geolocation=()"
+
+# Block config.js from being indexed or cached if it ever exists
 [[headers]]
   for = "/config.js"
   [headers.values]
-    Cache-Control = "no-store, no-cache, must-revalidate"
-    X-Content-Type-Options = "nosniff"
+    X-Robots-Tag  = "noindex"
+    Cache-Control = "no-store"
