@@ -8,7 +8,19 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js" onerror="window.ENG_CONFIG=window.ENG_CONFIG||{}"></script>
+<script>
+/* ── Engageneering™ / YOM Private Limited ──────────────────────
+   Supabase URL + anon key: safe to be public per Supabase docs.
+   RLS policies protect all data. The anon key alone grants zero
+   privileged access — your row-level security rules govern access.
+   Razorpay secret: server-side only via Netlify Functions.
+   https://supabase.com/docs/guides/api/api-keys
+   ─────────────────────────────────────────────────────────── */
+window.ENG_CONFIG = {
+  SUPA_URL:  'https://tbqnkcjftxfbxujxsqkj.supabase.co',
+  SUPA_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRicW5rY2pmdHhmYnh1anhzcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDE2OTgsImV4cCI6MjA5MTgxNzY5OH0.Y7R7MKo9mu5T4CMUAjAK1vMxnW_VqJKrieIi4MnCSeY',
+};
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;font-family:'EB Garamond',Georgia,serif;background:#060c1a;color:#b8cce8;overflow-x:hidden}

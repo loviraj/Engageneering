@@ -9,7 +9,18 @@
 <link rel="apple-touch-icon" sizes="512x512" href="ENG-Favicon.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js" onerror="console.info('config.js not required for Netlify deploys')"></script>
+<script>
+/* ── Engageneering™ / YOM Private Limited ──────────────────
+   Supabase anon key is safe to be public.
+   RLS policies protect all data. See supabase.com/docs/guides/api/api-keys
+   Razorpay secret is server-side only (Netlify Functions).
+   ────────────────────────────────────────────────────────── */
+window.ENG_CONFIG = {
+  SUPA_URL:  'https://tbqnkcjftxfbxujxsqkj.supabase.co',
+  SUPA_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRicW5rY2pmdHhmYnh1anhzcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDE2OTgsImV4cCI6MjA5MTgxNzY5OH0.Y7R7MKo9mu5T4CMUAjAK1vMxnW_VqJKrieIi4MnCSeY',
+};
+</script>
+<script src="config.js" onerror="console.info('config.js not found')"></script>
 <style>
 :root{
   --bg:#07101e;--bg2:#0a1628;--bg3:#0f1e36;--bg4:#081420;
@@ -4369,7 +4380,7 @@ function downloadReceipt(){
   const refEl=document.querySelector('#receiptPrintArea [style*="monospace"]');
   if(refEl){
     const ref=refEl.textContent?.trim();
-    if(ref&&ref.startsWith('YOM/')){
+    if(ref&&ref.startsWith('ENG/')){
       supa.from('payments').update({receipt_downloaded:true})
         .eq('yom_ref_no',ref).eq('user_id',U?.id||'')
         .catch(e=>console.warn('mark receipt error:',e.message));
@@ -4503,17 +4514,14 @@ async function initiatePurchase(){
   if(btn){btn.disabled=true;btn.textContent='Creating order…';}
   const rate=FX[selectedCurrency]||1;
   const sym=FX_SYM[selectedCurrency]||'₹';
-
   if(selectedCurrency==='INR'){
     try{
-      // Key secret stays on server — call Netlify Function to create order
-      const res = await fetch('/.netlify/functions/create-order',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({psi:selectedPack.psi, user_id:U.id}),
+      const res=await fetch('/.netlify/functions/create-order',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({psi:selectedPack.psi,user_id:U.id}),
       });
       if(!res.ok) throw new Error(`Order failed (${res.status})`);
-      const order = await res.json();
+      const order=await res.json();
       if(order.error) throw new Error(order.error);
       if(typeof Razorpay==='undefined'){
         const s=document.createElement('script');
@@ -4532,66 +4540,43 @@ async function initiatePurchase(){
   }
 }
 
-function launchRazorpay(order, btn){
-  // order.key_id = PUBLIC key (safe in browser)
-  // order.order_id = server-created order (safe in browser)
-  // Key Secret never leaves the server
-  const pack    = {...selectedPack};
-  const baseAmt = order.base_inr;
-  const gstAmt  = order.gst_inr;
-  const totalAmt= order.total_inr;
-
+function launchRazorpay(order,btn){
+  const pack={...selectedPack};
+  const baseAmt=order.base_inr;
+  const gstAmt=order.gst_inr;
+  const totalAmt=order.total_inr;
   const options={
-    key:         order.key_id,
-    amount:      order.amount,
-    currency:    'INR',
-    order_id:    order.order_id,
-    name:        'Engageneering™',
-    description: `YOM Field · Ψ${pack.psi} Points`,
-    image:       'ENG-Favicon.png',
-    prefill:     {name:P?.display_name||'',email:U?.email||''},
-    theme:       {color:'#c8922a'},
-    handler: async function(response){
+    key:order.key_id,amount:order.amount,currency:'INR',order_id:order.order_id,
+    name:'Engageneering™',description:`YOM Field · Ψ${pack.psi} Points`,
+    image:'ENG-Favicon.png',
+    prefill:{name:P?.display_name||'',email:U?.email||''},
+    theme:{color:'#c8922a'},
+    handler:async function(response){
       if(btn){btn.disabled=true;btn.textContent='Verifying payment…';}
       try{
-        // Verify signature server-side before crediting Ψ
-        const vRes = await fetch('/.netlify/functions/verify-payment',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            razorpay_order_id:   response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature:  response.razorpay_signature,
+        const vRes=await fetch('/.netlify/functions/verify-payment',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            razorpay_order_id:response.razorpay_order_id,
+            razorpay_payment_id:response.razorpay_payment_id,
+            razorpay_signature:response.razorpay_signature,
           }),
         });
-        const vData = await vRes.json();
+        const vData=await vRes.json();
         if(!vData.valid) throw new Error('Signature verification failed');
-
-        let engRefNo = order.order_id;
+        let engRefNo=order.order_id;
         const meta={baseAmt,gstAmt,totalAmt,currency:'INR',_setRef:(r)=>{if(r)engRefNo=r;}};
         await creditPsiAfterPayment(pack.psi,'razorpay',response.razorpay_payment_id,meta);
-        showPaymentReceipt({
-          engRefNo,
-          paymentId:response.razorpay_payment_id,
-          psi:pack.psi,baseAmt,gstAmt,totalAmt,
-          name:P?.display_name||U?.email||'Engageneer™',
-          email:U?.email||'',date:new Date(),
-        });
+        showPaymentReceipt({engRefNo,paymentId:response.razorpay_payment_id,psi:pack.psi,baseAmt,gstAmt,totalAmt,name:P?.display_name||U?.email||'Engageneer™',email:U?.email||'',date:new Date()});
       }catch(vErr){
         showToast('Payment verification failed — contact support@engageneering.org','error');
         if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
       }
     },
-    modal:{ondismiss:()=>{
-      if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
-    }},
+    modal:{ondismiss:()=>{if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}}},
   };
-  try{
-    const rzp=new Razorpay(options); rzp.open();
-  }catch(e){
-    showToast('Razorpay error: '+e.message,'error');
-    if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
-  }
+  try{const rzp=new Razorpay(options);rzp.open();}
+  catch(e){showToast('Razorpay error: '+e.message,'error');if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}}
 }
 
 async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
