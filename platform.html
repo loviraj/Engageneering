@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" sizes="512x512" href="ENG-Favicon.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
+<script src="config.js" onerror="console.info('config.js not required for Netlify deploys')"></script>
 <style>
 :root{
   --bg:#07101e;--bg2:#0a1628;--bg3:#0f1e36;--bg4:#081420;
@@ -4350,9 +4350,9 @@ function showPaymentReceipt({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name
           </div>
         </div>
         <div style="font-size:9px;color:rgba(120,154,184,.45);line-height:1.65;text-align:center">
-          YOM Private Limited · Engageneering™ Platform · engageneering.org<br>
+          Engageneering™ · YOM Private Limited · engageneering.org<br>
           Ψ YOM points are a platform contribution metric, not a financial instrument.<br>
-          GST @ 18% · SAC 998431 · Invoice format: YOM/YYYY/NNNNN · Non-refundable.
+          GST included at 18% · SAC 998431 · Transactions are final and non-refundable.
         </div>
       </div>
       <div style="padding:.75rem 1.4rem 1.1rem;display:flex;gap:.6rem;justify-content:center;border-top:1px solid rgba(30,58,106,.3)">
@@ -4500,82 +4500,96 @@ function updateBuySummary(){
 async function initiatePurchase(){
   if(!selectedPack||!U) return;
   const btn=document.getElementById('buyPsiConfirmBtn');
-  if(btn){btn.disabled=true;btn.textContent='Opening payment…';}
-
+  if(btn){btn.disabled=true;btn.textContent='Creating order…';}
   const rate=FX[selectedCurrency]||1;
   const sym=FX_SYM[selectedCurrency]||'₹';
-  const gstBase = selectedPack.inrWithGst || Math.round(selectedPack.inr * 1.18);
-  const displayPrice = selectedCurrency==='INR'
-    ? gstBase
-    : (gstBase*rate).toFixed(2);
 
   if(selectedCurrency==='INR'){
-    // ── Razorpay (INR) — LIVE ────────────────────────────────────
-    if(typeof Razorpay==='undefined'){
-      const s=document.createElement('script');
-      s.src='https://checkout.razorpay.com/v1/checkout.js';
-      s.onload=()=>launchRazorpay(gstBase,btn);
-      document.head.appendChild(s);
-    } else {
-      launchRazorpay(gstBase,btn);
+    try{
+      // Key secret stays on server — call Netlify Function to create order
+      const res = await fetch('/.netlify/functions/create-order',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({psi:selectedPack.psi, user_id:U.id}),
+      });
+      if(!res.ok) throw new Error(`Order failed (${res.status})`);
+      const order = await res.json();
+      if(order.error) throw new Error(order.error);
+      if(typeof Razorpay==='undefined'){
+        const s=document.createElement('script');
+        s.src='https://checkout.razorpay.com/v1/checkout.js';
+        s.onload=()=>launchRazorpay(order,btn);
+        document.head.appendChild(s);
+      } else { launchRazorpay(order,btn); }
+    }catch(err){
+      showToast('Payment initiation failed: '+err.message,'error');
+      if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${selectedPack.inrWithGst} → Cultivate Ψ${selectedPack.psi}`;}
     }
   } else {
-    // ── International — Stripe coming soon ───────────────────────
-    showToast(`International payments (${selectedCurrency}) — Stripe integration coming soon`,'default');
-    if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ${sym}${displayPrice} → Cultivate Ψ${selectedPack.psi}`;}
+    const gstBase=selectedPack.inrWithGst||Math.round(selectedPack.inr*1.18);
+    showToast(`International payments (${selectedCurrency}) — Stripe coming soon`,'default');
+    if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ${sym}${(gstBase*rate).toFixed(2)} → Cultivate Ψ${selectedPack.psi}`;}
   }
 }
 
-function launchRazorpay(amountWithGst,btn){
-  const rzpKey=window.ENG_CONFIG?.RAZORPAY_KEY||'';
-  if(!rzpKey){
-    showToast('Razorpay key missing — add RAZORPAY_KEY to config.js','error');
-    if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${amountWithGst} → Cultivate Ψ${selectedPack?.psi||0}`;}
-    return;
-  }
-  const pack = {...selectedPack};
-  const baseAmt  = pack.inr;
-  const gstAmt   = amountWithGst - baseAmt;
-  const totalAmt = amountWithGst;
-  const orderId  = 'YOM-' + Date.now().toString(36).toUpperCase();
+function launchRazorpay(order, btn){
+  // order.key_id = PUBLIC key (safe in browser)
+  // order.order_id = server-created order (safe in browser)
+  // Key Secret never leaves the server
+  const pack    = {...selectedPack};
+  const baseAmt = order.base_inr;
+  const gstAmt  = order.gst_inr;
+  const totalAmt= order.total_inr;
 
   const options={
-    key: rzpKey,
-    amount: Math.round(totalAmt * 100), // paise — GST-inclusive
-    currency: 'INR',
-    name: 'Engageneering™',
+    key:         order.key_id,
+    amount:      order.amount,
+    currency:    'INR',
+    order_id:    order.order_id,
+    name:        'Engageneering™',
     description: `YOM Field · Ψ${pack.psi} Points`,
-    image: 'ENG-Favicon.png',
-    receipt: orderId,
-    notes:{ user_id:U?.id||'', email:U?.email||'', psi_pack:pack.psi },
+    image:       'ENG-Favicon.png',
+    prefill:     {name:P?.display_name||'',email:U?.email||''},
+    theme:       {color:'#c8922a'},
     handler: async function(response){
-      let engRefNo = orderId;
-      const meta = {
-        baseAmt, gstAmt, totalAmt, currency:'INR',
-        _setRef:(ref)=>{ if(ref) engRefNo=ref; },
-      };
-      await creditPsiAfterPayment(pack.psi,'razorpay',response.razorpay_payment_id,meta);
-      showPaymentReceipt({
-        engRefNo,
-        paymentId: response.razorpay_payment_id,
-        psi: pack.psi,
-        baseAmt, gstAmt, totalAmt,
-        name:  P?.display_name || U?.email || 'Engageneer™',
-        email: U?.email || '',
-        date:  new Date(),
-      });
+      if(btn){btn.disabled=true;btn.textContent='Verifying payment…';}
+      try{
+        // Verify signature server-side before crediting Ψ
+        const vRes = await fetch('/.netlify/functions/verify-payment',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature:  response.razorpay_signature,
+          }),
+        });
+        const vData = await vRes.json();
+        if(!vData.valid) throw new Error('Signature verification failed');
+
+        let engRefNo = order.order_id;
+        const meta={baseAmt,gstAmt,totalAmt,currency:'INR',_setRef:(r)=>{if(r)engRefNo=r;}};
+        await creditPsiAfterPayment(pack.psi,'razorpay',response.razorpay_payment_id,meta);
+        showPaymentReceipt({
+          engRefNo,
+          paymentId:response.razorpay_payment_id,
+          psi:pack.psi,baseAmt,gstAmt,totalAmt,
+          name:P?.display_name||U?.email||'Engageneer™',
+          email:U?.email||'',date:new Date(),
+        });
+      }catch(vErr){
+        showToast('Payment verification failed — contact support@engageneering.org','error');
+        if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
+      }
     },
-    prefill:{ name:P?.display_name||'', email:U?.email||'' },
-    theme:{ color:'#c8922a' },
-    modal:{ ondismiss:()=>{
+    modal:{ondismiss:()=>{
       if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
     }},
   };
   try{
-    const rzp=new Razorpay(options);
-    rzp.open();
+    const rzp=new Razorpay(options); rzp.open();
   }catch(e){
-    showToast('Razorpay error — check your API key in config.js','error');
+    showToast('Razorpay error: '+e.message,'error');
     if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
   }
 }
@@ -4596,7 +4610,7 @@ async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
     if(paymentMeta){
       const pm = paymentMeta;
       const payRow = {
-        yom_ref_no:         engRef || ('YOM-FB-' + Date.now()),
+        yom_ref_no:         engRef || ('ENG-FB-' + Date.now()),
         user_id:            U.id,
         display_name:       P?.display_name || U?.email || '',
         email:              U?.email || '',
