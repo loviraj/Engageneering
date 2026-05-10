@@ -1067,7 +1067,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
       </div>
 
       <button class="buy-psi-btn" id="buyPsiConfirmBtn" disabled onclick="initiatePurchase()">
-        Proceed to Pay
+        &#x1F331; Seed My Field
       </button>
       <div class="buy-secure">🔒 Secured by Razorpay · 18% GST included · All transactions encrypted</div>
     </div>
@@ -4311,6 +4311,7 @@ Language: ${lang}`;
 
 // ── PAYMENT RECEIPT ─────────────────────────────────────────────
 function showPaymentReceipt({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date}){
+  _lastEngRef=engRefNo; // store for download tracking
   document.getElementById('payReceiptOverlay')?.remove();
   const fmt  = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
   const fmtT = d => d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});

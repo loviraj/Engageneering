@@ -376,6 +376,9 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   .nav-tag{display:none}
 }
 
+
+#scrollTopBtn{position:fixed;bottom:2rem;right:2rem;z-index:300;width:44px;height:44px;border-radius:50%;background:rgba(6,12,26,.88);border:1px solid rgba(200,146,42,.4);color:#f0c040;font-size:18px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(0,0,0,.4);transition:all .25s}
+#scrollTopBtn:hover{background:rgba(200,146,42,.15);border-color:var(--gold);transform:translateY(-3px)}
 </style>
 </head>
 <body>
@@ -397,25 +400,58 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
 
 <!-- NAV -->
 <nav id="mainNav">
-  <a class="nav-left" href="#" style="text-decoration:none;display:flex;align-items:center;gap:11px">
-    <svg width="30" height="34" viewBox="0 0 52 60"><polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.2"/><polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/><polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/><polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/><polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/><polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/><polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/><circle cx="26" cy="30" r="5.5" fill="#f5d060"/><circle cx="26" cy="30" r="3" fill="#0b1624"/><circle cx="26" cy="30" r="1.4" fill="#f5d060"/></svg>
-    <div><div class="nav-brand">ENGAGENEERING™</div><div class="nav-tag">Engineer the Engagement</div></div>
+
+  <a class="nav-left" href="#" onclick="scrollTo({top:0,behavior:'smooth'});return false">
+    <svg class="nav-hex-logo" width="32" height="36" viewBox="0 0 52 60">
+      <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2.2"/>
+      <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".97"/>
+      <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".95"/>
+      <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".95"/>
+      <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".97"/>
+      <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".95"/>
+      <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".95"/>
+      <circle cx="26" cy="30" r="5.5" fill="#f5d060"/>
+      <circle cx="26" cy="30" r="3" fill="#0b1624"/>
+      <circle cx="26" cy="30" r="1.4" fill="#f5d060"/>
+    </svg>
+    <div>
+      <div class="nav-brand">ENGAGENEERING&#x2122;</div>
+      <div class="nav-tag">Engineer the Engagement</div>
+    </div>
   </a>
+
   <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#aria">ARIA</a></li>
-    <li><a href="#yom">Ψ The YOM Ecosystem</a></li>
-    <li><a href="#clusters">🌿 Clusters</a></li>
-    <li><a href="#pillars">Framework</a></li>
-    <li><a href="#crowd">Crowd Learning</a></li>
-    <li><a href="#documents">Documents</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#about"     data-section="about"    ><span class="nav-icon">&#x2B21;</span>About</a></li>
+    <li><a href="#aria"      data-section="aria"     ><span class="nav-icon">&#x2B21;</span>ARIA</a></li>
+    <li><a href="#yom"       data-section="yom"      ><span class="nav-icon" style="color:#2e9e4f;font-weight:700">&#x03A8;</span>YOM</a></li>
+    <li><a href="#clusters"  data-section="clusters" ><span class="nav-icon">&#x1F33F;</span>Clusters</a></li>
+    <div class="nav-divider"></div>
+    <li><a href="#pillars"   data-section="pillars"  ><span class="nav-icon">&#x25C8;</span>Framework</a></li>
+    <li><a href="#crowd"     data-section="crowd"    ><span class="nav-icon">&#x25B6;</span>Learning</a></li>
+    <li><a href="#documents" data-section="documents"><span class="nav-icon">&#x1F4C4;</span>Docs</a></li>
+    <div class="nav-divider"></div>
+    <li><a href="#contact"   data-section="contact"  ><span class="nav-icon">&#x2709;</span>Contact</a></li>
   </ul>
+
   <div class="nav-right">
-    <button class="btn-nav-login" onclick="window.location.href='auth.html'">Log In</button>
-    <button class="btn-nav-join" onclick="window.location.href='auth.html'">Join the Movement</button>
+    <div class="nav-psi-badge" title="Knowledge Commons Live">
+      <div class="nav-psi-dot"></div>
+      <span>&#x03A8; Live</span>
+    </div>
+    <button class="btn-nav-login" onclick="window.location.href='auth.html'">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Log In
+    </button>
+    <button class="btn-nav-join" onclick="window.location.href='auth.html'">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Join
+    </button>
   </div>
-  <div class="hamburger" id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+
 </nav>
 
 <div id="mobileMenu" style="display:none">
@@ -494,6 +530,14 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   </div>
 </div>
 
+
+<div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;margin-top:1.4rem">
+  <button class="aria-trigger-btn" onclick="openAriaDemo()">
+    <div class="pulse-dot"></div>
+    &#x2B21; Experience ARIA &#x2014; Free, No Sign-in
+  </button>
+  <div style="font-size:9.5px;color:rgba(120,154,184,.5);letter-spacing:1px">Record 60 seconds &middot; ARIA scores instantly &middot; See yourself differently</div>
+</div>
 <!-- ══ ABOUT ══ -->
 <section class="s-dark" id="about">
   <div class="s-inner">
@@ -1381,6 +1425,16 @@ window.ENG_CONFIG = {
 <script>
 /* ── NAV ── */
 const mainNav=document.getElementById('mainNav');
+
+function _updateActiveNav(){
+  const secs=['about','aria','yom','clusters','pillars','crowd','documents','contact'];
+  let cur='';
+  secs.forEach(id=>{const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<=110)cur=id;});
+  document.querySelectorAll('.nav-links a[data-section]').forEach(a=>{
+    a.classList.toggle('active',a.getAttribute('data-section')===cur&&cur!=='');
+  });
+}
+
 window.addEventListener('scroll',()=>{
   mainNav.classList.toggle('sc',window.scrollY>60);
   document.getElementById('docNav').classList.toggle('show',window.scrollY>window.innerHeight*.55);
@@ -2057,5 +2111,7 @@ function _ariaShowResults(){
 }
 
 </script>
+
+<button id="scrollTopBtn" onclick="scrollTo({top:0,behavior:'smooth'})" title="Back to top" aria-label="Scroll to top">&#x2191;</button>
 </body>
 </html>
