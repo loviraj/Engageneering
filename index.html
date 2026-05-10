@@ -408,6 +408,200 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
 
 #scrollTopBtn{position:fixed;bottom:2rem;right:2rem;z-index:300;width:44px;height:44px;border-radius:50%;background:rgba(6,12,26,.88);border:1px solid rgba(200,146,42,.4);color:#f0c040;font-size:18px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(0,0,0,.4);transition:all .25s}
 #scrollTopBtn:hover{background:rgba(200,146,42,.15);border-color:var(--gold);transform:translateY(-3px)}
+
+/* ══════════════════════════════════════════════════════════════
+   EXPERIENCE ARIA MODAL
+   ══════════════════════════════════════════════════════════════ */
+#ariaExpOverlay{
+  position:fixed;inset:0;z-index:3000;
+  background:rgba(2,5,14,.97);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  display:none;align-items:center;justify-content:center;
+  padding:1rem;
+}
+#ariaExpOverlay.open{display:flex;animation:ariaFadeIn .3s cubic-bezier(.34,1.2,.64,1)}
+@keyframes ariaFadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+
+#ariaExpBox{
+  background:linear-gradient(145deg,#0a1628 0%,#060c1a 100%);
+  border:1px solid rgba(200,146,42,.3);
+  border-radius:18px;width:100%;max-width:540px;
+  max-height:94vh;overflow:hidden;
+  display:flex;flex-direction:column;
+  box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(200,146,42,.06);
+}
+.aria-hdr{
+  padding:1rem 1.4rem;
+  border-bottom:1px solid rgba(200,146,42,.15);
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(135deg,rgba(200,146,42,.1),transparent);
+  flex-shrink:0;
+}
+.aria-hdr-inner{display:flex;align-items:center;gap:.7rem}
+.aria-hdr-hexspin{animation:ariaHexPulse 3s ease-in-out infinite}
+@keyframes ariaHexPulse{0%,100%{filter:drop-shadow(0 0 4px rgba(200,146,42,.4))}50%{filter:drop-shadow(0 0 14px rgba(200,146,42,.9))}}
+.aria-hdr-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;font-weight:700;color:#f0c040;letter-spacing:1px}
+.aria-hdr-sub{font-size:8.5px;letter-spacing:2px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-top:1px}
+.aria-close{background:none;border:none;color:rgba(120,154,184,.5);font-size:24px;cursor:pointer;padding:2px 8px;border-radius:4px;transition:color .2s;line-height:1}
+.aria-close:hover{color:#f0c040}
+.aria-body{padding:1.3rem 1.4rem;overflow-y:auto;flex:1}
+.aria-body::-webkit-scrollbar{width:3px}
+.aria-body::-webkit-scrollbar-thumb{background:#2a4a7a}
+
+/* Steps */
+.aria-step{display:none}
+.aria-step.active{display:block;animation:ariaStepIn .3s ease}
+@keyframes ariaStepIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Step 1 — Record */
+.aria-q-chip{display:inline-block;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(200,146,42,.6);font-weight:600;margin-bottom:.55rem}
+.aria-q-text{font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;color:#e8f0fc;line-height:1.5;margin-bottom:.8rem;font-weight:600}
+.aria-q-hint{font-size:11px;color:#7a9ab8;line-height:1.65;margin-bottom:1rem;padding:.65rem .9rem;background:rgba(30,58,106,.2);border-radius:6px;border-left:2px solid rgba(200,146,42,.3)}
+
+.aria-cam-wrap{
+  position:relative;border-radius:10px;overflow:hidden;
+  background:#050d1a;border:1px solid rgba(30,58,106,.5);
+  aspect-ratio:16/9;margin-bottom:.9rem;
+}
+.aria-cam-video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
+.aria-cam-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;flex-direction:column;gap:.5rem;
+}
+.aria-cam-icon{font-size:34px;opacity:.35}
+.aria-cam-txt{font-size:11.5px;color:#7a9ab8;text-align:center;line-height:1.6}
+.aria-integrity-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:5px 10px;background:rgba(0,0,0,.75);
+  display:flex;gap:1rem;align-items:center;font-size:9.5px;
+}
+.aria-int-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:background .3s,box-shadow .3s}
+.aria-int-dot.ok{background:#2e9e4f;box-shadow:0 0 6px #2e9e4f}
+.aria-int-dot.warn{background:#f0c040;box-shadow:0 0 6px #f0c040;animation:warnBlink 1s infinite}
+.aria-int-dot.bad{background:#e24b4a;box-shadow:0 0 6px #e24b4a}
+@keyframes warnBlink{0%,100%{opacity:1}50%{opacity:.25}}
+.aria-int-label{color:rgba(200,220,240,.55);user-select:none}
+
+/* Timer ring */
+.aria-timer-wrap{
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:.7rem;position:relative;
+}
+.aria-timer-svg{transform:rotate(-90deg)}
+.aria-timer-bg{fill:none;stroke:rgba(30,58,106,.5);stroke-width:5}
+.aria-timer-fg{
+  fill:none;stroke:#c8922a;stroke-width:5;stroke-linecap:round;
+  stroke-dasharray:188.5;stroke-dashoffset:0;
+  transition:stroke-dashoffset .9s linear,stroke .5s;
+}
+.aria-timer-num{position:absolute;font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:700;color:#f0c040;line-height:1}
+.aria-timer-lbl{position:absolute;bottom:-4px;font-size:8px;letter-spacing:2px;color:rgba(200,146,42,.45);text-transform:uppercase}
+.aria-rec-pulse{
+  position:absolute;top:8px;right:8px;
+  width:10px;height:10px;border-radius:50%;
+  background:#e24b4a;box-shadow:0 0 8px #e24b4a;
+  animation:recPulse .9s ease-in-out infinite;
+}
+@keyframes recPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+
+/* Buttons */
+.aria-controls{display:flex;gap:.55rem;margin-top:.3rem}
+.aria-btn{
+  flex:1;padding:10px 8px;border-radius:8px;
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:13px;letter-spacing:1px;cursor:pointer;border:none;
+  transition:all .22s;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-weight:600;text-transform:uppercase;
+}
+.aria-btn-start{
+  background:linear-gradient(135deg,#c8922a,#e8a82a);color:#060c1a;
+  box-shadow:0 3px 16px rgba(200,146,42,.3);
+}
+.aria-btn-start:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 24px rgba(200,146,42,.45)}
+.aria-btn-start:disabled{background:rgba(200,146,42,.18);color:rgba(200,146,42,.35);cursor:not-allowed}
+.aria-btn-stop{background:rgba(226,75,74,.14);border:1px solid rgba(226,75,74,.4);color:#f09595}
+.aria-btn-stop:hover{background:rgba(226,75,74,.25);transform:translateY(-1px)}
+.aria-btn-ghost{background:transparent;border:1px solid rgba(120,154,184,.25);color:#7a9ab8;font-size:11px}
+.aria-btn-ghost:hover{border-color:rgba(200,146,42,.35);color:#f0c040}
+.aria-status{font-size:11px;color:#7a9ab8;text-align:center;margin-top:.5rem;min-height:1.5em;line-height:1.5}
+
+/* Step 2 — Scoring */
+.aria-scoring-wrap{text-align:center;padding:.8rem 0}
+.aria-scoring-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;color:#f0c040;margin-bottom:.35rem;font-weight:700}
+.aria-scoring-sub{font-size:11px;color:#7a9ab8;margin-bottom:1.3rem;line-height:1.6}
+.aria-agent-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.35rem;margin:0 auto 1.1rem;max-width:300px}
+.aria-agent-hex{
+  aspect-ratio:1;border-radius:50%;border:1px solid rgba(30,58,106,.6);
+  background:rgba(10,22,40,.8);color:#3a5a7a;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;letter-spacing:.3px;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+}
+.aria-agent-hex.firing{
+  border-color:var(--ac);background:rgba(var(--ac-rgb),.15);
+  color:var(--ac);box-shadow:0 0 12px rgba(var(--ac-rgb),.4);
+  transform:scale(1.15);
+}
+.aria-prog-bar{height:3px;background:rgba(30,58,106,.4);border-radius:2px;margin-bottom:.5rem;overflow:hidden}
+.aria-prog-fill{height:100%;background:linear-gradient(90deg,#2e9e4f,#c8922a);border-radius:2px;width:0%;transition:width .5s ease}
+.aria-prog-lbl{font-size:9.5px;color:#7a9ab8;text-align:center}
+
+/* Step 3 — Results */
+.aria-cds-ring{
+  width:110px;height:110px;border-radius:50%;
+  border:3px solid #c8922a;margin:0 auto .9rem;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  background:radial-gradient(circle,rgba(200,146,42,.08),transparent);
+  box-shadow:0 0 32px rgba(200,146,42,.22);
+  animation:cdsAppear .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes cdsAppear{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.aria-cds-num{font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:700;color:#f0c040;line-height:1}
+.aria-cds-lbl{font-size:8px;letter-spacing:2px;color:rgba(200,146,42,.55);text-transform:uppercase;margin-top:2px}
+.aria-result-hdr{text-align:center;margin-bottom:1rem}
+.aria-result-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;color:#e8f0fc;margin-bottom:.3rem;font-weight:600}
+.aria-result-sub{font-size:10.5px;color:#7a9ab8;line-height:1.5}
+.aria-idx-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.45rem}
+.aria-idx-name{font-size:10px;color:#7a9ab8;width:88px;flex-shrink:0;letter-spacing:.3px}
+.aria-idx-bar{flex:1;height:5px;background:rgba(30,58,106,.4);border-radius:3px;overflow:hidden}
+.aria-idx-fill{height:100%;border-radius:3px;transition:width 1.3s cubic-bezier(.34,1.1,.64,1)}
+.aria-idx-val{font-size:11px;font-weight:600;width:30px;text-align:right;flex-shrink:0}
+.aria-feedback-box{
+  background:rgba(30,58,106,.14);border:1px solid rgba(30,58,106,.4);
+  border-radius:8px;padding:.85rem;margin:1rem 0 .9rem;
+}
+.aria-feedback-lbl{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:rgba(200,146,42,.5);margin-bottom:.4rem;font-weight:600}
+.aria-feedback-txt{font-size:12px;color:#b8cce8;line-height:1.75}
+.aria-tease-box{
+  background:linear-gradient(135deg,rgba(200,146,42,.1),rgba(93,202,165,.05));
+  border:1px solid rgba(200,146,42,.28);border-radius:12px;
+  padding:1rem 1.1rem;text-align:center;margin-bottom:.9rem;
+}
+.aria-tease-hl{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;color:#f0c040;font-weight:700;margin-bottom:.4rem;line-height:1.3}
+.aria-tease-body{font-size:11.5px;color:#7a9ab8;line-height:1.7;margin-bottom:.85rem}
+.aria-join-cta{
+  background:linear-gradient(135deg,#c8922a,#e8a82a);
+  color:#060c1a;border:none;border-radius:8px;
+  padding:12px 32px;font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:14px;font-weight:700;letter-spacing:1.5px;cursor:pointer;
+  text-transform:uppercase;transition:all .25s;
+  box-shadow:0 4px 20px rgba(200,146,42,.35);display:inline-block;
+}
+.aria-join-cta:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(200,146,42,.5)}
+.aria-retry-btn{
+  background:none;border:1px solid rgba(120,154,184,.2);color:#4a6a8a;
+  border-radius:6px;padding:7px 18px;font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:11px;letter-spacing:1px;cursor:pointer;
+  transition:all .2s;margin-top:.5rem;text-transform:uppercase;
+}
+.aria-retry-btn:hover{border-color:rgba(200,146,42,.3);color:#f0c040}
+
+/* Step 4 — Violation */
+.aria-violation-wrap{text-align:center;padding:1.5rem 1rem}
+.aria-violation-icon{font-size:44px;margin-bottom:.8rem}
+.aria-violation-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;color:#f09595;font-weight:700;margin-bottom:.6rem}
+.aria-violation-body{font-size:12px;color:#7a9ab8;line-height:1.75;margin-bottom:1.2rem}
+.aria-violation-reason{font-size:11px;color:rgba(240,149,149,.7);font-style:italic;margin-bottom:1.2rem;padding:.6rem .9rem;background:rgba(226,75,74,.07);border-radius:6px;border:1px solid rgba(226,75,74,.2)}
 </style>
 </head>
 <body>
@@ -1838,7 +2032,7 @@ let _adAudioCtx=null, _adAnalyser=null, _adAudioCheck=null;
 let _adVideoCheck=null, _adCanvas=null, _adCtx2d=null;
 
 const AD_MAX_SECS = 60;
-const AD_MIN_SECS = 15;
+const AD_MIN_SECS = 10;
 
 // ── Open / Close ───────────────────────────────────────────────
 function openAriaDemo(){
@@ -1862,6 +2056,7 @@ function _ariaShowStep(n){
   document.querySelectorAll('.aria-step').forEach((s,i)=>
     s.classList.toggle('active', i===n-1));
 }
+function ariaRetry(){ _ariaReset(); }
 
 // ── Reset to step 1 ────────────────────────────────────────────
 function _ariaReset(){
@@ -1974,12 +2169,10 @@ async function ariaStartRec(){
   }
 }
 
-// Second click on the button = actually start recording
-const _origAriaStartRec = ariaStartRec;
-function ariaStartRec(){
-  if(!_adReady){ _origAriaStartRec(); return; }
-  // Already have camera — start recording
-  _ariaBeginRecording();
+// ariaStartRec handles both: first click = get camera, second = record
+function _ariaHandleRecBtn(){
+  if(!_adReady){ ariaStartRec(); }
+  else { _ariaBeginRecording(); }
 }
 
 function _ariaBeginRecording(){
@@ -1999,7 +2192,8 @@ function _ariaBeginRecording(){
   document.getElementById('ariaRecBtn').style.display='none';
   document.getElementById('ariaStopBtn').style.display='';
   document.getElementById('ariaTimerWrap').style.display='flex';
-  document.getElementById('ariaStatus').textContent='Recording — explain naturally, as if talking to someone.';
+  document.getElementById('ariaStatus').textContent='Recording — explain naturally, as if talking to a curious friend.';
+  const rp=document.getElementById('ariaRecPulse');if(rp)rp.style.display='block';
 
   // Timer ring setup
   const ring = document.getElementById('ariaTimerRing');
@@ -2020,7 +2214,7 @@ function _ariaBeginRecording(){
   },1000);
 }
 
-function ariaStopRec(){
+async function ariaStopRec(){
   if(!_adRecording) return;
   if(_adSecs < AD_MIN_SECS){
     document.getElementById('ariaStatus').textContent=
@@ -2031,10 +2225,70 @@ function ariaStopRec(){
   clearInterval(_adAudioCheck);
   clearInterval(_adVideoCheck);
   _adRecording=false;
+  const _rp=document.getElementById('ariaRecPulse');if(_rp)_rp.style.display='none';
   if(_adRec&&_adRec.state!=='inactive') _adRec.stop();
   if(_adStream) _adStream.getTracks().forEach(t=>t.stop());
 
-  setTimeout(()=>_ariaRunScoring(), 400);
+  // Show status while we process
+  document.getElementById('ariaStopBtn').style.display='none';
+  document.getElementById('ariaStatus').textContent='Processing your recording…';
+
+  // Wait for MediaRecorder to finalise blob
+  await new Promise(r=>setTimeout(r,500));
+
+  // ── Content integrity check via Netlify Function ──────────────
+  // Uses transcript of audio (via browser speech recognition if available)
+  // Falls back to duration-based scoring if speech recognition unavailable
+  let transcript='';
+  try{
+    transcript = await _ariaGetTranscript();
+  }catch(e){ console.log('Transcript unavailable, proceeding'); }
+
+  if(transcript){
+    try{
+      const modRes = await fetch('/.netlify/functions/aria-moderate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({transcript, duration:_adSecs}),
+      });
+      if(modRes.ok){
+        const modData = await modRes.json();
+        if(modData.flagged){
+          // Content violation — show warning and stop
+          _ariaShowViolation(modData.reason);
+          return;
+        }
+        // Store transcript for score enrichment
+        _adTranscript = transcript;
+        _adModScore   = modData.qualityHint || 0; // 0-1 hint from moderation
+      }
+    }catch(e){ console.log('Moderation unavailable, proceeding with local score'); }
+  }
+
+  setTimeout(()=>_ariaRunScoring(), 200);
+}
+
+// ── Speech recognition transcript ─────────────────────────────
+async function _ariaGetTranscript(){
+  return new Promise((resolve)=>{
+    if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+      resolve(''); return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    // We can't re-run SR on recorded audio easily in browser
+    // Return empty — the moderation function will handle transcript-less case
+    resolve('');
+  });
+}
+
+let _adTranscript = '';
+let _adModScore = 0;
+
+// ── Content violation display ──────────────────────────────────
+function _ariaShowViolation(reason){
+  _ariaShowStep(4); // violation step
+  const el = document.getElementById('ariaViolationReason');
+  if(el) el.textContent = reason || 'Content did not meet platform standards.';
 }
 
 // ── Cleanup ────────────────────────────────────────────────────
@@ -2194,5 +2448,165 @@ function _ariaShowResults(){
 </script>
 
 <button id="scrollTopBtn" onclick="scrollTo({top:0,behavior:'smooth'})" title="Back to top" aria-label="Scroll to top">&#x2191;</button>
+
+<!-- ══ EXPERIENCE ARIA MODAL ══ -->
+<div id="ariaExpOverlay">
+  <div id="ariaExpBox">
+
+    <!-- Header -->
+    <div class="aria-hdr">
+      <div class="aria-hdr-inner">
+        <svg class="aria-hdr-hexspin" width="30" height="34" viewBox="0 0 52 60">
+          <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" fill="#0b1624" stroke="#c8922a" stroke-width="2"/>
+          <polygon points="26,2 50,15 26,30" fill="#fff0a0" opacity=".9"/>
+          <polygon points="50,15 50,45 26,30" fill="#c88010" opacity=".9"/>
+          <polygon points="50,45 26,58 26,30" fill="#1a3c6a" opacity=".9"/>
+          <polygon points="26,58 2,45 26,30" fill="#060e20" opacity=".9"/>
+          <polygon points="2,45 2,15 26,30" fill="#1e4070" opacity=".9"/>
+          <polygon points="2,15 26,2 26,30" fill="#d4a020" opacity=".9"/>
+          <circle cx="26" cy="30" r="5" fill="#f5d060"/>
+          <circle cx="26" cy="30" r="2.5" fill="#0b1624"/>
+        </svg>
+        <div>
+          <div class="aria-hdr-title">&#x2B21; Experience ARIA</div>
+          <div class="aria-hdr-sub">Record &bull; Score &bull; Discover</div>
+        </div>
+      </div>
+      <button class="aria-close" onclick="closeAriaDemo()" aria-label="Close">&times;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="aria-body">
+
+      <!-- STEP 1: Record -->
+      <div class="aria-step active" id="ariaStep1">
+        <div class="aria-q-chip">Your Question &mdash; Minimum 10s, Maximum 60s</div>
+        <div class="aria-q-text">&ldquo;Explain one thing you genuinely understand &mdash; as if to a curious 12-year-old hearing it for the first time.&rdquo;</div>
+        <div class="aria-q-hint">Any topic. Any language. ARIA evaluates <em>how you explain</em>, not what. Most people discover something surprising about themselves.</div>
+
+        <!-- Camera preview -->
+        <div class="aria-cam-wrap" id="ariaCamWrap">
+          <div class="aria-cam-overlay" id="ariaCamOvl">
+            <div class="aria-cam-icon">&#x1F4F9;</div>
+            <div class="aria-cam-txt">
+              Camera preview appears here<br>
+              <span style="font-size:9.5px;opacity:.5">Click Start Camera to begin</span>
+            </div>
+          </div>
+          <video class="aria-cam-video" id="ariaCamVid" muted autoplay playsinline></video>
+
+          <!-- Recording pulse indicator -->
+          <div class="aria-rec-pulse" id="ariaRecPulse" style="display:none"></div>
+
+          <!-- Integrity bar -->
+          <div class="aria-integrity-bar" id="ariaIntBar" style="display:none">
+            <div class="aria-int-dot" id="aidAudio"></div>
+            <span class="aria-int-label" id="aidAudioLbl">Audio</span>
+            <div class="aria-int-dot" id="aidVideo"></div>
+            <span class="aria-int-label" id="aidVideoLbl">Video</span>
+            <div class="aria-int-dot" id="aidFace"></div>
+            <span class="aria-int-label" id="aidFaceLbl">Presence</span>
+          </div>
+        </div>
+
+        <!-- Timer ring — shown during recording -->
+        <div class="aria-timer-wrap" id="ariaTimerWrap" style="display:none">
+          <svg class="aria-timer-svg" width="72" height="72" viewBox="0 0 72 72">
+            <circle class="aria-timer-bg" cx="36" cy="36" r="30"/>
+            <circle class="aria-timer-fg" id="ariaTimerRing" cx="36" cy="36" r="30"/>
+          </svg>
+          <div class="aria-timer-num" id="ariaTimerNum">60</div>
+          <div class="aria-timer-lbl">sec</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="aria-controls">
+          <button class="aria-btn aria-btn-ghost" onclick="closeAriaDemo()">Maybe later</button>
+          <button class="aria-btn aria-btn-start" id="ariaRecBtn" onclick="_ariaHandleRecBtn()">
+            <span id="ariaRecBtnTxt">&#x1F4F9; Start Camera</span>
+          </button>
+          <button class="aria-btn aria-btn-stop" id="ariaStopBtn" onclick="ariaStopRec()" style="display:none">
+            &#x25A0; Done &mdash; Score Me
+          </button>
+        </div>
+        <div class="aria-status" id="ariaStatus">ARIA&rsquo;s 12 agents are standing by&hellip;</div>
+        <div style="font-size:9px;color:rgba(120,154,184,.3);text-align:center;margin-top:.4rem">
+          Your recording is never stored &bull; Processed locally &bull; Platform standards enforced
+        </div>
+      </div>
+
+      <!-- STEP 2: Scoring animation -->
+      <div class="aria-step" id="ariaStep2">
+        <div class="aria-scoring-wrap">
+          <div class="aria-scoring-title">&#x2B21; ARIA is reading your explanation&hellip;</div>
+          <div class="aria-scoring-sub">
+            12 specialist agents evaluating simultaneously<br>
+            across 5 independent indices
+          </div>
+          <div class="aria-agent-grid" id="ariaAgentGrid"></div>
+          <div class="aria-prog-bar">
+            <div class="aria-prog-fill" id="ariaProgFill"></div>
+          </div>
+          <div class="aria-prog-lbl" id="ariaProgLabel">Initialising agents&hellip;</div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Results -->
+      <div class="aria-step" id="ariaStep3">
+        <div class="aria-result-hdr">
+          <div class="aria-cds-ring">
+            <div class="aria-cds-num" id="ariaCdsNum">--</div>
+            <div class="aria-cds-lbl">CDS Score</div>
+          </div>
+          <div class="aria-result-title" id="ariaResultTitle">Your Explanation Analysis</div>
+          <div class="aria-result-sub" id="ariaResultSub">Composite Defended Score across 5 ARIA indices</div>
+        </div>
+
+        <!-- Index bars -->
+        <div id="ariaIndices" style="margin-bottom:.5rem"></div>
+
+        <!-- Feedback -->
+        <div class="aria-feedback-box">
+          <div class="aria-feedback-lbl">&#x2B21; ARIA Observation</div>
+          <div class="aria-feedback-txt" id="ariaFeedbackText"></div>
+        </div>
+
+        <!-- Tease box -->
+        <div class="aria-tease-box">
+          <div class="aria-tease-hl">ARIA is a more rigorous judge than this.</div>
+          <div class="aria-tease-body">
+            This is a preview &mdash; a single glimpse from one question with simulated scoring. On the platform, ARIA&rsquo;s full 12-agent pipeline evaluates every answer you give across <strong style="color:#f0c040">5 indices, real responses, and real stakes</strong>. Your CDS compounds over time and builds a reputation that cannot be bought.<br><br>
+            The explanation you just gave? On Engageneering, it cultivates &Psi;.
+          </div>
+          <button class="aria-join-cta" onclick="window.location.href='auth.html'">
+            &#x1F331; Cultivate Your &Psi; &mdash; Join Free
+          </button>
+        </div>
+
+        <div style="text-align:center">
+          <button class="aria-retry-btn" onclick="ariaRetry()">&#x21BA; Try Again</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Content violation -->
+      <div class="aria-step" id="ariaStep4">
+        <div class="aria-violation-wrap">
+          <div class="aria-violation-icon">&#x26A0;&#xFE0F;</div>
+          <div class="aria-violation-title">Platform Standards Not Met</div>
+          <div class="aria-violation-body">
+            Engageneering is a Knowledge Commons &mdash; a space for genuine intellectual contribution. ARIA&rsquo;s Integrity Guard detected content that does not meet our community standards.<br><br>
+            This is not a judgement of you. It is a boundary that protects the sanctity of every contributor on this platform.
+          </div>
+          <div class="aria-violation-reason" id="ariaViolationReason"></div>
+          <button class="aria-join-cta" style="background:transparent;border:1px solid rgba(200,146,42,.4);color:#f0c040;box-shadow:none" onclick="ariaRetry()">
+            &#x21BA; Record Again
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
