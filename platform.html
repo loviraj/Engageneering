@@ -4299,7 +4299,7 @@ Language: ${lang}`;
 }
 
 // ── PAYMENT RECEIPT ─────────────────────────────────────────────
-function showPaymentReceipt({orderId,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date}){
+function showPaymentReceipt({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date}){
   document.getElementById('payReceiptOverlay')?.remove();
   const fmt  = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
   const fmtT = d => d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
@@ -4317,7 +4317,7 @@ function showPaymentReceipt({orderId,paymentId,psi,baseAmt,gstAmt,totalAmt,name,
       </div>
       <div style="padding:1.3rem 1.4rem" id="receiptPrintArea">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.1rem">
-          <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Order ID</div><div style="font-size:11px;color:#e8f0fc;font-family:monospace">${orderId}</div></div>
+          <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Invoice No.</div><div style="font-size:12px;color:#f0c040;font-family:monospace;font-weight:600">${engRefNo}</div></div>
           <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Payment ID</div><div style="font-size:11px;color:#e8f0fc;font-family:monospace">${paymentId}</div></div>
           <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Date</div><div style="font-size:11px;color:#e8f0fc">${fmt(date)} · ${fmtT(date)}</div></div>
           <div><div style="font-size:9px;letter-spacing:1.5px;color:rgba(200,146,42,.5);text-transform:uppercase;margin-bottom:2px">Status</div><div style="font-size:11px;color:#2e9e4f;font-weight:600">✓ Paid &amp; Cultivated</div></div>
@@ -4350,9 +4350,9 @@ function showPaymentReceipt({orderId,paymentId,psi,baseAmt,gstAmt,totalAmt,name,
           </div>
         </div>
         <div style="font-size:9px;color:rgba(120,154,184,.45);line-height:1.65;text-align:center">
-          Engageneering™ · YOM Private Limited · engageneering.org<br>
+          YOM Private Limited · Engageneering™ Platform · engageneering.org<br>
           Ψ YOM points are a platform contribution metric, not a financial instrument.<br>
-          GST included at 18% · SAC 998431 · Transactions are final and non-refundable.
+          GST @ 18% · SAC 998431 · Invoice format: YOM/YYYY/NNNNN · Non-refundable.
         </div>
       </div>
       <div style="padding:.75rem 1.4rem 1.1rem;display:flex;gap:.6rem;justify-content:center;border-top:1px solid rgba(30,58,106,.3)">
@@ -4366,6 +4366,15 @@ function showPaymentReceipt({orderId,paymentId,psi,baseAmt,gstAmt,totalAmt,name,
 }
 
 function downloadReceipt(){
+  const refEl=document.querySelector('#receiptPrintArea [style*="monospace"]');
+  if(refEl){
+    const ref=refEl.textContent?.trim();
+    if(ref&&ref.startsWith('YOM/')){
+      supa.from('payments').update({receipt_downloaded:true})
+        .eq('yom_ref_no',ref).eq('user_id',U?.id||'')
+        .catch(e=>console.warn('mark receipt error:',e.message));
+    }
+  }
   const area = document.getElementById('receiptPrintArea');
   if(!area){ showToast('Receipt not found','error'); return; }
   const w = window.open('','_blank','width=640,height=820');
@@ -4528,7 +4537,7 @@ function launchRazorpay(amountWithGst,btn){
   const baseAmt  = pack.inr;
   const gstAmt   = amountWithGst - baseAmt;
   const totalAmt = amountWithGst;
-  const orderId  = 'ENG-' + Date.now().toString(36).toUpperCase();
+  const orderId  = 'YOM-' + Date.now().toString(36).toUpperCase();
 
   const options={
     key: rzpKey,
@@ -4540,9 +4549,14 @@ function launchRazorpay(amountWithGst,btn){
     receipt: orderId,
     notes:{ user_id:U?.id||'', email:U?.email||'', psi_pack:pack.psi },
     handler: async function(response){
-      await creditPsiAfterPayment(pack.psi,'razorpay',response.razorpay_payment_id);
+      let engRefNo = orderId;
+      const meta = {
+        baseAmt, gstAmt, totalAmt, currency:'INR',
+        _setRef:(ref)=>{ if(ref) engRefNo=ref; },
+      };
+      await creditPsiAfterPayment(pack.psi,'razorpay',response.razorpay_payment_id,meta);
       showPaymentReceipt({
-        orderId,
+        engRefNo,
         paymentId: response.razorpay_payment_id,
         psi: pack.psi,
         baseAmt, gstAmt, totalAmt,
@@ -4566,27 +4580,64 @@ function launchRazorpay(amountWithGst,btn){
   }
 }
 
-async function creditPsiAfterPayment(psi, gateway, txnId){
+async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
   try{
-    // 1. Record transaction
+    // 1. Generate ENG reference number via Supabase SQL function
+    let engRef = null;
+    let financialYear = '2025-26';
+    try{
+      const {data:refData} = await supa.rpc('generate_yom_ref');
+      engRef = refData;
+      const {data:fyData}  = await supa.rpc('current_financial_year');
+      financialYear = fyData || financialYear;
+    }catch(refErr){ console.warn('Ref gen:',refErr.message); }
+
+    // 2. Write to payments table (financial/GST record)
+    if(paymentMeta){
+      const pm = paymentMeta;
+      const payRow = {
+        yom_ref_no:         engRef || ('YOM-FB-' + Date.now()),
+        user_id:            U.id,
+        display_name:       P?.display_name || U?.email || '',
+        email:              U?.email || '',
+        psi_pack:           psi,
+        base_amount:        Math.round(pm.baseAmt  * 100),
+        gst_amount:         Math.round(pm.gstAmt   * 100),
+        total_amount:       Math.round(pm.totalAmt * 100),
+        currency:           pm.currency || 'INR',
+        gateway:            gateway || 'razorpay',
+        gateway_payment_id: txnId  || null,
+        status:             'captured',
+        sac_code:           '998431',
+        financial_year:     financialYear,
+        paid_at:            new Date().toISOString(),
+      };
+      const {error:payErr} = await supa.from('payments').insert(payRow);
+      if(payErr) console.warn('Payment record error:',payErr.message);
+      if(pm._setRef) pm._setRef(engRef);
+    }
+
+    // 3. Record in score_history (platform points log)
     await supa.from('score_history').insert({
-      user_id:U.id,
-      action_type:'psi_purchase',
-      pts_awarded:psi,
+      user_id:     U.id,
+      action_type: 'psi_purchase',
+      pts_awarded: psi,
       ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
-      ref_id:txnId||null
+      ref_id:      txnId || null,
     });
-    // 2. Credit Field
+
+    // 4. Credit YOM Field
     const{data:rn}=await supa.from('profile_roles')
       .select('pts_total,seeker_pts').eq('user_id',U.id).single();
     if(rn){
       await supa.from('profile_roles').update({
-        pts_total:(rn.pts_total||0)+psi,
-        seeker_pts:(rn.seeker_pts||0)+psi,
-        updated_at:new Date().toISOString()
+        pts_total:  (rn.pts_total  || 0) + psi,
+        seeker_pts: (rn.seeker_pts || 0) + psi,
+        updated_at: new Date().toISOString(),
       }).eq('user_id',U.id);
       if(R){R.pts_total=(R.pts_total||0)+psi;R.seeker_pts=(R.seeker_pts||0)+psi;}
     }
+
     showToast(`✓ Ψ${psi} cultivated in your YOM Field!`,'gold');
     closeBuyModal();
     loadYOMField();
@@ -4594,7 +4645,7 @@ async function creditPsiAfterPayment(psi, gateway, txnId){
     buildNav();
   }catch(e){
     console.error('Credit error:',e);
-    showToast('Payment recorded but wallet update failed — contact support','error');
+    showToast('Payment recorded but Field update failed — contact support@engageneering.org','error');
   }
 }
 
