@@ -413,7 +413,7 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
    EXPERIENCE ARIA MODAL
    ══════════════════════════════════════════════════════════════ */
 #ariaExpOverlay{
-  position:fixed;inset:0;z-index:3000;
+  position:fixed;inset:0;z-index:10000;
   background:rgba(2,5,14,.97);
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   display:none;align-items:center;justify-content:center;
@@ -2020,7 +2020,8 @@ function resetSignup(){
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js">
+<script src="config.js"></script>
+<script>
 // ═══════════════════════════════════════════════════════════════
 // ARIA DEMO — Complete JS Logic
 // ═══════════════════════════════════════════════════════════════
@@ -2444,7 +2445,6 @@ function _ariaShowResults(){
 
   document.getElementById('ariaFeedbackText').textContent = score.feedback;
 }
-
 </script>
 
 <button id="scrollTopBtn" onclick="scrollTo({top:0,behavior:'smooth'})" title="Back to top" aria-label="Scroll to top">&#x2191;</button>

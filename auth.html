@@ -175,7 +175,7 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
    EXPERIENCE ARIA MODAL
    ══════════════════════════════════════════════════════════════ */
 #ariaExpOverlay{
-  position:fixed;inset:0;z-index:3000;
+  position:fixed;inset:0;z-index:10000;
   background:rgba(2,5,14,.97);
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   display:none;align-items:center;justify-content:center;
@@ -764,7 +764,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Show banner if key missing
   if (!SUPA_ANON) {
     const b = document.createElement('div');
-    b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#7a0000;color:#fff;padding:10px 16px;font-size:13px;z-index:9999;text-align:center';
+    b.style.cssText = 'display:none';
     b.textContent = 'CONFIG ERROR: SUPA_ANON missing in config.js — auth will not work.';
     document.body.prepend(b);
   }
@@ -2042,7 +2042,7 @@ function _ariaShowResults(){
         <!-- Controls -->
         <div class="aria-controls">
           <button class="aria-btn aria-btn-ghost" onclick="closeAriaDemo()">Maybe later</button>
-          <button class="aria-btn aria-btn-start" id="ariaRecBtn" onclick="ariaStartRec()">
+          <button class="aria-btn aria-btn-start" id="ariaRecBtn" onclick="_ariaHandleRecBtn()">
             <span id="ariaRecBtnTxt">&#x1F4F9; Start Camera</span>
           </button>
           <button class="aria-btn aria-btn-stop" id="ariaStopBtn" onclick="ariaStopRec()" style="display:none">
