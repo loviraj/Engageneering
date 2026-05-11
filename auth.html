@@ -1618,15 +1618,14 @@ function _ariaResetIntegrity(){
 
 // ── Camera start ───────────────────────────────────────────────
 async function ariaStartRec(){
+  if(_adReady){ _ariaBeginRecording(); return; }
   const btn = document.getElementById('ariaRecBtn');
   btn.disabled=true;
-  document.getElementById('ariaStatus').textContent='Requesting camera & microphone…';
+  document.getElementById('ariaStatus').textContent='Activating camera…';
 
   try{
-    _adStream = await navigator.mediaDevices.getUserMedia({
-      video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'},
-      audio:{echoCancellation:true,noiseSuppression:true}
-    });
+    // Minimal constraints — most compatible across browsers/OS
+    _adStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
 
     // Show live preview
     const vid = document.getElementById('ariaCamVid');
@@ -1685,9 +1684,19 @@ async function ariaStartRec(){
   }catch(err){
     btn.disabled=false;
     document.getElementById('ariaStatus').textContent=
-      err.name==='NotAllowedError'
-        ? '⚠ Camera permission denied — please allow access and try again.'
-        : '⚠ Could not access camera: '+err.message;
+      (()=>{
+      const n=err.name||'';
+      let m;
+      if(n==='NotAllowedError'||n==='PermissionDeniedError')
+        m='Camera access was blocked. Click the camera icon in your address bar, choose Allow, then try again.';
+      else if(n==='NotFoundError')
+        m='No camera found on this device.';
+      else if(n==='NotReadableError'||n==='TrackStartError')
+        m='Camera is in use by another app. Close Zoom/Teams and try again.';
+      else
+        m='Could not start camera: '+err.message;
+      return m;
+    })()
   }
 }
 
@@ -2042,7 +2051,7 @@ function _ariaShowResults(){
         <!-- Controls -->
         <div class="aria-controls">
           <button class="aria-btn aria-btn-ghost" onclick="closeAriaDemo()">Maybe later</button>
-          <button class="aria-btn aria-btn-start" id="ariaRecBtn" onclick="_ariaHandleRecBtn()">
+          <button class="aria-btn aria-btn-start" id="ariaRecBtn" onclick="ariaStartRec()">
             <span id="ariaRecBtnTxt">&#x1F4F9; Start Camera</span>
           </button>
           <button class="aria-btn aria-btn-stop" id="ariaStopBtn" onclick="ariaStopRec()" style="display:none">
