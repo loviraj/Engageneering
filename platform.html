@@ -3975,12 +3975,14 @@ async function loadYOMField(){
     const qPts    = pr?.seeker_pts   ?? R?.seeker_pts   ?? 0;
     const aPts    = pr?.answerer_pts ?? R?.answerer_pts ?? 0;
 
-    // Cultivated Ψ — sum of psi_purchase entries from score_history
-    const{data:purchases}=await supa.from('score_history')
-      .select('pts_awarded')
+    // Cultivated Ψ — sum of psi_pack from captured payments
+    //    (Source of truth: the payments table. score_history was unreliable
+    //    due to RLS blocking psi_purchase inserts.)
+    const{data:purchases}=await supa.from('payments')
+      .select('psi_pack')
       .eq('user_id',U.id)
-      .eq('action_type','psi_purchase');
-    const bPts=(purchases||[]).reduce((s,r)=>s+(r.pts_awarded||0),0);
+      .eq('status','captured');
+    const bPts=(purchases||[]).reduce((s,r)=>s+(r.psi_pack||0),0);
 
     // Update display
     const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -4717,14 +4719,18 @@ async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
       if(pm._setRef) pm._setRef(engRef);
     }
 
-    // 3. Record in score_history (platform points log)
-    await supa.from('score_history').insert({
+    // 3. Record in score_history (platform points log — best-effort)
+    //    NOT the source of truth for "Cultivated" count anymore — that comes
+    //    from the payments table. This is just a log entry. If RLS blocks it,
+    //    we log a warning but the purchase still completes successfully.
+    const{error:shErr} = await supa.from('score_history').insert({
       user_id:     U.id,
       action_type: 'psi_purchase',
       pts_awarded: psi,
       ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
       ref_id:      txnId || null,
     });
+    if(shErr) console.warn('score_history(psi_purchase) blocked:', shErr.message, '— Cultivated row uses payments table, so this does not break the UI.');
 
     // 4. Credit YOM Field
     //    Purchased Ψ → adds to pts_total ONLY (overall balance).
