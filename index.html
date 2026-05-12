@@ -2056,97 +2056,99 @@ function _ariaResetIntegrity(){
 // ── Camera start ───────────────────────────────────────────────
 async function ariaStartRec(){
   if(_adReady){ _ariaBeginRecording(); return; }
-  const btn = document.getElementById('ariaRecBtn');
-  btn.disabled=true;
-  document.getElementById('ariaStatus').textContent='Your browser will ask to allow camera & mic — please click Allow…';
 
-  // Check if already permanently denied
+  const btn   = document.getElementById('ariaRecBtn');
+  const btnTx = document.getElementById('ariaRecBtnTxt');
+  const status= document.getElementById('ariaStatus');
+  btn.disabled = true;
+  status.textContent = 'Your browser will ask for camera & mic access — click Allow when prompted.';
+
+  // Check if camera is permanently denied
   if(navigator.permissions){
     try{
       const cp = await navigator.permissions.query({name:'camera'});
-      if(cp.state==='denied'){
-        btn.disabled=false;
-        document.getElementById('ariaStatus').textContent='⚠ Camera is blocked for this site. Click the lock icon in your address bar → Allow camera, then refresh.';
-        document.getElementById('ariaRecBtnTxt').textContent='&#x1F4F9; Try Again';
+      if(cp.state === 'denied'){
+        btn.disabled = false;
+        btnTx.innerHTML = '📹 Try Again';
+        status.textContent = 'Camera is blocked for this site. Click the lock icon in your address bar, set Camera to Allow, then refresh the page.';
         return;
       }
-    }catch(e){}
+    }catch(e){ /* permissions API not available, proceed */ }
   }
 
   try{
-    // This triggers the browser Allow/Block popup (same as Zoom, Google Meet)
+    // Triggers the browser Allow/Block popup — same mechanism as Zoom & Google Meet
     _adStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
 
     // Show live preview
     const vid = document.getElementById('ariaCamVid');
     vid.srcObject = _adStream;
-    vid.style.display='block';
-    document.getElementById('ariaCamOvl').style.display='none';
-    document.getElementById('ariaIntBar').style.display='flex';
+    vid.style.display = 'block';
+    document.getElementById('ariaCamOvl').style.display = 'none';
+    document.getElementById('ariaIntBar').style.display = 'flex';
 
-    // ── Audio integrity check ───────────────────────────────────
+    // Audio level monitor
     try{
-      _adAudioCtx   = new (window.AudioContext||window.webkitAudioContext)();
-      _adAnalyser   = _adAudioCtx.createAnalyser();
-      const src     = _adAudioCtx.createMediaStreamSource(_adStream);
+      _adAudioCtx  = new (window.AudioContext||window.webkitAudioContext)();
+      _adAnalyser  = _adAudioCtx.createAnalyser();
+      const src    = _adAudioCtx.createMediaStreamSource(_adStream);
       src.connect(_adAnalyser);
       _adAnalyser.fftSize = 256;
-      const buf     = new Uint8Array(_adAnalyser.frequencyBinCount);
+      const buf    = new Uint8Array(_adAnalyser.frequencyBinCount);
       _adAudioCheck = setInterval(()=>{
         _adAnalyser.getByteFrequencyData(buf);
         const rms = buf.reduce((a,b)=>a+b,0)/buf.length;
-        if(rms>8){
-          _ariaSetInt('aidAudio','aidAudioLbl','ok','Audio ✓');
-        } else {
-          _ariaSetInt('aidAudio','aidAudioLbl','warn','Speak up');
-        }
+        _ariaSetInt('aidAudio','aidAudioLbl', rms>8?'ok':'warn', rms>8?'Audio \u2713':'Speak up');
       },600);
     }catch(e){}
 
-    // ── Video integrity check (brightness) ─────────────────────
+    // Video brightness monitor
     _adCanvas = document.createElement('canvas');
     _adCanvas.width=160; _adCanvas.height=90;
     _adCtx2d  = _adCanvas.getContext('2d');
-    let _faceDetected = false;
+    let _faceOk = false;
     _adVideoCheck = setInterval(()=>{
       try{
         const v = document.getElementById('ariaCamVid');
         _adCtx2d.drawImage(v,0,0,160,90);
         const px = _adCtx2d.getImageData(0,0,160,90).data;
-        let brightness=0;
-        for(let i=0;i<px.length;i+=4) brightness+=(px[i]+px[i+1]+px[i+2])/3;
-        brightness /= (px.length/4);
-        if(brightness>25){
-          _ariaSetInt('aidVideo','aidVideoLbl','ok','Video ✓');
-          if(!_faceDetected){ _faceDetected=true; _ariaSetInt('aidFace','aidFaceLbl','ok','Face ✓'); }
+        let bright=0;
+        for(let i=0;i<px.length;i+=4) bright+=(px[i]+px[i+1]+px[i+2])/3;
+        bright /= (px.length/4);
+        if(bright>25){
+          _ariaSetInt('aidVideo','aidVideoLbl','ok','Video \u2713');
+          if(!_faceOk){ _faceOk=true; _ariaSetInt('aidFace','aidFaceLbl','ok','Face \u2713'); }
         } else {
           _ariaSetInt('aidVideo','aidVideoLbl','warn','Too dark');
         }
       }catch(e){}
     },800);
 
-    // ── Ready to record ─────────────────────────────────────────
-    _adReady=true;
-    btn.disabled=false;
-    document.getElementById('ariaRecBtnTxt').textContent='⏺ Record Now';
-    document.getElementById('ariaStatus').textContent=`Camera ready — click Record when you're set.`;
+    // Ready
+    _adReady = true;
+    btn.disabled = false;
+    btnTx.innerHTML = '\u23fa Record Now';
+    status.textContent = 'Camera ready. Click Record Now when you are set.';
 
   }catch(err){
-    btn.disabled=false;
-    document.getElementById('ariaStatus').textContent=
-      (()=>{
-      const n=err.name||'';
-      let m;
-      if(n==='NotAllowedError'||n==='PermissionDeniedError')
-        m='Camera access was blocked. Click the camera icon in your address bar, choose Allow, then try again.';
-      else if(n==='NotFoundError')
-        m='No camera found on this device.';
-      else if(n==='NotReadableError'||n==='TrackStartError')
-        m='Camera is in use by another app. Close Zoom/Teams and try again.';
-      else
-        m='Could not start camera: '+err.message;
-      return m;
-    })()
+    btn.disabled = false;
+    const n = err.name || '';
+    let msg;
+    if(n === 'NotAllowedError' || n === 'PermissionDeniedError'){
+      msg = 'Access denied. Please click the camera icon in your browser address bar, choose Allow, then try again.';
+    } else if(n === 'NotFoundError' || n === 'DevicesNotFoundError'){
+      msg = 'No camera found on this device.';
+    } else if(n === 'NotReadableError' || n === 'TrackStartError'){
+      msg = 'Camera is being used by another app (Zoom, Teams, etc). Close it and try again.';
+    } else if(n === 'OverconstrainedError'){
+      msg = 'Camera could not start with these settings. Please try a different browser.';
+    } else if(n === 'SecurityError'){
+      msg = 'Camera access requires HTTPS. Please access this page via https://engageneering.org';
+    } else {
+      msg = 'Camera error: ' + err.message;
+    }
+    btnTx.innerHTML = '📹 Try Again';
+    status.textContent = msg;
   }
 }
 
