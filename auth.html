@@ -174,6 +174,18 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
 /* ── PROGRESS DOT 4 ── */
 #pd4{display:none}
 
+/* ── ARIA float button (matches index.html) ── */
+@keyframes psiPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.65)}}
+#ariaFloatBtn{position:fixed;top:80px;right:1.2rem;z-index:599;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent;animation:afE .7s cubic-bezier(.34,1.56,.64,1) .8s both}
+@keyframes afE{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.af-ring{width:56px;height:56px;border-radius:50%;border:2px solid rgba(46,158,79,.55);background:rgba(4,10,20,.88);backdrop-filter:blur(12px);position:relative;transition:transform .3s cubic-bezier(.34,1.56,.64,1),border-color .3s,box-shadow .3s;animation:afP 2.8s ease-in-out infinite}
+@keyframes afP{0%{box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 0 rgba(46,158,79,.45)}60%{box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 12px rgba(46,158,79,0)}100%{box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 0 rgba(46,158,79,0)}}
+#ariaFloatBtn:hover .af-ring{transform:scale(1.1);border-color:#5dcaa5;box-shadow:0 8px 28px rgba(46,158,79,.35),0 0 0 6px rgba(46,158,79,.12)}
+.af-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 10%;display:block}
+.af-dot{position:absolute;top:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#2e9e4f;border:2px solid rgba(4,10,20,.9);box-shadow:0 0 8px #2e9e4f;animation:psiPulse 2s ease-in-out infinite}
+.af-label{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#5dcaa5;font-weight:700;white-space:nowrap;background:rgba(4,10,20,.75);border-radius:4px;padding:2px 7px;border:1px solid rgba(46,158,79,.25)}
+@media(max-width:600px){#ariaFloatBtn{top:75px;right:.7rem}.af-ring{width:48px;height:48px}.af-img{width:44px;height:44px}}
+
 /* ══════════════════════════════════════════════════════════════
    EXPERIENCE ARIA MODAL
    ══════════════════════════════════════════════════════════════ */
@@ -370,6 +382,16 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
 </style>
 </head>
 <body>
+
+<!-- ARIA float button (same as index.html) -->
+<div id="ariaFloatBtn" onclick="openAriaDemo()" role="button" tabindex="0" title="Experience ARIA - Free, no sign-in" onkeydown="if(event.key==='Enter')openAriaDemo()">
+  <div class="af-ring">
+    <img class="af-img" src="ARIA-Avatar.jpg" alt="ARIA"/>
+    <div class="af-dot"></div>
+  </div>
+  <span class="af-label">Try ARIA</span>
+</div>
+
 <div class="page">
 
   <!-- LEFT PANEL — brand -->
@@ -449,18 +471,6 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
         Sign in with Google
       </button>
 
-      <!-- Experience ARIA card -->
-<div onclick="openAriaDemo()" style="cursor:pointer;background:linear-gradient(135deg,rgba(46,158,79,.1),rgba(6,12,26,.8));border:1.5px solid rgba(46,158,79,.4);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.4rem;display:flex;align-items:center;gap:1.1rem;transition:all .3s;position:relative;overflow:hidden"
-  onmouseover="this.style.borderColor='#5dcaa5';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 32px rgba(46,158,79,.25)'"
-  onmouseout="this.style.borderColor='rgba(46,158,79,.4)';this.style.transform='';this.style.boxShadow=''">
-  <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,#2e9e4f,transparent)"></div>
-  <img src="ARIA-Avatar.jpg" alt="ARIA" style="width:60px;height:60px;border-radius:50%;object-fit:cover;object-position:center 10%;border:2px solid rgba(200,146,42,.5);flex-shrink:0;box-shadow:0 0 20px rgba(200,146,42,.3)"/>
-  <div style="flex:1;min-width:0">
-    <div style="font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:#2e9e4f;margin-bottom:.3rem;font-weight:600">Free &bull; No Account Needed</div>
-    <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:#f0c040;margin-bottom:.25rem">Experience ARIA First</div>
-    <div style="font-size:11px;color:#7a9ab8;line-height:1.5">Record 60s &bull; Scored by 12 AI agents &bull; See yourself differently</div>
-  </div>
-  <div style="font-size:24px;color:#2e9e4f;flex-shrink:0;opacity:.8">&#x25B6;</div>
 </div>
 
 <div style="text-align:center;font-size:12px;color:#3a5070;margin-top:1rem">
