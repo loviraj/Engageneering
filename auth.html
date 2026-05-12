@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<!-- Explicitly grant camera/microphone permissions to this origin (overrides any
+     restrictive Permissions-Policy header that may be set by the host). -->
+<meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(self), display-capture=(self)"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Engageneering™ — Join the Knowledge Commons</title>
 <link rel="icon" type="image/png" href="ENG-Favicon.png"/>
@@ -1576,19 +1579,24 @@ function openAriaDemo(){
   }
 }
 
-// Fallback binding via event delegation in case the inline onclick is stripped
-// by a CSP, an extension, or any other interference.
-document.addEventListener('click', function(ev){
-  const t = ev.target.closest && ev.target.closest('[data-aria-open],[onclick*="openAriaDemo"]');
-  if(t && !t.__ariaBound){
-    t.__ariaBound = true;
-    // The inline onclick will already fire; this is purely a safety net.
-    // If for any reason the inline didn't run (e.g. function not defined yet),
-    // we still open the modal on the NEXT click.
-  }
-});
-// Expose to global window explicitly (helps if module/strict-mode issues hide it)
+// Expose to global window IMMEDIATELY so inline onclick handlers always find it.
+// (Inline onclick="openAriaDemo()" runs in global scope and needs window.openAriaDemo,
+// not a function in a closure.)
 window.openAriaDemo = openAriaDemo;
+
+// Belt-and-braces: delegated click listener that opens the modal even if the
+// inline onclick was somehow stripped by a CSP, extension, or stale cache.
+document.addEventListener('click', function(ev){
+  const t = ev.target && ev.target.closest && ev.target.closest('[onclick*="openAriaDemo"], [data-aria-open]');
+  if(t){
+    // Prevent any double-open from inline onclick + this handler firing together
+    const ov = document.getElementById('ariaExpOverlay');
+    if(ov && !ov.classList.contains('open')){
+      ev.preventDefault();
+      openAriaDemo();
+    }
+  }
+}, true); // use capture so we win against any stopPropagation
 
 function closeAriaDemo(){
   const ov = document.getElementById('ariaExpOverlay');

@@ -2,19 +2,25 @@
 # Place in repo root and commit to Git
 
 [build]
-  publish   = "."
+  publish = "."
   functions = "netlify/functions"
-  # No build command needed — secrets live in functions only
+  # Build step: generate config.js at deploy time from public env vars.
+  # Secrets (ANTHROPIC_API_KEY, RAZORPAY_KEY_SECRET) are NOT included —
+  # they stay in Functions only, never reach the browser.
+  command = "sh ./build-config.sh"
 
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options        = "SAMEORIGIN"
+    X-Frame-Options       = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy        = "strict-origin-when-cross-origin"
-    Permissions-Policy     = "camera=(), microphone=(), geolocation=()"
+    Referrer-Policy       = "strict-origin-when-cross-origin"
+    # CHANGED: was camera=(), microphone=() which blocked WebRTC entirely.
+    # =(self) allows our own pages (engageneering.org, *.netlify.app) to use
+    # camera/microphone via getUserMedia. Third-party iframes still cannot.
+    Permissions-Policy    = "camera=(self), microphone=(self), display-capture=(self), geolocation=()"
 
-# Block config.js from being indexed or cached if it ever exists
+# Block config.js from being indexed or cached anywhere
 [[headers]]
   for = "/config.js"
   [headers.values]
