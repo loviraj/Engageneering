@@ -1,2 +1,30 @@
-build-config.sh text eol=lf
+# Force LF line endings on all text/source files regardless of OS.
+# Without this, Windows git's autocrlf=true silently converts LF→CRLF inside
+# HTML/JS/CSS/shell files, which can break JavaScript template literals,
+# bash scripts, and YAML/TOML parsers on Linux build servers (like Netlify).
+
+* text=auto eol=lf
+
+# Explicit: shell scripts MUST be LF or bash on Linux fails with cryptic errors
 *.sh text eol=lf
+
+# Source files: keep LF for cross-platform consistency
+*.html text eol=lf
+*.js   text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+
+# Binary files: don't touch
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
