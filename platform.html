@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" sizes="512x512" href="ENG-Favicon.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 /* ── Engageneering™ / YOM Private Limited ──────────────────
    Supabase anon key is safe to be public.
@@ -1270,12 +1271,12 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
         <div class="yw-row-val"><span class="yw-psi-s">Ψ</span><span id="ywAPts">—</span></div>
       </div>
 
-      <!-- Bought Ψ -->
+      <!-- Cultivated Ψ (formerly "Purchased") -->
       <div class="yw-row">
         <div class="yw-row-left">
-          <div class="yw-icon yw-icon-b">💳</div>
+          <div class="yw-icon yw-icon-b">🌾</div>
           <div>
-            <div class="yw-row-lbl">Purchased</div>
+            <div class="yw-row-lbl">Cultivated</div>
             <div class="yw-bar-wrap"><div class="yw-bar-a" id="ywBarB" style="width:0%;background:linear-gradient(to right,var(--gold),var(--gb))"></div></div>
           </div>
         </div>
@@ -3974,7 +3975,7 @@ async function loadYOMField(){
     const qPts    = pr?.seeker_pts   ?? R?.seeker_pts   ?? 0;
     const aPts    = pr?.answerer_pts ?? R?.answerer_pts ?? 0;
 
-    // Bought Ψ — sum of psi_purchase entries from score_history
+    // Cultivated Ψ — sum of psi_purchase entries from score_history
     const{data:purchases}=await supa.from('score_history')
       .select('pts_awarded')
       .eq('user_id',U.id)
@@ -4058,6 +4059,8 @@ const FX_SYM = { INR:'₹', USD:'$', GBP:'£', AED:'AED' };
 
 // Ψ packs base prices in INR
 const GST_RATE = 0.18;
+let _lastEngRef = null;        // ENG reference of the most recent payment
+let _lastReceiptData = null;   // Full receipt data, used by downloadReceipt() and email
 const PSI_PACKS = [
   {psi:50,   inr:49,  inrWithGst:58},
   {psi:200,  inr:149, inrWithGst:176},
@@ -4312,6 +4315,9 @@ Language: ${lang}`;
 // ── PAYMENT RECEIPT ─────────────────────────────────────────────
 function showPaymentReceipt({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date}){
   _lastEngRef=engRefNo; // store for download tracking
+  _lastReceiptData={engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date};
+  // Fire-and-forget: send the invoice by email automatically
+  _emailReceipt(_lastReceiptData);
   document.getElementById('payReceiptOverlay')?.remove();
   const fmt  = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
   const fmtT = d => d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
@@ -4377,63 +4383,154 @@ function showPaymentReceipt({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name
   document.body.appendChild(ov);
 }
 
+// Builds a clean light-themed HTML invoice for export (PDF + email).
+// Returns an off-screen DOM node ready for html2pdf or inlining into an email.
+function _buildInvoiceHtmlForExport({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date}){
+  const fmt  = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const fmtT = d => d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const html = `
+<div style="font-family:Georgia,'Cormorant Garamond',serif;background:#ffffff;color:#1a1a1a;width:600px;padding:40px;box-sizing:border-box">
+  <div style="text-align:center;border-bottom:3px solid #c8922a;padding-bottom:14px;margin-bottom:22px">
+    <div style="font-size:24px;font-weight:700;color:#a07820;letter-spacing:3px">ENGAGENEERING&trade;</div>
+    <div style="font-size:9px;letter-spacing:2px;color:#888;text-transform:uppercase;margin-top:4px">YOM Private Limited &middot; engageneering.org</div>
+    <div style="font-size:20px;font-weight:700;color:#222;margin-top:10px">Tax Invoice / Cultivation Receipt</div>
+  </div>
+  <table style="width:100%;margin-bottom:16px;font-size:12px;border-collapse:collapse">
+    <tr>
+      <td style="padding:4px 0"><strong style="font-size:9px;letter-spacing:1.5px;color:#888;text-transform:uppercase">Invoice No.</strong><br><span style="font-family:monospace;font-size:13px;color:#a07820;font-weight:600">${esc(engRefNo)}</span></td>
+      <td style="padding:4px 0;text-align:right"><strong style="font-size:9px;letter-spacing:1.5px;color:#888;text-transform:uppercase">Date</strong><br><span style="font-size:12px;color:#222">${fmt(date)} &middot; ${fmtT(date)}</span></td>
+    </tr>
+    <tr>
+      <td style="padding:4px 0"><strong style="font-size:9px;letter-spacing:1.5px;color:#888;text-transform:uppercase">Payment ID</strong><br><span style="font-family:monospace;font-size:11px;color:#222">${esc(paymentId)}</span></td>
+      <td style="padding:4px 0;text-align:right"><strong style="font-size:9px;letter-spacing:1.5px;color:#888;text-transform:uppercase">Status</strong><br><span style="font-size:12px;color:#1a7a3a;font-weight:600">&#10003; Paid &amp; Cultivated</span></td>
+    </tr>
+  </table>
+  <div style="background:#f8f5ee;border-radius:6px;padding:12px 14px;margin-bottom:18px">
+    <div style="font-size:9px;letter-spacing:1.5px;color:#888;text-transform:uppercase;margin-bottom:4px">Billed To</div>
+    <div style="font-size:14px;color:#222;font-weight:600">${esc(name)}</div>
+    <div style="font-size:12px;color:#666">${esc(email)}</div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:13px;border:1px solid #e5e0d0">
+    <thead>
+      <tr style="background:#f5f0e4">
+        <th style="padding:9px 12px;text-align:left;font-size:9px;letter-spacing:1.5px;color:#9a7820;font-weight:700;text-transform:uppercase">Description</th>
+        <th style="padding:9px 12px;text-align:right;font-size:9px;letter-spacing:1.5px;color:#9a7820;font-weight:700;text-transform:uppercase">Amount (&#8377;)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:11px 12px;border-top:1px solid #eee">
+          <div style="font-size:13px;color:#222">&#936;${psi} YOM Field Points</div>
+          <div style="font-size:10px;color:#888;margin-top:2px">Platform contribution metric &middot; SAC: 998431</div>
+        </td>
+        <td style="padding:11px 12px;text-align:right;border-top:1px solid #eee;color:#222">&#8377;${baseAmt}</td>
+      </tr>
+      <tr style="background:#fbfaf5">
+        <td style="padding:9px 12px;border-top:1px solid #eee;font-size:11px;color:#666">GST @ 18% (CGST 9% + SGST 9%)</td>
+        <td style="padding:9px 12px;text-align:right;border-top:1px solid #eee;font-size:11px;color:#666">&#8377;${gstAmt}</td>
+      </tr>
+      <tr style="background:#fdf5e0">
+        <td style="padding:12px;border-top:2px solid #c8922a;font-size:15px;font-weight:700;color:#a07820">Total Paid</td>
+        <td style="padding:12px;text-align:right;border-top:2px solid #c8922a;font-size:16px;font-weight:700;color:#a07820">&#8377;${totalAmt}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="background:#f0faf4;border:1.5px solid #2e9e4f;border-radius:6px;padding:14px;text-align:center;margin-bottom:18px">
+    <div style="font-size:30px;color:#2e9e4f;font-weight:700;line-height:1">&#936;${psi}</div>
+    <div style="font-size:13px;color:#1a6a35;margin-top:4px;font-weight:600">cultivated in your YOM Field &#127806;</div>
+  </div>
+  <div style="font-size:9px;color:#999;line-height:1.7;text-align:center;border-top:1px solid #eee;padding-top:12px">
+    Engageneering&trade; &middot; YOM Private Limited &middot; engageneering.org<br>
+    &#936; YOM points are a platform contribution metric, not a financial instrument.<br>
+    GST included at 18% &middot; SAC 998431 &middot; Transactions are final and non-refundable.<br>
+    For queries, contact <strong>support@engageneering.org</strong>
+  </div>
+</div>`;
+  return html;
+}
+
 function downloadReceipt(){
-  const refEl=document.querySelector('#receiptPrintArea [style*="monospace"]');
-  if(refEl){
-    const ref=refEl.textContent?.trim();
-    if(ref&&ref.startsWith('ENG/')){
-      supa.from('payments').update({receipt_downloaded:true})
-        .eq('yom_ref_no',ref).eq('user_id',U?.id||'')
-        .catch(e=>console.warn('mark receipt error:',e.message));
-    }
+  // Pull receipt fields from the on-screen receipt (stored when showPaymentReceipt rendered)
+  const data = _lastReceiptData;
+  if(!data){ showToast('Receipt data missing — please contact support','error'); return; }
+
+  // Mark as downloaded in DB
+  if(_lastEngRef){
+    supa.from('payments').update({receipt_downloaded:true})
+      .eq('yom_ref_no',_lastEngRef).eq('user_id',U?.id||'')
+      .then(()=>{}, e=>console.warn('mark receipt error:',e?.message));
   }
-  const area = document.getElementById('receiptPrintArea');
-  if(!area){ showToast('Receipt not found','error'); return; }
-  const w = window.open('','_blank','width=640,height=820');
+
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText='position:fixed;top:-10000px;left:-10000px;width:600px';
+  wrapper.innerHTML = _buildInvoiceHtmlForExport(data);
+  document.body.appendChild(wrapper);
+
+  const filename = `Engageneering-Invoice-${(_lastEngRef||'receipt').replace(/[\\/]/g,'-')}.pdf`;
+  if(typeof html2pdf !== 'undefined'){
+    html2pdf().set({
+      margin:       [10,10,10,10],
+      filename:     filename,
+      image:        {type:'jpeg',quality:0.95},
+      html2canvas:  {scale:2,backgroundColor:'#ffffff',useCORS:true},
+      jsPDF:        {unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:    {mode:['avoid-all','css','legacy']}
+    }).from(wrapper.firstElementChild).save().then(()=>{
+      wrapper.remove();
+      showToast('Invoice downloaded','gold');
+    }).catch(err=>{
+      console.error('PDF generation failed:',err);
+      wrapper.remove();
+      // Fallback to print dialog if html2pdf fails
+      _printReceiptFallback(data);
+    });
+  } else {
+    wrapper.remove();
+    _printReceiptFallback(data);
+  }
+}
+
+// Fallback: browser print dialog (if html2pdf CDN failed to load)
+function _printReceiptFallback(data){
+  const w = window.open('','_blank','width=720,height=900');
   if(!w){ showToast('Allow pop-ups to download the receipt','error'); return; }
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
-<title>Engageneering — Cultivation Receipt</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet"/>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Georgia,serif;background:#fff;color:#111;padding:2.5rem;max-width:580px;margin:0 auto}
-.p-header{text-align:center;border-bottom:2px solid #c8922a;padding-bottom:1rem;margin-bottom:1.5rem}
-.p-brand{font-size:22px;font-weight:700;color:#a07820;letter-spacing:3px;font-family:'Cormorant Garamond',Georgia,serif}
-.p-sub{font-size:9px;letter-spacing:2px;color:#888;text-transform:uppercase;margin-top:3px}
-.p-title{font-size:18px;font-weight:700;color:#111;margin-top:.4rem;font-family:'Cormorant Garamond',Georgia,serif}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.2rem}
-.lbl{font-size:9px;letter-spacing:1.5px;color:#888;text-transform:uppercase;margin-bottom:2px}
-.val{font-size:12px;color:#111}.val.mono{font-family:monospace;font-size:11px}
-.bill-to{background:#f8f5ee;border-radius:6px;padding:.7rem .9rem;margin-bottom:1.1rem}
-table{width:100%;border-collapse:collapse;margin-bottom:1rem;font-size:13px}
-thead tr{background:#f5f0e4}
-th{padding:7px 10px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#9a7820;font-weight:600}
-td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}
-.total-row{background:#fdf5e0}
-.total-row td{font-size:15px;font-weight:700;color:#a07820;border:none}
-.psi-box{background:#f0faf4;border:1.5px solid #2e9e4f;border-radius:6px;padding:.9rem;text-align:center;margin-bottom:1rem}
-.psi-sym{font-size:30px;color:#2e9e4f;font-weight:700;font-family:'Cormorant Garamond',Georgia,serif}
-.psi-label{font-size:14px;color:#1a6a35;margin-top:4px;font-weight:600}
-.legal{font-size:8.5px;color:#aaa;line-height:1.65;text-align:center;border-top:1px solid #eee;padding-top:1rem;margin-top:.5rem}
-.status{color:#1a7a3a;font-weight:600}
-@media print{body{padding:1rem}button{display:none}}
-</style>
-</head>
-<body>
-<div class="p-header">
-  <div class="p-brand">ENGAGENEERING™</div>
-  <div class="p-sub">YOM Private Limited · engageneering.org</div>
-  <div class="p-title">🌾 Cultivation Receipt</div>
-</div>
-<div class="grid2">
-  <div><div class="lbl">Order ID</div><div class="val mono">${document.querySelector('#receiptPrintArea .val\.mono, #receiptPrintArea [style*=monospace]')?.textContent||''}</div></div>
-  <div><div class="lbl">Status</div><div class="val status">✓ Paid &amp; Cultivated</div></div>
-</div>
-${area.innerHTML}
-</body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Engageneering Invoice</title></head>
+<body style="margin:0">${_buildInvoiceHtmlForExport(data)}
+<script>setTimeout(()=>window.print(),400);<\/script></body></html>`);
   w.document.close();
-  w.focus();
-  setTimeout(()=>w.print(), 600);
+}
+
+// ── Send invoice via email (Supabase Edge Function) ─────────────
+async function _emailReceipt(data){
+  if(!data || !U) return;
+  try{
+    // Get the current session JWT to authenticate the Edge Function call
+    const{data:{session}} = await supa.auth.getSession();
+    if(!session) { console.warn('No session — skipping invoice email'); return; }
+
+    // Call the send-receipt-email Edge Function. It renders the invoice
+    // server-side from authenticated DB data — we only pass the IDs/amounts.
+    const{data:result, error} = await supa.functions.invoke('send-receipt-email',{
+      body:{
+        engRefNo:  data.engRefNo,
+        paymentId: data.paymentId,
+        psi:       data.psi,
+        baseAmt:   data.baseAmt,
+        gstAmt:    data.gstAmt,
+        totalAmt:  data.totalAmt,
+        date:      data.date.toISOString(),
+      }
+    });
+    if(error){
+      console.warn('Receipt email failed:', error.message || error);
+    } else if(result && result.sent){
+      // Edge Function already updated receipt_emailed_at server-side
+      console.log('Receipt emailed:', result.id || '');
+    }
+  }catch(e){
+    console.warn('Receipt email exception:', e.message || e);
+    // Non-blocking — user still has the download option
+  }
 }
 
 // ── BUY Ψ MODAL ────────────────────────────────────────────────
@@ -4593,6 +4690,8 @@ async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
     }catch(refErr){ console.warn('Ref gen:',refErr.message); }
 
     // 2. Write to payments table (financial/GST record)
+    //    Amounts are stored as RUPEES (integer or numeric), not paise.
+    //    Earlier *100 multiplier was causing the extra "00" suffix in the table.
     if(paymentMeta){
       const pm = paymentMeta;
       const payRow = {
@@ -4601,9 +4700,9 @@ async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
         display_name:       P?.display_name || U?.email || '',
         email:              U?.email || '',
         psi_pack:           psi,
-        base_amount:        Math.round(pm.baseAmt  * 100),
-        gst_amount:         Math.round(pm.gstAmt   * 100),
-        total_amount:       Math.round(pm.totalAmt * 100),
+        base_amount:        Math.round(pm.baseAmt),
+        gst_amount:         Math.round(pm.gstAmt),
+        total_amount:       Math.round(pm.totalAmt),
         currency:           pm.currency || 'INR',
         gateway:            gateway || 'razorpay',
         gateway_payment_id: txnId  || null,
@@ -4627,15 +4726,19 @@ async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
     });
 
     // 4. Credit YOM Field
+    //    Purchased Ψ → adds to pts_total ONLY (overall balance).
+    //    The "Purchased" row in YOM Field reads from score_history
+    //    (filtered by action_type='psi_purchase'), so it's already credited there
+    //    via step 3 above. We do NOT add to seeker_pts (the "Questions" row),
+    //    because those are points EARNED by asking questions — not bought.
     const{data:rn}=await supa.from('profile_roles')
-      .select('pts_total,seeker_pts').eq('user_id',U.id).single();
+      .select('pts_total').eq('user_id',U.id).single();
     if(rn){
       await supa.from('profile_roles').update({
         pts_total:  (rn.pts_total  || 0) + psi,
-        seeker_pts: (rn.seeker_pts || 0) + psi,
         updated_at: new Date().toISOString(),
       }).eq('user_id',U.id);
-      if(R){R.pts_total=(R.pts_total||0)+psi;R.seeker_pts=(R.seeker_pts||0)+psi;}
+      if(R){R.pts_total=(R.pts_total||0)+psi;}
     }
 
     showToast(`✓ Ψ${psi} cultivated in your YOM Field!`,'gold');
