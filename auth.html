@@ -1626,22 +1626,32 @@ async function ariaStartRec(){
   btn.disabled = true;
   status.textContent = 'Your browser will ask for camera & mic access — click Allow when prompted.';
 
-  // Check if camera is permanently denied
-  if(navigator.permissions){
-    try{
-      const cp = await navigator.permissions.query({name:'camera'});
-      if(cp.state === 'denied'){
-        btn.disabled = false;
-        btnTx.innerHTML = '📹 Try Again';
-        status.textContent = 'Camera is blocked for this site. Click the lock icon in your address bar, set Camera to Allow, then refresh the page.';
-        return;
-      }
-    }catch(e){ /* permissions API not available, proceed */ }
+  // Guard: mediaDevices unavailable (e.g. insecure http context, very old browser)
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    btn.disabled = false;
+    btnTx.innerHTML = '📹 Try Again';
+    status.textContent = 'This browser does not expose camera access here. Please use the latest Chrome, Edge, Firefox, or Opera over https://';
+    return;
   }
 
   try{
-    // Triggers the browser Allow/Block popup — same mechanism as Zoom & Google Meet
-    _adStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+    // Triggers the browser Allow/Block popup — same mechanism as Zoom & Google Meet.
+    // We DO NOT pre-check navigator.permissions.query — its 'denied' state can be
+    // stale/incorrect on Chromium-based browsers (Chrome/Opera) and falsely blocks
+    // users whose permission is actually granted. The real call below is the source of truth.
+    try{
+      _adStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+    }catch(primaryErr){
+      // If audio failed (e.g. mic in use by another app) but video is fine,
+      // try video-only so the experience still works.
+      const n = primaryErr.name || '';
+      if(n === 'NotReadableError' || n === 'NotFoundError' || n === 'OverconstrainedError'){
+        _adStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+        status.textContent = 'Camera ready (microphone unavailable — recording will be silent).';
+      } else {
+        throw primaryErr;
+      }
+    }
 
     // Show live preview
     const vid = document.getElementById('ariaCamVid');
@@ -1698,17 +1708,19 @@ async function ariaStartRec(){
     const n = err.name || '';
     let msg;
     if(n === 'NotAllowedError' || n === 'PermissionDeniedError'){
-      msg = 'Access denied. Please click the camera icon in your browser address bar, choose Allow, then try again.';
+      msg = 'Permission needed. Click the camera icon in the address bar, choose Allow, then click Start Camera again.';
     } else if(n === 'NotFoundError' || n === 'DevicesNotFoundError'){
-      msg = 'No camera found on this device.';
+      msg = 'No camera found on this device. Please connect a webcam and try again.';
     } else if(n === 'NotReadableError' || n === 'TrackStartError'){
-      msg = 'Camera is being used by another app (Zoom, Teams, etc). Close it and try again.';
+      msg = 'Camera is in use by another app (Zoom, Teams, Meet, OBS, or another browser tab). Close it and try again.';
     } else if(n === 'OverconstrainedError'){
       msg = 'Camera could not start with these settings. Please try a different browser.';
     } else if(n === 'SecurityError'){
-      msg = 'Camera access requires HTTPS. Please access this page via https://engageneering.org';
+      msg = 'Camera access requires HTTPS. Please open this page via https://engageneering.org';
+    } else if(n === 'AbortError'){
+      msg = 'Camera startup was interrupted. Please click Try Again.';
     } else {
-      msg = 'Camera error: ' + err.message;
+      msg = 'Camera error: ' + (err.message || n || 'unknown');
     }
     btnTx.innerHTML = '📹 Try Again';
     status.textContent = msg;
