@@ -1621,10 +1621,23 @@ async function ariaStartRec(){
   if(_adReady){ _ariaBeginRecording(); return; }
   const btn = document.getElementById('ariaRecBtn');
   btn.disabled=true;
-  document.getElementById('ariaStatus').textContent='Activating camera…';
+  document.getElementById('ariaStatus').textContent='Your browser will ask to allow camera & mic — please click Allow…';
+
+  // Check if already permanently denied
+  if(navigator.permissions){
+    try{
+      const cp = await navigator.permissions.query({name:'camera'});
+      if(cp.state==='denied'){
+        btn.disabled=false;
+        document.getElementById('ariaStatus').textContent='⚠ Camera is blocked for this site. Click the lock icon in your address bar → Allow camera, then refresh.';
+        document.getElementById('ariaRecBtnTxt').textContent='&#x1F4F9; Try Again';
+        return;
+      }
+    }catch(e){}
+  }
 
   try{
-    // Minimal constraints — most compatible across browsers/OS
+    // This triggers the browser Allow/Block popup (same as Zoom, Google Meet)
     _adStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
 
     // Show live preview
