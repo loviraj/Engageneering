@@ -4453,7 +4453,6 @@ function downloadReceipt(){
   // Pull receipt fields from the on-screen receipt (stored when showPaymentReceipt rendered)
   const data = _lastReceiptData;
   if(!data){ showToast('Receipt data missing — please contact support','error'); return; }
-
   // Mark as downloaded in DB
   if(_lastEngRef){
     supa.from('payments').update({receipt_downloaded:true})
@@ -4489,6 +4488,8 @@ function downloadReceipt(){
     _printReceiptFallback(data);
   }
 }
+// Expose to global window so inline onclick="downloadReceipt()" can find it
+window.downloadReceipt = downloadReceipt;
 
 // Fallback: browser print dialog (if html2pdf CDN failed to load)
 function _printReceiptFallback(data){
