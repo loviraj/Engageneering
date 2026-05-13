@@ -407,51 +407,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 
 /* ══ VIDEO ANSWER PLAYER ══ */
 .ans-panel{padding:1.2rem 1.4rem;border-top:1px solid var(--bdr);display:none}
-/* When open: promoted to a centered modal overlay for better UX
-   (the inline panel is reused as the modal body; no DOM duplication, so the
-   recorder lifecycle and av-*-${qid} IDs keep working as-is) */
-.ans-panel.open{
-  display:block;
-  position:fixed;
-  top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  width:min(720px, 94vw);
-  max-height:92vh;
-  overflow-y:auto;
-  background:linear-gradient(145deg,#0a1628 0%,#060c1a 100%);
-  border:1px solid rgba(200,146,42,.35);
-  border-radius:14px;
-  box-shadow:0 30px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(200,146,42,.05);
-  padding:1.6rem 1.8rem;
-  z-index:10001;
-  animation:apFadeIn .25s cubic-bezier(.34,1.2,.64,1)
-}
-/* Backdrop sibling — added/removed by togglePanel() */
-.ans-panel-backdrop{
-  position:fixed; inset:0;
-  background:rgba(2,5,14,.78);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  z-index:10000;
-  animation:apBdFadeIn .25s ease;
-}
-@keyframes apBdFadeIn{from{opacity:0}to{opacity:1}}
-@keyframes apFadeIn{from{opacity:0;transform:translate(-50%,-50%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-/* Close (X) button shown only when promoted to modal */
-.ans-panel.open .ap-close{
-  position:absolute; top:12px; right:14px;
-  width:30px; height:30px;
-  background:transparent; border:none;
-  color:var(--t3); font-size:22px; cursor:pointer;
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  transition:all .2s
-}
-.ans-panel.open .ap-close:hover{background:rgba(200,146,42,.12); color:var(--gold)}
-.ans-panel:not(.open) .ap-close{display:none}
-/* Title gets a bit more presence as a modal heading */
-.ans-panel.open .ap-title{
-  font-size:11px; letter-spacing:3.5px; margin-bottom:1rem; padding-right:36px
-}
+.ans-panel.open{display:block}
 .ap-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:700}
 
 /* Answer type toggle */
@@ -955,7 +911,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
               <div class="rec-limit" id="recLimit">⏱ Questions: max 60s · Answers: max 180s · Auto-stops at limit</div>
             </div>
             <div class="rec-controls">
-              <button class="rec-btn rec-btn-start" id="recStart" onclick="startRec()" disabled style="opacity:.4;cursor:not-allowed" title="First: pick a language & add a title (min 8 chars)">
+              <button class="rec-btn rec-btn-start" id="recStart" onclick="startRec()" disabled style="opacity:.4;cursor:not-allowed" title="Select your language first">
                 <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>
                 Start Recording
               </button>
@@ -1022,12 +978,10 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
 
       <!-- One-line title for search/matching (optional) -->
       <div class="field" style="margin-bottom:.8rem">
-        <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem;display:block">Question Title <span style="color:#e24b4a;font-size:9px;font-weight:600">*</span> <span style="color:var(--t4);font-size:9px;font-weight:400">(helps ARIA match your question)</span></label>
-        <input type="text" id="qText" maxlength="120" required minlength="8"
+        <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem;display:block">Question Title <span style="color:var(--t4);font-size:9px;font-weight:400">(optional — helps ARIA match your question)</span></label>
+        <input type="text" id="qText" maxlength="120"
           placeholder="e.g. How do I explain fractions to a 10-year-old?"
-          oninput="onQuestionGateChange()"
           style="width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:8px 12px;color:var(--t2);font-family:inherit;font-size:14px"/>
-        <div id="qTextHint" style="font-size:9px;color:var(--t4);margin-top:.3rem;letter-spacing:.5px">Minimum 8 characters required.</div>
       </div>
       <!-- Tags + submit -->
       <div class="field" style="margin-top:1rem">
@@ -1064,27 +1018,27 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
         <span style="color:#2e9e4f">Ψ10 seeds your Field on sign-up</span> · <span style="color:var(--t4)">Ask ARIA costs Ψ20 — cultivate more by contributing.</span>
       </div>
 
-      <!-- Packs — prices include 18% GST -->
+      <!-- Packs — exclusive pricing (base + 18% GST shown separately) -->
       <div class="psi-pack-grid" id="psiPackGrid">
-        <div class="psi-pack" data-psi="50" data-inr="49" onclick="selectPack(this)">
+        <div class="psi-pack" data-psi="50" data-inr="50" onclick="selectPack(this)">
           <div class="psi-pack-psi"><span>Ψ</span>50</div>
-          <div class="psi-pack-inr">₹58 <span style="font-size:9px;opacity:.55">incl. GST</span></div>
-          <div class="psi-pack-per">₹1.16 / Ψ</div>
+          <div class="psi-pack-inr">₹50 <span style="font-size:9px;opacity:.55">+ GST</span></div>
+          <div class="psi-pack-per">₹1.18 / Ψ</div>
         </div>
-        <div class="psi-pack best-val" data-psi="200" data-inr="149" onclick="selectPack(this)">
+        <div class="psi-pack" data-psi="200" data-inr="175" onclick="selectPack(this)">
           <div class="psi-pack-psi"><span>Ψ</span>200</div>
-          <div class="psi-pack-inr">₹176 <span style="font-size:9px;opacity:.55">incl. GST</span></div>
-          <div class="psi-pack-per">₹0.88 / Ψ</div>
+          <div class="psi-pack-inr">₹175 <span style="font-size:9px;opacity:.55">+ GST</span></div>
+          <div class="psi-pack-per">₹1.03 / Ψ</div>
         </div>
-        <div class="psi-pack" data-psi="500" data-inr="299" onclick="selectPack(this)">
+        <div class="psi-pack best-val" data-psi="500" data-inr="400" onclick="selectPack(this)">
           <div class="psi-pack-psi"><span>Ψ</span>500</div>
-          <div class="psi-pack-inr">₹353 <span style="font-size:9px;opacity:.55">incl. GST</span></div>
-          <div class="psi-pack-per">₹0.71 / Ψ</div>
+          <div class="psi-pack-inr">₹400 <span style="font-size:9px;opacity:.55">+ GST</span></div>
+          <div class="psi-pack-per">₹0.94 / Ψ</div>
         </div>
-        <div class="psi-pack" data-psi="1500" data-inr="799" onclick="selectPack(this)">
+        <div class="psi-pack" data-psi="1500" data-inr="1100" onclick="selectPack(this)">
           <div class="psi-pack-psi"><span>Ψ</span>1500</div>
-          <div class="psi-pack-inr">₹943 <span style="font-size:9px;opacity:.55">incl. GST</span></div>
-          <div class="psi-pack-per">₹0.63 / Ψ</div>
+          <div class="psi-pack-inr">₹1100 <span style="font-size:9px;opacity:.55">+ GST</span></div>
+          <div class="psi-pack-per">₹0.87 / Ψ</div>
         </div>
       </div>
 
@@ -2121,66 +2075,10 @@ function qCard(q,force=false){
 }
 
 function togglePanel(id){
-  const panel=document.getElementById(id);
-  if(!panel) return;
-  const isOpening = !panel.classList.contains('open');
-
-  // Close any other currently-open answer panel first (one at a time)
-  if(isOpening){
-    document.querySelectorAll('.ans-panel.open').forEach(p=>{
-      if(p !== panel) _closeAnsPanel(p);
-    });
-  }
-
-  panel.classList.toggle('open');
+  document.getElementById(id)?.classList.toggle('open');
   // Ensure answer type is always video when panel opens
   const qid=id.replace('panel-','');
   if(qid && !ansTypes[qid]) ansTypes[qid]='video';
-
-  if(panel.classList.contains('open')){
-    _openAnsPanel(panel, id);
-  } else {
-    _closeAnsPanel(panel);
-  }
-}
-
-function _openAnsPanel(panel, id){
-  // Add a backdrop sibling
-  if(!document.getElementById('ansPanelBackdrop')){
-    const bd=document.createElement('div');
-    bd.id='ansPanelBackdrop';
-    bd.className='ans-panel-backdrop';
-    bd.onclick=()=>{ _closeAnsPanel(panel); panel.classList.remove('open'); };
-    document.body.appendChild(bd);
-  }
-  // Inject a close (×) button if not already there
-  if(!panel.querySelector('.ap-close')){
-    const x=document.createElement('button');
-    x.className='ap-close';
-    x.type='button';
-    x.setAttribute('aria-label','Close');
-    x.textContent='×';
-    x.onclick=()=>{ _closeAnsPanel(panel); panel.classList.remove('open'); };
-    panel.prepend(x);
-  }
-  document.body.style.overflow='hidden';
-  // Escape key to close
-  panel._escHandler = (e)=>{
-    if(e.key==='Escape'){
-      _closeAnsPanel(panel);
-      panel.classList.remove('open');
-    }
-  };
-  document.addEventListener('keydown', panel._escHandler);
-}
-
-function _closeAnsPanel(panel){
-  document.getElementById('ansPanelBackdrop')?.remove();
-  document.body.style.overflow='';
-  if(panel._escHandler){
-    document.removeEventListener('keydown', panel._escHandler);
-    panel._escHandler = null;
-  }
 }
 
 // Per-card answer type
@@ -2958,16 +2856,13 @@ document.getElementById('submitModal').addEventListener('click',e=>{if(e.target=
 function resetModal(){
   contentType='video';videoTab='record'; setType('video');
   document.getElementById('qText').value='';
-  // Reset language too — both are mandatory gates
-  const lng=document.getElementById('qLanguage');
-  if(lng) lng.value='';
   document.getElementById('modalErr').textContent='';
   recBlob=null;uploadFile=null;
   document.querySelectorAll('#submitModal .tag-chip').forEach(c=>c.classList.remove('on'));
   const pv=document.getElementById('uploadPreview');if(pv)pv.style.display='none';
-  // Re-evaluate gate (will lock recorder since both inputs are empty)
-  if(typeof onQuestionGateChange === 'function') onQuestionGateChange();
   // Clear recorder state
+  const s=document.getElementById('recStatus');
+  if(s){s.textContent='Click Start Recording to begin';s.style.color='';}
   const t=document.getElementById('recTimer');
   if(t){t.textContent='0:00';t.classList.remove('show','over');}
   // Reset recorder UI
@@ -2980,70 +2875,32 @@ function resetModal(){
 }
 
 // ══ CONTENT TYPE ══
-// ── QUESTION GATE — unlock recorder only when BOTH language is chosen
-//    AND title is at least 8 chars (both now mandatory) ──
-function onQuestionGateChange(){
-  const langEl  = document.getElementById('qLanguage');
-  const titleEl = document.getElementById('qText');
-  const recBtn  = document.getElementById('recStart');
-  const tabRec  = document.getElementById('tabRecord');
-  const tabUp   = document.getElementById('tabUpload');
-  const hintEl  = document.getElementById('qTextHint');
-  const status  = document.getElementById('recStatus');
-
-  const lang  = (langEl?.value || '').trim();
-  const title = (titleEl?.value || '').trim();
-  const langOk  = !!lang;
-  const titleOk = title.length >= 8;
-  const ready   = langOk && titleOk;
-
-  // Title hint colour feedback
-  if(hintEl){
-    if(!titleOk && title.length>0){
-      hintEl.textContent = `Minimum 8 characters (${title.length}/8).`;
-      hintEl.style.color = '#e24b4a';
-    } else if(titleOk){
-      hintEl.textContent = '✓ Title looks good.';
-      hintEl.style.color = '#2e9e4f';
-    } else {
-      hintEl.textContent = 'Minimum 8 characters required.';
-      hintEl.style.color = 'var(--t4)';
-    }
-  }
-
-  if(ready){
-    // Unlock record button + upload tab
+// ── LANGUAGE GATE — unlock recorder when language selected ──
+function onLanguageSelected(){
+  const lang=document.getElementById('qLanguage')?.value;
+  const recBtn=document.getElementById('recStart');
+  const tabRec=document.getElementById('tabRecord');
+  const tabUp=document.getElementById('tabUpload');
+  if(lang && lang!==''){
+    // Enable record button
     if(recBtn){
       recBtn.disabled=false;
       recBtn.style.opacity='';
       recBtn.style.cursor='pointer';
       recBtn.removeAttribute('title');
     }
+    // Enable upload tab
     if(tabRec){tabRec.style.opacity='';tabRec.style.pointerEvents='';}
     if(tabUp){tabUp.style.opacity='';tabUp.style.pointerEvents='';}
-    const langName = langEl.options[langEl.selectedIndex]?.text || '';
-    if(status) status.textContent = `Language: ${langName} · Ready to record`;
+    // Update language label
+    const langSel=document.getElementById('qLanguage');
+    const langName=langSel.options[langSel.selectedIndex]?.text||'';
+    const s=document.getElementById('recStatus');
+    if(s) s.textContent=`Language set: ${langName} · Ready to record`;
   } else {
-    // Re-lock; explain why
-    if(recBtn){
-      recBtn.disabled=true;
-      recBtn.style.opacity='.4';
-      recBtn.style.cursor='not-allowed';
-      const reasons = [];
-      if(!langOk)  reasons.push('select your language');
-      if(!titleOk) reasons.push('add a title (min 8 chars)');
-      recBtn.title = 'First: ' + reasons.join(' & ');
-    }
-    if(status){
-      if(!langOk && !titleOk) status.textContent = 'Pick a language and add a title to start';
-      else if(!langOk)        status.textContent = 'Pick a language to continue';
-      else                    status.textContent = 'Add a title (min 8 characters) to continue';
-    }
+    if(recBtn){recBtn.disabled=true;recBtn.style.opacity='.4';recBtn.style.cursor='not-allowed';}
   }
 }
-
-// Backward-compat alias (still wired up on the language <select>)
-function onLanguageSelected(){ onQuestionGateChange(); }
 
 function setType(t){
   // VIDEO-ONLY: always force video regardless of argument
@@ -3614,18 +3471,7 @@ async function submitQuestion(){
   const languageName=document.getElementById('qLanguage')?.options[document.getElementById('qLanguage').selectedIndex]?.text||'English';
   const err=document.getElementById('modalErr');
   err.textContent='';
-  const q=document.getElementById('qText')?.value?.trim()||'';
-
-  // Mandatory: language must be picked
-  if(!language || !document.getElementById('qLanguage')?.value){
-    err.textContent='Please select your language before submitting.';
-    return;
-  }
-  // Mandatory: title must be at least 8 chars
-  if(q.length < 8){
-    err.textContent='Please add a question title of at least 8 characters.';
-    return;
-  }
+  const q=document.getElementById('qText')?.value?.trim()||''; // optional title
 
   // Enforce video-only
   if(videoTab==='record'&&!recBlob){
@@ -4257,15 +4103,21 @@ const ARIA_AVATAR_URL = 'ARIA-Avatar-Icon-TPT.png';
 const FX = { INR:1, USD:0.012, GBP:0.0096, AED:0.044 };
 const FX_SYM = { INR:'₹', USD:'$', GBP:'£', AED:'AED' };
 
-// Ψ packs base prices in INR
+// Ψ packs — clean-base GST-EXCLUSIVE pricing (Phase 2 reprice)
+// New model: base in whole rupees. GST always 18% on top.
+// Volume discount baked into base (no % math, so totals stay clean).
 const GST_RATE = 0.18;
+const SELLER_STATE_CODE = '23'; // YOM PVT LTD — Madhya Pradesh
+const SELLER_COUNTRY_CODE = 'IN';
 let _lastEngRef = null;        // ENG reference of the most recent payment
 let _lastReceiptData = null;   // Full receipt data, used by downloadReceipt() and email
 const PSI_PACKS = [
-  {psi:50,   inr:49,  inrWithGst:58},
-  {psi:200,  inr:149, inrWithGst:176},
-  {psi:500,  inr:299, inrWithGst:353},
-  {psi:1500, inr:799, inrWithGst:943},
+  // base = pre-GST whole rupees, gst = base*0.18 (may have .50 paise but clean),
+  // total = base + gst. Razorpay charges total in paise (×100).
+  {psi:50,   base:50,   gst:9.00,   total:59.00,    label:'Ψ50'},
+  {psi:200,  base:175,  gst:31.50,  total:206.50,   label:'Ψ200'},
+  {psi:500,  base:400,  gst:72.00,  total:472.00,   label:'Ψ500'},
+  {psi:1500, base:1100, gst:198.00, total:1298.00,  label:'Ψ1500'},
 ];
 
 // ── BUY Ψ STATE ────────────────────────────────────────────────
@@ -4513,9 +4365,24 @@ Language: ${lang}`;
 }
 
 // ── PAYMENT RECEIPT ─────────────────────────────────────────────
-function showPaymentReceipt({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date}){
-  _lastEngRef=engRefNo; // store for download tracking
-  _lastReceiptData={engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date};
+function showPaymentReceipt(args){
+  // Accepts a richer payload now (GST compliance fields). Old fields preserved.
+  const {
+    engRefNo, paymentId, psi, baseAmt, gstAmt, totalAmt,
+    name, email, date,
+    // New (Phase 2+ fields; default sensibly for backward compat)
+    buyerState, buyerStateCode, buyerCountryCode = 'IN',
+    customerType = 'B2C',
+    buyerGstin = null, buyerBusinessName = null,
+    pricingMode = 'exclusive',
+  } = args;
+
+  _lastEngRef = engRefNo;
+  _lastReceiptData = {
+    engRefNo, paymentId, psi, baseAmt, gstAmt, totalAmt, name, email, date,
+    buyerState, buyerStateCode, buyerCountryCode,
+    customerType, buyerGstin, buyerBusinessName, pricingMode,
+  };
   // Fire-and-forget: send the invoice by email automatically
   _emailReceipt(_lastReceiptData);
   document.getElementById('payReceiptOverlay')?.remove();
@@ -4586,45 +4453,98 @@ function showPaymentReceipt({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name
 // ─────────────────────────────────────────────────────────────────
 // Tax-invoice helpers: GST split, rounded-off line, amount-in-words
 // ─────────────────────────────────────────────────────────────────
-const SELLER_STATE_CODE = '23'; // YOM PVT LTD — Madhya Pradesh
 
-// Compute the legally compliant tax-line breakdown from (base, total) and buyer state.
-// We TRUST the stored DB values (`base_amount`, `total_amount`) as truth and derive the
-// rest. This avoids float drift from re-calculating GST and ensures the total on the
-// invoice exactly matches what the user paid in Razorpay.
-function _computeTaxBreakdown(baseAmt, totalAmt, buyerStateCode){
-  // GST due = total − base. May contain rounding.
-  const gstDue   = +(totalAmt - baseAmt).toFixed(2);
+// Full PoS-aware tax engine. Returns the complete tax classification for a sale.
+//
+// Inputs:
+//   baseAmt          — taxable value in ₹ (exclusive of GST)
+//   customerType     — 'B2C' | 'B2B' | 'EXPORT'
+//   buyerStateCode   — '01'..'37' for Indian states; ignored for EXPORT
+//   buyerCountryCode — 'IN' or any ISO-2 country code
+//
+// Returns: { isIntraState, classification, lines, cgstAmt, sgstAmt, igstAmt,
+//            cgstRate, sgstRate, igstRate, totalGst, totalAmt }
+function _computeTaxBreakdown(baseAmt, customerType, buyerStateCode, buyerCountryCode){
+  baseAmt = +Number(baseAmt).toFixed(2);
+  customerType     = customerType     || 'B2C';
+  buyerCountryCode = buyerCountryCode || 'IN';
 
-  // True GST @ 18% of base (full precision).
-  const trueGst  = +(baseAmt * 0.18).toFixed(4);
-  const halfTrue = +(trueGst / 2).toFixed(2); // each of CGST/SGST or half of IGST
+  // ── EXPORT path (recipient outside India) ──────────────────────
+  // Per business decision: 18% IGST charged on exports (refundable via LUT later).
+  if(customerType === 'EXPORT' || buyerCountryCode !== SELLER_COUNTRY_CODE){
+    const igstAmt = +(baseAmt * GST_RATE).toFixed(2);
+    const totalAmt = +(baseAmt + igstAmt).toFixed(2);
+    return {
+      isIntraState: false,
+      classification: 'EXPORT',
+      lines: [{label:'IGST @ 18% (Export — refundable)', amount: igstAmt}],
+      cgstAmt: null, sgstAmt: null, igstAmt,
+      cgstRate: null, sgstRate: null, igstRate: 18.0,
+      totalGst: igstAmt,
+      totalAmt,
+    };
+  }
 
-  // Determine intra-state vs inter-state.
-  // If buyer state is unknown (no state captured), default to intra-state (CGST+SGST)
-  // per requirement. To enforce inter-state, an explicit buyerStateCode different
-  // from SELLER_STATE_CODE must be passed.
-  const isIntraState = !buyerStateCode || String(buyerStateCode) === SELLER_STATE_CODE;
+  // ── INDIA path: intra-state vs inter-state ─────────────────────
+  const intra = !!buyerStateCode && String(buyerStateCode).padStart(2,'0') === SELLER_STATE_CODE;
 
-  let lines = [];
-  let displayedGstSum = 0;
-
-  if(isIntraState){
-    lines.push({label:'CGST @ 9%', amount: halfTrue});
-    lines.push({label:'SGST @ 9%', amount: halfTrue});
-    displayedGstSum = +(halfTrue * 2).toFixed(2);
+  if(intra){
+    // CGST 9% + SGST 9% (sum = 18%)
+    const half = +(baseAmt * (GST_RATE/2)).toFixed(2);
+    const totalGst = +(half * 2).toFixed(2);
+    const totalAmt = +(baseAmt + totalGst).toFixed(2);
+    return {
+      isIntraState: true,
+      classification: customerType,
+      lines: [
+        {label:'CGST @ 9%', amount: half},
+        {label:'SGST @ 9%', amount: half},
+      ],
+      cgstAmt: half, sgstAmt: half, igstAmt: null,
+      cgstRate: 9.0,  sgstRate: 9.0,  igstRate: null,
+      totalGst,
+      totalAmt,
+    };
   } else {
-    lines.push({label:'IGST @ 18%', amount: +trueGst.toFixed(2)});
-    displayedGstSum = +trueGst.toFixed(2);
+    // Inter-state Indian sale: IGST 18%
+    const igstAmt = +(baseAmt * GST_RATE).toFixed(2);
+    const totalAmt = +(baseAmt + igstAmt).toFixed(2);
+    return {
+      isIntraState: false,
+      classification: customerType,
+      lines: [{label:'IGST @ 18%', amount: igstAmt}],
+      cgstAmt: null, sgstAmt: null, igstAmt,
+      cgstRate: null, sgstRate: null, igstRate: 18.0,
+      totalGst: igstAmt,
+      totalAmt,
+    };
   }
+}
 
-  // Rounding adjustment: total − base − displayedGstSum
-  const roundedOff = +(totalAmt - baseAmt - displayedGstSum).toFixed(2);
-  if(Math.abs(roundedOff) >= 0.01){
-    lines.push({label:'Rounded Off', amount: roundedOff});
-  }
+// Indian state code → name map (used for PoS display)
+const IN_STATES = {
+  '01':'Jammu and Kashmir','02':'Himachal Pradesh','03':'Punjab','04':'Chandigarh',
+  '05':'Uttarakhand','06':'Haryana','07':'Delhi','08':'Rajasthan','09':'Uttar Pradesh',
+  '10':'Bihar','11':'Sikkim','12':'Arunachal Pradesh','13':'Nagaland','14':'Manipur',
+  '15':'Mizoram','16':'Tripura','17':'Meghalaya','18':'Assam','19':'West Bengal',
+  '20':'Jharkhand','21':'Odisha','22':'Chhattisgarh','23':'Madhya Pradesh','24':'Gujarat',
+  '26':'Dadra and Nagar Haveli and Daman and Diu','27':'Maharashtra',
+  '29':'Karnataka','30':'Goa','31':'Lakshadweep','32':'Kerala','33':'Tamil Nadu',
+  '34':'Puducherry','35':'Andaman and Nicobar Islands','36':'Telangana','37':'Andhra Pradesh',
+  '38':'Ladakh',
+};
 
-  return { lines, isIntraState, gstDue };
+// Validate a GSTIN and extract its state code.
+// Returns { valid:bool, stateCode:'NN'|null, pan:'AAAAA0000A'|null }
+function _parseGstin(gstin){
+  const out = {valid:false, stateCode:null, pan:null};
+  if(!gstin || typeof gstin !== 'string') return out;
+  const g = gstin.trim().toUpperCase();
+  if(!/^[0-3][0-9][A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(g)) return out;
+  out.valid = true;
+  out.stateCode = g.substring(0,2);
+  out.pan       = g.substring(2,12);
+  return out;
 }
 
 // Convert ₹ amount to Indian-format words. Handles paise.
@@ -4667,13 +4587,42 @@ function _amountInWords(num){
 
 // Builds the Engageneering tax invoice (KDK-style layout, YOM details).
 // Returns standalone HTML — usable for both PDF generation and email body.
-function _buildInvoiceHtmlForExport({engRefNo,paymentId,psi,baseAmt,gstAmt,totalAmt,name,email,date,buyerState,buyerStateCode}){
+function _buildInvoiceHtmlForExport(args){
+  const {
+    engRefNo, paymentId, psi, baseAmt, gstAmt, totalAmt, name, email, date,
+    buyerState, buyerStateCode, buyerCountryCode = 'IN', buyerCountry = 'India',
+    customerType = 'B2C',
+    buyerGstin = null, buyerBusinessName = null,
+  } = args;
+
   const fmtDate = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');
   const inr = n => '&#8377; ' + Number(n).toFixed(2);
-  const breakdown = _computeTaxBreakdown(Number(baseAmt), Number(totalAmt), buyerStateCode);
-  const placeOfSupply = buyerState
-    ? `${esc(buyerState)}${buyerStateCode ? ' (' + esc(String(buyerStateCode)) + ')' : ''}`
-    : 'Not Specified';
+  // Re-derive lines from authoritative inputs so the invoice ALWAYS shows the
+  // correct CGST+SGST / IGST / Export split based on stored classification.
+  const breakdown = _computeTaxBreakdown(Number(baseAmt), customerType, buyerStateCode, buyerCountryCode);
+
+  let placeOfSupply;
+  if(customerType === 'EXPORT' || (buyerCountryCode && buyerCountryCode !== 'IN')){
+    placeOfSupply = esc(buyerCountry || 'Outside India');
+  } else if(buyerState){
+    placeOfSupply = `${esc(buyerState)}${buyerStateCode ? ' (' + esc(String(buyerStateCode)) + ')' : ''}`;
+  } else {
+    placeOfSupply = 'Madhya Pradesh (23)';  // PoS fallback per IGST §12(11)
+  }
+
+  // Optional B2B recipient block (GSTIN + business name)
+  const b2bBlock = (customerType === 'B2B' && buyerGstin) ? `
+    <tr><td style="font-size:11px;color:#666;padding:5px 0">Recipient GSTIN:</td><td style="font-size:12px;color:#1a1a1a;font-weight:600;font-family:monospace;padding:5px 0">${esc(buyerGstin)}</td></tr>
+    ${buyerBusinessName ? `<tr><td style="font-size:11px;color:#666;padding:5px 0">Business Name:</td><td style="font-size:12px;color:#1a1a1a;padding:5px 0">${esc(buyerBusinessName)}</td></tr>` : ''}
+  ` : '';
+
+  // Export footer note
+  const exportNote = (customerType === 'EXPORT') ? `
+    <div style="background:#fef4e3;border:1px solid #d8c890;border-radius:4px;padding:8px 12px;margin-top:12px;font-size:11px;color:#7a5b18">
+      <strong>Export of Services:</strong> IGST charged at 18% on this export of digital services.
+      Recipient may be eligible for refund via LUT. Recipient is outside India under IGST Act §13(12).
+    </div>
+  ` : '';
 
   // Render the GST/rounding lines into rows
   const taxRows = breakdown.lines.map((l, i) => `
@@ -4715,6 +4664,7 @@ function _buildInvoiceHtmlForExport({engRefNo,paymentId,psi,baseAmt,gstAmt,total
   <table style="width:100%;border-collapse:collapse;margin-bottom:14px">
     <tr><td style="font-size:11px;color:#666;width:140px;padding:5px 0">Customer Name:</td><td style="font-size:13px;color:#1a1a1a;font-weight:700;padding:5px 0">${esc(name)}</td></tr>
     <tr><td style="font-size:11px;color:#666;padding:5px 0">Billing Email:</td><td style="font-size:12px;color:#1a1a1a;padding:5px 0">${esc(email)}</td></tr>
+    ${b2bBlock}
     <tr><td style="font-size:11px;color:#666;padding:5px 0">Place of Supply:</td><td style="font-size:12px;color:#1a1a1a;padding:5px 0">${placeOfSupply}</td></tr>
   </table>
 
@@ -4797,6 +4747,7 @@ function _buildInvoiceHtmlForExport({engRefNo,paymentId,psi,baseAmt,gstAmt,total
   </table>
 
   <!-- ── DOCUMENT FOOTER ────────────────────────────────────── -->
+  ${exportNote}
   <div style="text-align:center;margin-top:28px;padding-top:14px;border-top:1px solid #eee;font-size:10.5px;color:#777;line-height:1.7">
     <strong>YOM Private Limited</strong> &middot; 31, Prem Nagar, Fort Road, Gird, Gwalior 474002, Madhya Pradesh<br>
     <a href="https://engageneering.org" style="color:#a07820;text-decoration:none">engageneering.org</a> &middot; For queries: <a href="mailto:support@engageneering.org" style="color:#a07820;text-decoration:none">support@engageneering.org</a><br>
@@ -4911,7 +4862,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 function selectPack(el){
   document.querySelectorAll('.psi-pack').forEach(p=>p.classList.remove('selected'));
   el.classList.add('selected');
-  selectedPack={psi:parseInt(el.dataset.psi),inr:parseInt(el.dataset.inr)};
+  const psi = parseInt(el.dataset.psi);
+  // Find the canonical pack definition (single source of truth for prices)
+  const pack = PSI_PACKS.find(p => p.psi === psi);
+  if(!pack){ console.warn('Unknown pack', psi); return; }
+  selectedPack = {...pack};
   updateBuySummary();
 }
 
@@ -4946,20 +4901,23 @@ function updateBuySummary(){
   if(!selectedPack) return;
   const rate=FX[selectedCurrency]||1;
   const sym=FX_SYM[selectedCurrency]||'₹';
-  const convertedPrice=(selectedPack.inr*rate).toFixed(selectedCurrency==='INR'?0:2);
-  const gstBase = selectedPack.inrWithGst || Math.round(selectedPack.inr * 1.18);
-  const gstDisplayPrice = selectedCurrency==='INR'
-    ? gstBase
-    : (gstBase*(FX[selectedCurrency]||1)).toFixed(2);
+  const base  = selectedPack.base;
+  const gst   = selectedPack.gst;
+  const total = selectedPack.total;
+
+  // Currency conversion (display only — Razorpay charges INR always)
+  const dispBase  = selectedCurrency==='INR' ? base.toFixed(2)  : (base * rate).toFixed(2);
+  const dispGst   = selectedCurrency==='INR' ? gst.toFixed(2)   : (gst  * rate).toFixed(2);
+  const dispTotal = selectedCurrency==='INR' ? total.toFixed(2) : (total* rate).toFixed(2);
+
   document.getElementById('buyPsiSummary').textContent=`Ψ${selectedPack.psi}`;
-  const gstLine = selectedCurrency==='INR'
-    ? `₹${selectedPack.inr} + ₹${gstBase-selectedPack.inr} GST = ₹${gstBase}`
-    : `${sym}${gstDisplayPrice} (incl. 18% GST)`;
-  document.getElementById('buyInrSummary').textContent=gstLine;
+  // Show the full breakdown so users see exactly what they're paying for
+  const summaryLine = `${sym}${dispBase} base + ${sym}${dispGst} GST = ${sym}${dispTotal}`;
+  document.getElementById('buyInrSummary').textContent = summaryLine;
   const btn=document.getElementById('buyPsiConfirmBtn');
   if(btn){
     btn.disabled=false;
-    btn.textContent=`🌱 Seed — Pay ${selectedCurrency==='INR'?'₹'+gstBase:sym+gstDisplayPrice} → Cultivate Ψ${selectedPack.psi}`;
+    btn.textContent=`🌱 Seed — Pay ${sym}${dispTotal} → Cultivate Ψ${selectedPack.psi}`;
   }
 }
 
@@ -4997,14 +4955,25 @@ async function initiatePurchase(){
 
 function launchRazorpay(order,btn){
   const pack={...selectedPack};
-  const baseAmt=order.base_inr;
-  const gstAmt=order.gst_inr;
-  const totalAmt=order.total_inr;
+  // Tax fields from the server-side order (authoritative)
+  const base  = Number(order.base_inr);
+  const gst   = Number(order.gst_inr);
+  const total = Number(order.total_inr);
+
+  // For Phase 2, buyer state isn't captured yet. Defaulting to:
+  //   customer_type = 'B2C'
+  //   buyer_state   = NULL (unknown) → tax engine treats as supplier-state intra-state
+  //                                    per IGST Act §12(11) PoS fallback for digital
+  //                                    services to unregistered persons.
+  //   buyer_country = 'IN' (default; Phase 3 adds country/state UI)
+  const tax = _computeTaxBreakdown(base, 'B2C', SELLER_STATE_CODE /* fallback PoS */, 'IN');
+
   const options={
     key:order.key_id,amount:order.amount,currency:'INR',order_id:order.order_id,
     name:'Engageneering™',description:`YOM Field · Ψ${pack.psi} Points`,
     image:'ENG-Favicon.png',
-    prefill:{name:P?.display_name||'',email:U?.email||''},
+    prefill:{name:P?.display_name||'',email:U?.email||'',contact:P?.phone||''},
+    notes:{psi:String(pack.psi)},
     theme:{color:'#c8922a'},
     handler:async function(response){
       if(btn){btn.disabled=true;btn.textContent='Verifying payment…';}
@@ -5020,18 +4989,59 @@ function launchRazorpay(order,btn){
         const vData=await vRes.json();
         if(!vData.valid) throw new Error('Signature verification failed');
         let engRefNo=order.order_id;
-        const meta={baseAmt,gstAmt,totalAmt,currency:'INR',_setRef:(r)=>{if(r)engRefNo=r;}};
+        // Pass FULL tax + classification metadata to the credit handler.
+        // This is what gets persisted to the payments table for compliance.
+        const meta={
+          baseAmt:  base,
+          gstAmt:   gst,
+          totalAmt: total,
+          currency: 'INR',
+          packLabel: pack.label || `Ψ${pack.psi}`,
+          // Tax engine output
+          customerType:    tax.classification,    // 'B2C'
+          isIntraState:    tax.isIntraState,
+          cgstAmt:         tax.cgstAmt,
+          sgstAmt:         tax.sgstAmt,
+          igstAmt:         tax.igstAmt,
+          cgstRate:        tax.cgstRate,
+          sgstRate:        tax.sgstRate,
+          igstRate:        tax.igstRate,
+          // Buyer details (Phase 2 defaults; Phase 3 captures real values)
+          buyerStateCode:  SELLER_STATE_CODE,
+          buyerState:      IN_STATES[SELLER_STATE_CODE] || null,
+          buyerCountryCode:'IN',
+          buyerCountry:    'India',
+          buyerGstin:      null,
+          buyerBusinessName: null,
+          pricingMode:     'exclusive',
+          underLut:        false,
+          _setRef:         (r)=>{if(r)engRefNo=r;},
+        };
         await creditPsiAfterPayment(pack.psi,'razorpay',response.razorpay_payment_id,meta);
-        showPaymentReceipt({engRefNo,paymentId:response.razorpay_payment_id,psi:pack.psi,baseAmt,gstAmt,totalAmt,name:P?.display_name||U?.email||'Engageneer™',email:U?.email||'',date:new Date()});
+        showPaymentReceipt({
+          engRefNo,
+          paymentId:response.razorpay_payment_id,
+          psi:pack.psi,
+          baseAmt:base, gstAmt:gst, totalAmt:total,
+          buyerStateCode: meta.buyerStateCode,
+          buyerState:     meta.buyerState,
+          buyerCountryCode: meta.buyerCountryCode,
+          customerType:   meta.customerType,
+          buyerGstin:     meta.buyerGstin,
+          buyerBusinessName: meta.buyerBusinessName,
+          name:P?.display_name||U?.email||'Engageneer™',
+          email:U?.email||'',
+          date:new Date(),
+        });
       }catch(vErr){
         showToast('Payment verification failed — contact support@engageneering.org','error');
-        if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}
+        if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${total} → Cultivate Ψ${pack.psi}`;}
       }
     },
-    modal:{ondismiss:()=>{if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}}},
+    modal:{ondismiss:()=>{if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${total} → Cultivate Ψ${pack.psi}`;}}},
   };
   try{const rzp=new Razorpay(options);rzp.open();}
-  catch(e){showToast('Razorpay error: '+e.message,'error');if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${totalAmt} → Cultivate Ψ${pack.psi}`;}}
+  catch(e){showToast('Razorpay error: '+e.message,'error');if(btn){btn.disabled=false;btn.textContent=`🌱 Seed — Pay ₹${total} → Cultivate Ψ${pack.psi}`;}}
 }
 
 async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
@@ -5047,26 +5057,47 @@ async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
     }catch(refErr){ console.warn('Ref gen:',refErr.message); }
 
     // 2. Write to payments table (financial/GST record)
-    //    Amounts are stored as RUPEES (integer or numeric), not paise.
-    //    Earlier *100 multiplier was causing the extra "00" suffix in the table.
+    //    Amounts stored as RUPEES (numeric), not paise. All GST compliance
+    //    fields now populated from the tax engine output.
     if(paymentMeta){
       const pm = paymentMeta;
       const payRow = {
-        yom_ref_no:         engRef || ('ENG-FB-' + Date.now()),
-        user_id:            U.id,
-        display_name:       P?.display_name || U?.email || '',
-        email:              U?.email || '',
-        psi_pack:           psi,
-        base_amount:        Math.round(pm.baseAmt),
-        gst_amount:         Math.round(pm.gstAmt),
-        total_amount:       Math.round(pm.totalAmt),
-        currency:           pm.currency || 'INR',
-        gateway:            gateway || 'razorpay',
-        gateway_payment_id: txnId  || null,
-        status:             'captured',
-        sac_code:           '998431',
-        financial_year:     financialYear,
-        paid_at:            new Date().toISOString(),
+        yom_ref_no:          engRef || ('ENG-FB-' + Date.now()),
+        user_id:             U.id,
+        display_name:        P?.display_name || U?.email || '',
+        email:               U?.email || '',
+        psi_pack:            psi,
+        pack_label:          pm.packLabel || `Ψ${psi}`,
+        // Money (rupees, 2-decimal precision)
+        base_amount:         pm.baseAmt,
+        gst_amount:          pm.gstAmt,        // legacy single column; kept in sync
+        total_amount:        pm.totalAmt,
+        cgst_amount:         pm.cgstAmt,
+        sgst_amount:         pm.sgstAmt,
+        igst_amount:         pm.igstAmt,
+        cgst_rate:           pm.cgstRate,
+        sgst_rate:           pm.sgstRate,
+        igst_rate:           pm.igstRate,
+        // Classification + Place of Supply
+        customer_type:       pm.customerType    || 'B2C',
+        buyer_country:       pm.buyerCountry    || 'India',
+        buyer_country_code:  pm.buyerCountryCode|| 'IN',
+        buyer_state:         pm.buyerState      || null,
+        buyer_state_code:    pm.buyerStateCode  || null,
+        buyer_gstin:         pm.buyerGstin      || null,
+        buyer_business_name: pm.buyerBusinessName || null,
+        is_intra_state:      pm.isIntraState    ?? null,
+        pricing_mode:        pm.pricingMode     || 'exclusive',
+        under_lut:           pm.underLut        || false,
+        lut_arn:             pm.lutArn          || null,
+        // Bookkeeping
+        currency:            pm.currency        || 'INR',
+        gateway:             gateway            || 'razorpay',
+        gateway_payment_id:  txnId              || null,
+        status:              'captured',
+        sac_code:            '998431',
+        financial_year:      financialYear,
+        paid_at:             new Date().toISOString(),
       };
       const {error:payErr} = await supa.from('payments').insert(payRow);
       if(payErr) console.warn('Payment record error:',payErr.message);
