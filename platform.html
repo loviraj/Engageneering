@@ -1042,6 +1042,64 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
         </div>
       </div>
 
+      <!-- ══ BILLING DETAILS (Phase 3 — GST compliance) ═══════════════ -->
+      <div id="billingDetailsSection" style="display:none;background:rgba(30,58,106,.15);border:1px solid rgba(200,146,42,.18);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem;font-weight:700">📍 Billing Details — for your tax invoice</div>
+
+        <!-- Country -->
+        <div style="margin-bottom:.7rem">
+          <label style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:.3rem">Country <span style="color:#e24b4a">*</span></label>
+          <select id="bdCountry" onchange="onBillingChange()" style="width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:5px;padding:7px 10px;color:var(--t2);font-family:inherit;font-size:13px">
+            <option value="IN">🇮🇳 India</option>
+            <option value="US">🇺🇸 United States</option>
+            <option value="GB">🇬🇧 United Kingdom</option>
+            <option value="AE">🇦🇪 United Arab Emirates</option>
+            <option value="SG">🇸🇬 Singapore</option>
+            <option value="AU">🇦🇺 Australia</option>
+            <option value="CA">🇨🇦 Canada</option>
+            <option value="DE">🇩🇪 Germany</option>
+            <option value="FR">🇫🇷 France</option>
+            <option value="JP">🇯🇵 Japan</option>
+            <option value="ZZ">🌍 Other country</option>
+          </select>
+        </div>
+
+        <!-- State (India only) -->
+        <div id="bdStateWrap" style="margin-bottom:.7rem">
+          <label style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:.3rem">State <span style="color:#e24b4a">*</span></label>
+          <select id="bdState" onchange="onBillingChange()" style="width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:5px;padding:7px 10px;color:var(--t2);font-family:inherit;font-size:13px">
+            <option value="">— Select state —</option>
+          </select>
+        </div>
+
+        <!-- Foreign country free-text (when "Other country" picked) -->
+        <div id="bdForeignWrap" style="display:none;margin-bottom:.7rem">
+          <label style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:.3rem">Country name <span style="color:#e24b4a">*</span></label>
+          <input type="text" id="bdForeignCountry" oninput="onBillingChange()" placeholder="e.g. New Zealand" style="width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:5px;padding:7px 10px;color:var(--t2);font-family:inherit;font-size:13px"/>
+        </div>
+
+        <!-- GSTIN (India only, optional — triggers B2B mode when valid) -->
+        <div id="bdGstinWrap" style="margin-bottom:.4rem">
+          <label style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:.3rem">
+            GSTIN <span style="color:var(--t4);font-size:9px;text-transform:none;letter-spacing:0">(optional — for B2B invoice with ITC)</span>
+          </label>
+          <input type="text" id="bdGstin" maxlength="15" oninput="this.value=this.value.toUpperCase();onBillingChange()" placeholder="e.g. 27ABCDE1234F1Z5" style="width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:5px;padding:7px 10px;color:var(--t2);font-family:monospace;font-size:13px;letter-spacing:.5px"/>
+          <div id="bdGstinHint" style="font-size:9.5px;color:var(--t4);margin-top:.3rem;letter-spacing:.4px;min-height:13px"></div>
+        </div>
+
+        <!-- Business Name (revealed when valid GSTIN entered) -->
+        <div id="bdBusinessWrap" style="display:none;margin-top:.5rem">
+          <label style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:.3rem">Business Name <span style="color:#e24b4a">*</span></label>
+          <input type="text" id="bdBusiness" oninput="onBillingChange()" placeholder="As registered on GST portal" style="width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:5px;padding:7px 10px;color:var(--t2);font-family:inherit;font-size:13px"/>
+        </div>
+
+        <!-- Live tax preview -->
+        <div id="bdTaxPreview" style="display:none;margin-top:.9rem;padding:.7rem .9rem;background:rgba(46,158,79,.06);border:1px solid rgba(46,158,79,.2);border-radius:6px;font-size:11.5px;color:var(--t2);font-family:'Courier New',monospace">
+          <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#5dcaa5;margin-bottom:.4rem;font-weight:700">Tax breakdown for this purchase</div>
+          <div id="bdTaxPreviewBody"></div>
+        </div>
+      </div>
+
       <!-- Currency toggle -->
       <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;font-size:10px;color:var(--t4)">
         <span>Currency:</span>
@@ -4845,9 +4903,19 @@ async function _emailReceipt(data){
 function openBuyModal(){
   document.getElementById('buyPsiModal').classList.add('open');
   document.body.style.overflow='hidden';
-  // Auto-select best-value pack
-  const bestPack=document.querySelector('.psi-pack.best-val');
-  if(bestPack&&!selectedPack) selectPack(bestPack);
+  // Phase 3: ensure state dropdown is populated and billing fields reset
+  _initBillingStateDropdown();
+  _resetBillingState();
+  // Don't auto-select a pack — let user see the full guided flow.
+  document.querySelectorAll('.psi-pack').forEach(p=>p.classList.remove('selected'));
+  selectedPack = null;
+  const bds = document.getElementById('billingDetailsSection');
+  if(bds) bds.style.display = 'none';
+  // Reset summary text and Pay button
+  const sm = document.getElementById('buyPsiSummary'); if(sm) sm.textContent = '— Ψ';
+  const ir = document.getElementById('buyInrSummary'); if(ir) ir.textContent = 'Select a pack';
+  const btn = document.getElementById('buyPsiConfirmBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '🌱 Seed My Field'; btn.removeAttribute('title'); }
 }
 function closeBuyModal(){
   document.getElementById('buyPsiModal').classList.remove('open');
@@ -4859,14 +4927,200 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 });
 
+// ══ BUYER BILLING STATE (Phase 3) ══════════════════════════════
+// Tracks Country/State/GSTIN as selected in the Cultivate modal.
+let _billingState = {
+  countryCode:    'IN',
+  countryName:    'India',
+  stateCode:      null,
+  stateName:      null,
+  gstin:          null,
+  gstinValid:     false,
+  customerType:   'B2C',   // 'B2C' → 'B2B' when valid GSTIN, 'EXPORT' when country!=IN
+  businessName:   null,
+  isValid:        false,
+};
+
+const _COUNTRY_NAMES = {
+  IN:'India', US:'United States', GB:'United Kingdom', AE:'United Arab Emirates',
+  SG:'Singapore', AU:'Australia', CA:'Canada', DE:'Germany', FR:'France', JP:'Japan',
+};
+
+// Populate the state dropdown from IN_STATES (lazy — runs once)
+let _bdStateInited = false;
+function _initBillingStateDropdown(){
+  if(_bdStateInited) return;
+  const sel = document.getElementById('bdState');
+  if(!sel) return;
+  const entries = Object.entries(IN_STATES).sort((a,b) => a[1].localeCompare(b[1]));
+  for(const [code, name] of entries){
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = `${name} (${code})`;
+    sel.appendChild(opt);
+  }
+  _bdStateInited = true;
+}
+
+// Reset _billingState back to defaults and clear form fields
+function _resetBillingState(){
+  _billingState = {
+    countryCode:'IN', countryName:'India', stateCode:null, stateName:null,
+    gstin:null, gstinValid:false, customerType:'B2C', businessName:null, isValid:false,
+  };
+  const gst = document.getElementById('bdGstin');     if(gst) gst.value = '';
+  const biz = document.getElementById('bdBusiness');  if(biz) biz.value = '';
+  const fc  = document.getElementById('bdForeignCountry'); if(fc) fc.value = '';
+  const c   = document.getElementById('bdCountry');   if(c) c.value = 'IN';
+  const s   = document.getElementById('bdState');     if(s) s.value = '';
+  const hint = document.getElementById('bdGstinHint'); if(hint) hint.textContent = '';
+  const biz2 = document.getElementById('bdBusinessWrap'); if(biz2) biz2.style.display = 'none';
+  const fw  = document.getElementById('bdForeignWrap'); if(fw) fw.style.display = 'none';
+  const tp  = document.getElementById('bdTaxPreview'); if(tp) tp.style.display = 'none';
+  // Restore India-mode visibility
+  const sw = document.getElementById('bdStateWrap'); if(sw) sw.style.display = '';
+  const gw = document.getElementById('bdGstinWrap'); if(gw) gw.style.display = '';
+}
+
+// Recompute _billingState from form values and update UI feedback
+function onBillingChange(){
+  _initBillingStateDropdown();
+  const country     = document.getElementById('bdCountry')?.value || 'IN';
+  const stateSel    = document.getElementById('bdState');
+  const gstinEl     = document.getElementById('bdGstin');
+  const bizEl       = document.getElementById('bdBusiness');
+  const stateWrap   = document.getElementById('bdStateWrap');
+  const foreignWrap = document.getElementById('bdForeignWrap');
+  const gstinWrap   = document.getElementById('bdGstinWrap');
+  const businessWrap= document.getElementById('bdBusinessWrap');
+  const gstinHint   = document.getElementById('bdGstinHint');
+
+  // Toggle field visibility by country
+  if(country === 'IN'){
+    if(stateWrap)   stateWrap.style.display   = '';
+    if(foreignWrap) foreignWrap.style.display = 'none';
+    if(gstinWrap)   gstinWrap.style.display   = '';
+  } else {
+    if(stateWrap)   stateWrap.style.display   = 'none';
+    if(foreignWrap) foreignWrap.style.display = country === 'ZZ' ? '' : 'none';
+    if(gstinWrap)   gstinWrap.style.display   = 'none';
+    if(gstinEl)     gstinEl.value = '';
+    if(businessWrap)businessWrap.style.display = 'none';
+  }
+
+  // ── Compute classification ───────────────────────────────────
+  const countryCode = country;
+  const countryName = country === 'ZZ'
+    ? (document.getElementById('bdForeignCountry')?.value?.trim() || '')
+    : (_COUNTRY_NAMES[country] || country);
+
+  let stateCode = null, stateName = null;
+  let gstin = null, gstinValid = false;
+  let customerType = 'B2C';
+  let businessName = null;
+  let isValid = false;
+
+  if(country === 'IN'){
+    // Try to parse GSTIN if entered
+    const gstinRaw = (gstinEl?.value || '').trim();
+    if(gstinRaw.length > 0){
+      const parsed = _parseGstin(gstinRaw);
+      if(parsed.valid){
+        gstinValid   = true;
+        gstin        = gstinRaw.toUpperCase();
+        customerType = 'B2B';
+        // GSTIN state code OVERRIDES manually selected state (per GST law:
+        //   PoS for B2B = location of registered recipient)
+        stateCode    = parsed.stateCode;
+        stateName    = IN_STATES[stateCode] || null;
+        // Visually reflect state override in the dropdown
+        if(stateSel) stateSel.value = stateCode;
+        if(gstinHint){
+          gstinHint.textContent = `✓ Valid GSTIN — state auto-set to ${stateName || 'Unknown'} (${stateCode})`;
+          gstinHint.style.color = '#5dcaa5';
+        }
+        if(businessWrap) businessWrap.style.display = '';
+        businessName = (bizEl?.value || '').trim() || null;
+      } else {
+        if(gstinHint){
+          gstinHint.textContent = '✗ Invalid GSTIN format. Should be 15 chars: 2-digit state code, PAN, entity digit, "Z", checksum.';
+          gstinHint.style.color = '#e24b4a';
+        }
+        if(businessWrap) businessWrap.style.display = 'none';
+      }
+    } else {
+      if(gstinHint) gstinHint.textContent = '';
+      if(businessWrap) businessWrap.style.display = 'none';
+    }
+    // If no valid GSTIN, use manually-selected state
+    if(!gstinValid){
+      stateCode = stateSel?.value || null;
+      stateName = stateCode ? (IN_STATES[stateCode] || null) : null;
+    }
+    // Valid when state present (and for B2B also Business Name ≥ 3 chars)
+    isValid = !!stateCode && (customerType === 'B2C' || (gstinValid && businessName && businessName.length >= 3));
+  } else {
+    // International → Export of Services
+    customerType = 'EXPORT';
+    // Valid when known country (non-ZZ) OR explicit foreign country name typed
+    isValid = country !== 'ZZ' || (countryName && countryName.length >= 2);
+  }
+
+  _billingState = {
+    countryCode, countryName: countryName || (country === 'IN' ? 'India' : ''),
+    stateCode, stateName,
+    gstin, gstinValid,
+    customerType, businessName,
+    isValid,
+  };
+
+  updateBuySummary();
+  _updateTaxPreview();
+}
+
+// Live tax breakdown shown inside the modal before payment opens
+function _updateTaxPreview(){
+  const previewBox  = document.getElementById('bdTaxPreview');
+  const previewBody = document.getElementById('bdTaxPreviewBody');
+  if(!previewBox || !previewBody) return;
+  if(!selectedPack || !_billingState.isValid){
+    previewBox.style.display = 'none';
+    return;
+  }
+  const tax = _computeTaxBreakdown(
+    selectedPack.base,
+    _billingState.customerType,
+    _billingState.stateCode,
+    _billingState.countryCode
+  );
+  const pad = (s, n) => String(s).padEnd(n, ' ');
+  const fmt = n => '₹' + Number(n).toFixed(2);
+  let rows = `<div>${pad('Base', 22)}${fmt(selectedPack.base)}</div>`;
+  for(const l of tax.lines){
+    rows += `<div>${pad(l.label, 22)}${fmt(l.amount)}</div>`;
+  }
+  rows += `<div style="border-top:1px dashed rgba(46,158,79,.4);margin-top:.3rem;padding-top:.3rem;color:#5dcaa5"><strong>${pad('Total', 22)}${fmt(tax.totalAmt)}</strong></div>`;
+  if(_billingState.customerType === 'EXPORT'){
+    rows += `<div style="margin-top:.4rem;font-size:9.5px;color:#bfa540">Export of services · IGST refundable later via LUT</div>`;
+  } else if(_billingState.customerType === 'B2B'){
+    rows += `<div style="margin-top:.4rem;font-size:9.5px;color:#5dcaa5">B2B invoice · GSTIN ${_billingState.gstin} · eligible for ITC</div>`;
+  }
+  previewBody.innerHTML = rows;
+  previewBox.style.display = '';
+}
+
 function selectPack(el){
   document.querySelectorAll('.psi-pack').forEach(p=>p.classList.remove('selected'));
   el.classList.add('selected');
   const psi = parseInt(el.dataset.psi);
-  // Find the canonical pack definition (single source of truth for prices)
   const pack = PSI_PACKS.find(p => p.psi === psi);
   if(!pack){ console.warn('Unknown pack', psi); return; }
   selectedPack = {...pack};
+  // Reveal billing section once a pack is selected (Phase 3)
+  const bd = document.getElementById('billingDetailsSection');
+  if(bd) bd.style.display = '';
+  _initBillingStateDropdown();
+  onBillingChange();   // re-validates and refreshes preview
   updateBuySummary();
 }
 
@@ -4911,13 +5165,20 @@ function updateBuySummary(){
   const dispTotal = selectedCurrency==='INR' ? total.toFixed(2) : (total* rate).toFixed(2);
 
   document.getElementById('buyPsiSummary').textContent=`Ψ${selectedPack.psi}`;
-  // Show the full breakdown so users see exactly what they're paying for
   const summaryLine = `${sym}${dispBase} base + ${sym}${dispGst} GST = ${sym}${dispTotal}`;
   document.getElementById('buyInrSummary').textContent = summaryLine;
   const btn=document.getElementById('buyPsiConfirmBtn');
   if(btn){
-    btn.disabled=false;
-    btn.textContent=`🌱 Seed — Pay ${sym}${dispTotal} → Cultivate Ψ${selectedPack.psi}`;
+    // Phase 3: button enabled only when BOTH pack picked AND billing valid
+    const billingOk = _billingState && _billingState.isValid;
+    btn.disabled = !billingOk;
+    if(billingOk){
+      btn.textContent = `🌱 Seed — Pay ${sym}${dispTotal} → Cultivate Ψ${selectedPack.psi}`;
+      btn.removeAttribute('title');
+    } else {
+      btn.textContent = `Fill billing details to continue → Ψ${selectedPack.psi}`;
+      btn.title = 'Select country/state (and Business Name if you entered a GSTIN)';
+    }
   }
 }
 
@@ -4955,25 +5216,34 @@ async function initiatePurchase(){
 
 function launchRazorpay(order,btn){
   const pack={...selectedPack};
-  // Tax fields from the server-side order (authoritative)
+  // Tax fields from the server-side order (authoritative for amount)
   const base  = Number(order.base_inr);
   const gst   = Number(order.gst_inr);
   const total = Number(order.total_inr);
 
-  // For Phase 2, buyer state isn't captured yet. Defaulting to:
-  //   customer_type = 'B2C'
-  //   buyer_state   = NULL (unknown) → tax engine treats as supplier-state intra-state
-  //                                    per IGST Act §12(11) PoS fallback for digital
-  //                                    services to unregistered persons.
-  //   buyer_country = 'IN' (default; Phase 3 adds country/state UI)
-  const tax = _computeTaxBreakdown(base, 'B2C', SELLER_STATE_CODE /* fallback PoS */, 'IN');
+  // Phase 3: use buyer's REAL billing state captured in the modal.
+  // The Pay button is already gated on _billingState.isValid being true,
+  // so we can trust these fields are populated.
+  const bs = _billingState || {};
+  const customerType     = bs.customerType    || 'B2C';
+  const buyerStateCode   = bs.stateCode       || null;
+  const buyerCountryCode = bs.countryCode     || 'IN';
+
+  // Recompute tax breakdown using the buyer's exact classification.
+  const tax = _computeTaxBreakdown(base, customerType, buyerStateCode, buyerCountryCode);
 
   const options={
     key:order.key_id,amount:order.amount,currency:'INR',order_id:order.order_id,
     name:'Engageneering™',description:`YOM Field · Ψ${pack.psi} Points`,
     image:'ENG-Favicon.png',
     prefill:{name:P?.display_name||'',email:U?.email||'',contact:P?.phone||''},
-    notes:{psi:String(pack.psi)},
+    notes:{
+      psi:String(pack.psi),
+      customer_type:    customerType,
+      buyer_state_code: buyerStateCode || '',
+      buyer_country:    buyerCountryCode,
+      buyer_gstin:      bs.gstin || '',
+    },
     theme:{color:'#c8922a'},
     handler:async function(response){
       if(btn){btn.disabled=true;btn.textContent='Verifying payment…';}
@@ -4989,16 +5259,13 @@ function launchRazorpay(order,btn){
         const vData=await vRes.json();
         if(!vData.valid) throw new Error('Signature verification failed');
         let engRefNo=order.order_id;
-        // Pass FULL tax + classification metadata to the credit handler.
-        // This is what gets persisted to the payments table for compliance.
         const meta={
           baseAmt:  base,
           gstAmt:   gst,
           totalAmt: total,
           currency: 'INR',
           packLabel: pack.label || `Ψ${pack.psi}`,
-          // Tax engine output
-          customerType:    tax.classification,    // 'B2C'
+          customerType,
           isIntraState:    tax.isIntraState,
           cgstAmt:         tax.cgstAmt,
           sgstAmt:         tax.sgstAmt,
@@ -5006,13 +5273,12 @@ function launchRazorpay(order,btn){
           cgstRate:        tax.cgstRate,
           sgstRate:        tax.sgstRate,
           igstRate:        tax.igstRate,
-          // Buyer details (Phase 2 defaults; Phase 3 captures real values)
-          buyerStateCode:  SELLER_STATE_CODE,
-          buyerState:      IN_STATES[SELLER_STATE_CODE] || null,
-          buyerCountryCode:'IN',
-          buyerCountry:    'India',
-          buyerGstin:      null,
-          buyerBusinessName: null,
+          buyerStateCode,
+          buyerState:      bs.stateName     || null,
+          buyerCountryCode,
+          buyerCountry:    bs.countryName   || (buyerCountryCode === 'IN' ? 'India' : null),
+          buyerGstin:      bs.gstin         || null,
+          buyerBusinessName: bs.businessName || null,
           pricingMode:     'exclusive',
           underLut:        false,
           _setRef:         (r)=>{if(r)engRefNo=r;},
@@ -5023,15 +5289,16 @@ function launchRazorpay(order,btn){
           paymentId:response.razorpay_payment_id,
           psi:pack.psi,
           baseAmt:base, gstAmt:gst, totalAmt:total,
-          buyerStateCode: meta.buyerStateCode,
-          buyerState:     meta.buyerState,
-          buyerCountryCode: meta.buyerCountryCode,
-          customerType:   meta.customerType,
-          buyerGstin:     meta.buyerGstin,
-          buyerBusinessName: meta.buyerBusinessName,
-          name:P?.display_name||U?.email||'Engageneer™',
+          buyerStateCode,
+          buyerState:        bs.stateName    || null,
+          buyerCountryCode,
+          buyerCountry:      bs.countryName  || null,
+          customerType,
+          buyerGstin:        bs.gstin         || null,
+          buyerBusinessName: bs.businessName  || null,
+          name: P?.display_name||U?.email||'Engageneer™',
           email:U?.email||'',
-          date:new Date(),
+          date: new Date(),
         });
       }catch(vErr){
         showToast('Payment verification failed — contact support@engageneering.org','error');
