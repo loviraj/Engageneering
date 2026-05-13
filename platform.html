@@ -1283,12 +1283,12 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
         <div class="yw-row-val"><span class="yw-psi-s">Ψ</span><span id="ywBPts">—</span></div>
       </div>
 
-      <!-- Last Earned -->
+      <!-- Last Cultivated (most recent activity: Q answer earn OR a payment) -->
       <div class="yw-last-earned" id="ywLastEarnedBox">
         <div class="yw-le-icon">🕐</div>
         <div class="yw-le-text">
-          <div class="yw-le-lbl">Last Earned On</div>
-          <div class="yw-le-date" id="ywLeDate"><span class="yw-le-none">No earnings yet</span></div>
+          <div class="yw-le-lbl">Last Cultivated</div>
+          <div class="yw-le-date" id="ywLeDate"><span class="yw-le-none">No activity yet</span></div>
           <div class="yw-le-time" id="ywLeTime"></div>
         </div>
       </div>
@@ -1448,7 +1448,12 @@ function buildNav(){
   if(!P){nr.innerHTML='';return;}
   const init=(P.display_name||'E').charAt(0).toUpperCase();
   const tier=R?STIERS[R.seeker_tier||1]:'Curious';
-  const pts=R?.pts_total||0;
+  // Top pill total = engagement (Q+A from pts_total) + Cultivated (from payments).
+  // R._cultivatedPts is set by loadYOMField() — it's the sum of psi_pack from
+  // captured payments. Stays 0 until first payment, then reflects everything.
+  const engagementPts = R?.pts_total || 0;
+  const cultivatedPts = R?._cultivatedPts || 0;
+  const pts = engagementPts + cultivatedPts;
   nr.innerHTML=`
     <div class="user-chip">
       <div class="user-av">${P.avatar_url?`<img src="${P.avatar_url}"/>`:`${init}`}</div>
@@ -4004,8 +4009,9 @@ async function loadYOMField(){
     set('ywQPts',  qPts);
     set('ywAPts',  aPts);
     set('ywBPts',  bPts);
-    // Sync R (global profile_roles cache) so buildNav uses Q+A only for tier
-    if(R){ R.pts_total=qPts+aPts; R.seeker_pts=qPts; R.answerer_pts=aPts; }
+    // Sync R (global profile_roles cache) so buildNav uses Q+A only for tier,
+    // plus _cultivatedPts so the top pill shows Q+A+Cultivated.
+    if(R){ R.pts_total=qPts+aPts; R.seeker_pts=qPts; R.answerer_pts=aPts; R._cultivatedPts=bPts; }
     buildNav();
 
     // Progress bars (proportion of total)
@@ -4027,19 +4033,44 @@ async function loadYOMField(){
       if(sb) sb.style.flex=bFlex;
     }
 
-    // Last earned — query score_history for most recent entry
-    const{data:sh}=await supa.from('score_history')
-      .select('created_at,pts_awarded,action_type')
-      .eq('user_id',U.id)
-      .order('created_at',{ascending:false})
-      .limit(1)
-      .single();
+    // Last Cultivated — pick the most recent event from EITHER score_history
+    // (Q/A engagement points) OR payments (Cultivated/purchased Ψ).
+    // Whichever has the latest timestamp wins.
+    const [shRes, payRes] = await Promise.all([
+      supa.from('score_history')
+        .select('created_at,pts_awarded,action_type')
+        .eq('user_id',U.id)
+        .order('created_at',{ascending:false})
+        .limit(1)
+        .maybeSingle(),
+      supa.from('payments')
+        .select('paid_at,psi_pack')
+        .eq('user_id',U.id)
+        .eq('status','captured')
+        .order('paid_at',{ascending:false})
+        .limit(1)
+        .maybeSingle(),
+    ]);
+    const sh  = shRes?.data || null;
+    const pay = payRes?.data || null;
+
+    // Build a unified "latest event" object from whichever is newer.
+    let latest = null;
+    const shTs  = sh?.created_at ? new Date(sh.created_at).getTime()  : 0;
+    const payTs = pay?.paid_at   ? new Date(pay.paid_at).getTime()    : 0;
+    if(shTs === 0 && payTs === 0){
+      latest = null;
+    } else if(payTs > shTs){
+      latest = { ts: pay.paid_at, pts: pay.psi_pack || 0, label: 'Cultivated' };
+    } else {
+      latest = { ts: sh.created_at, pts: sh.pts_awarded || 0, label: sh.action_type === 'answer' ? 'Answer' : 'Question' };
+    }
 
     const dateEl=document.getElementById('ywLeDate');
     const timeEl=document.getElementById('ywLeTime');
-    if(sh?.created_at && dateEl){
+    if(latest && dateEl){
       // Convert UTC to IST (UTC+5:30)
-      const utc=new Date(sh.created_at);
+      const utc=new Date(latest.ts);
       const ist=new Date(utc.getTime()+5.5*60*60*1000);
       const dateStr=ist.toLocaleDateString('en-IN',{
         day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'
@@ -4048,13 +4079,12 @@ async function loadYOMField(){
         hour:'2-digit',minute:'2-digit',second:'2-digit',
         hour12:true,timeZone:'UTC'
       }).toUpperCase();
-      const typeLabel=sh.action_type==='answer'?'Answer':'Question';
       dateEl.innerHTML=`<span style="color:var(--t1)">${dateStr}</span>`;
       if(timeEl){
-        timeEl.innerHTML=`${timeStr} IST · <span style="color:var(--gold);font-weight:600">+${sh.pts_awarded||0} Ψ</span> · ${typeLabel}`;
+        timeEl.innerHTML=`${timeStr} IST · <span style="color:var(--gold);font-weight:600">+${latest.pts} Ψ</span> · ${latest.label}`;
       }
     } else if(dateEl){
-      dateEl.innerHTML='<span class="yw-le-none">No earnings yet</span>';
+      dateEl.innerHTML='<span class="yw-le-none">No activity yet</span>';
       if(timeEl)timeEl.textContent='';
     }
   }catch(e){
