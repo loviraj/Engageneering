@@ -435,18 +435,40 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 @keyframes apBdFadeIn{from{opacity:0}to{opacity:1}}
 @keyframes apFadeIn{from{opacity:0;transform:translate(-50%,-50%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 .ans-panel.open .ap-close{
-  position:absolute; top:12px; right:14px;
-  width:32px; height:32px;
-  background:rgba(200,146,42,.08); border:1px solid rgba(200,146,42,.2);
-  color:var(--t3); font-size:20px; cursor:pointer;
-  border-radius:50%;
+  width:34px; height:34px;
   display:flex; align-items:center; justify-content:center;
+  background:rgba(200,146,42,.22); border:1px solid rgba(200,146,42,.45);
+  color:var(--gold); font-size:22px; cursor:pointer;
+  border-radius:50%;
   transition:all .2s;
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+  flex-shrink:0;
+  padding:0; line-height:1;
 }
-.ans-panel.open .ap-close:hover{background:rgba(200,146,42,.2); color:var(--gold); border-color:var(--gold)}
+.ans-panel.open .ap-close:hover{background:rgba(200,146,42,.4); color:#fff8e0; border-color:var(--gold); transform:scale(1.06)}
 .ans-panel:not(.open) .ap-close{display:none}
+
+/* Sticky header bar that stays visible while the modal scrolls.
+   Sits flush with the top edge of the scrollable area using negative margins
+   to extend across the modal's full width. */
+.ans-panel.open .ap-sticky-bar{
+  position:sticky;
+  top:0;
+  margin:-1.6rem -1.8rem 1rem;        /* negate modal padding so bar spans full width */
+  padding:.6rem 1.4rem;
+  background:linear-gradient(180deg, rgba(10,22,40,.98) 0%, rgba(10,22,40,.88) 100%);
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(200,146,42,.18);
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  z-index:6;
+  border-radius:14px 14px 0 0;
+}
+.ans-panel:not(.open) .ap-sticky-bar{display:none}
 .ans-panel.open .ap-title{
-  font-size:11px; letter-spacing:3.5px; margin-bottom:1rem; padding-right:42px;
+  font-size:11px; letter-spacing:3.5px; margin-bottom:1rem;
 }
 .ap-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:700}
 
@@ -982,7 +1004,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
               <div class="rec-limit" id="recLimit">⏱ Questions: max 60s · Answers: max 180s · Auto-stops at limit</div>
             </div>
             <div class="rec-controls">
-              <button class="rec-btn rec-btn-start" id="recStart" onclick="startRec()" disabled style="opacity:.4;cursor:not-allowed" title="Select your language first">
+              <button class="rec-btn rec-btn-start" id="recStart" onclick="startRec()" disabled style="opacity:.4;cursor:not-allowed" title="First: pick a language & add a title (min 8 chars)">
                 <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>
                 Start Recording
               </button>
@@ -1047,12 +1069,14 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
         <div style="font-size:10px;color:var(--t4);margin-top:4px">Select the language you will speak in your video</div>
       </div>
 
-      <!-- One-line title for search/matching (optional) -->
+      <!-- One-line title — MANDATORY (gates the record button) -->
       <div class="field" style="margin-bottom:.8rem">
-        <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem;display:block">Question Title <span style="color:var(--t4);font-size:9px;font-weight:400">(optional — helps ARIA match your question)</span></label>
-        <input type="text" id="qText" maxlength="120"
+        <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem;display:block">Question Title <span style="color:#e24b4a;font-size:9px;font-weight:600">*</span> <span style="color:var(--t4);font-size:9px;font-weight:400">(helps ARIA match your question)</span></label>
+        <input type="text" id="qText" maxlength="120" required minlength="8"
           placeholder="e.g. How do I explain fractions to a 10-year-old?"
+          oninput="onQuestionGateChange()"
           style="width:100%;background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:8px 12px;color:var(--t2);font-family:inherit;font-size:14px"/>
+        <div id="qTextHint" style="font-size:9px;color:var(--t4);margin-top:.3rem;letter-spacing:.5px">Minimum 8 characters required.</div>
       </div>
       <!-- Tags + submit -->
       <div class="field" style="margin-top:1rem">
@@ -2277,15 +2301,19 @@ function _openAnsPanel(panel){
     bd.onclick = () => { panel.classList.remove('open'); _closeAnsPanel(panel); };
     document.body.appendChild(bd);
   }
-  // Close (×) button
-  if(!panel.querySelector('.ap-close')){
+  // Sticky top-bar wrapper for the close button so it stays visible after
+  // the user scrolls down (e.g. after submission renders the score card).
+  if(!panel.querySelector('.ap-sticky-bar')){
+    const bar = document.createElement('div');
+    bar.className = 'ap-sticky-bar';
     const x = document.createElement('button');
     x.className = 'ap-close';
     x.type = 'button';
     x.setAttribute('aria-label', 'Close answer panel');
     x.textContent = '×';
     x.onclick = () => { panel.classList.remove('open'); _closeAnsPanel(panel); };
-    panel.prepend(x);
+    bar.appendChild(x);
+    panel.prepend(bar);
   }
   document.body.style.overflow = 'hidden';
   // Esc to close
@@ -3084,13 +3112,16 @@ document.getElementById('submitModal').addEventListener('click',e=>{if(e.target=
 function resetModal(){
   contentType='video';videoTab='record'; setType('video');
   document.getElementById('qText').value='';
+  // Reset language too — both are mandatory gates now
+  const lng=document.getElementById('qLanguage');
+  if(lng) lng.value='';
   document.getElementById('modalErr').textContent='';
   recBlob=null;uploadFile=null;
   document.querySelectorAll('#submitModal .tag-chip').forEach(c=>c.classList.remove('on'));
   const pv=document.getElementById('uploadPreview');if(pv)pv.style.display='none';
+  // Re-evaluate gate (will lock recorder since both inputs are empty)
+  if(typeof onQuestionGateChange === 'function') onQuestionGateChange();
   // Clear recorder state
-  const s=document.getElementById('recStatus');
-  if(s){s.textContent='Click Start Recording to begin';s.style.color='';}
   const t=document.getElementById('recTimer');
   if(t){t.textContent='0:00';t.classList.remove('show','over');}
   // Reset recorder UI
@@ -3103,32 +3134,68 @@ function resetModal(){
 }
 
 // ══ CONTENT TYPE ══
-// ── LANGUAGE GATE — unlock recorder when language selected ──
-function onLanguageSelected(){
-  const lang=document.getElementById('qLanguage')?.value;
-  const recBtn=document.getElementById('recStart');
-  const tabRec=document.getElementById('tabRecord');
-  const tabUp=document.getElementById('tabUpload');
-  if(lang && lang!==''){
-    // Enable record button
+// ── QUESTION GATE — unlock recorder only when BOTH language is chosen
+//    AND title is at least 8 chars (both now mandatory) ──
+function onQuestionGateChange(){
+  const langEl  = document.getElementById('qLanguage');
+  const titleEl = document.getElementById('qText');
+  const recBtn  = document.getElementById('recStart');
+  const tabRec  = document.getElementById('tabRecord');
+  const tabUp   = document.getElementById('tabUpload');
+  const hintEl  = document.getElementById('qTextHint');
+  const status  = document.getElementById('recStatus');
+
+  const lang  = (langEl?.value || '').trim();
+  const title = (titleEl?.value || '').trim();
+  const langOk  = !!lang;
+  const titleOk = title.length >= 8;
+  const ready   = langOk && titleOk;
+
+  // Title hint colour feedback
+  if(hintEl){
+    if(!titleOk && title.length > 0){
+      hintEl.textContent = `Minimum 8 characters (${title.length}/8).`;
+      hintEl.style.color = '#e24b4a';
+    } else if(titleOk){
+      hintEl.textContent = '✓ Title looks good.';
+      hintEl.style.color = '#2e9e4f';
+    } else {
+      hintEl.textContent = 'Minimum 8 characters required.';
+      hintEl.style.color = 'var(--t4)';
+    }
+  }
+
+  if(ready){
     if(recBtn){
-      recBtn.disabled=false;
-      recBtn.style.opacity='';
-      recBtn.style.cursor='pointer';
+      recBtn.disabled = false;
+      recBtn.style.opacity = '';
+      recBtn.style.cursor = 'pointer';
       recBtn.removeAttribute('title');
     }
-    // Enable upload tab
-    if(tabRec){tabRec.style.opacity='';tabRec.style.pointerEvents='';}
-    if(tabUp){tabUp.style.opacity='';tabUp.style.pointerEvents='';}
-    // Update language label
-    const langSel=document.getElementById('qLanguage');
-    const langName=langSel.options[langSel.selectedIndex]?.text||'';
-    const s=document.getElementById('recStatus');
-    if(s) s.textContent=`Language set: ${langName} · Ready to record`;
+    if(tabRec){ tabRec.style.opacity = ''; tabRec.style.pointerEvents = ''; }
+    if(tabUp){  tabUp.style.opacity = '';  tabUp.style.pointerEvents = '';  }
+    const langName = langEl?.options[langEl.selectedIndex]?.text || '';
+    if(status) status.textContent = `Language: ${langName} · Ready to record`;
   } else {
-    if(recBtn){recBtn.disabled=true;recBtn.style.opacity='.4';recBtn.style.cursor='not-allowed';}
+    if(recBtn){
+      recBtn.disabled = true;
+      recBtn.style.opacity = '.4';
+      recBtn.style.cursor = 'not-allowed';
+      const reasons = [];
+      if(!langOk)  reasons.push('select your language');
+      if(!titleOk) reasons.push('add a title (min 8 chars)');
+      recBtn.title = 'First: ' + reasons.join(' & ');
+    }
+    if(status){
+      if(!langOk && !titleOk) status.textContent = 'Pick a language and add a title to start';
+      else if(!langOk)        status.textContent = 'Pick a language to continue';
+      else                    status.textContent = 'Add a title (min 8 characters) to continue';
+    }
   }
 }
+
+// Backward-compat alias (still wired up on the <select onchange>)
+function onLanguageSelected(){ onQuestionGateChange(); }
 
 function setType(t){
   // VIDEO-ONLY: always force video regardless of argument
@@ -3699,7 +3766,18 @@ async function submitQuestion(){
   const languageName=document.getElementById('qLanguage')?.options[document.getElementById('qLanguage').selectedIndex]?.text||'English';
   const err=document.getElementById('modalErr');
   err.textContent='';
-  const q=document.getElementById('qText')?.value?.trim()||''; // optional title
+  const q=document.getElementById('qText')?.value?.trim()||'';
+
+  // Mandatory: language must be picked
+  if(!language || !document.getElementById('qLanguage')?.value){
+    err.textContent='Please select your language before submitting.';
+    return;
+  }
+  // Mandatory: title must be at least 8 chars
+  if(q.length < 8){
+    err.textContent='Please add a question title of at least 8 characters.';
+    return;
+  }
 
   // Enforce video-only
   if(videoTab==='record'&&!recBlob){
