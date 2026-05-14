@@ -802,10 +802,25 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .aria-sources{font-size:10px;color:var(--t4);margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(30,58,106,.3)}
 
 /* ══ CULTIVATE Ψ MODAL ══ */
-.buy-psi-overlay{position:fixed;inset:0;background:rgba(4,8,18,.95);z-index:600;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(12px)}
+.buy-psi-overlay{
+  position:fixed;inset:0;background:rgba(4,8,18,.95);z-index:600;
+  display:none;
+  overflow-y:auto;             /* overlay scrolls when modal taller than viewport */
+  align-items:flex-start;       /* top-align so we can scroll to the top of the modal */
+  justify-content:center;
+  padding:1.5rem 1rem;
+  backdrop-filter:blur(12px)
+}
 .buy-psi-overlay.open{display:flex}
-.buy-psi-modal{background:linear-gradient(135deg,#0d1e38 0%,#0a1628 100%);border:1px solid rgba(200,146,42,.4);border-radius:16px;width:100%;max-width:480px;overflow:hidden;position:relative}
-.buy-psi-hdr{padding:1.3rem 1.5rem;border-bottom:1px solid rgba(30,58,106,.5);display:flex;align-items:center;justify-content:space-between}
+.buy-psi-modal{
+  background:linear-gradient(135deg,#0d1e38 0%,#0a1628 100%);
+  border:1px solid rgba(200,146,42,.4);
+  border-radius:16px;width:100%;max-width:480px;
+  position:relative;
+  /* Don't clip — the overlay scrolls instead */
+  margin:auto 0;
+}
+.buy-psi-hdr{padding:1.3rem 1.5rem;border-bottom:1px solid rgba(30,58,106,.5);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#0d1e38;border-radius:16px 16px 0 0;z-index:2}
 .buy-psi-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gb);font-weight:700;display:flex;align-items:center;gap:.5rem}
 .buy-psi-body{padding:1.5rem}
 .psi-pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.2rem}
@@ -817,6 +832,22 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .psi-pack-psi span{font-size:14px;color:var(--gold)}
 .psi-pack-inr{font-size:13px;color:var(--t3);margin-top:.25rem}
 .psi-pack-per{font-size:10px;color:var(--t4);margin-top:.1rem}
+/* Tighter layout on tablets / small windows */
+@media (max-width:520px){
+  .buy-psi-overlay{padding:.75rem .5rem}
+  .buy-psi-modal{border-radius:12px}
+  .buy-psi-hdr{padding:1rem 1.1rem;border-radius:12px 12px 0 0}
+  .buy-psi-title{font-size:17px}
+  .buy-psi-body{padding:1.1rem}
+  .psi-pack{padding:.75rem}
+  .psi-pack-psi{font-size:24px}
+  #billingDetailsSection select,
+  #billingDetailsSection input{font-size:14px !important}
+}
+/* Tiny phones — single-column packs */
+@media (max-width:380px){
+  .psi-pack-grid{grid-template-columns:1fr}
+}
 .pay-methods{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
 .pay-method{border:1px solid var(--bdr);border-radius:7px;padding:.5rem .9rem;cursor:pointer;transition:all .2s;font-size:11px;color:var(--t3);background:transparent;display:flex;align-items:center;gap:.4rem}
 .pay-method:hover{border-color:var(--bdr2);color:var(--t2)}
@@ -1964,16 +1995,34 @@ function getVideoMime(url){
   return'video/webm'; // default — most browser-recorded video
 }
 
-function videoPlayer(url,thumb,type){
+// Track which question videos have been watched in full.
+// Answer buttons are gated on this — see qCard() / _enableAnsBtn().
+const videoFullyWatched = new Set();
+
+function _enableAnsBtn(qid){
+  if(!qid) return;
+  videoFullyWatched.add(qid);
+  document.querySelectorAll(`[data-ans-for="${qid}"]`).forEach(btn=>{
+    btn.disabled = false;
+    btn.removeAttribute('title');
+    btn.style.opacity = '';
+    btn.style.cursor = '';
+  });
+}
+
+function videoPlayer(url,thumb,type,qid){
   const id='v'+Math.random().toString(36).substr(2,6);
   const mime=getVideoMime(url);
+  // qid is wired via data-attribute so onended (set inside playVideoInline)
+  // can find which question to mark as fully watched.
+  const qidAttr = qid ? ` data-qid="${qid}"` : '';
   // Thumbnail: use image if available, otherwise poster attribute on video
   const thumbHtml = thumb
     ? `<img src="${thumb}" alt="Video thumbnail" style="width:100%;height:100%;object-fit:cover;display:block"/>`
     : `<video src="${url}" preload="metadata" muted crossorigin="anonymous" style="display:block;width:100%;height:100%;object-fit:cover" onloadeddata="this.currentTime=0.5"><source src="${url}" type="${mime}"/></video>`;
-  return`<div class="qc-video-thumb" onclick="playVideoInline('${id}','${url}','${mime}',this)">
+  return`<div class="qc-video-thumb" onclick="playVideoInline('${id}','${url}','${mime}',this${qid?",'"+qid+"'":''})">
     <div id="thumb-${id}" style="width:100%;height:100%;position:absolute;inset:0">${thumbHtml}</div>
-    <video id="${id}" controls playsinline crossorigin="anonymous"
+    <video id="${id}"${qidAttr} controls playsinline crossorigin="anonymous"
       style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;background:#000">
       <source src="${url}" type="${mime}"/>
     </video>
@@ -1984,7 +2033,7 @@ function videoPlayer(url,thumb,type){
   </div>`;
 }
 
-function playVideoInline(id,url,mime,container){
+function playVideoInline(id,url,mime,container,qid){
   const thumb=document.getElementById('thumb-'+id);
   const overlay=document.getElementById('overlay-'+id);
   if(thumb)thumb.style.display='none';
@@ -2006,6 +2055,22 @@ function playVideoInline(id,url,mime,container){
   // Always set source fresh to ensure correct MIME type
   video.innerHTML=`<source src="${url}" type="${mime||getVideoMime(url)}"/>`;
   video.style.display='block';
+
+  // Wire the gate: once a question video plays through, unlock the Answer button.
+  // (qid passed in OR read from data-qid attribute set by videoPlayer.)
+  const trackedQid = qid || video.getAttribute('data-qid');
+  if(trackedQid && !video._gateHooked){
+    video._gateHooked = true;
+    video.addEventListener('ended', ()=> _enableAnsBtn(trackedQid));
+    // Also catch the "seek-to-very-end" case (user dragged the scrubber to end).
+    // Mark watched when remaining time falls under 0.5s.
+    video.addEventListener('timeupdate', ()=>{
+      if(video.duration && (video.duration - video.currentTime) < 0.5){
+        _enableAnsBtn(trackedQid);
+      }
+    });
+  }
+
   video.load(); // Required after changing source
   video.play().catch(e=>{
     // Autoplay blocked — show controls and let user press play
@@ -2051,7 +2116,7 @@ function qCard(q,force=false){
 
   return`<div class="qc ${feat?'feat':''}" data-qid="${q.id}">
     <div style="display:flex;gap:1rem;align-items:flex-start">
-    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question'):q.video_thumbnail
+    ${q.video_url?videoPlayer(q.video_url,q.video_thumbnail,'question',q.id):q.video_thumbnail
       ?`<img src="${q.video_thumbnail}"
           data-picsum="${getTopicThumb(q.tags,q.id)}"
           data-tag="${((q.tags||['General'])[0]||'General').replace(/['"]/g,'')}"
@@ -2078,7 +2143,14 @@ function qCard(q,force=false){
         <div class="qstat">${q.answer_count||0} answers</div>
         <div class="qstat">${q.views||0} views</div>
         ${q.bounty_pts>0?`<div style="font-size:11px;color:var(--am);font-weight:500">+${q.bounty_pts} Ψ YOM</div>`:''}
-        <button class="ans-btn" onclick="togglePanel('${pid}')">Answer</button>
+        ${(() => {
+          // Answer button is gated on the question video being fully watched.
+          // Already-watched (e.g. user came back) → enabled. No video → enabled.
+          // User answering their own Q → still gated (consistency).
+          const watched = !q.video_url || videoFullyWatched.has(q.id);
+          const dis = watched ? '' : 'disabled style="opacity:.5;cursor:not-allowed" title="Watch the question first"';
+          return `<button class="ans-btn" data-ans-for="${q.id}" onclick="togglePanel('${pid}')" ${dis}>Answer</button>`;
+        })()}
         <button class="aria-ask-btn" id="ask-aria-${q.id}" onclick="openAriaPanel('${q.id}')" title="ARIA synthesises the best answer from top-CDS responses · Costs Ψ${ARIA_COST}">
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><polygon points="5.5,1 10,5.5 5.5,10 1,5.5" stroke="#afa9ec" stroke-width="1.2" fill="rgba(127,119,221,.2)"/><text x="5.5" y="7.2" text-anchor="middle" font-size="5.5" fill="#afa9ec" font-weight="700">A</text></svg>
           Ask ARIA
@@ -4546,9 +4618,9 @@ function showPaymentReceipt(args){
   const fmtT = d => d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   const ov = document.createElement('div');
   ov.id = 'payReceiptOverlay';
-  ov.style.cssText='position:fixed;inset:0;z-index:1000;background:rgba(4,8,18,.96);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:1rem';
+  ov.style.cssText='position:fixed;inset:0;z-index:1000;background:rgba(4,8,18,.96);display:flex;align-items:flex-start;justify-content:center;backdrop-filter:blur(8px);padding:1.5rem 1rem;overflow-y:auto';
   ov.innerHTML=`
-    <div id="payReceiptBox" style="background:linear-gradient(135deg,#0d1e38,#0a1628);border:1px solid rgba(200,146,42,.35);border-radius:14px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+    <div id="payReceiptBox" style="background:linear-gradient(135deg,#0d1e38,#0a1628);border:1px solid rgba(200,146,42,.35);border-radius:14px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.6);margin:auto 0">
       <div style="background:linear-gradient(135deg,rgba(200,146,42,.14),rgba(200,146,42,.04));padding:1.1rem 1.4rem;border-bottom:1px solid rgba(200,146,42,.2);display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:#f0c040">🌾 Cultivation Receipt</div>
