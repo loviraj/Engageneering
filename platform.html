@@ -407,7 +407,47 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 
 /* ══ VIDEO ANSWER PLAYER ══ */
 .ans-panel{padding:1.2rem 1.4rem;border-top:1px solid var(--bdr);display:none}
-.ans-panel.open{display:block}
+/* When opened: promoted to a centered fixed modal — no DOM duplication, so
+   recorder lifecycle and av-*-${qid} IDs keep working as-is. */
+.ans-panel.open{
+  display:block;
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:min(720px, 94vw);
+  max-height:92vh;
+  overflow-y:auto;
+  background:linear-gradient(145deg,#0a1628 0%,#060c1a 100%);
+  border:1px solid rgba(200,146,42,.35);
+  border-radius:14px;
+  box-shadow:0 30px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(200,146,42,.05);
+  padding:1.6rem 1.8rem;
+  z-index:10001;
+  animation:apFadeIn .25s cubic-bezier(.34,1.2,.64,1);
+}
+.ans-panel-backdrop{
+  position:fixed; inset:0;
+  background:rgba(2,5,14,.78);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  z-index:10000;
+  animation:apBdFadeIn .25s ease;
+}
+@keyframes apBdFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes apFadeIn{from{opacity:0;transform:translate(-50%,-50%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.ans-panel.open .ap-close{
+  position:absolute; top:12px; right:14px;
+  width:32px; height:32px;
+  background:rgba(200,146,42,.08); border:1px solid rgba(200,146,42,.2);
+  color:var(--t3); font-size:20px; cursor:pointer;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .2s;
+}
+.ans-panel.open .ap-close:hover{background:rgba(200,146,42,.2); color:var(--gold); border-color:var(--gold)}
+.ans-panel:not(.open) .ap-close{display:none}
+.ans-panel.open .ap-title{
+  font-size:11px; letter-spacing:3.5px; margin-bottom:1rem; padding-right:42px;
+}
 .ap-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:700}
 
 /* Answer type toggle */
@@ -2133,10 +2173,68 @@ function qCard(q,force=false){
 }
 
 function togglePanel(id){
-  document.getElementById(id)?.classList.toggle('open');
+  const panel = document.getElementById(id);
+  if(!panel) return;
+  const willOpen = !panel.classList.contains('open');
+
+  // One open panel at a time — close any other before opening this
+  if(willOpen){
+    document.querySelectorAll('.ans-panel.open').forEach(p=>{
+      if(p !== panel) _closeAnsPanel(p);
+    });
+  }
+
+  panel.classList.toggle('open');
   // Ensure answer type is always video when panel opens
-  const qid=id.replace('panel-','');
-  if(qid && !ansTypes[qid]) ansTypes[qid]='video';
+  const qid = id.replace('panel-','');
+  if(qid && !ansTypes[qid]) ansTypes[qid] = 'video';
+
+  if(panel.classList.contains('open')){
+    _openAnsPanel(panel);
+  } else {
+    _closeAnsPanel(panel);
+  }
+}
+
+function _openAnsPanel(panel){
+  // Backdrop (clicking it closes)
+  if(!document.getElementById('ansPanelBackdrop')){
+    const bd = document.createElement('div');
+    bd.id = 'ansPanelBackdrop';
+    bd.className = 'ans-panel-backdrop';
+    bd.onclick = () => { panel.classList.remove('open'); _closeAnsPanel(panel); };
+    document.body.appendChild(bd);
+  }
+  // Close (×) button
+  if(!panel.querySelector('.ap-close')){
+    const x = document.createElement('button');
+    x.className = 'ap-close';
+    x.type = 'button';
+    x.setAttribute('aria-label', 'Close answer panel');
+    x.textContent = '×';
+    x.onclick = () => { panel.classList.remove('open'); _closeAnsPanel(panel); };
+    panel.prepend(x);
+  }
+  document.body.style.overflow = 'hidden';
+  // Esc to close
+  panel._escHandler = (e) => {
+    if(e.key === 'Escape'){
+      panel.classList.remove('open');
+      _closeAnsPanel(panel);
+    }
+  };
+  document.addEventListener('keydown', panel._escHandler);
+}
+
+function _closeAnsPanel(panel){
+  document.getElementById('ansPanelBackdrop')?.remove();
+  document.body.style.overflow = '';
+  if(panel._escHandler){
+    document.removeEventListener('keydown', panel._escHandler);
+    panel._escHandler = null;
+  }
+  // Stop any active recording cleanly — guard against undefined helper
+  try { if(typeof stopAnsRecAll === 'function') stopAnsRecAll(); } catch(e){}
 }
 
 // Per-card answer type
