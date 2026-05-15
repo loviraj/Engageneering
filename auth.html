@@ -562,7 +562,14 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
           <circle cx="26" cy="30" r="1.6" fill="#f5d060"/>
         </svg>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#f0c040;margin-bottom:.5rem;font-weight:600">Welcome to the Movement</div>
-        <div id="successTier" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3)">
+        <div id="successTier" style="display:inline-flex;align-items:center;gap:.5rem;padding:6px 14px;border-radius:20px;font-size:13px;color:#f0c040;background:rgba(200,146,42,.1);border:1px solid rgba(200,146,42,.3);margin-bottom:1.2rem"></div>
+        <div id="successMsg" style="font-size:14px;color:#b8cce8;line-height:1.7;max-width:380px;margin:0 auto 1.5rem"></div>
+        <button class="submit-btn" onclick="window.location.href = (typeof _consentDestination === 'function' ? _consentDestination() : 'platform.html')">Enter the Platform →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 
@@ -627,10 +634,11 @@ window.addEventListener('DOMContentLoaded', async () => {
       const u = sd.session.user;
       const isGoogle = u && u.app_metadata && u.app_metadata.provider === 'google';
       if (isGoogle) {
-        // Google OAuth — check profile
-        const { data: prof } = await supa.from('profiles').select('id').eq('id', u.id).single();
-        if (prof) {
-          // Existing profile — route through the consent gate
+        // Existing user? Either a profiles row OR a legal_consents row counts.
+        // This avoids treating returning users as new just because of an RLS
+        // hiccup on the profiles lookup.
+        const existing = await _isExistingUser(u.id);
+        if (existing) {
           window.history.replaceState({}, document.title, window.location.pathname);
           await gateOrEnter(u);
           return;
@@ -655,13 +663,13 @@ window.addEventListener('DOMContentLoaded', async () => {
       // Google OAuth users: auto-confirmed, check if they have a profile already
       const isGoogle = user.app_metadata && user.app_metadata.provider === 'google';
       if (isGoogle) {
-        const { data: prof } = await supa.from('profiles').select('id').eq('id', user.id).single();
-        if (prof) {
-          // Returning Google user with existing profile → route through gate
+        const existing = await _isExistingUser(user.id);
+        if (existing) {
+          // Returning Google user → route through gate
           await gateOrEnter(user);
           return;
         } else {
-          // New Google user — collect role/details before entering platform
+          // Truly new Google user — collect role/details before entering platform
           window._googleUser = {
             uid:      user.id,
             email:    user.email,
@@ -947,8 +955,10 @@ async function _completeLinkSignup(session) {
       await recordConsent(uid, p.consent);
       localStorage.removeItem('_eng_pending');
       window._pendingSignup = null;
+      // Queue redirect FIRST so any DOM hiccup in showSuccess cannot
+      // prevent navigation to the platform.
+      setTimeout(function() { window.location.href = _consentDestination(); }, 2000);
       showSuccess(p.fullName, p.role, true);
-      setTimeout(function() { window.location.href = 'platform.html'; }, 2000);
     } catch(ce) {
       if (st) st.textContent = '✓ Email confirmed — one last step.';
       // Re-prompt for consent rather than letting the user in without a record.
@@ -1066,6 +1076,33 @@ async function gateOrEnter(user) {
 // (email or Google) already capture consent inline, so they bypass this
 // gate naturally because their row is written before they reach platform.
 // ══════════════════════════════════════════════════════════════════════
+// Treats a user as "existing" if any of these signals is present:
+//   - a row in `profiles` with matching id
+//   - a row in `legal_consents` with matching user_id
+// Either signal means we've seen this user before. We deliberately do
+// NOT treat the absence of a profile row as proof of "new user" — RLS
+// hiccups or aborted previous onboarding can leave a user with a
+// session but no profile yet a recorded consent (or vice versa). When
+// in doubt, treat as existing and let gateOrEnter decide.
+async function _isExistingUser(uid) {
+  if (!uid) return false;
+  try {
+    const { count: pc, error: pe } = await supa
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('id', uid);
+    if (!pe && (pc || 0) > 0) return true;
+  } catch(_) {}
+  try {
+    const { count: cc, error: ce } = await supa
+      .from('legal_consents')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', uid);
+    if (!ce && (cc || 0) > 0) return true;
+  } catch(_) {}
+  return false;
+}
+
 async function hasRecordedConsent(uid) {
   if (!uid) { console.warn('[consent] no uid passed → treat as missing'); return false; }
   try {
@@ -1402,8 +1439,10 @@ async function verifyOTP() {
 
     window._pendingSignup = null;
     if (_resendInterval) clearInterval(_resendInterval);
+    // Queue redirect FIRST so any DOM hiccup in showSuccess cannot
+    // prevent navigation to the platform.
+    setTimeout(() => { window.location.href = _consentDestination(); }, 2500);
     showSuccess(p.fullName, p.role, true);
-    setTimeout(() => { window.location.href = 'platform.html'; }, 2500);
 
   } catch(e) {
     errEl.textContent = 'Unexpected error: ' + e.message;
@@ -1493,8 +1532,10 @@ async function doGoogleOnboardingSave() {
       return;
     }
     window._googleUser = null;
+    // Queue redirect FIRST so any DOM hiccup in showSuccess cannot
+    // prevent navigation to the platform.
+    setTimeout(function(){ window.location.href = _consentDestination(); }, 2500);
     showSuccess(g.fullName, selectedRole, true);
-    setTimeout(function(){ window.location.href = 'platform.html'; }, 2500);
   } catch(ex) {
     err.textContent = 'Error: ' + ex.message; err.style.color = '#f09595';
     btn.textContent = 'Complete Profile & Enter →'; btn.disabled = false;
@@ -1537,20 +1578,31 @@ async function createProfile(uid, p) {
 }
 
 function showSuccess(name, role, loggedIn) {
-  [1,2,3,4].forEach(i => { const el = document.getElementById('step'+i); if(el) el.style.display='none'; });
-  document.getElementById('successBox').classList.add('show');
-  const TIERS = { both:'\u2746 Curious \u00b7 T1 \u00b7 Seeker + Answerer Track', seeker:'\u2746 Curious \u00b7 T1 \u00b7 Seeker Track', answerer:'\u2746 Responder \u00b7 T1 \u00b7 Answerer Track', institution:'\u2746 Institution Account \u00b7 Active' };
-  const MSGS  = {
-    both:        name + ', both tracks are now active. ARIA has noted your expertise and will match questions to you from day one.',
-    seeker:      name + ', your Seeker profile is live. Ask your first question above.',
-    answerer:    name + ', your Answerer profile is live. ARIA will invite you to questions matching your expertise.',
-    institution: name + ', your institution account is active. Invite your team members to begin.'
-  };
-  document.getElementById('successTier').textContent = TIERS[role]||TIERS.both;
-  document.getElementById('successMsg').textContent  = loggedIn ? (MSGS[role]||MSGS.both) : 'Account created! Check your email and confirm to log in.';
-  if (!loggedIn) {
-    document.querySelector('#successBox .submit-btn').textContent = 'Go to Log In \u2192';
-    document.querySelector('#successBox .submit-btn').onclick = () => showForm('login');
+  try {
+    [1,2,3,4].forEach(i => { const el = document.getElementById('step'+i); if(el) el.style.display='none'; });
+    const sb = document.getElementById('successBox');
+    if (sb) sb.classList.add('show');
+    const TIERS = { both:'\u2746 Curious \u00b7 T1 \u00b7 Seeker + Answerer Track', seeker:'\u2746 Curious \u00b7 T1 \u00b7 Seeker Track', answerer:'\u2746 Responder \u00b7 T1 \u00b7 Answerer Track', institution:'\u2746 Institution Account \u00b7 Active' };
+    const MSGS  = {
+      both:        name + ', both tracks are now active. ARIA has noted your expertise and will match questions to you from day one.',
+      seeker:      name + ', your Seeker profile is live. Ask your first question above.',
+      answerer:    name + ', your Answerer profile is live. ARIA will invite you to questions matching your expertise.',
+      institution: name + ', your institution account is active. Invite your team members to begin.'
+    };
+    const tierEl = document.getElementById('successTier');
+    if (tierEl) tierEl.textContent = TIERS[role]||TIERS.both;
+    const msgEl  = document.getElementById('successMsg');
+    if (msgEl)  msgEl.textContent  = loggedIn ? (MSGS[role]||MSGS.both) : 'Account created! Check your email and confirm to log in.';
+    if (!loggedIn) {
+      const btnEl = document.querySelector('#successBox .submit-btn');
+      if (btnEl) {
+        btnEl.textContent = 'Go to Log In \u2192';
+        btnEl.onclick = () => showForm('login');
+      }
+    }
+  } catch(e) {
+    // Never let DOM hiccups in the success screen swallow the redirect.
+    console.warn('showSuccess error (non-fatal):', e && e.message ? e.message : e);
   }
 }
 
