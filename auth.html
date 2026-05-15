@@ -266,6 +266,42 @@ textarea{min-height:80px;resize:vertical;line-height:1.6}
       </div>
     </div>
 
+    <!-- ══ CONSENT GATE — for signed-in users who haven't recorded consent yet ══ -->
+    <div class="form-wrap" id="formConsentGate">
+      <div class="form-title">One quick step before you enter</div>
+      <div class="form-sub" id="cgSub">We've updated our policies. Please review and confirm to continue to the platform.</div>
+
+      <div style="margin-top:1rem">
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c8922a;font-weight:700;margin-bottom:.7rem">Review &amp; Agree</div>
+
+        <div class="consent-box">
+          <strong>Content Disclaimer — You must read this.</strong><br><br>
+          Engageneering™ is a user-generated content platform. All videos, answers, and questions are uploaded by individual users. <strong>Engageneering™ does not review, verify, endorse, or take responsibility for any user-uploaded content.</strong> Content does not constitute professional medical, legal, financial, or other licensed advice. ARIA scores reflect automated pedagogical quality assessment only — not factual accuracy.<br><br>
+          <strong>Terms Summary:</strong> By continuing you agree to our full <a href="legal.html" target="_blank">Terms &amp; Conditions</a>, <a href="legal.html#privacy" target="_blank">Privacy Policy</a>, and <a href="legal.html#disclaimer" target="_blank">Content Disclaimer</a>. You must be 18+ to use the platform. You are solely responsible for content you upload.
+        </div>
+
+        <div class="consent-check-row">
+          <input type="checkbox" id="cgTerms" onchange="checkConsentGate()"/>
+          <label for="cgTerms">I have read and agree to the <a href="legal.html" target="_blank">Terms &amp; Conditions</a> and <a href="legal.html" target="_blank">Privacy Policy</a> of Engageneering™.</label>
+        </div>
+        <div class="consent-check-row">
+          <input type="checkbox" id="cgDisclaimer" onchange="checkConsentGate()"/>
+          <label for="cgDisclaimer">I understand and accept the <a href="legal.html" target="_blank">Content Disclaimer</a>: Engageneering™ is not responsible for user-uploaded videos. Content does not constitute professional advice. I am 18 years of age or older.</label>
+        </div>
+        <div class="consent-check-row">
+          <input type="checkbox" id="cgYom" onchange="checkConsentGate()"/>
+          <label for="cgYom">I understand that YOM Ψ points are a platform contribution metric, not financial instruments. I accept the <a href="legal.html" target="_blank">YOM Field Policy</a> and <a href="legal.html" target="_blank">ARIA &amp; AI Policy</a>.</label>
+        </div>
+        <div class="consent-warn" id="cgWarn">Please check all three boxes to proceed.</div>
+      </div>
+
+      <button class="submit-btn" id="cgBtn" onclick="saveConsentGate()" style="margin-top:1.2rem;opacity:.45">Confirm &amp; Enter Platform →</button>
+      <div class="err" id="cgErr"></div>
+      <div style="text-align:center;font-size:11px;color:#4a6a8a;margin-top:1rem">
+        Prefer not to continue? <span style="color:#c8922a;cursor:pointer" onclick="cgSignOut()">Sign out</span>
+      </div>
+    </div>
+
     <!-- ══ LOGIN FORM ══ -->
     <div class="form-wrap" id="formLogin">
       <div class="back-link" onclick="showEntry()">← Back</div>
@@ -593,7 +629,14 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (isGoogle) {
         // Google OAuth — check profile
         const { data: prof } = await supa.from('profiles').select('id').eq('id', u.id).single();
-        if (prof) { window.history.replaceState({}, document.title, window.location.pathname); window.location.href = 'platform.html'; return; }
+        if (prof) {
+          // Existing profile — check consent before platform
+          window.history.replaceState({}, document.title, window.location.pathname);
+          const consentOk = await hasRecordedConsent(u.id);
+          if (consentOk) { window.location.href = 'platform.html'; return; }
+          _showConsentGate(u);
+          return;
+        }
         window._googleUser = { uid: u.id, email: u.email, fullName: (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || u.email.split('@')[0] };
         window.history.replaceState({}, document.title, window.location.pathname);
         _showGoogleOnboarding(); return;
@@ -616,8 +659,11 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (isGoogle) {
         const { data: prof } = await supa.from('profiles').select('id').eq('id', user.id).single();
         if (prof) {
-          // Returning Google user with existing profile → platform
-          window.location.href = 'platform.html'; return;
+          // Returning Google user with existing profile → check consent before platform
+          const consentOk = await hasRecordedConsent(user.id);
+          if (consentOk) { window.location.href = 'platform.html'; return; }
+          _showConsentGate(user);
+          return;
         } else {
           // New Google user — collect role/details before entering platform
           window._googleUser = {
@@ -629,7 +675,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
       }
       // Regular email user — must be confirmed
-      if (user.email_confirmed_at) { window.location.href = 'platform.html'; return; }
+      if (user.email_confirmed_at) {
+        const consentOk = await hasRecordedConsent(user.id);
+        if (consentOk) { window.location.href = 'platform.html'; return; }
+        _showConsentGate(user);
+        return;
+      }
     }
     try { await supa.auth.signOut(); } catch(_) {}
   }
@@ -934,6 +985,17 @@ async function doLogin() {
         : (em.includes('not confirmed') ? 'Email not confirmed. Complete your signup first.' : error.message);
       err.style.color = '#f09595';
     } else if (data && data.session) {
+      // Successful sign-in — check consent before letting them into the platform.
+      // If they signed up before consent capture existed, or somehow skipped it,
+      // we gate the platform behind the consent screen now.
+      const u = data.session.user;
+      const consentOk = await hasRecordedConsent(u.id);
+      if (!consentOk) {
+        err.style.color = '#5dcaa5';
+        err.textContent = '\u2713 Signed in! One quick confirmation needed\u2026';
+        setTimeout(function(){ _showConsentGate(u); }, 400);
+        return;
+      }
       err.style.color = '#5dcaa5';
       err.textContent = '\u2713 Signed in! Taking you to the platform\u2026';
       setTimeout(() => { window.location.href = 'platform.html'; }, 800);
@@ -962,6 +1024,122 @@ function getConsentPayload() {
     screen_res: screen.width+'x'+screen.height,
     chk_terms: true, chk_disclaimer: true, chk_yom: true
   };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CONSENT GATE — runs for any signed-in user who lacks a legal_consents row.
+// Applies to: returning Google users, returning email/password users, and
+// any legacy account created before consent capture existed. New signups
+// (email or Google) already capture consent inline, so they bypass this
+// gate naturally because their row is written before they reach platform.
+// ══════════════════════════════════════════════════════════════════════
+async function hasRecordedConsent(uid) {
+  if (!uid) return false;
+  try {
+    const { data, error } = await supa
+      .from('legal_consents')
+      .select('id')
+      .eq('user_id', uid)
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      // If the table read fails for any reason other than "no rows", fail
+      // open — do NOT block legitimate users when the DB is unreachable.
+      console.warn('Consent check error:', error.message);
+      return true;
+    }
+    return !!data;
+  } catch(e) {
+    console.warn('Consent check exception:', e.message);
+    return true; // fail open on network/JS errors
+  }
+}
+
+function _showConsentGate(user, opts) {
+  opts = opts || {};
+  window._consentGateUser = {
+    uid: user.id,
+    email: user.email,
+    provider: (user.app_metadata && user.app_metadata.provider) || 'email',
+    fullName: (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || (user.email ? user.email.split('@')[0] : 'there')
+  };
+  document.getElementById('entrySelector').style.display = 'none';
+  document.getElementById('formLogin').classList.remove('active');
+  document.getElementById('formSignup').classList.remove('active');
+  document.getElementById('formConsentGate').classList.add('active');
+  // Personalised sub-text
+  var sub = document.getElementById('cgSub');
+  if (sub) {
+    var who = window._consentGateUser.fullName;
+    sub.textContent = 'Welcome back, ' + who + '. To continue using Engageneering™, please review and accept our current Terms and Policies. This is a one-time confirmation.';
+  }
+  // Reset checkboxes + button state
+  ['cgTerms','cgDisclaimer','cgYom'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.checked = false;
+  });
+  var warn = document.getElementById('cgWarn'); if (warn) warn.style.display = 'none';
+  var err  = document.getElementById('cgErr');  if (err)  err.textContent = '';
+  checkConsentGate();
+}
+
+function checkConsentGate() {
+  var all = ['cgTerms','cgDisclaimer','cgYom'].every(function(id){
+    var el = document.getElementById(id); return el && el.checked;
+  });
+  var btn = document.getElementById('cgBtn');
+  if (btn) { btn.style.opacity = all ? '1' : '0.45'; btn.disabled = !all; }
+  var warn = document.getElementById('cgWarn');
+  if (warn && all) warn.style.display = 'none';
+  return all;
+}
+
+async function saveConsentGate() {
+  var u = window._consentGateUser;
+  if (!u) { window.location.href = 'auth.html'; return; }
+  var err = document.getElementById('cgErr');
+  var btn = document.getElementById('cgBtn');
+  err.textContent = ''; err.style.color = '';
+  if (!checkConsentGate()) {
+    document.getElementById('cgWarn').style.display = 'block';
+    document.getElementById('cgTerms').scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+  btn.textContent = 'Recording…'; btn.disabled = true;
+  try {
+    var payload = getConsentPayload();
+    var { error } = await supa.from('legal_consents').insert({
+      user_id: u.uid,
+      terms_version: payload.terms_version,
+      accepted_at:   payload.accepted_at,
+      user_agent:    payload.user_agent,
+      screen_res:    payload.screen_res,
+      chk_terms:     payload.chk_terms,
+      chk_disclaimer:payload.chk_disclaimer,
+      chk_yom:       payload.chk_yom
+    });
+    if (error) throw error;
+    // Mirror to profiles for quick read access (best-effort, ignored on failure)
+    try {
+      await supa.from('profiles').update({
+        consent_accepted_at: payload.accepted_at,
+        consent_terms_version: payload.terms_version
+      }).eq('id', u.uid);
+    } catch(_) {}
+    btn.textContent = '✓ Entering platform…';
+    window._consentGateUser = null;
+    setTimeout(function(){ window.location.href = 'platform.html'; }, 600);
+  } catch(ex) {
+    err.textContent = 'Could not record your consent: ' + (ex.message || ex) + '. Please try again.';
+    err.style.color = '#f09595';
+    btn.textContent = 'Confirm & Enter Platform →';
+    btn.disabled = false;
+  }
+}
+
+async function cgSignOut() {
+  try { await supa.auth.signOut(); } catch(_) {}
+  window._consentGateUser = null;
+  window.location.href = 'auth.html';
 }
 
 // ══════════════════════════════════════════════════════════════════════
