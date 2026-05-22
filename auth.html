@@ -1558,12 +1558,18 @@ async function createProfile(uid, p) {
     { id: uid, display_name: p.fullName, status: 'active' },
     { onConflict: 'id' }
   );
+  // pts_total, seeker_pts, answerer_pts are intentionally omitted. They default
+  // to 0 on INSERT and are preserved on UPDATE (re-onboarding). The one-time
+  // 20 Ψ signup bonus is awarded SERVER-SIDE by the `award_signup_bonus` trigger
+  // on profile_roles INSERT (see migration 2025_05_signup_bonus.sql). Doing it in
+  // the database makes it atomic, race-free, and impossible to double-award or
+  // miss — no client code can forget to call it or run it twice.
   await supa.from('profile_roles').upsert({
     user_id: uid, role: p.role || selectedRole,
     profession: p.prof||null, country: p.country||null,
     years_in_role: p.years||null, organisation: p.org||null,
     heard_via: p.source||null, bio: p.bio||null,
-    seeker_tier:1, answerer_tier:1, pts_total:0, seeker_pts:0, answerer_pts:0,
+    seeker_tier:1, answerer_tier:1,
     expertise_tags: p.tags||[]
   }, { onConflict: 'user_id' });
   try {
