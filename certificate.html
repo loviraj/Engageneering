@@ -289,11 +289,14 @@
 
     .cert-title-award {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 25px;
+      font-size: 30px;
       font-weight: 700;
       color: var(--gold-dark);
       letter-spacing: 0.5px;
-      margin-top: 6px;
+      margin-top: 8px;
+      line-height: 1.2;
+      text-align: center;
+      max-width: 490px;
     }
 
     /* ── Footer ──────────────────────────────────────────── */
@@ -347,23 +350,7 @@
       text-transform: uppercase;
     }
 
-    /* ── Gold Seal ───────────────────────────────────────── */
-    .gold-seal-wrapper {
-      position: absolute;
-      bottom: 2.4rem;
-      right: 4rem;
-      z-index: 10;
-    }
-    .gold-seal {
-      width: 92px; height: 92px;
-      object-fit: contain;
-      filter: drop-shadow(0 5px 12px rgba(212,175,55,0.3));
-      animation: sealFloat 6s ease-in-out infinite;
-    }
-    @keyframes sealFloat {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50%       { transform: translateY(-5px) rotate(2deg); }
-    }
+
 
     /* ── Verification Stamp ──────────────────────────────── */
     .verification-stamp {
@@ -563,10 +550,7 @@
           </div>
         </div>
 
-        <!-- Gold Seal -->
-        <div class="gold-seal-wrapper">
-          <img src="engageneer_gold_seal.png" alt="Official Gold Seal" class="gold-seal">
-        </div>
+
 
         <!-- Verification Stamp -->
         <div class="verification-stamp">
@@ -637,7 +621,11 @@
       // Certificate fields
       document.getElementById('recipientName').textContent  = cert.display_name;
       document.getElementById('clusterLabel').textContent   = cert.cluster_label;
-      document.getElementById('certTitleAward').textContent = cert.cert_title;
+      document.getElementById('certTitleAward').innerHTML = `
+        <span style="font-weight:800; font-size: 34px; display: block; margin-bottom: 2px; color: var(--gold-dark);">Engageneer</span>
+        <span style="font-size:16px; font-style:italic; font-weight:400; color:var(--text-muted); display: block; margin-bottom: 4px;">in</span>
+        <span style="display: block; font-weight: 700; color: var(--gold-dark);">${cert.cluster_label}</span>
+      `;
       document.getElementById('issueDateBadge').textContent = 'Issued: ' + dateStr;
 
       // Stamps
