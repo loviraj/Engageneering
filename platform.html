@@ -1289,7 +1289,14 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
         <div class="pb-track" id="pbTrack">Seeker Track</div>
         <div class="pb-cds" id="pbCds"></div>
         <div class="pb-take" onclick="window.location.href='assessment.html'">Retake Assessment →</div>
+        <div style="font-size:10px;color:var(--gold);cursor:pointer;margin-top:6px;font-weight:600;letter-spacing:.3px;text-transform:uppercase" onclick="openEngageneerCertificate()">🎓 View My Certificates →</div>
       </div>
+    </div>
+
+    <!-- My Certificates Panel -->
+    <div id="myCertsPanel" style="display:none;margin-top:.5rem;border-top:1px solid var(--bdr);padding-top:.8rem">
+      <div style="font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">🏅 My Certificates</div>
+      <div id="myCertsList" style="display:flex;flex-direction:column;gap:.4rem"></div>
     </div>
   </div>
 
@@ -1560,6 +1567,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   loadFeed();loadLeaderboard();
   loadInsight();loadEvtCount();loadYOMField();
   loadUserClusters();
+  setTimeout(()=>loadMyCertificates(), 1500); // load after profile renders
   setTimeout(checkAndShowConsentModal, 1500);
 
   // Clean the # from URL after OAuth (cosmetic — no functional effect)
@@ -1702,6 +1710,145 @@ function buildTierCard(){
   }
 }
 
+// ── MY CERTIFICATES SIDEBAR ──────────────────────────────────────────────
+async function loadMyCertificates(){
+  if(!U) return;
+  const panel = document.getElementById('myCertsPanel');
+  const list  = document.getElementById('myCertsList');
+  if(!panel||!list) return;
+
+  const {data:certs, error} = await supa
+    .from('certificates')
+    .select('cert_id,cert_title,cluster_label,issued_at,verify_url,status')
+    .eq('user_id', U.id)
+    .order('issued_at', {ascending:false})
+    .limit(10);
+
+  if(error||!certs||certs.length===0){
+    panel.style.display='none';
+    return;
+  }
+
+  panel.style.display='block';
+  list.innerHTML = certs.map(c=>{
+    const date = new Date(c.issued_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const isActive = c.status==='active';
+    return `<div style="background:rgba(200,146,42,.05);border:1px solid rgba(200,146,42,.18);border-radius:8px;padding:.6rem .8rem;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(200,146,42,.12)'" onmouseout="this.style.background='rgba(200,146,42,.05)'" onclick="window.open('certificate.html?cert=${c.cert_id}','_blank')">
+      <div style="font-size:10px;font-weight:700;color:${isActive?'#d4af37':'#64748b'}">${c.cluster_label}</div>
+      <div style="font-size:9px;color:var(--t4);margin-top:2px;letter-spacing:.3px">${date}</div>
+      <div style="font-size:8px;font-family:monospace;color:rgba(212,175,55,.5);margin-top:3px;letter-spacing:1px">${c.cert_id}</div>
+    </div>`;
+  }).join('');
+}
+
+function openEngageneerCertificate(clusterSlug){
+  if(!U)return;
+  if(clusterSlug){
+    window.open(`certificate.html?uid=${U.id}&cluster=${clusterSlug}`,'_blank');
+  } else {
+    // Open most recent cert
+    window.open(`certificate.html?uid=${U.id}`,'_blank');
+  }
+}
+
+// ── CERTIFICATE AUTO-ISSUE ────────────────────────────────────────────────
+// Called after a question/answer is successfully saved.
+// Fires & forgets — does NOT block the UI.
+async function awardCertificateIfEligible(triggerType, refId){
+  if(!U||!currentClusterId) return;
+  // Resolve slug + label from userClusters
+  const cl = userClusters.find(c=>c.id===currentClusterId);
+  if(!cl) return;
+  const clusterSlug  = cl.slug  || 'general';
+  const clusterLabel = cl.name  || 'General';
+
+  // Check if already certified (local check first to avoid network)
+  const {data:existing} = await supa
+    .from('certificates')
+    .select('cert_id,verify_url')
+    .eq('user_id', U.id)
+    .eq('cluster_slug', clusterSlug)
+    .eq('status','active')
+    .limit(1)
+    .maybeSingle();
+
+  if(existing){ return; } // already has one — nothing to do
+
+  // Insert via Supabase RPC (calls the award_cluster_certificate SQL function)
+  const {data:newCertId, error:rpcErr} = await supa.rpc('award_cluster_certificate',{
+    p_user_id:       U.id,
+    p_cluster_slug:  clusterSlug,
+    p_cluster_label: clusterLabel,
+    p_trigger_type:  triggerType,
+    p_trigger_ref:   refId || null
+  });
+
+  if(rpcErr){ console.warn('[cert] rpc error:', rpcErr.message); return; }
+  if(!newCertId){ return; } // null = already existed
+
+  // Fetch the new cert details to show in toast
+  const {data:cert} = await supa
+    .from('certificates')
+    .select('cert_id,cert_title,verify_url')
+    .eq('id', newCertId)
+    .single();
+
+  if(cert){
+    showCertificatePopup(cert, clusterSlug);
+    // Refresh sidebar panel to show the new cert
+    setTimeout(()=>loadMyCertificates(), 500);
+  }
+}
+
+// ── CERTIFICATE EARNED POPUP ──────────────────────────────────────────────
+function showCertificatePopup(cert, clusterSlug){
+  // Remove existing popup if any
+  const prev = document.getElementById('certEarnedPopup');
+  if(prev) prev.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'certEarnedPopup';
+  popup.style.cssText = `
+    position:fixed;bottom:2rem;right:2rem;z-index:99999;
+    background:#0a1628;
+    border:1.5px solid rgba(212,175,55,0.6);
+    border-radius:16px;
+    padding:1.4rem 1.6rem;
+    width:340px;
+    box-shadow:0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,175,55,0.1);
+    animation:slideInRight .4s cubic-bezier(.175,.885,.32,1.275);
+    display:flex;flex-direction:column;gap:.9rem;
+    font-family:'Montserrat',sans-serif;
+  `;
+  popup.innerHTML = `
+    <style>
+      @keyframes slideInRight{
+        from{opacity:0;transform:translateX(80px);}
+        to{opacity:1;transform:translateX(0);}
+      }
+    </style>
+    <div style="display:flex;align-items:center;gap:.7rem">
+      <span style="font-size:1.8rem">🏅</span>
+      <div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:3px;color:#d4af37;text-transform:uppercase">Certificate Earned!</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-top:2px">${cert.cert_title}</div>
+      </div>
+      <button onclick="document.getElementById('certEarnedPopup').remove()" style="margin-left:auto;background:none;border:none;color:#64748b;font-size:18px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.6">
+      You've been awarded an official Engageneer™ certificate for your first contribution to this cluster.
+    </div>
+    <div style="font-size:9px;font-family:monospace;letter-spacing:1px;color:rgba(212,175,55,.7)">${cert.cert_id}</div>
+    <div style="display:flex;gap:.6rem">
+      <button onclick="window.open('certificate.html?cert=${cert.cert_id}','_blank')" style="flex:1;padding:8px;background:linear-gradient(135deg,#d4af37,#b8860b);border:none;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:1px;color:#060c1a;cursor:pointer;font-family:'Montserrat',sans-serif">VIEW CERTIFICATE</button>
+      <button onclick="navigator.clipboard.writeText('${cert.verify_url}').then(()=>{this.textContent='✓ Copied'})" style="padding:8px 12px;background:transparent;border:1.5px solid rgba(212,175,55,.4);border-radius:8px;font-size:10px;font-weight:700;letter-spacing:1px;color:#d4af37;cursor:pointer;font-family:'Montserrat',sans-serif">SHARE</button>
+    </div>
+  `;
+  document.body.appendChild(popup);
+  // Auto-dismiss after 12 seconds
+  setTimeout(()=>{ if(document.getElementById('certEarnedPopup')===popup) popup.remove(); }, 12000);
+}
+
 // ══ VIEW + FORMAT ══
 function setView(v,btn,fromTab=false){
   view=v;
@@ -1731,17 +1878,39 @@ function setCluster(id,btn){
 
 async function loadUserClusters(){
   if(!U)return;
-  try{
-    const{data}=await supa
-      .from('cluster_members')
-      .select('cluster_id,role,psi_contributed,clusters(id,name,collective_pts,topic_tags,is_default,description)')
+  let joined = [];
+  let defaults = [];
+
+  // 1. Fetch default clusters
+  try {
+    const { data: defaultClusters, error: defErr } = await supa.from('clusters')
+      .select('id,name,slug,collective_pts,topic_tags,is_default,description')
+      .eq('is_default',true)
+      .eq('status','active');
+    if (defErr) throw defErr;
+    defaults = (defaultClusters||[]).map(c=>({...c,role:'member',psi_contributed:0}));
+  } catch(e) {
+    console.warn('Failed to load default clusters from db:', e.message);
+  }
+
+  // 2. Fetch user-joined clusters
+  try {
+    const { data: memberData, error: memErr } = await supa.from('cluster_members')
+      .select('cluster_id,role,psi_contributed,clusters(id,name,slug,collective_pts,topic_tags,is_default,description)')
       .eq('user_id',U.id);
-    userClusters=(data||[])
+    if (memErr) throw memErr;
+    joined = (memberData||[])
       .map(m=>({...(m.clusters||{}),role:m.role,psi_contributed:m.psi_contributed}))
       .filter(c=>c&&c.id&&!c.is_default);
-    renderClusterBar();
-    populateClusterSelect();
-  }catch(e){console.warn('loadUserClusters:',e.message);}
+  } catch(e) {
+    console.warn('Failed to load user joined clusters:', e.message);
+  }
+
+
+
+  userClusters = [...defaults, ...joined];
+  renderClusterBar();
+  populateClusterSelect();
 }
 
 function renderClusterBar(){
@@ -3868,6 +4037,7 @@ async function submitQuestion(){
 
     const insertPayload={
       asker_id:U.id,
+      cluster_id:currentClusterId||null,
       text:q||'[Video question]',
       video_url:videoUrl||null,
       video_thumbnail:(thumbUrl&&typeof thumbUrl==='string'&&thumbUrl.length>0)?thumbUrl:null,
@@ -3917,6 +4087,11 @@ async function submitQuestion(){
       } else {
         if(R){R.pts_total=curPts+pts;R.seeker_pts=curSeekerPts+pts;}
         console.log('✓ YOM Ψ updated:',curPts+pts);loadYOMField();
+      }
+
+      // ── CERTIFICATE AUTO-ISSUE (fire & forget) ────────────────
+      if(sq && sq.id){
+        setTimeout(()=>awardCertificateIfEligible('question', sq.id), 800);
       }
     }
   }catch(e){
@@ -4228,6 +4403,11 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
       const{data:rn}=await supa.from('profile_roles').select('pts_total,answerer_pts').eq('user_id',U.id).single();
       if(rn)await supa.from('profile_roles').update({pts_total:(rn.pts_total||0)+pts,answerer_pts:(rn.answerer_pts||0)+pts,updated_at:new Date().toISOString()}).eq('user_id',U.id);
       if(R){R.pts_total=(R?.pts_total||0)+pts;R.answerer_pts=(R?.answerer_pts||0)+pts;}
+
+      // ── CERTIFICATE AUTO-ISSUE (fire & forget) ─────────────────
+      if(sa && sa.id){
+        setTimeout(()=>awardCertificateIfEligible('answer', sa.id), 800);
+      }
     }
   }catch(e){console.warn(e);}
 

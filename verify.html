@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Certificate — Engageneering™</title>
+  <meta name="description" content="Verify the authenticity of an Engageneer certificate issued by the Engageneering™ Crowd Learning Platform.">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+
+  <style>
+    :root {
+      --gold-dark:   #b8860b;
+      --gold-light:  #d4af37;
+      --gold-pale:   #fdf6dc;
+      --navy:        #060c1a;
+      --white:       #ffffff;
+      --green:       #15803d;
+      --green-pale:  #dcfce7;
+      --red:         #b91c1c;
+      --red-pale:    #fee2e2;
+      --gray-50:     #f8fafc;
+      --gray-100:    #f1f5f9;
+      --gray-200:    #e2e8f0;
+      --text-dark:   #1e293b;
+      --text-muted:  #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #eef0f5;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ── Top Nav ───────────────────────────────────────────── */
+    .top-nav {
+      background: var(--navy);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-brand img { width: 34px; height: 34px; object-fit: contain; }
+    .nav-brand span {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+    .nav-tagline {
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* ── Page layout ───────────────────────────────────────── */
+    .page-wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* ── Header hero ───────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .hero-eyebrow {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.1;
+    }
+    .hero p {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    /* ── Search box ────────────────────────────────────────── */
+    .search-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .search-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .search-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .search-input {
+      flex: 1;
+      padding: 13px 18px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      font-family: 'Montserrat', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--navy);
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input::placeholder {
+      color: #cbd5e1;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      text-transform: none;
+    }
+    .search-input:focus { border-color: var(--gold-light); }
+    .search-btn {
+      padding: 13px 28px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+      color: var(--navy);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 10px rgba(212,175,55,0.3);
+      white-space: nowrap;
+    }
+    .search-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,175,55,0.5); }
+    .search-hint {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Loading spinner ───────────────────────────────────── */
+    #loadingRow {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--gold-light);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result card ───────────────────────────────────────── */
+    #resultCard { display: none; }
+
+    .status-banner {
+      border-radius: 12px;
+      padding: 1.2rem 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .status-banner.valid   { background: var(--green-pale); border: 1.5px solid #86efac; }
+    .status-banner.invalid { background: var(--red-pale);   border: 1.5px solid #fca5a5; }
+
+    .status-icon { font-size: 1.6rem; }
+    .status-text h3 { font-size: 15px; font-weight: 700; color: var(--navy); }
+    .status-text p  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .status-valid-label  { color: var(--green); }
+    .status-revoked-label { color: var(--red); }
+
+    /* Main details card */
+    .details-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.4rem 2rem;
+    }
+    @media (max-width: 600px) { .details-grid { grid-template-columns: 1fr; } }
+
+    .detail-item {}
+    .detail-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .detail-val {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .detail-val.mono {
+      font-family: monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+    .detail-val.award {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px;
+      font-style: italic;
+      color: var(--gold-dark);
+    }
+
+    .details-divider {
+      border: none;
+      border-top: 1px solid var(--gray-200);
+      margin: 1.5rem 0;
+    }
+
+    /* Recipient hero section */
+    .recipient-hero {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    .recipient-avatar {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid var(--gold-light);
+      background: var(--gray-100);
+    }
+    .recipient-avatar-placeholder {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-pale), var(--gold-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      border: 2.5px solid var(--gold-light);
+      flex-shrink: 0;
+    }
+    .recipient-info h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.1;
+    }
+    .recipient-info .recipient-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Action buttons row */
+    .action-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .action-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      text-decoration: none;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .action-btn-gold {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+      color: var(--navy);
+      box-shadow: 0 2px 10px rgba(212,175,55,0.3);
+    }
+    .action-btn-gold:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,175,55,0.5); }
+    .action-btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--gray-200);
+      color: var(--text-dark);
+    }
+    .action-btn-outline:hover { border-color: var(--navy); color: var(--navy); transform: translateY(-2px); }
+
+    /* Authenticity watermark band */
+    .authenticity-band {
+      background: var(--navy);
+      border-radius: 10px;
+      padding: 1rem 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .auth-left { display: flex; align-items: center; gap: 10px; }
+    .auth-left img { width: 28px; height: 28px; object-fit: contain; opacity: 0.9; }
+    .auth-left span {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 1px;
+    }
+    .auth-right {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 1px;
+    }
+
+    /* ── How it works info ─────────────────────────────────── */
+    .info-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    }
+    .info-card h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .info-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .info-step {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      background: var(--gold-pale);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--gold-dark);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-text { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; }
+    .step-text strong { color: var(--text-dark); }
+
+    /* ── Footer ────────────────────────────────────────────── */
+    .page-footer {
+      text-align: center;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      padding-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="top-nav">
+    <a href="index.html" class="nav-brand">
+      <img src="EN-HEX-TPT.png" alt="Engageneering™">
+      <span>Engageneering™</span>
+    </a>
+    <span class="nav-tagline">Certificate Verification Portal</span>
+  </nav>
+
+  <div class="page-wrap">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-eyebrow">Official Verification</div>
+      <h1>Verify an Engageneer<br>Certificate</h1>
+      <p>Enter the certificate ID from the document to instantly verify its authenticity and view full recipient details.</p>
+    </div>
+
+    <!-- Search card -->
+    <div class="search-card">
+      <label class="search-label" for="certIdInput">Certificate ID</label>
+      <div class="search-row">
+        <input
+          type="text"
+          id="certIdInput"
+          class="search-input"
+          placeholder="e.g. ENG-COMP-A1B2C3D4"
+          autocomplete="off"
+          spellcheck="false"
+          maxlength="18"
+        >
+        <button class="search-btn" id="verifyBtn" onclick="verifyCert()">
+          Verify
+        </button>
+      </div>
+      <div id="loadingRow">
+        <div class="spinner"></div>
+        <span>Checking database…</span>
+      </div>
+      <div class="search-hint">Certificate IDs follow the format <strong>ENG-XXXX-XXXXXXXX</strong> and are printed at the bottom of every certificate.</div>
+    </div>
+
+    <!-- Result Card (shown after verification) -->
+    <div id="resultCard">
+      <!-- Status Banner -->
+      <div id="statusBanner" class="status-banner valid">
+        <span class="status-icon" id="statusIcon">✅</span>
+        <div class="status-text">
+          <h3 id="statusTitle">Certificate Verified</h3>
+          <p id="statusSub">This certificate is authentic and was officially issued by Engageneering™.</p>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="details-card">
+        <!-- Recipient -->
+        <div class="recipient-hero">
+          <div class="recipient-avatar-placeholder" id="avatarPlaceholder">?</div>
+          <img id="recipientAvatar" class="recipient-avatar" src="" alt="" style="display:none">
+          <div class="recipient-info">
+            <h2 id="rdName">—</h2>
+            <div class="recipient-sub" id="rdSub">Engageneer — Computational Thinking</div>
+          </div>
+        </div>
+
+        <hr class="details-divider">
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <div class="detail-label">Award Title</div>
+            <div class="detail-val award" id="rdTitle">—</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Cluster</div>
+            <div class="detail-val" id="rdCluster">—</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Certificate ID</div>
+            <div class="detail-val mono" id="rdCertId">—</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Date Issued</div>
+            <div class="detail-val" id="rdDate">—</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Status</div>
+            <div class="detail-val" id="rdStatus">—</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Issued By</div>
+            <div class="detail-val">Engageneering™ Platform</div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-row">
+          <a id="viewCertBtn" href="#" class="action-btn action-btn-gold" target="_blank">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            View Full Certificate
+          </a>
+          <button class="action-btn action-btn-outline" onclick="copyCurrentLink()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy Verify Link
+          </button>
+        </div>
+
+        <!-- Authenticity band -->
+        <div class="authenticity-band">
+          <div class="auth-left">
+            <img src="EN-HEX-TPT.png" alt="Logo">
+            <span>Authenticated by Engageneering™ Crowd Learning Platform</span>
+          </div>
+          <div class="auth-right">engageneering.org</div>
+        </div>
+      </div>
+    </div><!-- /resultCard -->
+
+    <!-- How it works -->
+    <div class="info-card">
+      <h3>How Certificate Verification Works</h3>
+      <div class="info-steps">
+        <div class="info-step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Contribution Detected</strong> — When a user posts their first question or answer in a cluster, the system automatically evaluates their eligibility.</div>
+        </div>
+        <div class="info-step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Certificate Issued</strong> — A unique Engageneer certificate is created, stored securely in our database with a tamper-proof ID.</div>
+        </div>
+        <div class="info-step">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>Verification Link Generated</strong> — Each certificate gets a permanent public URL that anyone can use to verify its authenticity — no login needed.</div>
+        </div>
+        <div class="info-step">
+          <div class="step-num">4</div>
+          <div class="step-text"><strong>Live Database Check</strong> — This page queries our live Supabase database in real time, ensuring certificates cannot be faked or backdated.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      &copy; 2024 Engageneering™ &nbsp;·&nbsp; All certificates are stored immutably and publicly verifiable &nbsp;·&nbsp; <a href="index.html" style="color:var(--gold-dark); text-decoration:none;">engageneering.org</a>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+  <script>
+  (() => {
+    const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || '';
+    const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
+    const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+
+    // Pre-fill from URL ?cert= param
+    const params = new URLSearchParams(window.location.search);
+    const certParam = params.get('cert');
+    if (certParam) {
+      document.getElementById('certIdInput').value = certParam.toUpperCase();
+      // Auto-verify on page load if cert param present
+      window.addEventListener('DOMContentLoaded', () => verifyCert());
+    }
+
+    window.verifyCert = async function () {
+      const raw     = document.getElementById('certIdInput').value.trim().toUpperCase();
+      const loading = document.getElementById('loadingRow');
+      const result  = document.getElementById('resultCard');
+
+      if (!raw) return;
+
+      // Validate format
+      if (!/^ENG-[A-Z0-9]{4}-[A-Z0-9]{8}$/.test(raw)) {
+        showInvalid(`"${raw}" is not a valid certificate ID format. Expected: ENG-XXXX-XXXXXXXX`);
+        return;
+      }
+
+      result.style.display  = 'none';
+      loading.style.display = 'flex';
+
+      const { data, error } = await supa
+        .from('certificates')
+        .select('*')
+        .eq('cert_id', raw)
+        .limit(1)
+        .single();
+
+      loading.style.display = 'none';
+
+      if (error || !data) {
+        showInvalid(`No certificate found with ID <strong>${raw}</strong>. It may not exist or has been revoked.`);
+        return;
+      }
+
+      showValid(data);
+
+      // Update URL so it's shareable
+      const url = new URL(window.location);
+      url.searchParams.set('cert', raw);
+      history.replaceState({}, '', url);
+    };
+
+    // Enter key support
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('certIdInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') verifyCert();
+      });
+    });
+
+    function showValid(cert) {
+      const result = document.getElementById('resultCard');
+      result.style.display = 'block';
+
+      // Status banner
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'status-banner valid';
+      document.getElementById('statusIcon').textContent  = '✅';
+      document.getElementById('statusTitle').textContent = cert.status === 'revoked' ? 'Certificate Revoked' : 'Certificate Verified';
+      document.getElementById('statusSub').textContent   = cert.status === 'revoked'
+        ? 'This certificate has been revoked and is no longer valid.'
+        : 'This certificate is authentic and was officially issued by Engageneering™.';
+
+      if (cert.status === 'revoked') {
+        banner.className = 'status-banner invalid';
+        document.getElementById('statusIcon').textContent = '❌';
+      }
+
+      // Avatar
+      const initials = cert.display_name?.charAt(0).toUpperCase() || '?';
+      document.getElementById('avatarPlaceholder').textContent = initials;
+      if (cert.avatar_url) {
+        const img = document.getElementById('recipientAvatar');
+        img.src = cert.avatar_url;
+        img.style.display = 'block';
+        document.getElementById('avatarPlaceholder').style.display = 'none';
+      }
+
+      // Details
+      const issued = new Date(cert.issued_at);
+      const dateStr = issued.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      document.getElementById('rdName').textContent    = cert.display_name;
+      document.getElementById('rdSub').textContent     = cert.cert_title;
+      document.getElementById('rdTitle').textContent   = cert.cert_title;
+      document.getElementById('rdCluster').textContent = cert.cluster_label;
+      document.getElementById('rdCertId').textContent  = cert.cert_id;
+      document.getElementById('rdDate').textContent    = dateStr;
+      document.getElementById('rdStatus').innerHTML    = cert.status === 'active'
+        ? '<span style="color:var(--green);font-weight:700;">● Active</span>'
+        : '<span style="color:var(--red);font-weight:700;">● Revoked</span>';
+
+      // View cert link
+      const certUrl = `certificate.html?cert=${cert.cert_id}`;
+      document.getElementById('viewCertBtn').href = certUrl;
+    }
+
+    function showInvalid(msg) {
+      const result = document.getElementById('resultCard');
+      result.style.display = 'block';
+
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'status-banner invalid';
+      document.getElementById('statusIcon').textContent  = '❌';
+      document.getElementById('statusTitle').textContent = 'Certificate Not Found';
+      document.getElementById('statusSub').innerHTML     = msg;
+
+      // Hide details
+      document.getElementById('rdName').textContent    = '—';
+      document.getElementById('rdSub').textContent     = '—';
+      document.getElementById('rdTitle').textContent   = '—';
+      document.getElementById('rdCluster').textContent = '—';
+      document.getElementById('rdCertId').textContent  = '—';
+      document.getElementById('rdDate').textContent    = '—';
+      document.getElementById('rdStatus').textContent  = '—';
+      document.getElementById('viewCertBtn').href      = '#';
+    }
+
+    window.copyCurrentLink = function () {
+      const raw = document.getElementById('certIdInput').value.trim().toUpperCase();
+      const url = raw ? `${window.location.origin}/verify.html?cert=${raw}` : window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.querySelector('.action-btn-outline');
+        const orig = btn.innerHTML;
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => { btn.innerHTML = orig; }, 2000);
+      });
+    };
+  })();
+  </script>
+
+</body>
+</html>

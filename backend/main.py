@@ -14,7 +14,8 @@ from loguru import logger
 import time
 
 from config import get_settings
-from routers.auth import router as auth_router
+from routers.auth         import router as auth_router
+from routers.certificates import router as certificates_router
 
 settings = get_settings()
 
@@ -58,7 +59,8 @@ async def add_timing(request: Request, call_next):
     return response
 
 # ── ROUTERS ─────────────────────────────────────────────────
-app.include_router(auth_router, prefix="/api/v1")
+app.include_router(auth_router,         prefix="/api/v1")
+app.include_router(certificates_router, prefix="/api/v1")
 
 # ── HEALTH CHECK ────────────────────────────────────────────
 @app.get("/health", tags=["System"])

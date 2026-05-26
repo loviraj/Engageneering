@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engageneer™ Certificate of Achievement</title>
+  <meta name="description" content="Officially issued Engageneer certificate — verifiable proof of peer-teaching excellence on the Engageneering platform.">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+
+  <style>
+    :root {
+      --gold-dark:   #b8860b;
+      --gold-light:  #d4af37;
+      --gold-pale:   #f5e6a3;
+      --navy:        #060c1a;
+      --white:       #ffffff;
+      --gray-light:  #f7f9fc;
+      --gray-border: #e2e8f0;
+      --text-dark:   #1e293b;
+      --text-muted:  #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #eef0f5;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem 3rem;
+    }
+
+    /* ── Loading / Error States ─────────────────────────── */
+    #loadingState {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      min-height: 60vh;
+      color: var(--text-muted);
+    }
+    #loadingState .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid var(--gray-border);
+      border-top-color: var(--gold-light);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #errorState {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      min-height: 60vh;
+      justify-content: center;
+      text-align: center;
+    }
+    #errorState h2 { font-size: 1.4rem; color: var(--navy); }
+    #errorState p  { color: var(--text-muted); max-width: 400px; }
+
+    /* ── Controls Bar ────────────────────────────────────── */
+    #certMain { display: none; flex-direction: column; align-items: center; gap: 0; }
+
+    .controls-bar {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--gray-border);
+      padding: 10px 24px;
+      border-radius: 50px;
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      text-decoration: none;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+      color: var(--navy);
+      box-shadow: 0 2px 10px rgba(212,175,55,0.35);
+    }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,175,55,0.55); }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--navy);
+      color: var(--navy);
+    }
+    .btn-outline:hover { background: var(--navy); color: var(--white); transform: translateY(-2px); }
+    .btn-copy {
+      background: transparent;
+      border: 1.5px solid var(--gold-dark);
+      color: var(--gold-dark);
+    }
+    .btn-copy:hover { background: var(--gold-pale); transform: translateY(-2px); }
+
+    /* ── Certificate Container ───────────────────────────── */
+    .certificate-container {
+      width: 1000px;
+      height: 700px;
+      background: var(--white);
+      position: relative;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      border-radius: 4px;
+      overflow: hidden;
+      transform-origin: top center;
+    }
+
+    /* Triple decorative frame */
+    .certificate-frame {
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(184,134,11,0.2);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .certificate-frame::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 2px solid var(--gold-light);
+    }
+    .certificate-frame::after {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(184,134,11,0.35);
+    }
+
+    /* Corner ornaments */
+    .corner-ornament {
+      position: absolute;
+      width: 28px; height: 28px;
+      border: 2.5px solid var(--gold-dark);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .top-left     { top: 20px;    left: 20px;    border-right: none; border-bottom: none; }
+    .top-right    { top: 20px;    right: 20px;   border-left:  none; border-bottom: none; }
+    .bottom-left  { bottom: 20px; left: 20px;    border-right: none; border-top: none; }
+    .bottom-right { bottom: 20px; right: 20px;   border-left:  none; border-top: none; }
+
+    /* ── Left Panel ──────────────────────────────────────── */
+    .left-panel {
+      width: 310px;
+      background: linear-gradient(170deg, #fafbfd 0%, #f0f3f8 100%);
+      border-right: 1px solid rgba(184,134,11,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .left-panel-badge {
+      position: absolute;
+      top: 40px;
+      font-size: 7.5px;
+      font-weight: 700;
+      letter-spacing: 3.5px;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+    }
+
+    .big-logo {
+      width: 185px; height: 185px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.07));
+      margin-bottom: 1.8rem;
+    }
+
+    .left-panel-text {
+      text-align: center;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 14.5px;
+      font-style: italic;
+      color: var(--navy);
+      line-height: 1.6;
+      max-width: 190px;
+      opacity: 0.85;
+    }
+
+    .left-divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+      margin: 1.2rem 0;
+    }
+
+    /* ── Right Panel ─────────────────────────────────────── */
+    .right-panel {
+      flex: 1;
+      padding: 4rem 4rem 3rem 3.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cert-header { display: flex; flex-direction: column; gap: 5px; }
+
+    .cert-org {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 4.5px;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+    }
+
+    .cert-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.05;
+      letter-spacing: 0.3px;
+    }
+
+    .cert-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 1.5rem 0;
+    }
+
+    .cert-subtext {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--text-muted);
+    }
+
+    .cert-name {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--navy);
+      border-bottom: 1.5px solid var(--gold-light);
+      display: inline-block;
+      padding-bottom: 3px;
+      align-self: flex-start;
+      letter-spacing: 0.3px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cert-statement {
+      font-size: 12.5px;
+      line-height: 1.8;
+      color: var(--text-dark);
+      max-width: 490px;
+      margin-top: 4px;
+    }
+    .cert-statement strong { color: var(--navy); font-weight: 700; }
+
+    .cert-title-award {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 25px;
+      font-weight: 700;
+      color: var(--gold-dark);
+      letter-spacing: 0.5px;
+      margin-top: 6px;
+    }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    .cert-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .signature-container { display: flex; gap: 3rem; }
+
+    .signature-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sig-script {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px;
+      font-style: italic;
+      font-weight: 600;
+      color: var(--navy);
+      height: 34px;
+      display: flex;
+      align-items: center;
+    }
+
+    .sig-wordmark {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      color: var(--navy);
+      height: 34px;
+      display: flex;
+      align-items: center;
+    }
+
+    .signature-line {
+      width: 140px; height: 1px;
+      background: var(--gray-border);
+    }
+
+    .signature-label {
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* ── Gold Seal ───────────────────────────────────────── */
+    .gold-seal-wrapper {
+      position: absolute;
+      bottom: 2.4rem;
+      right: 4rem;
+      z-index: 10;
+    }
+    .gold-seal {
+      width: 92px; height: 92px;
+      object-fit: contain;
+      filter: drop-shadow(0 5px 12px rgba(212,175,55,0.3));
+      animation: sealFloat 6s ease-in-out infinite;
+    }
+    @keyframes sealFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50%       { transform: translateY(-5px) rotate(2deg); }
+    }
+
+    /* ── Verification Stamp ──────────────────────────────── */
+    .verification-stamp {
+      position: absolute;
+      bottom: 24px;
+      left: 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .verify-id {
+      font-family: monospace;
+      font-size: 7.5px;
+      color: var(--text-muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+    .verify-date {
+      font-family: monospace;
+      font-size: 7px;
+      color: #94a3b8;
+      letter-spacing: 0.8px;
+    }
+
+    /* ── Issue date badge (right panel top-right) ────────── */
+    .issue-date-badge {
+      position: absolute;
+      top: 3.2rem;
+      right: 4rem;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      text-align: right;
+    }
+
+    /* ── Below-cert info strip ───────────────────────────── */
+    .cert-meta-strip {
+      margin-top: 1.5rem;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--gray-border);
+      border-radius: 12px;
+      padding: 14px 28px;
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      width: 1000px;
+      max-width: 100%;
+    }
+    .cert-meta-strip .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: center;
+    }
+    .cert-meta-strip .meta-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .cert-meta-strip .meta-val {
+      font-size: 12px;
+      color: var(--text-dark);
+      font-weight: 600;
+      font-family: monospace;
+    }
+    .cert-meta-strip .meta-link {
+      font-size: 11px;
+      color: var(--gold-dark);
+      font-weight: 600;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .cert-meta-strip .meta-link:hover { text-decoration: underline; }
+
+    /* ── Print ───────────────────────────────────────────── */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .controls-bar, .cert-meta-strip { display: none !important; }
+      .certificate-container {
+        box-shadow: none !important;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        transform: none !important;
+        border-radius: 0;
+      }
+      @page { size: A4 landscape; margin: 0; }
+    }
+
+    /* ── Responsive scale ────────────────────────────────── */
+    @media (max-width: 1060px) {
+      .certificate-container { transform-origin: top center; }
+      .cert-meta-strip { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading -->
+  <div id="loadingState">
+    <div class="spinner"></div>
+    <p>Loading your certificate…</p>
+  </div>
+
+  <!-- Error -->
+  <div id="errorState">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <h2 id="errorTitle">Certificate Not Found</h2>
+    <p id="errorMsg">We couldn't locate this certificate. Please check the link and try again.</p>
+    <a href="platform.html" class="btn btn-outline" style="margin-top:1rem;">Return to Platform</a>
+  </div>
+
+  <!-- Main Certificate View (shown when loaded) -->
+  <div id="certMain">
+
+    <!-- Controls Bar -->
+    <div class="controls-bar" id="controlsBar">
+      <button class="btn btn-gold" onclick="window.print()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Print / Save PDF
+      </button>
+      <button class="btn btn-copy" id="copyLinkBtn" onclick="copyVerifyLink()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        Copy Verify Link
+      </button>
+      <a href="platform.html" class="btn btn-outline">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Platform
+      </a>
+    </div>
+
+    <!-- Certificate Canvas -->
+    <div class="certificate-container" id="certCanvas">
+      <!-- Ornaments -->
+      <div class="certificate-frame"></div>
+      <div class="corner-ornament top-left"></div>
+      <div class="corner-ornament top-right"></div>
+      <div class="corner-ornament bottom-left"></div>
+      <div class="corner-ornament bottom-right"></div>
+
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
+        <div class="left-panel-badge">Verification Standard</div>
+        <img src="EN-HEX-TPT.png" alt="Engageneering™ Logo" class="big-logo">
+        <div class="left-divider"></div>
+        <div class="left-panel-text">
+          Bridging the gap between conceptual understanding and interactive, media-based mentorship.
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-panel">
+
+        <!-- Issue date top-right -->
+        <div class="issue-date-badge" id="issueDateBadge">Issued: —</div>
+
+        <!-- Header -->
+        <div class="cert-header">
+          <div class="cert-org">Engageneering™ Crowd Learning Platform</div>
+          <h1 class="cert-title">Certificate of Achievement</h1>
+        </div>
+
+        <!-- Body -->
+        <div class="cert-body">
+          <div class="cert-subtext">This is to certify that</div>
+          <div class="cert-name" id="recipientName">—</div>
+          <div class="cert-statement" id="certStatement">
+            has demonstrated peer-to-peer teaching excellence through active contribution of peer queries and high-quality answers on the <strong id="clusterLabel">—</strong> cluster of the Engageneering platform, satisfying all evaluation criteria to be formally awarded the title of:
+          </div>
+          <div class="cert-title-award" id="certTitleAward">Engageneer in —</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="cert-footer">
+          <div class="signature-container">
+            <!-- Sig 1: ARIA -->
+            <div class="signature-block">
+              <div class="sig-script">ARIA Agent</div>
+              <div class="signature-line"></div>
+              <div class="signature-label">AI Mentor &amp; Evaluator</div>
+            </div>
+            <!-- Sig 2: Platform -->
+            <div class="signature-block">
+              <div class="sig-wordmark">ENGAGENEERING™</div>
+              <div class="signature-line"></div>
+              <div class="signature-label">Platform Registrar</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gold Seal -->
+        <div class="gold-seal-wrapper">
+          <img src="engageneer_gold_seal.png" alt="Official Gold Seal" class="gold-seal">
+        </div>
+
+        <!-- Verification Stamp -->
+        <div class="verification-stamp">
+          <div class="verify-id" id="verifyIdStamp">CERT-ID: —</div>
+          <div class="verify-date" id="verifyDateStamp">ISSUED: —</div>
+        </div>
+
+      </div>
+    </div><!-- /certCanvas -->
+
+    <!-- Meta strip below the certificate -->
+    <div class="cert-meta-strip" id="certMetaStrip">
+      <div class="meta-item">
+        <span class="meta-label">Certificate ID</span>
+        <span class="meta-val" id="metaCertId">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Issued To</span>
+        <span class="meta-val" id="metaName">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Cluster</span>
+        <span class="meta-val" id="metaCluster">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Issued On</span>
+        <span class="meta-val" id="metaDate">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Verify Link</span>
+        <a class="meta-link" id="metaVerifyLink" href="#" target="_blank">—</a>
+      </div>
+    </div>
+
+  </div><!-- /certMain -->
+
+  <script>
+  (() => {
+    const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || '';
+    const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
+    const BACKEND   = 'https://engageneering.org'; // or http://localhost:8000 locally
+
+    const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+
+    // ── Helpers ─────────────────────────────────────────────────────
+    function showError(title, msg) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('certMain').style.display     = 'none';
+      const el = document.getElementById('errorState');
+      el.style.display = 'flex';
+      document.getElementById('errorTitle').textContent = title;
+      document.getElementById('errorMsg').textContent   = msg;
+    }
+
+    function showCert(cert) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display   = 'none';
+      document.getElementById('certMain').style.display     = 'flex';
+
+      const issued = new Date(cert.issued_at);
+      const dateStr = issued.toLocaleDateString('en-IN', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+      const dateShort = issued.toLocaleDateString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric'
+      }).toUpperCase();
+
+      // Certificate fields
+      document.getElementById('recipientName').textContent  = cert.display_name;
+      document.getElementById('clusterLabel').textContent   = cert.cluster_label;
+      document.getElementById('certTitleAward').textContent = cert.cert_title;
+      document.getElementById('issueDateBadge').textContent = 'Issued: ' + dateStr;
+
+      // Stamps
+      document.getElementById('verifyIdStamp').textContent   = 'CERT-ID: ' + cert.cert_id;
+      document.getElementById('verifyDateStamp').textContent = 'ISSUED: ' + dateShort;
+
+      // Meta strip
+      document.getElementById('metaCertId').textContent   = cert.cert_id;
+      document.getElementById('metaName').textContent     = cert.display_name;
+      document.getElementById('metaCluster').textContent  = cert.cluster_label;
+      document.getElementById('metaDate').textContent     = dateStr;
+
+      const verifyUrl = `${window.location.origin}/verify.html?cert=${cert.cert_id}`;
+      const verifyLink = document.getElementById('metaVerifyLink');
+      verifyLink.href        = verifyUrl;
+      verifyLink.textContent = verifyUrl;
+
+      // Fit to screen
+      fitScreen();
+    }
+
+    function fitScreen() {
+      const w    = window.innerWidth;
+      const cert = document.getElementById('certCanvas');
+      if (w < 1060) {
+        const scale = (w - 32) / 1000;
+        cert.style.transform = `scale(${scale})`;
+        cert.style.marginBottom = `-${(700 * (1 - scale))}px`;
+      } else {
+        cert.style.transform    = 'scale(1)';
+        cert.style.marginBottom = '0';
+      }
+    }
+    window.addEventListener('resize', fitScreen);
+
+    // ── Copy verify link ─────────────────────────────────────────────
+    window.copyVerifyLink = function () {
+      const link = document.getElementById('metaVerifyLink').href;
+      navigator.clipboard.writeText(link).then(() => {
+        const btn = document.getElementById('copyLinkBtn');
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => { btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy Verify Link`; }, 2000);
+      });
+    };
+
+    // ── Main loader ──────────────────────────────────────────────────
+    async function loadCertificate() {
+      const params   = new URLSearchParams(window.location.search);
+      const certId   = params.get('cert');   // ENG-XXXX-XXXXXXXX
+      const userId   = params.get('uid');    // fallback: load by user + cluster
+      const clSlug   = params.get('cluster');
+
+      // --- Strategy 1: cert ID param → hit Supabase directly (public read policy) ---
+      if (certId) {
+        const { data, error } = await supa
+          .from('certificates')
+          .select('*')
+          .eq('cert_id', certId.toUpperCase())
+          .eq('status', 'active')
+          .limit(1)
+          .single();
+
+        if (error || !data) {
+          showError('Certificate Not Found', `No active certificate found with ID "${certId}". It may have been revoked or the link is incorrect.`);
+          return;
+        }
+        showCert(data);
+        return;
+      }
+
+      // --- Strategy 2: uid + cluster param (from platform page deeplink) ---
+      if (userId && clSlug) {
+        const { data, error } = await supa
+          .from('certificates')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('cluster_slug', clSlug)
+          .eq('status', 'active')
+          .limit(1)
+          .single();
+
+        if (error || !data) {
+          showError('No Certificate Yet', `No active certificate found for this user in the ${clSlug} cluster. Certificates are awarded after your first contribution!`);
+          return;
+        }
+        showCert(data);
+        return;
+      }
+
+      // --- Strategy 3: current logged-in user's first cert (my certificate) ---
+      const { data: { session } } = await supa.auth.getSession();
+      if (session?.user) {
+        const { data, error } = await supa
+          .from('certificates')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .eq('status', 'active')
+          .order('issued_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error || !data) {
+          showError(
+            'No Certificate Yet',
+            'You haven\'t earned a certificate yet. Post a question or an answer in any cluster to earn your first Engageneer certificate!'
+          );
+          return;
+        }
+        showCert(data);
+        return;
+      }
+
+      // No params, not logged in
+      showError('Missing Certificate ID', 'Please open this page using a valid certificate link (e.g. certificate.html?cert=ENG-COMP-XXXXXXXX).');
+    }
+
+    loadCertificate();
+  })();
+  </script>
+
+</body>
+</html>
