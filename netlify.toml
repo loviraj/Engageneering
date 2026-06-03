@@ -12,13 +12,20 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options       = "SAMEORIGIN"
+    X-Frame-Options        = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy       = "strict-origin-when-cross-origin"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
     # CHANGED: was camera=(), microphone=() which blocked WebRTC entirely.
     # =(self) allows our own pages (engageneering.org, *.netlify.app) to use
     # camera/microphone via getUserMedia. Third-party iframes still cannot.
-    Permissions-Policy    = "camera=(self), microphone=(self), display-capture=(self), geolocation=()"
+    Permissions-Policy     = "camera=(self), microphone=(self), display-capture=(self), geolocation=()"
+    # M-1 Fix: Content-Security-Policy — blocks XSS script injection
+    # 'unsafe-inline' is required for the inline <script> blocks in platform.html.
+    # Remove it incrementally as scripts are moved to external files.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com fonts.googleapis.com checkout.razorpay.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: blob: *.supabase.co picsum.photos source.unsplash.com; media-src 'self' blob: *.supabase.co; connect-src 'self' *.supabase.co tbqnkcjftxfbxujxsqkj.supabase.co api.razorpay.com; frame-src checkout.razorpay.com; object-src 'none'; base-uri 'self';"
+    # HSTS — force HTTPS for 1 year (only active on HTTPS responses)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
 
 # Block config.js from being indexed or cached anywhere
 [[headers]]

@@ -4,6 +4,7 @@ All secrets loaded from environment variables / .env file
 Never commit .env to Git
 """
 from pydantic_settings import BaseSettings
+from typing import Optional
 from functools import lru_cache
 
 
@@ -12,7 +13,8 @@ class Settings(BaseSettings):
     app_name: str = "Engageneering™ API"
     app_version: str = "1.0.0"
     debug: bool = False
-    frontend_url: str = "https://tutbot.org"
+    # H-6 Fix: was "https://tutbot.org" — wrong default caused CORS failures in prod
+    frontend_url: str = "https://engageneering.org"
 
     # Supabase
     supabase_url: str
@@ -25,12 +27,14 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
 
     # OAuth — Google
-    google_client_id: str
-    google_client_secret: str
+    # L-6 Fix: Optional so backend doesn't crash on startup if OAuth env vars are missing
+    google_client_id:     Optional[str] = None
+    google_client_secret: Optional[str] = None
 
     # OAuth — LinkedIn
-    linkedin_client_id: str
-    linkedin_client_secret: str
+    # L-6 Fix: Optional so backend doesn't crash on startup if OAuth env vars are missing
+    linkedin_client_id:     Optional[str] = None
+    linkedin_client_secret: Optional[str] = None
 
     # Email (SMTP via Supabase or SendGrid)
     smtp_host: str = "smtp.sendgrid.net"

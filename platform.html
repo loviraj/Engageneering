@@ -22,9 +22,7 @@ window.ENG_CONFIG = {
 };
 </script>
 <script src="config.js" onerror="console.info('config.js not found')"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<!-- L-5 Fix: removed duplicate supabase-js CDN script (was loaded twice at L11 and L26) -->
 <script src="consent-guard.js"></script>
 
 <style>
@@ -2334,9 +2332,11 @@ function qCard(q,force=false){
         ${showLangBadge?`<span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(127,119,221,.12);color:#afa9ec;border:1px solid rgba(127,119,221,.3);font-weight:600">${langName}</span>`:''}
         ${isMatch?`<span style="font-size:10px;color:var(--tlb)">✦ Matched</span>`:''}
         ${isMe?`<span style="font-size:10px;color:var(--gold)">✦ Yours</span>`:''}
-        <div class="qasker">${asker}</div>
+        <!-- H-2 Fix: asker display_name wrapped in esc() to prevent XSS -->
+        <div class="qasker">${esc(asker)}</div>
       </div>
-      ${q.text&&q.text!=='[Video question]'?`<div class="qtext">${q.text}</div>`:''}
+      <!-- H-2 Fix: question text wrapped in esc() to prevent XSS -->
+      ${q.text&&q.text!=='[Video question]'?`<div class="qtext">${esc(q.text)}</div>`:''}
       <div class="qfoot">
         <div class="qstat">${q.answer_count||0} answers</div>
         <div class="qstat">${q.views||0} views</div>
@@ -3838,12 +3838,32 @@ async function callAgent(name,payload){
 // ── ENGAGENEERING™ EMAIL TRIGGER ─────────────────────────────
 async function sendEngEmail(type, toEmail, data){
   try{
+    const sess = supa?.auth?.session ? supa.auth.session() : null;
+    const token = sess?.access_token || SUPA_ANON;
+    // M-6 Fix: added Authorization header — without it, anyone can trigger
+    // emails from hello@engageneering.org to any address (phishing risk)
     await fetch('https://tbqnkcjftxfbxujxsqkj.supabase.co/functions/v1/send-email',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${token}`
+      },
       body:JSON.stringify({type, to:toEmail, data})
     });
   }catch(e){ console.warn('Email send error (non-critical):',e.message); }
+}
+
+// ── H-2 FIX: XSS-safe escape helper ─────────────────────────
+// Use esc() on ANY user-controlled string before injecting into innerHTML.
+// Converts < > & " ' to HTML entities so injected scripts cannot execute.
+function esc(s){
+  if(s==null) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
 }
 
 // ── VIDEO DURATION CHECKER ─────────────────────────────────
@@ -4400,9 +4420,13 @@ async function submitAnswer(qid,aid,lid,hid,sid,btn){
     }
     if(sa){
       await supa.from('score_history').insert({user_id:U.id,action_type:'answer',ref_id:sa.id,ei:ei.score,ri:ri.score,rai:rai.score,coi:coi.score,ai:ai.score,ag,pg,cds,pts_awarded:pts});
-      const{data:rn}=await supa.from('profile_roles').select('pts_total,answerer_pts').eq('user_id',U.id).single();
-      if(rn)await supa.from('profile_roles').update({pts_total:(rn.pts_total||0)+pts,answerer_pts:(rn.answerer_pts||0)+pts,updated_at:new Date().toISOString()}).eq('user_id',U.id);
-      if(R){R.pts_total=(R?.pts_total||0)+pts;R.answerer_pts=(R?.answerer_pts||0)+pts;}
+      // C-3 Fix: replaced direct profile_roles.update() with secure RPC call.
+      // add_answer_points() is a SECURITY DEFINER function — clients cannot spoof pts.
+      const{data:newTotal}=await supa.rpc('add_answer_points',{p_user_id:U.id,p_pts:pts});
+      if(R){
+        R.pts_total = newTotal ?? (R?.pts_total||0)+pts;
+        R.answerer_pts = (R?.answerer_pts||0)+pts;
+      }
 
       // ── CERTIFICATE AUTO-ISSUE (fire & forget) ─────────────────
       if(sa && sa.id){
@@ -4452,10 +4476,11 @@ async function loadLeaderboard(){
   const{data}=await supa.from('profiles').select('display_name,profile_roles(pts_total,seeker_tier)').limit(10);
   if(!data||!data.length){document.getElementById('lbRows').innerHTML='<div style="font-size:11px;color:var(--t4)">Be the first!</div>';return;}
   const sorted=data.filter(u=>u.profile_roles).sort((a,b)=>(b.profile_roles?.pts_total||0)-(a.profile_roles?.pts_total||0));
+  // H-2 Fix: display_name passed through esc() to prevent XSS in leaderboard
   document.getElementById('lbRows').innerHTML=sorted.slice(0,5).map((u,i)=>`
     <div class="lb-row">
       <div class="lb-rank">${i+1}</div>
-      <div class="lb-name">${u.display_name||'Engageneer™'}</div>
+      <div class="lb-name">${esc(u.display_name)||'Engageneer™'}</div>
       <div class="lb-tier" style="background:rgba(200,146,42,.1);color:#c8922a;border-color:rgba(200,146,42,.3)">T${u.profile_roles?.seeker_tier||1}</div>
       <div class="lb-pts">${u.profile_roles?.pts_total||0}</div>
     </div>`).join('');
@@ -4560,15 +4585,15 @@ async function loadYOMField(){
     const dateEl=document.getElementById('ywLeDate');
     const timeEl=document.getElementById('ywLeTime');
     if(latest && dateEl){
-      // Convert UTC to IST (UTC+5:30)
+      // M-2 Fix: was manually adding 5.5h offset then displaying with timeZone:'UTC'
+      // which cancelled the offset — now use 'Asia/Kolkata' directly on the raw UTC date.
       const utc=new Date(latest.ts);
-      const ist=new Date(utc.getTime()+5.5*60*60*1000);
-      const dateStr=ist.toLocaleDateString('en-IN',{
-        day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'
+      const dateStr=utc.toLocaleDateString('en-IN',{
+        day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Kolkata'
       });
-      const timeStr=ist.toLocaleTimeString('en-IN',{
+      const timeStr=utc.toLocaleTimeString('en-IN',{
         hour:'2-digit',minute:'2-digit',second:'2-digit',
-        hour12:true,timeZone:'UTC'
+        hour12:true,timeZone:'Asia/Kolkata'
       }).toUpperCase();
       dateEl.innerHTML=`<span style="color:var(--t1)">${dateStr}</span>`;
       if(timeEl){
@@ -4583,6 +4608,35 @@ async function loadYOMField(){
   }
 }
 
+// ── DEDUCT Ψ FROM WALLET ─────────────────────────────
+async function deductPsi(amount, reason){
+  const cur=R?.pts_total||0;
+  if(cur<amount){
+    showToast(`Insufficient Ψ — you need Ψ${amount} but have Ψ${cur}. Buy more below.`,'error');
+    setTimeout(()=>openBuyModal(),800);
+    return false;
+  }
+  try{
+    // C-3 Fix: replaced direct profile_roles.update() with secure RPC call.
+    // add_psi_points() is a SECURITY DEFINER Postgres function that prevents
+    // clients from arbitrarily setting pts_total to any value.
+    const{data:newTotal,error:rpcErr}=await supa.rpc('add_psi_points',{
+      p_user_id: U.id,
+      p_delta:   -amount,
+      p_reason:  reason||null
+    });
+    if(rpcErr) throw rpcErr;
+    if(R) R.pts_total = newTotal ?? (cur - amount);
+    await supa.from('score_history').insert({
+      user_id:U.id,action_type:'psi_spend',
+      pts_awarded:-amount,
+      ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
+      ref_id:reason||null
+    });
+    loadYOMField();
+    return true;
+  }catch(e){console.warn('Deduct error:',e);return false;}
+}
 
 // ══════════════════════════════════════════════════════════════
 // ── CONSTANTS ──────────────────────────────────────────────────
@@ -4687,31 +4741,6 @@ function showToast(msg, type='default'){
   t._tid=setTimeout(()=>{t.style.opacity='0';},3200);
 }
 
-// ── DEDUCT Ψ FROM WALLET ───────────────────────────────────────
-async function deductPsi(amount, reason){
-  const cur=R?.pts_total||0;
-  if(cur<amount){
-    showToast(`Insufficient Ψ — you need Ψ${amount} but have Ψ${cur}. Buy more below.`,'error');
-    setTimeout(()=>openBuyModal(),800);
-    return false;
-  }
-  try{
-    await supa.from('profile_roles').update({
-      pts_total:cur-amount,
-      updated_at:new Date().toISOString()
-    }).eq('user_id',U.id);
-    if(R) R.pts_total=cur-amount;
-    await supa.from('score_history').insert({
-      user_id:U.id,action_type:'psi_spend',
-      pts_awarded:-amount,
-      ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
-      ref_id:reason||null
-    });
-    loadYOMField();
-    return true;
-  }catch(e){console.warn('Deduct error:',e);return false;}
-}
-
 // ── ASK ARIA ───────────────────────────────────────────────────
 async function openAriaPanel(qid){
   const panel=document.getElementById('aria-panel-'+qid);
@@ -4752,8 +4781,8 @@ async function openAriaPanel(qid){
   if(textEl) textEl.style.display='none';
   if(srcEl) srcEl.style.display='none';
 
-  // Thinking ticker
-  const phases=['Consulting 12 agents…','Retrieving top-CDS answers…','Synthesising response…','Verifying accuracy…','Composing explanation…'];
+  // L-2 Fix: removed internal architecture clues from thinking phases
+  const phases=['Synthesising answer…','Reviewing community knowledge…','Checking accuracy…','Composing response…','Almost ready…'];
   let pi=0;
   const ticker=setInterval(()=>{
     pi=(pi+1)%phases.length;
@@ -4792,22 +4821,26 @@ Language: ${lang}`;
       prompt+=`\n\nNo community answers yet. Give a definitive, pedagogically excellent answer as if explaining to camera in a 60-second video. Be concrete, use a memorable analogy, and structure it as: Hook → Core Concept → Example → Takeaway.`;
     }
 
-    // Call Anthropic API directly (Claude claude-sonnet-4-20250514)
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:prompt}]
-      })
+    // C-1 Fix: Route ARIA through Supabase Edge Function (aria-agent) instead of
+    // calling api.anthropic.com directly from the browser. The Edge Function holds
+    // the Anthropic API key securely as a server-side secret. The old approach had
+    // NO x-api-key header — every request returned HTTP 401 and charged users Ψ20.
+    const ariaResp = await callAgent('aria_synthesiser', {
+      question_id: qid,
+      question_text: questionText,
+      tags: qData?.tags || [],
+      language: lang,
+      prompt: prompt,
+      top_answers: topAnswers.map(a => ({ text: a.text, cds: a.cds }))
     });
 
     clearInterval(ticker);
 
-    if(!resp.ok) throw new Error('ARIA API error');
-    const data=await resp.json();
-    const ariaText=data.content?.find(c=>c.type==='text')?.text||'ARIA could not generate a response.';
+    // callAgent returns {} on any error — detect failure
+    if(!ariaResp || (!ariaResp.text && !ariaResp.response && !ariaResp.content)) {
+      throw new Error('ARIA returned an empty response');
+    }
+    const ariaText = ariaResp.text || ariaResp.response || ariaResp.content || 'ARIA could not generate a response.';
 
     // Display
     if(thinkEl) thinkEl.style.display='none';
@@ -4842,11 +4875,15 @@ Language: ${lang}`;
       textEl.style.display='block';
       textEl.innerHTML='<span style="color:var(--rd)">ARIA is temporarily unavailable. Your Ψ has been refunded.</span>';
     }
-    // Refund on error
+    // C-3 Fix: Refund uses secure RPC instead of direct profile_roles UPDATE
     try{
-      const{data:rn}=await supa.from('profile_roles').select('pts_total').eq('user_id',U.id).single();
-      if(rn) await supa.from('profile_roles').update({pts_total:(rn.pts_total||0)+ARIA_COST,updated_at:new Date().toISOString()}).eq('user_id',U.id);
-      if(R) R.pts_total=(R.pts_total||0)+ARIA_COST;
+      const{data:newTotal}=await supa.rpc('add_psi_points',{
+        p_user_id: U.id,
+        p_delta:   ARIA_COST,
+        p_reason:  'aria_refund_q'+qid
+      });
+      if(R && newTotal != null) R.pts_total = newTotal;
+      else if(R) R.pts_total=(R.pts_total||0)+ARIA_COST;
       showToast('Ψ refunded — ARIA unavailable','error');
     }catch(e2){}
     loadYOMField();

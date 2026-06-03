@@ -106,8 +106,10 @@ exports.handler = async (event) => {
 };
 
 function cors() {
+  // L-1 Fix: was '*' — restricting to known origin prevents cross-origin order creation
+  const ALLOWED_ORIGIN = 'https://engageneering.org';
   return {
-    'Access-Control-Allow-Origin':  '*',
+    'Access-Control-Allow-Origin':  ALLOWED_ORIGIN,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };

@@ -2,12 +2,12 @@
 Engageneering™ — Certificates Router
 Endpoints:
   GET  /api/v1/certificates/public/{cert_id}  — public: verify any cert by ENG-XXXX-XXXXXXXX
-  GET  /api/v1/certificates/me                — get all certs for a user (by user_id query param)
+  GET  /api/v1/certificates/me                — get certs for the authenticated user (JWT required)
   GET  /api/v1/certificates/cluster/{slug}    — list all certs for a cluster
   POST /api/v1/certificates/check-and-issue   — auto-issue if first contribution
-  POST /api/v1/certificates/issue             — manual issue (admin/service)
+  POST /api/v1/certificates/issue             — manual issue (admin only — JWT + admin role required)
 """
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel
 from typing import Optional
 import re
@@ -17,13 +17,34 @@ from slowapi.util import get_remote_address
 
 from db.supabase import get_supabase_service
 
+# Import auth dependency from auth router
+from routers.auth import get_current_uid
+
 router  = APIRouter(prefix="/certificates", tags=["Certificates"])
 limiter = Limiter(key_func=get_remote_address)
 
+# Admin UIDs — add Supabase user UUIDs of platform admins here.
+# Alternatively, check a `roles` column in your profiles table.
+ADMIN_UIDS: set[str] = set()   # TODO: populate from env / DB at startup
 
-# ══════════════════════════════════════════════════════════════════════
+
+def _is_admin(uid: str) -> bool:
+    """Check if a UID belongs to a platform admin.
+    
+    Currently uses a static set loaded from environment.
+    Swap for a DB lookup when you have an admin_roles table.
+    """
+    import os
+    # Allow runtime override via env var (comma-separated UUIDs)
+    env_admins = os.getenv("ADMIN_UIDS", "")
+    if env_admins:
+        ADMIN_UIDS.update(u.strip() for u in env_admins.split(",") if u.strip())
+    return uid in ADMIN_UIDS
+
+
+# ══════════════════════════════════════════════════════════════════
 # SCHEMAS
-# ══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 
 class IssueRequest(BaseModel):
     user_id:        str
@@ -59,9 +80,9 @@ class CertificateOut(BaseModel):
     trigger_ref_id: Optional[str] = None
 
 
-# ══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 # HELPERS
-# ══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 
 CERT_ID_RE = re.compile(r"^ENG-[A-Z0-9]{4}-[A-Z0-9]{8}$")
 
@@ -86,9 +107,9 @@ def _row_to_cert(row: dict) -> CertificateOut:
     )
 
 
-# ══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 # ROUTES
-# ══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 
 @router.get("/public/{cert_id}", response_model=CertificateOut, summary="Publicly verify a certificate")
 @limiter.limit("120/minute")
@@ -126,18 +147,21 @@ async def verify_certificate(cert_id: str, request: Request):
     return _row_to_cert(row)
 
 
-@router.get("/me", response_model=list[CertificateOut], summary="Get all certs for a user")
+@router.get("/me", response_model=list[CertificateOut], summary="Get all certs for the authenticated user")
 @limiter.limit("30/minute")
-async def get_my_certificates(user_id: str, request: Request):
+async def get_my_certificates(request: Request, uid: str = Depends(get_current_uid)):
     """
-    Returns all certificates (active + revoked) for a given user_id.
-    Pass user_id as a query param: /me?user_id=<uuid>
+    Returns all certificates (active + revoked) for the currently authenticated user.
+    Requires a valid JWT — user_id is taken from the token, NOT from a query parameter,
+    preventing any user from enumerating another user's certificates.
+
+    Fix for M-7: old version accepted any user_id as a query param with no auth.
     """
     supa = get_supabase_service()
     res  = (
         supa.table("certificates")
         .select("*")
-        .eq("user_id", user_id)
+        .eq("user_id", uid)
         .order("issued_at", desc=True)
         .execute()
     )
@@ -199,12 +223,27 @@ async def check_and_issue(body: CheckAndIssueRequest, request: Request):
     return _row_to_cert(cert_res.data[0])
 
 
-@router.post("/issue", response_model=CertificateOut, summary="Manually issue a certificate")
+@router.post("/issue", response_model=CertificateOut, summary="Manually issue a certificate (Admin only)")
 @limiter.limit("10/minute")
-async def issue_certificate(body: IssueRequest, request: Request):
+async def issue_certificate(
+    body: IssueRequest,
+    request: Request,
+    uid: str = Depends(get_current_uid),   # C-2: JWT required
+):
     """
     Admin/service endpoint — issues a certificate directly.
+    Requires a valid JWT AND the caller must be in the ADMIN_UIDS set.
+
+    Fix for C-2: previously had no authentication at all — anyone could issue
+    certificates for any user and cluster with no credentials.
     """
+    # C-2: Admin gate — 403 if caller is not an admin
+    if not _is_admin(uid):
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: admin access required to manually issue certificates."
+        )
+
     supa = get_supabase_service()
 
     res = supa.rpc("award_cluster_certificate", {

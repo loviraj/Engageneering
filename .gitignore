@@ -56,3 +56,18 @@ htmlcov/
 
 # Local Netlify folder
 .netlify
+
+# ── LARGE BINARIES — use CLI from PATH instead (M-4) ─────────────
+# supabase.exe is 98MB and must not be committed to the repo
+supabase.exe
+supabase
+
+# ── BACKUP / DEBUG HTML FILES — not for deployment (M-5) ─────────
+# These old/working/debug files are published by Netlify (publish = ".")
+# and may contain older, less secure auth logic or debug output.
+*OLD.html
+*OLD1.html
+*OLD-WKG.html
+*Working.html
+whats_broken.html
+vai2bebo*.html
