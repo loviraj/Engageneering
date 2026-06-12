@@ -3099,13 +3099,14 @@ function buildExpandInner(q, pid){
             onclick="nfOpen('${q.id}','answer')">
             🎥 Record Your Answer ${ansCount>0?`<span style="font-size:9px;opacity:.6">· ${ansCount} so far</span>`:'— Be First'}
           </button>
-          ${U?`<button class="nf-xbtn nf-xbtn-aria"
-            id="ask-aria-${q.id}"
-            style="width:100%;padding:10px;font-size:11px;letter-spacing:1px"
-            onclick="openAriaPanel('${q.id}')">
-            ⬡ Ask ARIA · Synthesise from top answers <span style="font-size:9px;opacity:.7">Ψ${ARIA_COST}</span>
-          </button>`:''}
         </div>
+
+        ${U?`<button class="nf-xbtn nf-xbtn-aria"
+          id="ask-aria-${q.id}"
+          style="width:100%;padding:10px;font-size:11px;letter-spacing:1px;margin-bottom:.5rem"
+          onclick="openAriaPanel('${q.id}')">
+          ⬡ Ask ARIA · Synthesise from top answers <span style="font-size:9px;opacity:.7">Ψ${ARIA_COST}</span>
+        </button>`:''}
 
         <!-- Disclaimer -->
         <div style="font-size:9px;color:var(--t4);line-height:1.55;margin-top:auto;padding-top:.5rem;border-top:1px solid rgba(30,58,106,.3)">
