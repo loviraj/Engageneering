@@ -4352,8 +4352,8 @@ function handleIntegrityResult(ig, context='answer'){
 
 // ══ SUBMIT QUESTION ══
 async function submitQuestion(){
-  const err=document.getElementById('modalErr');
   if(!U){
+    const err=document.getElementById('modalErr');
     if(err) err.textContent='You must be logged in to submit a question.';
     showToast('You must be logged in to submit a question.','error');
     return;
