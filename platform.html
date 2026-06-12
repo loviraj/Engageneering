@@ -683,8 +683,9 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 /* collapse sidebars earlier to reduce clutter on medium screens */
 @media(max-width:1300px){.layout{grid-template-columns:1fr}.sb-l,.sb-r{display:none}}
 
-/* Make cluster bar visible and sticky so clusters remain accessible */
-.cluster-bar{display:flex;align-items:center;gap:.5rem;padding:.6rem 0;position:sticky;top:60px;z-index:60;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.02))}
+/* Make cluster bar sticky at top 0px of scroll container and reveal smoothly on scroll up */
+.cluster-bar{display:flex;align-items:center;gap:.5rem;padding:.6rem 1rem;position:sticky;top:0px;z-index:60;transition:top 0.3s ease-in-out;border:1px solid rgba(46,158,79,.06);border-radius:8px;background:linear-gradient(180deg,rgba(46,158,79,.02),transparent);margin-bottom:.6rem}
+.cluster-bar.cluster-bar-hidden{top:-80px !important}
 
 /* ══ ARIA BREATHING LOADER ══ */
 .aria-loader{
@@ -1029,8 +1030,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .yw-split-q{background:linear-gradient(to right,#378add,#85b7eb);border-radius:2px 0 0 2px;transition:flex .8s ease}
 .yw-split-a{background:linear-gradient(to right,#1d9e75,#5dcaa5);border-radius:0 2px 2px 0;transition:flex .8s ease}
 
-
-.cluster-bar{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;border:1px solid rgba(46,158,79,.06);border-radius:8px;background:linear-gradient(180deg,rgba(46,158,79,.02),transparent);margin-bottom:.6rem}
+/* Removed duplicate .cluster-bar override to prevent conflict with sticky positioning */
 .cluster-btn{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;border:1px solid rgba(46,158,79,.3);background:transparent;color:#5dcaa5;cursor:pointer;transition:all .15s;white-space:nowrap}
 .cluster-btn.active{background:rgba(46,158,79,.2);border-color:#2e9e4f;color:#fff}
 .cluster-btn:hover{background:rgba(46,158,79,.15)}
@@ -1582,6 +1582,24 @@ window.addEventListener('DOMContentLoaded',async()=>{
   buildNav();buildTierCard();
   loadFeed();loadLeaderboard();
   loadInsight();loadEvtCount();loadYOMField();
+  
+  // Smart revealing cluster bar scroll handler
+  const mainCol = document.querySelector('.main-col');
+  if(mainCol){
+    let lastScrollTop = 0;
+    mainCol.addEventListener('scroll', () => {
+      const clusterBar = document.getElementById('clusterBar');
+      if (!clusterBar) return;
+      const scrollTop = mainCol.scrollTop;
+      if (scrollTop > lastScrollTop && scrollTop > 60) {
+        clusterBar.classList.add('cluster-bar-hidden');
+      } else {
+        clusterBar.classList.remove('cluster-bar-hidden');
+      }
+      lastScrollTop = scrollTop;
+    }, { passive: true });
+  }
+
   loadUserClusters();
   setTimeout(()=>loadMyCertificates(), 1500); // load after profile renders
   setTimeout(checkAndShowConsentModal, 1500);
