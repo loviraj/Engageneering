@@ -1399,7 +1399,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_language ON questions(language);
         <div class="pb-tier-name" id="pbTierName">Curious</div>
         <div class="pb-track" id="pbTrack">Seeker Track</div>
         <div class="pb-cds" id="pbCds"></div>
-        <div class="pb-take" onclick="window.location.href='assessment.html'">Retake Assessment →</div>
+        <div class="pb-take" style="font-size:10px;color:var(--gb);cursor:pointer;margin-top:6px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;transition:color 0.2s" onclick="window.location.href='assessment.html'" onmouseover="this.style.color='var(--t1)'" onmouseout="this.style.color='var(--gb)'">Retake Assessment →</div>
         <div style="font-size:10px;color:var(--gold);cursor:pointer;margin-top:6px;font-weight:600;letter-spacing:.3px;text-transform:uppercase" onclick="openEngageneerCertificate()">🎓 View My Certificates →</div>
       </div>
     </div>
@@ -2833,7 +2833,7 @@ function buildNfHero(q){
       <div class="nf-hero-btns">
         <button class="nf-hero-btn nf-hbtn-play" onclick="nfOpen('${q.id}','answer')">▶ Answer Now</button>
         <button class="nf-hero-btn nf-hbtn-more" onclick="nfOpen('${q.id}','info')">ⓘ More Info</button>
-        ${(U&&q.asker_id===U.id)?`<button class="nf-hero-btn nf-hbtn-aria" onclick="nfOpen('${q.id}','aria')">⬡ Ask ARIA  Ψ${ARIA_COST}</button>`:''}
+        ${U?`<button class="nf-hero-btn nf-hbtn-aria" onclick="nfOpen('${q.id}','aria')">⬡ Ask ARIA  Ψ${ARIA_COST}</button>`:''}
       </div>
     </div>
     ${score!=null?`<div class="nf-hero-score"><div class="nf-hero-psi-val">Ψ ${score}</div><div class="nf-hero-psi-lbl">Quality Score</div></div>`:''}
@@ -3099,7 +3099,7 @@ function buildExpandInner(q, pid){
             onclick="nfOpen('${q.id}','answer')">
             🎥 Record Your Answer ${ansCount>0?`<span style="font-size:9px;opacity:.6">· ${ansCount} so far</span>`:'— Be First'}
           </button>
-          ${isMe?`<button class="nf-xbtn nf-xbtn-aria"
+          ${U?`<button class="nf-xbtn nf-xbtn-aria"
             id="ask-aria-${q.id}"
             style="width:100%;padding:10px;font-size:11px;letter-spacing:1px"
             onclick="openAriaPanel('${q.id}')">
@@ -4351,6 +4351,12 @@ function handleIntegrityResult(ig, context='answer'){
 
 // ══ SUBMIT QUESTION ══
 async function submitQuestion(){
+  const err=document.getElementById('modalErr');
+  if(!U){
+    if(err) err.textContent='You must be logged in to submit a question.';
+    showToast('You must be logged in to submit a question.','error');
+    return;
+  }
   // VIDEO-ONLY PLATFORM
   const needsText = false;
   const needsVideo = true;
@@ -4600,6 +4606,11 @@ async function submitQuestion(){
 
 // ══ SUBMIT ANSWER ══
 async function submitAnswer(qid,aid,lid,hid,sid,btn){
+  if(!U){
+    showToast('You must be logged in to submit an answer.','error');
+    if(btn){btn.textContent='Submit Answer';btn.disabled=false;}
+    return;
+  }
   // Check answer duration using tracked seconds (blob metadata unreliable for WebM)
   const state=ansRecState[qid];
   if(state&&state.seconds&&state.seconds>182){

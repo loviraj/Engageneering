@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Engageneering™ — Profile Summary</title>
+<link rel="icon" type="image/png" href="ENG-Favicon.png"/>
+<link rel="apple-touch-icon" href="ARIA-Avatar-Favicon.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07101e;--bg2:#0a1628;--bg3:#0f1e36;--bg4:#081420;
+  --bdr:#1e3a6a;--bdr2:#2a4a7a;
+  --gold:#c8922a;--gb:#f0c040;
+  --t1:#e8f0fc;--t2:#b8cce8;--t3:#7a9ab8;--t4:#4a6a88;
+  --tl:#1d9e75;--tlb:#5dcaa5;--bl:#378add;--blb:#85b7eb;--pu:#7f77dd;--pub:#afa9ec;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--t2);font-family:'EB Garamond',Georgia,serif;font-size:18px}
+body{overflow-x:hidden}
+.nav{height:60px;background:var(--bg2);border-bottom:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:.8rem;text-decoration:none;color:inherit}
+.brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#0a1628,#0f1e36);border:1px solid var(--gold);display:grid;place-items:center;color:var(--gb);font-family:'Cormorant Garamond',serif;font-weight:700}
+.brand-title{font-family:'Cormorant Garamond',serif;font-size:14px;letter-spacing:3px;color:var(--gold);font-weight:700}
+.brand-sub{font-size:9px;letter-spacing:1.8px;color:var(--t4);text-transform:uppercase}
+.actions{display:flex;gap:.6rem;align-items:center}
+.btn{font-family:'Cormorant Garamond',serif;text-transform:uppercase;letter-spacing:1.5px;font-size:10px;border-radius:4px;padding:7px 14px;border:1px solid var(--bdr2);background:transparent;color:var(--t2);cursor:pointer;text-decoration:none;transition:all 0.2s}
+.btn:hover{background:rgba(30,58,106,.25);border-color:var(--gold)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#06101c;font-weight:700}
+.btn.gold:hover{background:var(--gb);box-shadow:0 0 10px rgba(240,192,64,.3)}
+.wrap{max-width:1180px;margin:0 auto;padding:1.5rem}
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:1rem;align-items:stretch;margin-top:.5rem}
+.card{background:var(--bg3);border:1px solid var(--bdr2);border-radius:14px;overflow:hidden}
+.hero-card{padding:1.4rem 1.5rem}
+.eyebrow{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.name{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,4vw,54px);line-height:1.05;color:var(--t1);margin-bottom:.5rem}
+.meta{font-size:14px;color:var(--t3);line-height:1.8;max-width:68ch}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1.2rem}
+.stat{background:var(--bg4);border:1px solid var(--bdr);border-radius:12px;padding:1rem}
+.stat .v{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gb);line-height:1}
+.stat .l{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t4);margin-top:.35rem}
+.side-card{padding:1.2rem}
+.section{margin-top:1rem;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.panel{padding:1.1rem 1.2rem}
+.hd{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem}
+.line{height:1px;background:linear-gradient(to right,var(--gold),transparent);margin:.8rem 0 1rem}
+.row{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.5rem 0;border-bottom:1px solid rgba(30,58,106,.25);font-size:15px}
+.row:last-child{border-bottom:none}
+.row b{color:var(--t1);font-weight:500}
+.muted{font-size:12px;color:var(--t4);line-height:1.7}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem}
+.badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border-radius:999px;padding:4px 10px;border:1px solid var(--bdr);color:var(--t3);background:rgba(55,138,221,.07)}
+.badge.teal{background:rgba(29,158,117,.08);border-color:rgba(29,158,117,.25);color:#5dcaa5}
+.badge.gold{background:rgba(200,146,42,.12);border-color:rgba(200,146,42,.3);color:var(--gb)}
+.activity{display:grid;gap:.6rem}
+.activity-item{border:1px solid var(--bdr);border-radius:10px;padding:.9rem 1rem;background:var(--bg4);font-size:13px}
+.activity-item strong{color:var(--t1);font-weight:500}
+@media(max-width:900px){.hero,.section{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <div class="nav">
+    <a class="brand" href="platform.html">
+      <div class="brand-mark">M</div>
+      <div>
+        <div class="brand-title">ENGAGENEERING™</div>
+        <div class="brand-sub">Profile Summary · Thin View</div>
+      </div>
+    </a>
+    <div class="actions">
+      <a class="btn" href="platform.html">Back to Feed</a>
+      <a class="btn gold" href="assessment.html">Retake Assessment</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="hero">
+      <div class="card hero-card">
+        <div class="eyebrow">Profile</div>
+        <div class="name" id="pfName">Loading...</div>
+        <div class="meta" id="pfMeta">Querying platform...</div>
+        <div class="stats">
+          <div class="stat"><div class="v" id="statTotal">—</div><div class="l">Total Ψ</div></div>
+          <div class="stat"><div class="v" id="statQuestions">—</div><div class="l">Questions</div></div>
+          <div class="stat"><div class="v" id="statAnswers">—</div><div class="l">Answers</div></div>
+        </div>
+      </div>
+      <div class="card side-card">
+        <div class="hd">Current Track</div>
+        <div class="row"><b>Seeker Track</b><span id="trName">—</span></div>
+        <div class="row"><b>Tier</b><span id="trTier">—</span></div>
+        <div class="row"><b>Next Step</b><span id="trNext">—</span></div>
+        <div class="line"></div>
+        <div class="badges" id="trBadges">
+          <span class="badge">Loading tags...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="card panel">
+        <div class="hd">YOM Field</div>
+        <div class="row"><b>Questions</b><span style="color:var(--gb)" id="yomQuestions">Ψ 0</span></div>
+        <div class="row"><b>Answers</b><span style="color:var(--gb)" id="yomAnswers">Ψ 0</span></div>
+        <div class="row"><b>Cultivated</b><span style="color:var(--gb)" id="yomCultivated">Ψ 0</span></div>
+        <p class="muted" style="margin-top:.8rem">This breakdown keeps active field stats organized and out of the way of the main question feed.</p>
+      </div>
+
+      <div class="card panel">
+        <div class="hd">Agent Monitor</div>
+        <div class="row"><b>ARIA Orchestrator</b><span style="color:var(--tlb)">Active</span></div>
+        <div class="row"><b>Gatekeeper</b><span style="color:var(--tlb)">Ready</span></div>
+        <div class="row"><b>Question Rater</b><span style="color:var(--tlb)">Ready</span></div>
+        <div class="row"><b>Smart Matcher</b><span style="color:var(--tlb)">Ready</span></div>
+        <div class="row"><b>Engagement Indexer</b><span style="color:var(--tlb)">Ready</span></div>
+      </div>
+
+      <div class="card panel" style="grid-column: span 2">
+        <div class="hd">🏅 My Certificates</div>
+        <div id="certsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.8rem;margin-top:.5rem">
+          <div class="muted">Loading certificates...</div>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <div class="hd">Weekly Insight</div>
+        <p class="meta" id="weeklyInsight" style="font-size:13px">Loading weekly analysis...</p>
+        <div class="line"></div>
+        <p class="muted">Agent 12 · Insight Narrator</p>
+      </div>
+
+      <div class="card panel">
+        <div class="hd">Activity</div>
+        <div class="activity" id="activityList">
+          <div class="muted">Loading recent activities...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase JS & App Configuration -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const STIERS={1:'Curious',2:'Questioner',3:'Challenger',4:'Pro Challenger',5:'Knowledge Architect™'};
+    const ATIERS={1:'Responder',2:'Explainer',3:'Illuminator',4:'Teacher',5:'Master Teacher™'};
+    const TPTS=[0,500,1200,2500,5000];
+
+    const SUPA_URL  = window.ENG_CONFIG?.SUPA_URL  || 'https://tbqnkcjftxfbxujxsqkj.supabase.co';
+    const SUPA_ANON = window.ENG_CONFIG?.SUPA_ANON || '';
+    const supa = supabase.createClient(SUPA_URL, SUPA_ANON, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    let U=null, P=null, R=null;
+
+    function esc(s){
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    async function init(){
+      const {data:{session}} = await supa.auth.getSession();
+      if(!session || !session.user){
+        window.location.href='auth.html';
+        return;
+      }
+      U = session.user;
+      await loadUserData();
+    }
+
+    async function loadUserData(){
+      try {
+        // Fetch Profile
+        let{data:prof}=await supa.from('profiles').select('*').eq('id',U.id).single();
+        if(!prof){
+          const meta = U.user_metadata || {};
+          const displayName = meta.full_name || meta.name || U.email?.split('@')[0] || 'Engageneer™';
+          const avatarUrl = meta.avatar_url || meta.picture || null;
+          await supa.from('profiles').upsert({
+            id: U.id,
+            display_name: displayName,
+            avatar_url: avatarUrl,
+            status: 'active',
+            joined_at: new Date().toISOString()
+          },{onConflict:'id'});
+          ({data:prof}=await supa.from('profiles').select('*').eq('id',U.id).single());
+        }
+        P = prof;
+        document.getElementById('pfName').textContent = P.display_name || 'Engageneer™';
+
+        // Fetch Profile Roles / Tiers
+        let{data:role}=await supa.from('profile_roles').select('*').eq('user_id',U.id).single();
+        if(!role){
+          await supa.from('profile_roles').upsert({
+            user_id: U.id, role: 'both', seeker_tier: 1, answerer_tier: 1,
+            pts_total: 0, seeker_pts: 0, answerer_pts: 0, expertise_tags: []
+          },{onConflict:'user_id'});
+          ({data:role}=await supa.from('profile_roles').select('*').eq('user_id',U.id).single());
+        }
+        R = role;
+
+        // Fetch counts
+        const {count: qCount} = await supa.from('questions')
+          .select('id', { count: 'exact', head: true })
+          .eq('asker_id', U.id);
+        const {count: aCount} = await supa.from('answers')
+          .select('id', { count: 'exact', head: true })
+          .eq('answerer_id', U.id);
+
+        // Fetch cultivated points (payments)
+        const {data: purchases} = await supa.from('payments')
+          .select('psi_pack')
+          .eq('user_id', U.id)
+          .eq('status', 'captured');
+        const bPts = (purchases || []).reduce((s, r) => s + (r.psi_pack || 0), 0);
+
+        const qPts = R.seeker_pts || 0;
+        const aPts = R.answerer_pts || 0;
+        const totalPts = qPts + aPts + bPts;
+
+        // Populate basic stats
+        document.getElementById('statTotal').textContent = totalPts;
+        document.getElementById('statQuestions').textContent = qCount || 0;
+        document.getElementById('statAnswers').textContent = aCount || 0;
+
+        const sTier = R.seeker_tier || 1;
+        const nextThreshold = TPTS[sTier] || 5000;
+        const remaining = Math.max(0, nextThreshold - qPts);
+
+        document.getElementById('pfMeta').textContent = `${STIERS[sTier] || 'Curious'} · Seeker Tier ${sTier} · ${totalPts} Ψ total. Slim view home for profile details, certificates, and progress notes.`;
+        document.getElementById('trName').textContent = STIERS[sTier] || 'Curious';
+        document.getElementById('trTier').textContent = `${sTier} / 5`;
+        document.getElementById('trNext').textContent = remaining > 0 ? `${remaining} to ${STIERS[sTier+1] || 'Architect'}` : 'Max Tier';
+
+        // Badges / Tags
+        const badgesContainer = document.getElementById('trBadges');
+        const tags = R.expertise_tags || [];
+        if (tags.length) {
+          badgesContainer.innerHTML = tags.map((t, idx) => `<span class="badge ${idx % 2 === 0 ? 'teal' : 'gold'}">${esc(t)}</span>`).join('');
+        } else {
+          badgesContainer.innerHTML = '<span class="badge">No tags yet</span>';
+        }
+
+        // YOM Field Breakdown
+        document.getElementById('yomQuestions').textContent = `Ψ ${qPts}`;
+        document.getElementById('yomAnswers').textContent = `Ψ ${aPts}`;
+        document.getElementById('yomCultivated').textContent = `Ψ ${bPts}`;
+
+        // Certificates
+        await loadCertificates();
+
+        // Insight Report
+        await loadInsightReport();
+
+        // Recent Activity
+        await loadActivity();
+
+      } catch (err) {
+        console.error('Error loading user data:', err);
+        document.getElementById('pfMeta').textContent = 'Error loading profile. Check connection.';
+      }
+    }
+
+    async function loadCertificates(){
+      const certsList = document.getElementById('certsList');
+      try {
+        const {data:certs, error} = await supa
+          .from('certificates')
+          .select('cert_id,cert_title,cluster_label,issued_at,verify_url,status')
+          .eq('user_id', U.id)
+          .order('issued_at', {ascending:false})
+          .limit(10);
+
+        if (error) throw error;
+        if (!certs || certs.length === 0) {
+          certsList.innerHTML = '<div class="muted">No certificates awarded yet. Earn certificates by defending answers.</div>';
+          return;
+        }
+
+        certsList.innerHTML = certs.map(c => {
+          const date = new Date(c.issued_at).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+          const isActive = c.status === 'active';
+          return `
+            <div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;justify-content:space-between" 
+                 onmouseover="this.style.borderColor='var(--gold)';" 
+                 onmouseout="this.style.borderColor='var(--bdr)';"
+                 onclick="window.open('certificate.html?cert=${c.cert_id}','_blank')">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:${isActive?'var(--gb)':'#64748b'}">${esc(c.cluster_label)}</div>
+                <div style="font-size:10px;color:var(--t4);margin-top:2px;letter-spacing:.3px">${date}</div>
+              </div>
+              <div style="font-size:9px;font-family:monospace;color:rgba(212,175,55,.5);margin-top:6px;letter-spacing:1px">${c.cert_id}</div>
+            </div>`;
+        }).join('');
+      } catch (e) {
+        console.warn('Certs load error:', e.message);
+        certsList.innerHTML = '<div class="muted">Failed to load certificates.</div>';
+      }
+    }
+
+    async function loadInsightReport(){
+      const insightEl = document.getElementById('weeklyInsight');
+      try {
+        const {data: report, error} = await supa
+          .from('insight_reports')
+          .select('markdown_content')
+          .eq('user_id', U.id)
+          .order('week_of', {ascending:false})
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (report && report.markdown_content) {
+          insightEl.innerHTML = esc(report.markdown_content).replace(/\n/g, '<br/>');
+        } else {
+          insightEl.textContent = 'Submit your video answers to receive dynamic weekly insights. ARIA will analyze your performance trends and output study recommendations here.';
+        }
+      } catch (e) {
+        console.warn('Insight load error:', e.message);
+        insightEl.textContent = 'Standby. No recent insights found.';
+      }
+    }
+
+    async function loadActivity(){
+      const actList = document.getElementById('activityList');
+      try {
+        const {data:hist, error} = await supa
+          .from('score_history')
+          .select('action_type,pts_awarded,created_at')
+          .eq('user_id', U.id)
+          .order('created_at', {ascending:false})
+          .limit(6);
+
+        if (error) throw error;
+        if (!hist || hist.length === 0) {
+          actList.innerHTML = '<div class="muted">No recent activities. Ask or answer questions to populate.</div>';
+          return;
+        }
+
+        actList.innerHTML = hist.map(h => {
+          const date = new Date(h.created_at).toLocaleString('en-IN', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+          const label = h.action_type === 'question' ? 'Asked a Question' : 'Submitted an Answer';
+          return `
+            <div class="activity-item">
+              <strong>${label}</strong><br/>
+              <span class="muted">${date} · Awarded +${h.pts_awarded || 0} Ψ</span>
+            </div>`;
+        }).join('');
+      } catch (e) {
+        console.warn('Activity load error:', e.message);
+        actList.innerHTML = '<div class="muted">No activity history.</div>';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
