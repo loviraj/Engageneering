@@ -3637,22 +3637,26 @@ function nfScroll(tid, dir){
   if(el) el.scrollBy({left:dir*700,behavior:'smooth'});
 }
 
+const SAMPLE_VIDEO_URL = 'https://tbqnkcjftxfbxujxsqkj.supabase.co/storage/v1/object/public/engageneering-videos/sample-answer.mp4';
+const SAMPLE_QUESTIONS = [
+  {id:'s1',language:'en',language_name:'English',text:'What is the most engaging way to explain variables to a 12-year-old who has never seen code?',tags:['Programming'],quality_score:94,answer_count:3,views:187,bounty_pts:50,profiles:{display_name:'Arjun M.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:52},
+  {id:'s2',language:'en',language_name:'English',text:'Why does time slow down near a black hole — without using a single equation?',tags:['Science','Physics'],quality_score:89,answer_count:2,views:341,bounty_pts:0,profiles:{display_name:'Fatima A.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:45},
+  {id:'s3',language:'hi',language_name:'Hindi',text:'How would you explain compound interest to a first-generation investor in 3 minutes?',tags:['Finance'],quality_score:91,answer_count:5,views:529,bounty_pts:100,profiles:{display_name:'Ravi K.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:110},
+  {id:'s4',language:'en',language_name:'English',text:"Explain Occam's Razor using only a story. No definitions.",tags:['Philosophy'],quality_score:88,answer_count:1,views:98,bounty_pts:0,profiles:{display_name:'Priya N.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:60},
+  {id:'s5',language:'pa',language_name:'Punjabi',text:'Why does 0.1 + 0.2 not equal 0.3 in most programming languages?',tags:['Programming','Mathematics'],quality_score:79,answer_count:0,views:44,bounty_pts:40,profiles:{display_name:'Gurpreet S.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:80},
+  {id:'s6',language:'en',language_name:'English',text:'How do you explain the concept of recursion without computers?',tags:['Programming'],quality_score:86,answer_count:2,views:156,bounty_pts:0,profiles:{display_name:'David O.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:55},
+  {id:'s7',language:'en',language_name:'English',text:'What is entropy and why does it always increase?',tags:['Science','Physics'],quality_score:92,answer_count:4,views:287,bounty_pts:75,profiles:{display_name:'Mei-Lin C.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:72},
+  {id:'s8',language:'en',language_name:'English',text:'Can you explain what a derivative is without calculus notation?',tags:['Mathematics'],quality_score:83,answer_count:1,views:92,bounty_pts:0,profiles:{display_name:'James R.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:48},
+  {id:'s9',language:'en',language_name:'English',text:'Why is democracy fragile — explain it to someone who has never lived without it?',tags:['Politics','Philosophy'],quality_score:87,answer_count:3,views:198,bounty_pts:60,profiles:{display_name:'Amara T.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:90},
+  {id:'s10',language:'en',language_name:'English',text:'What makes a proof beautiful? Explain mathematical elegance to a non-mathematician.',tags:['Mathematics','Philosophy'],quality_score:95,answer_count:6,views:412,bounty_pts:120,profiles:{display_name:'Dr. Chen W.'},asker_id:'',matched_uids:[],content_type:'video',video_url:SAMPLE_VIDEO_URL,video_duration:88}
+];
+
 function sampleFeed(){
   const now=Date.now();
-  const sampleVideo = 'https://tbqnkcjftxfbxujxsqkj.supabase.co/storage/v1/object/public/engageneering-videos/sample-answer.mp4';
-  const s=[
-    {id:'s1',language:'en',language_name:'English',text:'What is the most engaging way to explain variables to a 12-year-old who has never seen code?',tags:['Programming'],quality_score:94,answer_count:3,views:187,bounty_pts:50,profiles:{display_name:'Arjun M.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:52,created_at:new Date(now-86400000).toISOString()},
-    {id:'s2',language:'en',language_name:'English',text:'Why does time slow down near a black hole — without using a single equation?',tags:['Science','Physics'],quality_score:89,answer_count:2,views:341,bounty_pts:0,profiles:{display_name:'Fatima A.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:45,created_at:new Date(now-172800000).toISOString()},
-    {id:'s3',language:'hi',language_name:'Hindi',text:'How would you explain compound interest to a first-generation investor in 3 minutes?',tags:['Finance'],quality_score:91,answer_count:5,views:529,bounty_pts:100,profiles:{display_name:'Ravi K.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:110,created_at:new Date(now-259200000).toISOString()},
-    {id:'s4',language:'en',language_name:'English',text:"Explain Occam's Razor using only a story. No definitions.",tags:['Philosophy'],quality_score:88,answer_count:1,views:98,bounty_pts:0,profiles:{display_name:'Priya N.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:60,created_at:new Date(now-345600000).toISOString()},
-    {id:'s5',language:'pa',language_name:'Punjabi',text:'Why does 0.1 + 0.2 not equal 0.3 in most programming languages?',tags:['Programming','Mathematics'],quality_score:79,answer_count:0,views:44,bounty_pts:40,profiles:{display_name:'Gurpreet S.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:80,created_at:new Date(now-432000000).toISOString()},
-    {id:'s6',language:'en',language_name:'English',text:'How do you explain the concept of recursion without computers?',tags:['Programming'],quality_score:86,answer_count:2,views:156,bounty_pts:0,profiles:{display_name:'David O.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:55,created_at:new Date(now-518400000).toISOString()},
-    {id:'s7',language:'en',language_name:'English',text:'What is entropy and why does it always increase?',tags:['Science','Physics'],quality_score:92,answer_count:4,views:287,bounty_pts:75,profiles:{display_name:'Mei-Lin C.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:72,created_at:new Date(now-604800000).toISOString()},
-    {id:'s8',language:'en',language_name:'English',text:'Can you explain what a derivative is without calculus notation?',tags:['Mathematics'],quality_score:83,answer_count:1,views:92,bounty_pts:0,profiles:{display_name:'James R.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:48,created_at:new Date(now-691200000).toISOString()},
-    {id:'s9',language:'en',language_name:'English',text:'Why is democracy fragile — explain it to someone who has never lived without it?',tags:['Politics','Philosophy'],quality_score:87,answer_count:3,views:198,bounty_pts:60,profiles:{display_name:'Amara T.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:90,created_at:new Date(now-777600000).toISOString()},
-    {id:'s10',language:'en',language_name:'English',text:'What makes a proof beautiful? Explain mathematical elegance to a non-mathematician.',tags:['Mathematics','Philosophy'],quality_score:95,answer_count:6,views:412,bounty_pts:120,profiles:{display_name:'Dr. Chen W.'},asker_id:'',matched_uids:[],content_type:'video',video_url:sampleVideo,video_duration:88,created_at:new Date(now-864000000).toISOString()},
-  ];
-  return buildNfFeed(s);
+  SAMPLE_QUESTIONS.forEach((q, idx) => {
+    q.created_at = new Date(now - (idx + 1) * 86400000).toISOString();
+  });
+  return buildNfFeed(SAMPLE_QUESTIONS);
 }
 
 // ══ MODAL ══
@@ -5069,6 +5073,16 @@ async function loadYOMField(){
   }
 }
 
+function isValidUUID(str) {
+  if (!str) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+function getValidUUID(str) {
+  if (!str) return null;
+  const match = str.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  return match ? match[0] : null;
+}
+
 // ── DEDUCT Ψ FROM WALLET ─────────────────────────────
 async function deductPsi(amount, reason){
   const cur=R?.pts_total||0;
@@ -5088,11 +5102,14 @@ async function deductPsi(amount, reason){
     });
     if(rpcErr) throw rpcErr;
     if(R) R.pts_total = newTotal ?? (cur - amount);
+    
+    // Extract a valid UUID from the reason string or fallback to U.id to satisfy DB constraint
+    const targetUUID = getValidUUID(reason) || U.id;
     await supa.from('score_history').insert({
       user_id:U.id,action_type:'psi_spend',
       pts_awarded:-amount,
       ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0,
-      ref_id:reason||null
+      ref_id:targetUUID
     });
     loadYOMField();
     return true;
@@ -5252,15 +5269,27 @@ async function openAriaPanel(qid){
 
   try{
     // Fetch question text for ARIA context
-    const{data:qData}=await supa.from('questions')
-      .select('text,tags,language_name,answers(text,cds,ai_score,ei_score)')
-      .eq('id',qid).single();
-
-    // Build ARIA prompt from top answers (CDS sorted)
-    const topAnswers=(qData?.answers||[])
-      .filter(a=>a.cds&&a.text)
-      .sort((a,b)=>(b.cds||0)-(a.cds||0))
-      .slice(0,3);
+    let qData;
+    let topAnswers = [];
+    if (!isValidUUID(qid)) {
+      const mockQ = SAMPLE_QUESTIONS.find(q => q.id === qid);
+      if (mockQ) {
+        qData = {
+          text: mockQ.text,
+          tags: mockQ.tags,
+          language_name: mockQ.language_name || 'English'
+        };
+      }
+    } else {
+      const {data} = await supa.from('questions')
+        .select('text,tags,language_name,answers(text,cds,ai_score,ei_score)')
+        .eq('id',qid).single();
+      qData = data;
+      topAnswers = (qData?.answers || [])
+        .filter(a=>a.cds&&a.text)
+        .sort((a,b)=>(b.cds||0)-(a.cds||0))
+        .slice(0,3);
+    }
 
     const questionText=qData?.text||'this question';
     const tags=(qData?.tags||[]).join(', ');
@@ -5287,7 +5316,7 @@ Language: ${lang}`;
     // the Anthropic API key securely as a server-side secret. The old approach had
     // NO x-api-key header — every request returned HTTP 401 and charged users Ψ20.
     const ariaResp = await callAgent('aria_synthesiser', {
-      question_id: qid,
+      question_id: isValidUUID(qid) ? qid : '00000000-0000-0000-0000-000000000000',
       question_text: questionText,
       tags: qData?.tags || [],
       language: lang,
@@ -5322,9 +5351,10 @@ Language: ${lang}`;
 
     // Log ARIA query to DB
     try{
+      const targetUUID = isValidUUID(qid) ? qid : U.id;
       await supa.from('score_history').insert({
         user_id:U.id,action_type:'aria_query',
-        ref_id:qid,pts_awarded:0,
+        ref_id:targetUUID,pts_awarded:0,
         ei:0,ri:0,rai:0,coi:0,ai:0,ag:0,pg:0,cds:0
       });
     }catch(e){/* non-critical */}

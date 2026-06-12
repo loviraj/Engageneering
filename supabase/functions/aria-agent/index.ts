@@ -281,7 +281,10 @@ Mention multilingual contributions if present. Give one concrete next-week actio
 Be honest about weaknesses — do not inflate or be generic.
 
 Respond ONLY with valid JSON:
-{"report":"full report text","strengths":"one sentence","growth_edge":"one sentence","next_action":"specific actionable step for next week"}`
+{"report":"full report text","strengths":"one sentence","growth_edge":"one sentence","next_action":"specific actionable step for next week"}`,
+
+  // ARIA SYNTHESISER
+  aria_synthesiser: (p) => p.prompt
 };
 
 // ── MAIN HANDLER ──────────────────────────────────────────────
@@ -305,13 +308,21 @@ Deno.serve(async (req) => {
       );
     }
 
+    const prompt = AGENTS[agent](payload);
+
     const response = await client.messages.create({
       model: "claude-sonnet-4-5",
       max_tokens: 800,
-      messages: [{ role: "user", content: AGENTS[agent](payload) }]
+      messages: [{ role: "user", content: prompt }]
     });
 
     const text = response.content[0]?.text || "{}";
+
+    if (agent === 'aria_synthesiser') {
+      return new Response(JSON.stringify({ text }), {
+        headers: { ...cors, "Content-Type": "application/json" }
+      });
+    }
 
     let result;
     try { result = JSON.parse(text); }
