@@ -26,4 +26,8 @@ CREATE TRIGGER tr_check_question_update_limits
   FOR EACH ROW
   EXECUTE FUNCTION check_question_update_limits();
 
-SELECT 'Security triggers created successfully' as status;
+-- H-3 Fix: Prevent double-crediting of Psi by enforcing unique gateway payment IDs
+ALTER TABLE payments DROP CONSTRAINT IF EXISTS unique_gateway_payment_id;
+ALTER TABLE payments ADD CONSTRAINT unique_gateway_payment_id UNIQUE (gateway_payment_id);
+
+SELECT 'Security triggers and unique constraints created successfully' as status;
