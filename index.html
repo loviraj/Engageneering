@@ -606,16 +606,6 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
 .aria-violation-body{font-size:12px;color:#7a9ab8;line-height:1.75;margin-bottom:1.2rem}
 .aria-violation-reason{font-size:11px;color:rgba(240,149,149,.7);font-style:italic;margin-bottom:1.2rem;padding:.6rem .9rem;background:rgba(226,75,74,.07);border-radius:6px;border:1px solid rgba(226,75,74,.2)}
 
-/* ARIA float button */
-#ariaFloatBtn{position:fixed;top:80px;right:1.2rem;z-index:599;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent;animation:afE .7s cubic-bezier(.34,1.56,.64,1) .8s both}
-@keyframes afE{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
-.af-ring{width:56px;height:56px;border-radius:50%;border:2px solid rgba(46,158,79,.55);background:rgba(4,10,20,.88);backdrop-filter:blur(12px);position:relative;transition:transform .3s cubic-bezier(.34,1.56,.64,1),border-color .3s,box-shadow .3s;animation:afP 2.8s ease-in-out infinite}
-@keyframes afP{0%{box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 0 rgba(46,158,79,.45)}60%{box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 12px rgba(46,158,79,0)}100%{box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 0 rgba(46,158,79,0)}}
-#ariaFloatBtn:hover .af-ring{transform:scale(1.1);border-color:#5dcaa5;box-shadow:0 8px 28px rgba(46,158,79,.35),0 0 0 6px rgba(46,158,79,.12)}
-.af-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 10%;display:block}
-.af-dot{position:absolute;top:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#2e9e4f;border:2px solid rgba(4,10,20,.9);box-shadow:0 0 8px #2e9e4f;animation:psiPulse 2s ease-in-out infinite}
-.af-label{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#5dcaa5;font-weight:700;white-space:nowrap;background:rgba(4,10,20,.75);border-radius:4px;padding:2px 7px;border:1px solid rgba(46,158,79,.25)}
-@media(max-width:600px){#ariaFloatBtn{top:75px;right:.7rem}.af-ring{width:48px;height:48px}.af-img{width:44px;height:44px}}
 </style>
 </head>
 <body>
@@ -684,14 +674,7 @@ footer{background:var(--navy);padding:4rem 3rem 2.5rem;border-top:1px solid var(
   </div>
 
 </nav>
-<!-- ARIA float -->
-<div id="ariaFloatBtn" onclick="openAriaDemo()" role="button" tabindex="0" title="Experience ARIA - Free, no sign-in" onkeydown="if(event.key==='Enter')openAriaDemo()">
-  <div class="af-ring">
-    <img class="af-img" src="ARIA-Avatar.jpg" alt="ARIA"/>
-    <div class="af-dot"></div>
-  </div>
-  <span class="af-label">Try ARIA</span>
-</div>
+
 
 
 <div id="mobileMenu" style="display:none">
