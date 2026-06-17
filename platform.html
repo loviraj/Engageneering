@@ -5103,7 +5103,7 @@ function getValidUUID(str) {
 
 // ── DEDUCT Ψ FROM WALLET ─────────────────────────────
 async function deductPsi(amount, reason){
-  const cur=R?.pts_total||0;
+  const cur=(R?.pts_total||0)+(R?._cultivatedPts||0);
   if(cur<amount){
     showToast(`Insufficient Ψ — you need Ψ${amount} but have Ψ${cur}. Buy more below.`,'error');
     setTimeout(()=>openBuyModal(),800);
@@ -5248,8 +5248,8 @@ async function openAriaPanel(qid){
     return;
   }
 
-  // Check balance first
-  const bal=R?.pts_total||0;
+  // Check balance first (engagement + purchased Ψ)
+  const bal=(R?.pts_total||0)+(R?._cultivatedPts||0);
   if(bal<ARIA_COST){
     showToast(`You need Ψ${ARIA_COST} to Ask ARIA. You have Ψ${bal}.`,'error');
     setTimeout(()=>openBuyModal(),700);
