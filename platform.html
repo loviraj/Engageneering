@@ -5000,7 +5000,7 @@ async function loadYOMField(){
     // engagement-earned points (Q+A) by design — Cultivated/purchased Ψ are
     // a separate financial credit that shouldn't inflate rank/tier metrics.
     // The YOM Field card shows the user's total balance across all sources.
-    const total = qPts + aPts + bPts;
+    const total = pr?.pts_total ?? (qPts + aPts + bPts);
 
     // Update display
     const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -5010,7 +5010,7 @@ async function loadYOMField(){
     set('ywBPts',  bPts);
     // Sync R (global profile_roles cache) so buildNav uses Q+A only for tier,
     // plus _cultivatedPts so the top pill shows Q+A+Cultivated.
-    if(R){ R.pts_total=qPts+aPts; R.seeker_pts=qPts; R.answerer_pts=aPts; R._cultivatedPts=bPts; }
+    if(R){ R.pts_total=pr?.pts_total??0; R.seeker_pts=qPts; R.answerer_pts=aPts; R._cultivatedPts=bPts; }
     buildNav();
 
     // Progress bars (proportion of total)
@@ -5103,7 +5103,7 @@ function getValidUUID(str) {
 
 // ── DEDUCT Ψ FROM WALLET ─────────────────────────────
 async function deductPsi(amount, reason){
-  const cur=(R?.pts_total||0)+(R?._cultivatedPts||0);
+  const cur=R?.pts_total||0;
   if(cur<amount){
     showToast(`Insufficient Ψ — you need Ψ${amount} but have Ψ${cur}. Buy more below.`,'error');
     setTimeout(()=>openBuyModal(),800);
@@ -5248,8 +5248,8 @@ async function openAriaPanel(qid){
     return;
   }
 
-  // Check balance first (engagement + purchased Ψ)
-  const bal=(R?.pts_total||0)+(R?._cultivatedPts||0);
+  // Check balance
+  const bal=R?.pts_total||0;
   if(bal<ARIA_COST){
     showToast(`You need Ψ${ARIA_COST} to Ask ARIA. You have Ψ${bal}.`,'error');
     setTimeout(()=>openBuyModal(),700);
@@ -6415,15 +6415,10 @@ async function creditPsiAfterPayment(psi, gateway, txnId, paymentMeta){
     });
     if(shErr) console.warn('score_history(psi_purchase) blocked:', shErr.message, '— Cultivated row uses payments table, so this does not break the UI.');
 
-    // 4. Credit YOM Field
-    //    Cultivated/purchased Ψ is a SEPARATE financial credit. It does NOT add
-    //    to pts_total (which is the engagement metric: Q+A only — used for tier
-    //    and rank). The YOM Field display sums Q+A+Cultivated dynamically by
-    //    reading psi_pack from the payments table. So there is nothing to update
-    //    on profile_roles here — the payments table insert (step 2) is all we need.
-    //
-    // (Earlier versions added psi to pts_total. That conflated engagement with
-    //  spending — letting people buy their way up the rank. Removed.)
+    // 4. Credit purchased Ψ to pts_total so they are spendable (e.g. Ask ARIA).
+    //    Tier progression uses CDS scores, not pts_total, so this doesn't
+    //    affect tier ranking.
+    await supa.rpc('add_psi_points',{p_user_id:U.id, p_delta:psi, p_reason:'psi_purchase'});
 
     showToast(`✓ Ψ${psi} cultivated in your YOM Field!`,'gold');
     closeBuyModal();
