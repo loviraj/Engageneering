@@ -5622,175 +5622,227 @@ function _amountInWords(num){
   return out;
 }
 
-// Builds the Engageneering tax invoice (KDK-style layout, YOM details).
-// Returns standalone HTML — usable for both PDF generation and email body.
-function _buildInvoiceHtmlForExport(args){
-  const {
-    engRefNo, paymentId, psi, baseAmt, gstAmt, totalAmt, name, email, date,
-    buyerState, buyerStateCode, buyerCountryCode = 'IN', buyerCountry = 'India',
-    customerType = 'B2C',
-    buyerGstin = null, buyerBusinessName = null,
-  } = args;
+function _buildInvoicePageHtml(args, copyLabel){
+  const engRefNo = args.engRefNo || '';
+  const paymentId = args.paymentId || '';
+  const psi = args.psi || 0;
+  const baseAmt = args.baseAmt || 0;
+  const totalAmt = args.totalAmt || 0;
+  const name = args.name || '';
+  const email = args.email || '';
+  const date = args.date || new Date();
+  const buyerState = args.buyerState || '';
+  const buyerStateCode = args.buyerStateCode || '';
+  const buyerCountryCode = args.buyerCountryCode || 'IN';
+  const buyerCountry = args.buyerCountry || 'India';
+  const customerType = args.customerType || 'B2C';
+  const buyerGstin = args.buyerGstin || '';
+  const buyerAddress = args.buyerAddress || '';
+  const buyerCity = args.buyerCity || '';
+  const buyerPin = args.buyerPin || '';
+  const financialYear = args.financialYear || '';
+  const orderId = args.orderId || '';
 
   const fmtDate = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');
-  const inr = n => '&#8377; ' + Number(n).toFixed(2);
-  // Re-derive lines from authoritative inputs so the invoice ALWAYS shows the
-  // correct CGST+SGST / IGST / Export split based on stored classification.
+  const fmtINR = n => Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
   const breakdown = _computeTaxBreakdown(Number(baseAmt), customerType, buyerStateCode, buyerCountryCode);
+  const isIntra = breakdown.isIntraState;
+  const isExport = breakdown.classification === 'EXPORT';
 
   let placeOfSupply;
-  if(customerType === 'EXPORT' || (buyerCountryCode && buyerCountryCode !== 'IN')){
-    placeOfSupply = esc(buyerCountry || 'Outside India');
-  } else if(buyerState){
-    placeOfSupply = `${esc(buyerState)}${buyerStateCode ? ' (' + esc(String(buyerStateCode)) + ')' : ''}`;
+  if(isExport) placeOfSupply = esc(buyerCountry || 'Outside India');
+  else if(buyerState) placeOfSupply = esc(buyerState) + (buyerStateCode ? ' (' + esc(String(buyerStateCode)) + ')' : '');
+  else placeOfSupply = 'Madhya Pradesh (23)';
+
+  const supplyType = isExport ? 'Export' : (isIntra ? 'Intra-State (B2' + (customerType==='B2B'?'B':'C') + ')' : 'Inter-State (B2' + (customerType==='B2B'?'B':'C') + ')');
+
+  const fy = financialYear || (()=>{
+    const d = date instanceof Date ? date : new Date();
+    const y = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear()-1;
+    return y + '-' + String(y+1).slice(2);
+  })();
+
+  const NAVY = '#1A237E';
+  const GOLD = '#C9A84C';
+  const GBG = '#F3F4F6';
+  const B = '0.8pt solid #000';
+  const Bt = '0.5pt solid #000';
+  const Bg = '0.4pt solid #000';
+  const f7 = 'font-size:7pt';
+  const f8 = 'font-size:8pt';
+  const f9 = 'font-size:9pt';
+  const ff = 'font-family:Helvetica,Arial,sans-serif';
+
+  let h = '<div style="' + ff + ';color:#000;width:100%;margin:0 auto;padding:8px;box-sizing:border-box;background:#fff">';
+
+  // 1a. TAX INVOICE + copy label
+  h += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px"><tr>'
+    + '<td style="' + f8 + '">&nbsp;</td>'
+    + '<td style="text-align:center;font-size:12pt;font-weight:bold;letter-spacing:1px">TAX INVOICE</td>'
+    + '<td style="text-align:right;' + f8 + '">' + esc(copyLabel) + '</td>'
+    + '</tr></table>';
+
+  // 1b. Header box
+  h += '<table style="width:100%;border-collapse:collapse;border:' + B + '"><tr>'
+    + '<td style="width:12%;padding:8px;vertical-align:middle;border-right:' + Bt + ';text-align:center">'
+      + '<img src="data:image/png;base64,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" style="width:50px;height:50px;object-fit:contain" alt="Logo"/>'
+    + '</td>'
+    + '<td style="width:50%;padding:8px 12px;vertical-align:middle">'
+      + '<span style="font-size:20pt;font-weight:bold;color:' + NAVY + '">Engageneering</span>'
+      + '<span style="font-size:14pt;font-weight:bold;color:' + GOLD + '">&trade;</span>'
+    + '</td>'
+    + '<td style="width:38%;padding:8px;vertical-align:middle;text-align:right;' + f8 + ';color:#333;line-height:1.6">'
+      + '<strong style="color:#000">YOM PRIVATE LIMITED</strong><br>'
+      + '31, Prem Nagar, Fort Road,<br>Gwalior 474002, Madhya Pradesh<br>'
+      + 'support@engageneering.org'
+    + '</td>'
+    + '</tr></table>';
+
+  // 2. GSTIN row
+  h += '<table style="width:100%;border-collapse:collapse;border-left:' + B + ';border-right:' + B + ';border-bottom:' + B + '"><tr>'
+    + '<td style="width:38%;padding:5px 8px;' + f8 + ';border-right:' + Bt + '">GSTIN: <strong>23AACCY1853E1ZL</strong> (Madhya Pradesh)</td>'
+    + '<td style="width:38%;padding:5px 8px;' + f8 + ';border-right:' + Bt + '">CIN: <strong>U62010MP2026PTC082747</strong></td>'
+    + '<td style="width:24%;padding:5px 8px;' + f8 + '">PAN: <strong>AACCY1853E</strong></td>'
+    + '</tr></table>';
+
+  // 3. Invoice Info
+  h += '<table style="width:100%;border-collapse:collapse;border-left:' + B + ';border-right:' + B + ';border-bottom:' + B + '"><tr>'
+    + '<td style="width:50%;padding:6px 8px;' + f8 + ';line-height:1.9;vertical-align:top;border-right:' + Bt + '">'
+      + 'Invoice No. : <strong>' + esc(engRefNo) + '</strong><br>'
+      + 'Payment ID : <strong style="font-family:monospace;font-size:7.5pt">' + esc(paymentId) + '</strong><br>'
+      + (orderId ? 'Order ID : <strong style="font-family:monospace;font-size:7.5pt">' + esc(orderId) + '</strong><br>' : '')
+      + 'Supply Type : <strong>' + supplyType + '</strong>'
+    + '</td>'
+    + '<td style="width:50%;padding:6px 8px;' + f8 + ';line-height:1.9;vertical-align:top">'
+      + 'Invoice Date : <strong>' + fmtDate(date) + '</strong><br>'
+      + 'Place of Supply : <strong>' + placeOfSupply + '</strong><br>'
+      + 'Reverse Charge : <strong>N</strong><br>'
+      + 'Financial Year : <strong>' + esc(fy) + '</strong>'
+    + '</td>'
+    + '</tr></table>';
+
+  // 4. Billed To
+  h += '<table style="width:100%;border-collapse:collapse;border-left:' + B + ';border-right:' + B + ';border-bottom:' + B + '">'
+    + '<tr><td style="background:' + GBG + ';padding:4px 8px;' + f8 + ';font-weight:bold;border-bottom:' + Bg + '">BILLED TO :</td></tr>'
+    + '<tr><td style="padding:6px 8px;' + f8 + ';line-height:1.8">'
+      + '<strong>' + esc(name) + '</strong><br>' + esc(email);
+  if(buyerAddress) h += '<br>' + esc(buyerAddress);
+  if(buyerCity || buyerState) h += '<br>' + esc([buyerCity, buyerState].filter(Boolean).join(', '));
+  h += '<br>' + esc(buyerCountry || 'India');
+  if(buyerPin) h += ' — ' + esc(buyerPin);
+  h += '<br>GSTIN / UIN : ' + (buyerGstin ? '<strong>' + esc(buyerGstin) + '</strong>' : '—');
+  h += '</td></tr></table>';
+
+  // 5. Line Items
+  const cw = ['4%','29%','8%','5%','6%','14%','7%','13.5%','13.5%'];
+  const ch = ['SR.','PARTICULARS','HSN/SAC','QTY','UNIT','TAXABLE VALUE (Rs.)','GST %','GST AMT (Rs.)','TOTAL (Rs.)'];
+  const ca = ['center','left','center','center','center','right','center','right','right'];
+  h += '<table style="width:100%;border-collapse:collapse;border-left:' + B + ';border-right:' + B + ';border-bottom:' + B + '">';
+  h += '<tr>';
+  for(let i=0;i<9;i++) h += '<th style="background:' + GBG + ';border-bottom:' + Bg + ';' + (i<8?'border-right:'+Bg+';':'') + 'padding:5px 3px;' + f7 + ';font-weight:bold;text-align:' + ca[i] + ';width:' + cw[i] + '">' + ch[i] + '</th>';
+  h += '</tr><tr>'
+    + '<td style="border-right:' + Bg + ';padding:8px 3px;' + f8 + ';text-align:center;vertical-align:top">1</td>'
+    + '<td style="border-right:' + Bg + ';padding:8px 5px;' + f8 + ';text-align:left;vertical-align:top">'
+      + '<strong>&Psi;' + psi + ' YOM Field Points</strong><br>'
+      + '<span style="' + f7 + ';color:#555">Platform contribution credits cultivated in user’s YOM Field</span></td>'
+    + '<td style="border-right:' + Bg + ';padding:8px 3px;' + f8 + ';text-align:center;vertical-align:top">998431</td>'
+    + '<td style="border-right:' + Bg + ';padding:8px 3px;' + f8 + ';text-align:center;vertical-align:top">1</td>'
+    + '<td style="border-right:' + Bg + ';padding:8px 3px;' + f8 + ';text-align:center;vertical-align:top">Nos.</td>'
+    + '<td style="border-right:' + Bg + ';padding:8px 5px;' + f8 + ';text-align:right;vertical-align:top">' + fmtINR(baseAmt) + '</td>'
+    + '<td style="border-right:' + Bg + ';padding:8px 3px;' + f8 + ';text-align:center;vertical-align:top">' + (isExport?'0%':'18%') + '</td>'
+    + '<td style="border-right:' + Bg + ';padding:8px 5px;' + f8 + ';text-align:right;vertical-align:top">' + fmtINR(breakdown.totalGst) + '</td>'
+    + '<td style="padding:8px 5px;' + f8 + ';text-align:right;vertical-align:top">' + fmtINR(totalAmt) + '</td>'
+    + '</tr><tr>';
+  for(let j=0;j<9;j++) h += '<td style="height:130px;' + (j<8?'border-right:'+Bg+';':'') + '"></td>';
+  h += '</tr><tr>';
+  h += '<td colspan="2" style="background:' + GBG + ';border-top:' + Bg + ';border-right:' + Bg + ';padding:6px 5px;' + f8 + ';font-weight:bold;text-align:right">TOTAL</td>'
+    + '<td style="background:' + GBG + ';border-top:' + Bg + ';border-right:' + Bg + ';padding:6px 3px;' + f8 + ';font-weight:bold;text-align:center">998431</td>'
+    + '<td style="background:' + GBG + ';border-top:' + Bg + ';border-right:' + Bg + ';padding:6px 3px;' + f8 + ';font-weight:bold;text-align:center">1</td>'
+    + '<td style="background:' + GBG + ';border-top:' + Bg + ';border-right:' + Bg + ';padding:6px 3px;' + f8 + ';font-weight:bold;text-align:center">Nos.</td>'
+    + '<td style="background:' + GBG + ';border-top:' + Bg + ';border-right:' + Bg + ';padding:6px 5px;' + f8 + ';font-weight:bold;text-align:right">' + fmtINR(baseAmt) + '</td>'
+    + '<td style="background:' + GBG + ';border-top:' + Bg + ';border-right:' + Bg + ';padding:6px 3px;' + f8 + ';font-weight:bold;text-align:center">' + (isExport?'0%':'18%') + '</td>'
+    + '<td style="background:' + GBG + ';border-top:' + Bg + ';border-right:' + Bg + ';padding:6px 5px;' + f8 + ';font-weight:bold;text-align:right">' + fmtINR(breakdown.totalGst) + '</td>'
+    + '<td style="background:' + GBG + ';border-top:' + Bg + ';padding:6px 5px;' + f8 + ';font-weight:bold;text-align:right">' + fmtINR(totalAmt) + '</td>';
+  h += '</tr></table>';
+
+  // 6. Tax Summary (conditional columns)
+  h += '<table style="width:100%;border-collapse:collapse;border-left:' + B + ';border-right:' + B + ';border-bottom:' + B + '">';
+  if(isExport){
+    h += '<tr>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:center;width:16%">HSN/SAC</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:center;width:16%">Tax Rate</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:24%">Taxable Amt.</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:24%">GST (Export, Zero-rated)</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:20%">Total Tax</th>'
+      + '</tr><tr>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:center">998431</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:center">0%</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:right">' + fmtINR(baseAmt) + '</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:right">0.00</td>'
+      + '<td style="padding:5px 6px;' + f8 + ';text-align:right">0.00</td></tr>';
+  } else if(isIntra){
+    h += '<tr>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:center;width:14%">HSN/SAC</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:center;width:14%">Tax Rate</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:20%">Taxable Amt.</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:18%">CGST @ 9%</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:18%">SGST @ 9%</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:16%">Total Tax</th>'
+      + '</tr><tr>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:center">998431</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:center">18%</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:right">' + fmtINR(baseAmt) + '</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:right">' + fmtINR(breakdown.cgstAmt) + '</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:right">' + fmtINR(breakdown.sgstAmt) + '</td>'
+      + '<td style="padding:5px 6px;' + f8 + ';text-align:right">' + fmtINR(breakdown.totalGst) + '</td></tr>';
   } else {
-    placeOfSupply = 'Madhya Pradesh (23)';  // PoS fallback per IGST §12(11)
+    h += '<tr>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:center;width:16%">HSN/SAC</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:center;width:16%">Tax Rate</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:24%">Taxable Amt.</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';border-right:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:24%">IGST @ 18%</th>'
+      + '<th style="background:' + GBG + ';border-bottom:' + Bg + ';padding:5px 6px;' + f7 + ';font-weight:bold;text-align:right;width:20%">Total Tax</th>'
+      + '</tr><tr>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:center">998431</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:center">18%</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:right">' + fmtINR(baseAmt) + '</td>'
+      + '<td style="border-right:' + Bg + ';padding:5px 6px;' + f8 + ';text-align:right">' + fmtINR(breakdown.igstAmt) + '</td>'
+      + '<td style="padding:5px 6px;' + f8 + ';text-align:right">' + fmtINR(breakdown.totalGst) + '</td></tr>';
   }
+  h += '</table>';
 
-  // Optional B2B recipient block (GSTIN + business name)
-  const b2bBlock = (customerType === 'B2B' && buyerGstin) ? `
-    <tr><td style="font-size:11px;color:#666;padding:5px 0">Recipient GSTIN:</td><td style="font-size:12px;color:#1a1a1a;font-weight:600;font-family:monospace;padding:5px 0">${esc(buyerGstin)}</td></tr>
-    ${buyerBusinessName ? `<tr><td style="font-size:11px;color:#666;padding:5px 0">Business Name:</td><td style="font-size:12px;color:#1a1a1a;padding:5px 0">${esc(buyerBusinessName)}</td></tr>` : ''}
-  ` : '';
+  // 7. Amount in Words + Invoice Total
+  h += '<table style="width:100%;border-collapse:collapse;border-left:' + B + ';border-right:' + B + ';border-bottom:' + B + '"><tr>'
+    + '<td style="width:62%;padding:7px 8px;' + f8 + ';border-right:' + Bt + ';vertical-align:middle">'
+      + 'Amount in Words: <strong>' + esc(_amountInWords(Number(totalAmt))) + '</strong></td>'
+    + '<td style="width:38%;padding:7px 8px;' + f9 + ';font-weight:bold;text-align:right;vertical-align:middle">'
+      + 'Invoice Total: Rs. ' + fmtINR(totalAmt) + '</td>'
+    + '</tr></table>';
 
-  // Export footer note
-  const exportNote = (customerType === 'EXPORT') ? `
-    <div style="background:#fef4e3;border:1px solid #d8c890;border-radius:4px;padding:8px 12px;margin-top:12px;font-size:11px;color:#7a5b18">
-      <strong>Export of Services:</strong> IGST charged at 18% on this export of digital services.
-      Recipient may be eligible for refund via LUT. Recipient is outside India under IGST Act §13(12).
-    </div>
-  ` : '';
+  // 8. Terms + Signatory
+  h += '<table style="width:100%;border-collapse:collapse;border-left:' + B + ';border-right:' + B + ';border-bottom:' + B + '"><tr>'
+    + '<td style="width:62%;padding:8px;' + f7 + ';color:#555;line-height:10pt;vertical-align:top;border-right:' + Bt + '">'
+      + '<strong style="color:#000">Terms &amp; Conditions:</strong><br><br>'
+      + '1. Subscriptions are non-refundable once activated.<br>'
+      + '2. Computer-generated invoice; no physical signature required.<br>'
+      + '3. All disputes subject to Gwalior jurisdiction only.<br>'
+      + '4. Payment processed via Razorpay (ID: ' + esc(paymentId) + ').</td>'
+    + '<td style="width:38%;padding:8px;' + f8 + ';text-align:right;vertical-align:top">'
+      + '<strong>for YOM Private Limited</strong>'
+      + '<div style="height:45px"></div>'
+      + '<div>Authorised Signatory</div></td>'
+    + '</tr></table>';
 
-  // Render the GST/rounding lines into rows
-  const taxRows = breakdown.lines.map((l, i) => `
-        <tr${i % 2 === 1 ? ' style="background:#fbf7e2"' : ''}>
-          <td style="padding:6px 10px;font-size:12px;color:#555;text-align:left">${esc(l.label)}:</td>
-          <td style="padding:6px 10px;font-size:12px;color:${l.label==='Rounded Off' ? '#777' : '#1a1a1a'};text-align:right;font-variant-numeric:tabular-nums">${inr(l.amount)}</td>
-        </tr>`).join('');
+  // 9. Thank you
+  h += '<div style="text-align:center;padding:12px 0;font-size:10pt;font-weight:bold;color:' + NAVY + '">'
+    + 'Thank you for choosing Engageneering</div>';
 
-  return `
-<div style="font-family:Arial,Helvetica,sans-serif;background:#ffffff;color:#1a1a1a;width:720px;padding:36px 44px;box-sizing:border-box;margin:0 auto">
+  h += '</div>';
+  return h;
+}
 
-  <!-- ── HEADER ─────────────────────────────────────────────── -->
-  <table style="width:100%;border-collapse:collapse;border-bottom:1px solid #d8c890;padding-bottom:18px;margin-bottom:8px">
-    <tr>
-      <td style="vertical-align:top;width:60%">
-        <div style="font-size:28px;font-weight:800;color:#1a1a1a;letter-spacing:.3px;line-height:1.1">Engageneering<sup style="font-size:14px">&trade;</sup></div>
-        <div style="font-size:10px;color:#999;letter-spacing:2.5px;text-transform:uppercase;margin-top:6px">YOM Private Limited</div>
-        <div style="font-size:11.5px;color:#333;margin-top:14px;line-height:1.7">
-          <span style="display:inline-block;width:64px;color:#777;font-size:11px">GSTIN:</span> <strong>23AACCY1853E1ZL</strong> (Madhya Pradesh)<br>
-          <span style="display:inline-block;width:64px;color:#777;font-size:11px">CIN:</span> <strong>U62010MP2026PTC082747</strong><br>
-          <span style="display:inline-block;width:64px;color:#777;font-size:11px">PAN:</span> <strong>AACCY1853E</strong>
-        </div>
-      </td>
-      <td style="vertical-align:top;width:40%;text-align:right;font-size:11.5px;line-height:1.7">
-        <span style="display:inline-block;background:#f6efd9;color:#9a7820;font-size:10px;font-weight:700;letter-spacing:1.2px;padding:3px 10px;border-radius:3px;text-transform:uppercase;margin-bottom:8px">Original for Recipient</span>
-        <div>Invoice No: <span style="color:#a07820;font-weight:700;font-size:13px">${esc(engRefNo)}</span></div>
-        <div>Invoice Date: <strong>${fmtDate(date)}</strong></div>
-        <div style="margin-top:4px;font-size:10.5px;color:#777">Payment ID: <span style="font-family:monospace">${esc(paymentId)}</span></div>
-      </td>
-    </tr>
-  </table>
-
-  <!-- ── TAX INVOICE TITLE ──────────────────────────────────── -->
-  <div style="text-align:center;padding:14px 0 16px;margin:18px 0;position:relative">
-    <span style="display:inline-block;padding:0 18px;font-size:18px;font-weight:700;color:#a07820;letter-spacing:.5px;background:#fff;border-top:1px solid #c8922a;border-bottom:1px solid #c8922a;padding-top:6px;padding-bottom:6px">Tax Invoice</span>
-  </div>
-
-  <!-- ── BILL TO ────────────────────────────────────────────── -->
-  <table style="width:100%;border-collapse:collapse;margin-bottom:14px">
-    <tr><td style="font-size:11px;color:#666;width:140px;padding:5px 0">Customer Name:</td><td style="font-size:13px;color:#1a1a1a;font-weight:700;padding:5px 0">${esc(name)}</td></tr>
-    <tr><td style="font-size:11px;color:#666;padding:5px 0">Billing Email:</td><td style="font-size:12px;color:#1a1a1a;padding:5px 0">${esc(email)}</td></tr>
-    ${b2bBlock}
-    <tr><td style="font-size:11px;color:#666;padding:5px 0">Place of Supply:</td><td style="font-size:12px;color:#1a1a1a;padding:5px 0">${placeOfSupply}</td></tr>
-  </table>
-
-  <!-- ── LINE ITEMS ─────────────────────────────────────────── -->
-  <table style="width:100%;border-collapse:collapse;border:1px solid #d6c994;margin-top:8px">
-    <thead>
-      <tr>
-        <th style="background:#f6efd9;color:#7a5b18;font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;padding:9px 8px;border-right:1px solid #d6c994;text-align:center;width:7%">Sr.</th>
-        <th style="background:#f6efd9;color:#7a5b18;font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;padding:9px 8px;border-right:1px solid #d6c994;text-align:left;width:42%">Particulars</th>
-        <th style="background:#f6efd9;color:#7a5b18;font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;padding:9px 8px;border-right:1px solid #d6c994;text-align:center;width:13%">HSN / SAC</th>
-        <th style="background:#f6efd9;color:#7a5b18;font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;padding:9px 8px;border-right:1px solid #d6c994;text-align:center;width:9%">Unit(s)</th>
-        <th style="background:#f6efd9;color:#7a5b18;font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;padding:9px 8px;border-right:1px solid #d6c994;text-align:right;width:13%">Rate (&#8377;)</th>
-        <th style="background:#f6efd9;color:#7a5b18;font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;padding:9px 8px;border-right:1px solid #d6c994;text-align:right;width:8%">Discount</th>
-        <th style="background:#fbf7e2;color:#7a5b18;font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;padding:9px 8px;text-align:right;width:18%">Taxable Value (&#8377;)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td style="padding:11px 8px;border-top:1px solid #e8e0bc;border-right:1px solid #e8e0bc;font-size:12px;text-align:center">1</td>
-        <td style="padding:11px 8px;border-top:1px solid #e8e0bc;border-right:1px solid #e8e0bc;font-size:12px">
-          <strong>&Psi;${psi} YOM Field Points</strong><br>
-          <span style="font-size:10.5px;color:#888">Platform contribution credits cultivated in user&rsquo;s YOM Field</span>
-        </td>
-        <td style="padding:11px 8px;border-top:1px solid #e8e0bc;border-right:1px solid #e8e0bc;font-size:12px;text-align:center">998431</td>
-        <td style="padding:11px 8px;border-top:1px solid #e8e0bc;border-right:1px solid #e8e0bc;font-size:12px;text-align:center">1</td>
-        <td style="padding:11px 8px;border-top:1px solid #e8e0bc;border-right:1px solid #e8e0bc;font-size:12px;text-align:right;font-variant-numeric:tabular-nums">${Number(baseAmt).toFixed(2)}</td>
-        <td style="padding:11px 8px;border-top:1px solid #e8e0bc;border-right:1px solid #e8e0bc;font-size:12px;text-align:right;font-variant-numeric:tabular-nums">0.00</td>
-        <td style="padding:11px 8px;border-top:1px solid #e8e0bc;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;background:#fbf7e2;font-weight:700">${Number(baseAmt).toFixed(2)}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <!-- ── SUMMARY + AMOUNT IN WORDS ──────────────────────────── -->
-  <table style="width:100%;border-collapse:collapse;margin-top:14px">
-    <tr>
-      <td style="width:55%;vertical-align:top;padding-top:8px;font-size:11.5px;color:#444;line-height:1.7">
-        <div><span style="color:#666">Reverse Charge Mechanism:</span> No</div>
-        <div style="margin-top:14px"><span style="color:#666">Amount (In Words):</span></div>
-        <div style="font-size:12px;color:#1a1a1a;font-weight:700;margin-top:2px">${esc(_amountInWords(Number(totalAmt)))}</div>
-      </td>
-      <td style="width:45%;vertical-align:top">
-        <table style="width:100%;border-collapse:collapse">
-          <tr>
-            <td style="padding:6px 10px;font-size:12px;color:#555;text-align:left">List Price:</td>
-            <td style="padding:6px 10px;font-size:12px;color:#1a1a1a;text-align:right;font-variant-numeric:tabular-nums">${inr(baseAmt)}</td>
-          </tr>
-          <tr style="background:#fbf7e2">
-            <td style="padding:6px 10px;font-size:12px;color:#555;text-align:left">Discount:</td>
-            <td style="padding:6px 10px;font-size:12px;color:#1a1a1a;text-align:right;font-variant-numeric:tabular-nums">${inr(0)}</td>
-          </tr>
-          <tr>
-            <td style="padding:6px 10px;font-size:12px;color:#555;text-align:left">Taxable Value:</td>
-            <td style="padding:6px 10px;font-size:12px;color:#1a1a1a;text-align:right;font-variant-numeric:tabular-nums">${inr(baseAmt)}</td>
-          </tr>
-          ${taxRows}
-          <tr>
-            <td style="padding:10px;font-size:13.5px;font-weight:700;color:#7a5b18;border-top:2px solid #c8922a;background:#f6e7b2;text-align:left">Invoice Value:</td>
-            <td style="padding:10px;font-size:13.5px;font-weight:700;color:#7a5b18;border-top:2px solid #c8922a;background:#f6e7b2;text-align:right;font-variant-numeric:tabular-nums">${inr(totalAmt)}</td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-
-  <!-- ── SIGNATURE BLOCK ────────────────────────────────────── -->
-  <table style="width:100%;border-collapse:collapse;margin-top:36px">
-    <tr>
-      <td style="width:60%;vertical-align:top;font-size:11px;color:#555;line-height:1.7">
-        <strong style="color:#1a1a1a">Terms &amp; Conditions:</strong><br>
-        &Psi; YOM points are a platform contribution metric, not a financial instrument.<br>
-        Transactions are final and non-refundable.<br>
-        All disputes are subject to Gwalior jurisdiction only.<br>
-        <span style="color:#777">Payment received via Razorpay &middot; ID: ${esc(paymentId)}</span>
-      </td>
-      <td style="width:40%;vertical-align:bottom;text-align:right;font-size:11px">
-        <div style="font-weight:700;color:#1a1a1a;margin-bottom:48px">for YOM Private Limited</div>
-        <div style="color:#1a1a1a;font-weight:700;padding-top:6px;border-top:1px solid #aaa;display:inline-block;min-width:200px">Authorised Signatory</div>
-      </td>
-    </tr>
-  </table>
-
-  <!-- ── DOCUMENT FOOTER ────────────────────────────────────── -->
-  ${exportNote}
-  <div style="text-align:center;margin-top:28px;padding-top:14px;border-top:1px solid #eee;font-size:10.5px;color:#777;line-height:1.7">
-    <strong>YOM Private Limited</strong> &middot; 31, Prem Nagar, Fort Road, Gird, Gwalior 474002, Madhya Pradesh<br>
-    <a href="https://engageneering.org" style="color:#a07820;text-decoration:none">engageneering.org</a> &middot; For queries: <a href="mailto:support@engageneering.org" style="color:#a07820;text-decoration:none">support@engageneering.org</a><br>
-    <em style="color:#999">This is a computer-generated invoice and does not require a physical signature.</em>
-  </div>
-</div>`;
+function _buildInvoiceHtmlForExport(args){
+  return _buildInvoicePageHtml(args, 'ORIGINAL FOR RECIPIENT');
 }
 
 function downloadReceipt(){
@@ -5805,7 +5857,7 @@ function downloadReceipt(){
   }
 
   const wrapper = document.createElement('div');
-  wrapper.style.cssText='position:fixed;top:-10000px;left:-10000px;width:600px';
+  wrapper.style.cssText='position:fixed;top:-10000px;left:0;width:210mm;background:#fff';
   wrapper.innerHTML = _buildInvoiceHtmlForExport(data);
   document.body.appendChild(wrapper);
 
@@ -5814,8 +5866,8 @@ function downloadReceipt(){
     html2pdf().set({
       margin:       [10,10,10,10],
       filename:     filename,
-      image:        {type:'jpeg',quality:0.95},
-      html2canvas:  {scale:2,backgroundColor:'#ffffff',useCORS:true},
+      image:        {type:'jpeg',quality:0.98},
+      html2canvas:  {scale:2,backgroundColor:'#ffffff',useCORS:true,windowWidth:794},
       jsPDF:        {unit:'mm',format:'a4',orientation:'portrait'},
       pagebreak:    {mode:['avoid-all','css','legacy']}
     }).from(wrapper.firstElementChild).save().then(()=>{
