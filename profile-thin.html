@@ -421,25 +421,31 @@ body{overflow-x:hidden}
           let label = h.action_type;
           let color = 'var(--t1)';
           let sign = h.pts_awarded >= 0 ? '+' : '';
+          let isPositive = h.pts_awarded >= 0;
+          let typeSuffix = isPositive ? ' (Earned)' : ' (Spent)';
+          
+          if (isPositive) {
+            color = '#5dcaa5';
+          } else {
+            color = '#f09595';
+          }
           
           if (h.action_type === 'question') {
-            label = 'Asked a Question (Earned)';
-            color = '#5dcaa5';
+            label = 'Asked a Question' + typeSuffix;
           } else if (h.action_type === 'answer') {
-            label = 'Submitted an Answer (Earned)';
-            color = '#5dcaa5';
+            label = 'Submitted an Answer' + typeSuffix;
           } else if (h.action_type === 'signup_bonus') {
-            label = 'Sign-up Bonus (Earned)';
-            color = '#5dcaa5';
+            label = 'Sign-up Bonus' + typeSuffix;
           } else if (h.action_type === 'psi_spend' || h.action_type === 'aria_query') {
-            label = 'Asked ARIA (Spent)';
-            color = '#f09595';
+            label = 'Asked ARIA' + typeSuffix;
           } else if (h.action_type === 'psi_purchase') {
             label = 'Cultivated Ψ (Purchased)';
             color = 'var(--gold)';
+            sign = '+';
           } else if (h.action_type.includes('refund')) {
             label = 'ARIA Refund (Credited)';
             color = '#85b7eb';
+            sign = '+';
           }
           
           return `

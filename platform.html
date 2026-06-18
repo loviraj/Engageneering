@@ -3926,6 +3926,9 @@ function handleDrop(e){
 }
 function handleFileSelect(e){const f=e.target.files[0];if(f)setUploadFile(f);}
 function setUploadFile(f){
+  if(f.size > 50 * 1024 * 1024) {
+    showToast('Warning: This video is larger than 50MB. Large uploads may fail or time out. Recommended size is under 20MB.','am');
+  }
   uploadFile=f;
   const url=URL.createObjectURL(f);
   const pv=document.getElementById('uploadPreview');
