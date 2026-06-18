@@ -9,14 +9,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#141414;--bg2:#000000;--bg3:#181818;--bg4:#0a0a0a;
-  --bdr:#2f2f2f;--bdr2:#3f3f3f;
-  --gold:#e50914;--gb:#ff1e27;
-  --t1:#ffffff;--t2:#f1f5f9;--t3:#cbd5e1;--t4:#94a3b8;
-  --tl:#1d9e75;--tlb:#5dcaa5;
-  --bl:#378add;--blb:#85b7eb;
-  --pu:#7f77dd;--pub:#afa9ec;
-  --rd:#e24b4a;--am:#d4920c;
+  --bg:#07101e;--bg2:#0a1628;--bg3:#0f1e36;--bg4:#081420;
+  --bdr:#1e3a6a;--bdr2:#2a4a7a;
+  --gold:#c8922a;--gb:#f0c040;
+  --t1:#e8f0fc;--t2:#b8cce8;--t3:#7a9ab8;--t4:#4a6a88;
+  --tl:#1d9e75;--tlb:#5dcaa5;--bl:#378add;--blb:#85b7eb;--pu:#7f77dd;--pub:#afa9ec;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;background:var(--bg);color:var(--t2);font-family:'EB Garamond',Georgia,serif;font-size:18px}
@@ -54,13 +51,13 @@ body{overflow-x:hidden}
 .badges{display:flex;flex-wrap:wrap;gap:.45rem}
 .badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border-radius:999px;padding:4px 10px;border:1px solid var(--bdr);color:var(--t3);background:rgba(55,138,221,.07)}
 .badge.teal{background:rgba(29,158,117,.08);border-color:rgba(29,158,117,.25);color:#5dcaa5}
-.badge.gold{background:rgba(229,9,20,.12);border-color:rgba(229,9,20,.3);color:var(--gb)}
+.badge.gold{background:rgba(200,146,42,.12);border-color:rgba(200,146,42,.3);color:var(--gb)}
 .activity{display:grid;gap:.6rem}
 .activity-item{border:1px solid var(--bdr);border-radius:10px;padding:.9rem 1rem;background:var(--bg4);font-size:13px}
 .activity-item strong{color:var(--t1);font-weight:500}
 @media(max-width:900px){.hero,.section{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
 
-/* ══ NETFLIX STYLE POLISH ══ */
+/* ══ PREMIUM INTERACTIVE HOVER POLISH ══ */
 .qc, .cluster-card, .yw-card, .stat, .activity-item, .type-opt, .psi-pack, .pay-method, #certsList > div, .card {
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
 }
@@ -73,11 +70,11 @@ body{overflow-x:hidden}
   background: var(--gold) !important;
   color: #ffffff !important;
   font-weight: 800 !important;
-  box-shadow: 0 4px 14px rgba(229, 9, 20, 0.3) !important;
+  box-shadow: 0 4px 14px rgba(200, 146, 42, 0.3) !important;
 }
 .nbtn-gold:hover, .btn.gold:hover {
   background: var(--gb) !important;
-  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5) !important;
+  box-shadow: 0 6px 20px rgba(200, 146, 42, 0.5) !important;
 }
 .brand-mark, .nav-brand {
   color: var(--gold) !important;
