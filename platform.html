@@ -1648,12 +1648,7 @@ function buildNav(){
   if(!P){nr.innerHTML='';return;}
   const init=(P.display_name||'E').charAt(0).toUpperCase();
   const tier=R?STIERS[R.seeker_tier||1]:'Curious';
-  // Top pill total = engagement (Q+A from pts_total) + Cultivated (from payments).
-  // R._cultivatedPts is set by loadYOMField() — it's the sum of psi_pack from
-  // captured payments. Stays 0 until first payment, then reflects everything.
-  const engagementPts = R?.pts_total || 0;
-  const cultivatedPts = R?._cultivatedPts || 0;
-  const pts = engagementPts + cultivatedPts;
+  const pts = R?.pts_total || 0;
   nr.innerHTML=`
     <div class="user-chip" style="cursor:pointer" onclick="window.location.href='profile-thin.html'" title="Open profile summary">
       <div class="user-av">${P.avatar_url?`<img src="${P.avatar_url}"/>`:`${init}`}</div>
