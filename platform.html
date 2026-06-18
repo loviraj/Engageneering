@@ -5239,8 +5239,21 @@ function showToast(msg, type='default'){
 
 // ── ASK ARIA ───────────────────────────────────────────────────
 async function openAriaPanel(qid){
-  const panel=document.getElementById('aria-panel-'+qid);
-  if(!panel) return;
+  let panel=document.getElementById('aria-panel-'+qid);
+  if(!panel){
+    // Panel might be in a collapsed section — try scrolling to it or finding in nf-aria-wrap
+    const wraps=document.querySelectorAll('.aria-panel');
+    for(const w of wraps){ if(w.id==='aria-panel-'+qid){panel=w;break;} }
+  }
+  if(!panel){
+    showToast('Opening question detail…','gold');
+    // Try to open the question detail view first, then retry
+    const qCard=document.querySelector(`[data-qid="${qid}"]`);
+    if(qCard) qCard.click();
+    await new Promise(r=>setTimeout(r,600));
+    panel=document.getElementById('aria-panel-'+qid);
+  }
+  if(!panel){showToast('Please open the question first, then click Ask ARIA','error');return;}
 
   // If already open and answered, just toggle closed
   if(panel.classList.contains('open')){
