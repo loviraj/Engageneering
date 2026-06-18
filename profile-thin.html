@@ -9,11 +9,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#07101e;--bg2:#0a1628;--bg3:#0f1e36;--bg4:#081420;
-  --bdr:#1e3a6a;--bdr2:#2a4a7a;
-  --gold:#c8922a;--gb:#f0c040;
-  --t1:#e8f0fc;--t2:#b8cce8;--t3:#7a9ab8;--t4:#4a6a88;
-  --tl:#1d9e75;--tlb:#5dcaa5;--bl:#378add;--blb:#85b7eb;--pu:#7f77dd;--pub:#afa9ec;
+  --bg:#141414;--bg2:#000000;--bg3:#181818;--bg4:#0a0a0a;
+  --bdr:#2f2f2f;--bdr2:#3f3f3f;
+  --gold:#e50914;--gb:#ff1e27;
+  --t1:#ffffff;--t2:#f1f5f9;--t3:#cbd5e1;--t4:#94a3b8;
+  --tl:#1d9e75;--tlb:#5dcaa5;
+  --bl:#378add;--blb:#85b7eb;
+  --pu:#7f77dd;--pub:#afa9ec;
+  --rd:#e24b4a;--am:#d4920c;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;background:var(--bg);color:var(--t2);font-family:'EB Garamond',Georgia,serif;font-size:18px}
@@ -51,11 +54,38 @@ body{overflow-x:hidden}
 .badges{display:flex;flex-wrap:wrap;gap:.45rem}
 .badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border-radius:999px;padding:4px 10px;border:1px solid var(--bdr);color:var(--t3);background:rgba(55,138,221,.07)}
 .badge.teal{background:rgba(29,158,117,.08);border-color:rgba(29,158,117,.25);color:#5dcaa5}
-.badge.gold{background:rgba(200,146,42,.12);border-color:rgba(200,146,42,.3);color:var(--gb)}
+.badge.gold{background:rgba(229,9,20,.12);border-color:rgba(229,9,20,.3);color:var(--gb)}
 .activity{display:grid;gap:.6rem}
 .activity-item{border:1px solid var(--bdr);border-radius:10px;padding:.9rem 1rem;background:var(--bg4);font-size:13px}
 .activity-item strong{color:var(--t1);font-weight:500}
 @media(max-width:900px){.hero,.section{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
+
+/* ══ NETFLIX STYLE POLISH ══ */
+.qc, .cluster-card, .yw-card, .stat, .activity-item, .type-opt, .psi-pack, .pay-method, #certsList > div, .card {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+.qc:hover, .cluster-card:hover, .yw-card:hover, .stat:hover, .activity-item:hover, .type-opt:hover, .psi-pack:hover, .pay-method:hover, #certsList > div:hover {
+  transform: scale(1.03) translateY(-2px) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7) !important;
+  border-color: var(--gold) !important;
+}
+.nbtn-gold, .btn.gold {
+  background: var(--gold) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 14px rgba(229, 9, 20, 0.3) !important;
+}
+.nbtn-gold:hover, .btn.gold:hover {
+  background: var(--gb) !important;
+  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5) !important;
+}
+.brand-mark, .nav-brand {
+  color: var(--gold) !important;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f3f !important;
+}
+
 </style>
 </head>
 <body>
@@ -106,13 +136,58 @@ body{overflow-x:hidden}
         <p class="muted" style="margin-top:.8rem">This breakdown keeps active field stats organized and out of the way of the main question feed.</p>
       </div>
 
-      <div class="card panel">
-        <div class="hd">Agent Monitor</div>
-        <div class="row"><b>ARIA Orchestrator</b><span style="color:var(--tlb)">Active</span></div>
-        <div class="row"><b>Gatekeeper</b><span style="color:var(--tlb)">Ready</span></div>
-        <div class="row"><b>Question Rater</b><span style="color:var(--tlb)">Ready</span></div>
-        <div class="row"><b>Smart Matcher</b><span style="color:var(--tlb)">Ready</span></div>
-        <div class="row"><b>Engagement Indexer</b><span style="color:var(--tlb)">Ready</span></div>
+      <div class="card panel" style="grid-column: span 2">
+        <div class="hd">🤖 ARIA's 12 Autonomous Agents</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.8rem;margin-top:.8rem;max-height:300px;overflow-y:auto;padding-right:5px">
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">1. ARIA Orchestrator</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Coordinates all agent subprocesses, routing logic, and synthesis requests.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">2. Gatekeeper</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Screens questions for safety, authenticity, and academic relevance in 20+ languages.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">3. Question Rater</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Evaluates visual curiosity, scope, depth, and originality of questions.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">4. Smart Matcher</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Matches questions with the best language & topic expert profiles.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">5. Engagement Indexer</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Grades answers on hook quality, pacing, and visual delivery.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">6. Retention Indexer</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Evaluates memorability, sticky analogies, and structure.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">7. Applicability Indexer</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Scores actionable next-day utility and examples.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">8. Creativity Indexer</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Awards points for unexpected angles and original connections.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">9. Accuracy Verifier</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Ensures logic, facts, and statements are fully correct.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">10. Integrity Guard</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Checks safety, plagiarism, spam, hate speech, and malicious intent.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">11. Grade Arbiter</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Computes Composite Defended Score (CDS) using calibrated weights.</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--bdr);border-radius:10px;padding:.8rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gb)">12. Insight Narrator</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">Generates weekly study guides, strength reports, and recommendations.</div>
+          </div>
+        </div>
       </div>
 
       <div class="card panel" style="grid-column: span 2">
@@ -130,9 +205,9 @@ body{overflow-x:hidden}
       </div>
 
       <div class="card panel">
-        <div class="hd">Activity</div>
-        <div class="activity" id="activityList">
-          <div class="muted">Loading recent activities...</div>
+        <div class="hd">Wallet & YOM History</div>
+        <div class="activity" id="activityList" style="max-height:300px;overflow-y:auto">
+          <div class="muted">Loading transaction history...</div>
         </div>
       </div>
     </div>
@@ -335,21 +410,45 @@ body{overflow-x:hidden}
           .select('action_type,pts_awarded,created_at')
           .eq('user_id', U.id)
           .order('created_at', {ascending:false})
-          .limit(6);
+          .limit(20);
 
         if (error) throw error;
         if (!hist || hist.length === 0) {
-          actList.innerHTML = '<div class="muted">No recent activities. Ask or answer questions to populate.</div>';
+          actList.innerHTML = '<div class="muted">No transaction history. Ask/answer questions or buy Ψ to populate.</div>';
           return;
         }
 
         actList.innerHTML = hist.map(h => {
           const date = new Date(h.created_at).toLocaleString('en-IN', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-          const label = h.action_type === 'question' ? 'Asked a Question' : 'Submitted an Answer';
+          
+          let label = h.action_type;
+          let color = 'var(--t1)';
+          let sign = h.pts_awarded >= 0 ? '+' : '';
+          
+          if (h.action_type === 'question') {
+            label = 'Asked a Question (Earned)';
+            color = '#5dcaa5';
+          } else if (h.action_type === 'answer') {
+            label = 'Submitted an Answer (Earned)';
+            color = '#5dcaa5';
+          } else if (h.action_type === 'signup_bonus') {
+            label = 'Sign-up Bonus (Earned)';
+            color = '#5dcaa5';
+          } else if (h.action_type === 'psi_spend' || h.action_type === 'aria_query') {
+            label = 'Asked ARIA (Spent)';
+            color = '#f09595';
+          } else if (h.action_type === 'psi_purchase') {
+            label = 'Cultivated Ψ (Purchased)';
+            color = 'var(--gold)';
+          } else if (h.action_type.includes('refund')) {
+            label = 'ARIA Refund (Credited)';
+            color = '#85b7eb';
+          }
+          
           return `
-            <div class="activity-item">
-              <strong>${label}</strong><br/>
-              <span class="muted">${date} · Awarded +${h.pts_awarded || 0} Ψ</span>
+            <div class="activity-item" style="margin-bottom:.4rem; border-color:rgba(30,58,106,.4)">
+              <strong style="color:${color}">${esc(label)}</strong><br/>
+              <span class="muted" style="font-size:11px">${date} · ${sign}${h.pts_awarded || 0} Ψ</span>
             </div>`;
         }).join('');
       } catch (e) {
