@@ -294,7 +294,7 @@ body{overflow-x:hidden}
 
         const qPts = R.seeker_pts || 0;
         const aPts = R.answerer_pts || 0;
-        const totalPts = qPts + aPts + bPts;
+        const totalPts = R.pts_total ?? (qPts + aPts + bPts);
 
         // Populate basic stats
         document.getElementById('statTotal').textContent = totalPts;
