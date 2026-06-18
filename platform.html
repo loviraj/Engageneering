@@ -5131,7 +5131,7 @@ async function deductPsi(amount, reason){
     });
     loadYOMField();
     return true;
-  }catch(e){console.warn('Deduct error:',e);return false;}
+  }catch(e){console.warn('Deduct error:',e);showToast('Point deduction failed — please retry','error');return false;}
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -5261,7 +5261,8 @@ async function openAriaPanel(qid){
     return;
   }
 
-  // Check balance
+  // Fresh-read balance from DB to avoid stale cache
+  try{const{data:fr}=await supa.from('profile_roles').select('pts_total').eq('user_id',U.id).single();if(fr&&R)R.pts_total=fr.pts_total;}catch(e){}
   const bal=R?.pts_total||0;
   if(bal<ARIA_COST){
     showToast(`You need Ψ${ARIA_COST} to Ask ARIA. You have Ψ${bal}.`,'error');
@@ -5271,7 +5272,7 @@ async function openAriaPanel(qid){
 
   // Deduct
   const ok=await deductPsi(ARIA_COST,'ask_aria_q'+qid);
-  if(!ok) return;
+  if(!ok){showToast('Could not process Ψ — please retry','error');return;}
 
   // Open panel, start thinking
   panel.classList.add('open');
