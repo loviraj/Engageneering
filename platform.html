@@ -1831,11 +1831,16 @@ function mkBadgeSVG(t,tr){
 function buildTierCard(){
   if(!R)return;
   const t=R.seeker_tier||1,pts=R.seeker_pts||0,next=TPTS[t]||5000;
-  document.getElementById('tcName').textContent=STIERS[t]||'Curious';
-  document.getElementById('tcTrack').textContent=`Seeker Track · Tier ${t} of 5`;
-  document.getElementById('tcFill').style.width=Math.min(Math.round(pts/next*100),100)+'%';
-  document.getElementById('tcPts').textContent=`${pts} Ψ`;
-  document.getElementById('tcNext').textContent=`${Math.max(0,next-pts)} to ${STIERS[t+1]||'Engageneer™'}`;
+  const tcName=document.getElementById('tcName');
+  const tcTrack=document.getElementById('tcTrack');
+  const tcFill=document.getElementById('tcFill');
+  const tcPts=document.getElementById('tcPts');
+  const tcNext=document.getElementById('tcNext');
+  if(tcName) tcName.textContent=STIERS[t]||'Curious';
+  if(tcTrack) tcTrack.textContent=`Seeker Track · Tier ${t} of 5`;
+  if(tcFill) tcFill.style.width=Math.min(Math.round(pts/next*100),100)+'%';
+  if(tcPts) tcPts.textContent=`${pts} Ψ`;
+  if(tcNext) tcNext.textContent=`${Math.max(0,next-pts)} to ${STIERS[t+1]||'Engageneer™'}`;
 
   // Build and show profile badge
   const badgeWrap=document.getElementById('profileBadgeWrap');
@@ -2303,7 +2308,6 @@ async function loadFeed(){
     }else{
       let q=supa.from('questions').select(BASE).eq('status','published').order('created_at',{ascending:false}).limit(30);
       if(currentClusterId) q=q.eq('cluster_id',currentClusterId);
-      else q=q.is('cluster_id',null);
       if(topic)q=q.contains('tags',[topic]);
       if(currentLangFilter)q=q.eq('language',currentLangFilter);
       if(fmt==='video')q=q.in('content_type',['video','both']);
