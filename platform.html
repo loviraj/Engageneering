@@ -2737,27 +2737,28 @@ function setAnsType(qid,type){
 // THUMBNAIL & AVATAR HELPERS
 // ════════════════════════════════════════════════════════════════
 
-// Topic → base seed for picsum (300 IDs available: 1-300)
-const TOPIC_SEEDS = {
-  'Programming':   [10,20,30,96,160],
-  'Mathematics':   [40,50,60,180,200],
-  'Science':       [70,80,90,110,130],
-  'Physics':       [70,80,110,150,180],
-  'History':       [100,140,170,190,210],
-  'Philosophy':    [120,160,220,240,250],
-  'Finance':       [15,45,75,105,135],
-  'Economics':     [15,45,75,165,195],
-  'Biology':       [85,95,125,145,165],
-  'Chemistry':     [35,55,115,145,175],
-  'Psychology':    [25,65,185,205,225],
-  'Politics':      [100,140,230,260,280],
-  'Literature':    [120,160,200,240,270],
-  'Language':      [120,160,200,300,290],
-  'Medicine':      [85,95,125,255,265],
-  'Engineering':   [10,20,30,96,160],
-  'Technology':    [10,20,30,96,160],
-  'General':       [1,2,3,4,5],
-  'default':       [1,2,3,4,5],
+// Topic → curated Unsplash photo IDs (relevant to each subject)
+const TOPIC_PHOTOS = {
+  'Programming':   ['1461749280684-dccba630e2f6','1515879218367-8c267915be29','1542831371-29b0f74f9713','1526374965328-7f61d4dc18c5','1607799279861-4dd421887fb3'],
+  'Mathematics':   ['1635070041078-e363dbe005cb','1509228468518-180dd4864904','1596495577886-d920f1f5b3b6','1453733190371-0a9bedd82893','1518133910546-b6c2fb7d79e3'],
+  'Science':       ['1507413245164-6160d8298b31','1532094349884-543bc11b234d','1628595351029-c2bf17511435','1451187580459-43490279c0fa','1576319155264-99536e0be1ee'],
+  'Physics':       ['1635070041078-e363dbe005cb','1446776709462-d6b525c57bd3','1462331940025-496dfbfc7564','1454789548928-9efd52dc4031','1581093577421-f561a654a353'],
+  'History':       ['1461360370896-922624d12fdb','1524492412937-b28074a5d7da','1564399580075-5dfe19c205f0','1548013146ad-3f25f5701096','1584463699037-5ba8ecc7dd4e'],
+  'Philosophy':    ['1481627834876-b7833e8f5570','1507003211169-0a1dd7228f2d','1519681393784-d120267933ba','1470058869958-2a77d9d59bad','1477346611705-65d1883cee1e'],
+  'Finance':       ['1611974789855-0b12d8e3bbe1','1526304640581-d334cdbbf45e','1554224155-6726b3ff858f','1579621970563-9ae2e01e1282','1518458028785-8fbcd101ebb9'],
+  'Economics':     ['1611974789855-0b12d8e3bbe1','1526304640581-d334cdbbf45e','1554224155-6726b3ff858f','1460925895917-afdab827c52f','1444653614773-995cb1ef9ade'],
+  'Biology':       ['1530026405186-ed1f139313bb','1559757175-5700dde675bc','1518133910546-b6c2fb7d79e3','1576319155264-99536e0be1ee','1507413245164-6160d8298b31'],
+  'Chemistry':     ['1532094349884-543bc11b234d','1628595351029-c2bf17511435','1603126857599-f6e157fa2fe6','1616711220046-4c6439f1c12d','1532187863486-abf9dbad1b69'],
+  'Psychology':    ['1507003211169-0a1dd7228f2d','1474631245212-32dc3c8310c6','1559757175-5700dde675bc','1499209974431-9dddcece7f88','1508963493744-76fce69379c0'],
+  'Politics':      ['1529107386315-e1a2ed48a620','1524492412937-b28074a5d7da','1541872703-74c5e44368f9','1495020689067-958852a7765e','1555848962-6e79363ec58f'],
+  'Literature':    ['1457369804613-52c61a468e7d','1481627834876-b7833e8f5570','1512820790803-83ca734da794','1544716278-ca5e3f4abd8c','1519682577862-22b62b24e493'],
+  'Language':      ['1457369804613-52c61a468e7d','1456513080510-7bf3a84b82f8','1503676260728-1c00da094a0b','1512820790803-83ca734da794','1544716278-ca5e3f4abd8c'],
+  'Medicine':      ['1576091160550-2173dba999ef','1559757175-5700dde675bc','1530026405186-ed1f139313bb','1579684385127-1ef15d508118','1551190822-a9333d879b1f'],
+  'Engineering':   ['1581094794329-c8112a89af12','1518770660439-4636190af475','1504328345606-18bbc8c9d7d1','1537462715879-360eeb61a0ad','1545259741-2ea77f5c16be'],
+  'Technology':    ['1518770660439-4636190af475','1488590528505-98d2b5aba04b','1504328345606-18bbc8c9d7d1','1550751827-4bd374c3f58b','1526374965328-7f61d4dc18c5'],
+  'Active Learning':['1522202176988-66273c2fd55f','1524178232363-1fb2b075b655','1503676260728-1c00da094a0b','1427504350-a754bc546b85','1513258496099-48168024aec0'],
+  'General':       ['1519681393784-d120267933ba','1507003211169-0a1dd7228f2d','1481627834876-b7833e8f5570','1470058869958-2a77d9d59bad','1477346611705-65d1883cee1e'],
+  'default':       ['1519681393784-d120267933ba','1507003211169-0a1dd7228f2d','1481627834876-b7833e8f5570','1470058869958-2a77d9d59bad','1477346611705-65d1883cee1e'],
 };
 
 // Topic → dark gradient for avatar + SVG fallback
@@ -2775,7 +2776,7 @@ const TOPIC_GRAD = {
 
 function _topicKey(tags){
   const t=(tags||['General'])[0]||'General';
-  return Object.keys(TOPIC_SEEDS).find(k=>
+  return Object.keys(TOPIC_PHOTOS).find(k=>
     t.toLowerCase().includes(k.toLowerCase())||
     k.toLowerCase().includes(t.toLowerCase())
   )||'default';
@@ -2788,12 +2789,12 @@ function _strHash(s){
   return Math.abs(h);
 }
 
-// Return a picsum URL — no CORS, no auth, CDN-cached
+// Return an Unsplash URL — topic-relevant, CDN-cached, no auth needed
 function getTopicThumb(tags, qid, w=400, h=225){
-  const key   = _topicKey(tags);
-  const seeds = TOPIC_SEEDS[key];
-  const seed  = seeds[_strHash(qid||'x') % seeds.length];
-  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
+  const key    = _topicKey(tags);
+  const photos = TOPIC_PHOTOS[key];
+  const photoId= photos[_strHash(qid||'x') % photos.length];
+  return `https://images.unsplash.com/photo-${photoId}?w=${w}&h=${h}&fit=crop&auto=format&q=80`;
 }
 
 // Inline SVG gradient fallback — always renders, zero network
