@@ -2737,37 +2737,72 @@ function setAnsType(qid,type){
 // THUMBNAIL & AVATAR HELPERS
 // ════════════════════════════════════════════════════════════════
 
-// ── PREMIUM TOPIC THUMBNAILS (SVG gradient + icon, zero network) ──
-const TOPIC_THEME = {
-  'Programming':      {g1:'#0a1e3d',g2:'#1a3a6a',g3:'#0d2850',accent:'#378add',icon:'<path d="M28,18 L20,26 M28,34 L20,26 M36,18 L44,26 M36,34 L44,26" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>'},
-  'Mathematics':      {g1:'#150d30',g2:'#2a1a50',g3:'#1e1440',accent:'#7f77dd',icon:'<text x="32" y="30" text-anchor="middle" font-size="20" font-family="Georgia" font-weight="bold" fill="currentColor">∑</text>'},
-  'Science':          {g1:'#081a10',g2:'#0d2a1a',g3:'#0a2214',accent:'#1d9e75',icon:'<circle cx="32" cy="26" r="5" stroke="currentColor" stroke-width="2" fill="none"/><ellipse cx="32" cy="26" rx="14" ry="6" stroke="currentColor" stroke-width="1.5" fill="none" transform="rotate(-30 32 26)"/><ellipse cx="32" cy="26" rx="14" ry="6" stroke="currentColor" stroke-width="1.5" fill="none" transform="rotate(30 32 26)"/>'},
-  'Physics':          {g1:'#0a1428',g2:'#1a2a4a',g3:'#0e1c38',accent:'#378add',icon:'<circle cx="32" cy="26" r="4" fill="currentColor"/><ellipse cx="32" cy="26" rx="16" ry="7" stroke="currentColor" stroke-width="1.5" fill="none"/><ellipse cx="32" cy="26" rx="16" ry="7" stroke="currentColor" stroke-width="1.5" fill="none" transform="rotate(60 32 26)"/><ellipse cx="32" cy="26" rx="16" ry="7" stroke="currentColor" stroke-width="1.5" fill="none" transform="rotate(120 32 26)"/>'},
-  'History':          {g1:'#1a0e08',g2:'#3a2010',g3:'#2a1608',accent:'#c8922a',icon:'<path d="M24,34 L24,18 L32,14 L40,18 L40,34 M20,34 L44,34 M28,34 L28,22 L36,22 L36,34" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>'},
-  'Philosophy':       {g1:'#0d0d22',g2:'#1a1a3a',g3:'#12122e',accent:'#afa9ec',icon:'<circle cx="32" cy="22" r="8" stroke="currentColor" stroke-width="2" fill="none"/><path d="M32,30 L32,38 M28,36 L36,36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'},
-  'Finance':          {g1:'#0d1a08',g2:'#1a2a10',g3:'#122210',accent:'#5dcaa5',icon:'<text x="32" y="30" text-anchor="middle" font-size="22" font-family="Georgia" font-weight="bold" fill="currentColor">₹</text>'},
-  'Economics':        {g1:'#0d1a08',g2:'#1a2a10',g3:'#122210',accent:'#5dcaa5',icon:'<path d="M20,34 L26,24 L32,28 L38,18 L44,22" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'},
-  'Biology':          {g1:'#081a10',g2:'#0d2a1a',g3:'#0a2214',accent:'#1d9e75',icon:'<path d="M32,36 L32,24 M32,24 C32,18 26,14 22,18 M32,24 C32,18 38,14 42,18 M32,28 C28,28 24,32 24,36 M32,28 C36,28 40,32 40,36" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>'},
-  'Chemistry':        {g1:'#0d1428',g2:'#1a2840',g3:'#0e1c34',accent:'#f0997b',icon:'<path d="M28,16 L28,26 L22,36 L42,36 L36,26 L36,16 M26,16 L38,16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'},
-  'Psychology':       {g1:'#1a0d20',g2:'#2a1a3a',g3:'#201430',accent:'#afa9ec',icon:'<path d="M32,38 C32,38 22,34 22,26 C22,20 26,16 32,16 C38,16 42,20 42,26 C42,34 32,38 32,38" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="28" cy="24" r="1.5" fill="currentColor"/><circle cx="36" cy="24" r="1.5" fill="currentColor"/>'},
-  'Politics':         {g1:'#1a0e10',g2:'#2a1820',g3:'#221218',accent:'#e24b4a',icon:'<path d="M32,14 L32,38 M32,14 L44,20 L44,24 L32,20" stroke="currentColor" stroke-width="2" fill="currentColor" fill-opacity="0.3"/>'},
-  'Literature':       {g1:'#14100a',g2:'#2a2014',g3:'#1e180e',accent:'#c8922a',icon:'<path d="M22,16 L22,36 L32,32 L42,36 L42,16 L32,20 L22,16" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/><line x1="32" y1="20" x2="32" y2="32" stroke="currentColor" stroke-width="1.5"/>'},
-  'Language':         {g1:'#14100a',g2:'#2a2014',g3:'#1e180e',accent:'#f0c040',icon:'<text x="32" y="30" text-anchor="middle" font-size="16" font-family="Georgia" fill="currentColor">Aあ</text>'},
-  'Medicine':         {g1:'#1a0810',g2:'#2a1020',g3:'#220c18',accent:'#e24b4a',icon:'<path d="M32,18 L32,36 M24,26 L40,26" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>'},
-  'Engineering':      {g1:'#0d1a20',g2:'#1a2a36',g3:'#122028',accent:'#378add',icon:'<circle cx="32" cy="26" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="32" cy="26" r="3" fill="currentColor"/><path d="M32,16 L32,13 M32,36 L32,39 M22,26 L19,26 M42,26 L45,26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'},
-  'Technology':       {g1:'#0a1428',g2:'#1a2a4a',g3:'#0e1c38',accent:'#378add',icon:'<rect x="22" y="18" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><path d="M26,32 L38,32 L40,36 L24,36 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>'},
-  'Active Learning':  {g1:'#0d1a20',g2:'#1a2836',g3:'#12202c',accent:'#f0c040',icon:'<circle cx="32" cy="20" r="6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M22,38 C22,30 26,26 32,26 C38,26 42,30 42,38" stroke="currentColor" stroke-width="2" fill="none"/><path d="M38,18 L44,12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'},
-  'Teaching':         {g1:'#0d1a20',g2:'#1a2836',g3:'#12202c',accent:'#f0c040',icon:'<rect x="20" y="16" width="24" height="16" rx="1" stroke="currentColor" stroke-width="2" fill="none"/><path d="M20,22 L44,22 M32,36 L32,40 M26,40 L38,40" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'},
-  'Self-Improvement': {g1:'#1a0d10',g2:'#2a1a22',g3:'#201418',accent:'#f0c040',icon:'<path d="M32,38 L32,20 M32,20 L26,26 M32,20 L38,26" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'},
-  'General':          {g1:'#0d1520',g2:'#1a2a3a',g3:'#111e2c',accent:'#c8922a',icon:'<polygon points="32,14 38,22 46,24 40,30 42,38 32,34 22,38 24,30 18,24 26,22" stroke="currentColor" stroke-width="1.5" fill="none"/>'},
-  'default':          {g1:'#07101e',g2:'#0f1e36',g3:'#0b1628',accent:'#c8922a',icon:'<polygon points="32,14 38,22 46,24 40,30 42,38 32,34 22,38 24,30 18,24 26,22" stroke="currentColor" stroke-width="1.5" fill="none"/>'},
+// ── TOPIC THUMBNAILS (Pexels API — real photos, keyword search) ──
+const PEXELS_KEY = window.ENG_CONFIG?.PEXELS_API_KEY || 'JSnbVwgzfcokM9WVn1pMSEtpLjWZ4fmFku60fxdtPm4iusCJgMgLktQm';
+const _pexelsCache = {};
+const _pexelsPending = {};
+
+const TOPIC_SEARCH = {
+  'Programming':'coding programming','Mathematics':'mathematics equations',
+  'Science':'science laboratory','Physics':'physics space galaxy',
+  'History':'history ancient ruins','Philosophy':'philosophy thinking statue',
+  'Finance':'finance stock chart','Economics':'economics business graph',
+  'Biology':'biology nature plant','Chemistry':'chemistry lab beaker',
+  'Psychology':'psychology brain neuron','Politics':'politics government building',
+  'Literature':'literature books library','Language':'language alphabet writing',
+  'Medicine':'medicine stethoscope hospital','Engineering':'engineering gears machines',
+  'Technology':'technology computer digital','Active Learning':'classroom learning students',
+  'Teaching':'teaching classroom whiteboard','Self-Improvement':'motivation sunrise mountain',
+  'General':'education knowledge learning','default':'education university campus'
 };
 
-const TOPIC_GRAD = Object.fromEntries(Object.entries(TOPIC_THEME).map(([k,v])=>[k,[v.g1,v.g2]]));
+const TOPIC_GRAD = {
+  'Programming':['#0a1e3d','#1a3a6a'],'Mathematics':['#150d30','#2a1a50'],
+  'Science':['#081a10','#0d2a1a'],'Physics':['#0a1428','#1a2a4a'],
+  'History':['#1a0e08','#3a2010'],'Philosophy':['#0d0d22','#1a1a3a'],
+  'Finance':['#0d1a08','#1a2a10'],'Economics':['#0d1a08','#1a2a10'],
+  'Biology':['#081a10','#0d2a1a'],'Chemistry':['#0d1428','#1a2840'],
+  'Psychology':['#1a0d20','#2a1a3a'],'Politics':['#1a0e10','#2a1820'],
+  'Literature':['#14100a','#2a2014'],'Language':['#14100a','#2a2014'],
+  'Medicine':['#1a0810','#2a1020'],'Engineering':['#0d1a20','#1a2a36'],
+  'Technology':['#0a1428','#1a2a4a'],'Active Learning':['#0d1a20','#1a2836'],
+  'Teaching':['#0d1a20','#1a2836'],'Self-Improvement':['#1a0d10','#2a1a22'],
+  'General':['#0d1520','#1a2a3a'],'default':['#07101e','#0f1e36']
+};
+
+async function fetchPexelsTopic(keyword){
+  const q = TOPIC_SEARCH[keyword]||keyword;
+  if(_pexelsCache[keyword]) return _pexelsCache[keyword];
+  if(_pexelsPending[keyword]) return _pexelsPending[keyword];
+  const p = fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=10&orientation=landscape`,{
+    headers:{'Authorization':PEXELS_KEY}
+  }).then(r=>{
+    if(!r.ok) throw new Error('Pexels '+r.status);
+    return r.json();
+  }).then(data=>{
+    const urls=(data.photos||[]).map(p=>p.src?.large||p.src?.medium||p.src?.original||'').filter(Boolean);
+    _pexelsCache[keyword]=urls;
+    delete _pexelsPending[keyword];
+    return urls;
+  }).catch(e=>{
+    console.warn('Pexels fetch failed for',keyword,e);
+    _pexelsCache[keyword]=[];
+    delete _pexelsPending[keyword];
+    return [];
+  });
+  _pexelsPending[keyword]=p;
+  return p;
+}
+
+async function prewarmPexels(tags){
+  const topics=[...new Set((tags||[]).map(t=>_topicKey([t])))];
+  if(!topics.length)topics.push('default');
+  await Promise.all(topics.map(t=>fetchPexelsTopic(t)));
+}
 
 function _topicKey(tags){
   const t=(tags||['General'])[0]||'General';
-  return Object.keys(TOPIC_THEME).find(k=>
+  return Object.keys(TOPIC_SEARCH).find(k=>
     t.toLowerCase().includes(k.toLowerCase())||
     k.toLowerCase().includes(t.toLowerCase())
   )||'default';
@@ -2780,36 +2815,30 @@ function _strHash(s){
 }
 
 function getTopicThumb(tags, qid, w=400, h=225){
-  const key = _topicKey(tags);
-  const t   = TOPIC_THEME[key]||TOPIC_THEME.default;
-  const hash= _strHash(qid||'x');
-  const hue = (hash%30)-15;
-  const cx  = 30+(hash%40);
-  const cy  = 20+(hash%30);
-  const label=(tags||['General'])[0]||'General';
-  const iconScale = Math.min(w,h)/225;
-  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>
-    <defs>
-      <linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'>
-        <stop offset='0%' stop-color='${t.g1}'/>
-        <stop offset='50%' stop-color='${t.g3}'/>
-        <stop offset='100%' stop-color='${t.g2}'/>
-      </linearGradient>
-      <radialGradient id='glow' cx='${cx}%' cy='${cy}%' r='60%'>
-        <stop offset='0%' stop-color='${t.accent}' stop-opacity='0.12'/>
-        <stop offset='100%' stop-color='${t.accent}' stop-opacity='0'/>
-      </radialGradient>
-    </defs>
-    <rect width='${w}' height='${h}' fill='url(#bg)'/>
-    <rect width='${w}' height='${h}' fill='url(#glow)'/>
-    <line x1='0' y1='${h}' x2='${w}' y2='${h}' stroke='${t.accent}' stroke-width='2' opacity='0.4'/>
-    <g transform='translate(${w/2-32*iconScale},${h*.18}) scale(${iconScale})' color='${t.accent}' opacity='0.35'>${t.icon}</g>
-    <text x='${w/2}' y='${h*.72}' text-anchor='middle' font-family='Cormorant Garamond,Georgia,serif' font-size='${Math.round(h*.13)}' fill='${t.accent}' opacity='0.2' font-weight='700' letter-spacing='2'>${label}</text>
+  const key=_topicKey(tags);
+  const urls=_pexelsCache[key];
+  if(urls&&urls.length){
+    const idx=_strHash(qid||'x')%urls.length;
+    return urls[idx];
+  }
+  return svgFallback(tags,w,h);
+}
+
+function svgFallback(tags, w=400, h=225){
+  const key=_topicKey(tags);
+  const [c1,c2]=TOPIC_GRAD[key]||TOPIC_GRAD.default;
+  const label=(tags||['?'])[0];
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/>
+    </linearGradient></defs>
+    <rect width='${w}' height='${h}' fill='url(#g)'/>
+    <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
+      font-family='Georgia,serif' font-size='${Math.round(h*.1)}' fill='rgba(200,146,42,.4)'
+      font-weight='bold'>${label}</text>
   </svg>`;
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
-
-function svgFallback(tags, w=400, h=225){ return getTopicThumb(tags, 'fallback', w, h); }
 
 // ── THUMBNAIL SYSTEM ─────────────────────────────────────────────
 // ══ THUMBNAIL SYSTEM — DEFINITIVE ═══════════════════════════════
@@ -2838,8 +2867,10 @@ function resolveThumb(url, tags, qid, w, h){
 
 // Pre-warm all thumbnails in a question array (parallel, 400×225)
 // Returns a Promise that resolves when all are done.
-function prewarmThumbs(qs){
-  if(!qs||!qs.length) return Promise.resolve();
+async function prewarmThumbs(qs){
+  if(!qs||!qs.length) return;
+  const allTags=[...new Set(qs.flatMap(q=>(q.tags||['General'])))];
+  await prewarmPexels(allTags);
   const jobs = qs.filter(q=>q.video_thumbnail).map(q=>
     resolveThumb(q.video_thumbnail, q.tags, q.id, 400, 225)
   );
