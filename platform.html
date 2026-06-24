@@ -56,8 +56,8 @@ nav{background:var(--bg2);border-bottom:1px solid var(--bdr2);padding:0 1.6rem;h
 .nbtn:active{transform:translateY(0);box-shadow:none}
 .nbtn-ghost{background:transparent;color:var(--t3);border:1px solid var(--bdr)}
 .nbtn-ghost:hover{border-color:var(--gold);color:var(--gold)}
-.nbtn-gold{background:var(--gold);color:#040c18;font-weight:800;box-shadow:0 4px 14px rgba(200, 146, 42, 0.25)}
-.nbtn-gold:hover{background:var(--gb);box-shadow:0 6px 20px rgba(200, 146, 42, 0.45);color:#fff}
+.nbtn-gold{background:var(--gold);color:#040c18;font-weight:800;box-shadow:0 4px 14px rgba(200,146,42, 0.25)}
+.nbtn-gold:hover{background:var(--gb);box-shadow:0 6px 20px rgba(200,146,42, 0.45);color:#fff}
 
 /* ── NETFLIX NAV LAYOUT ── */
 nav.nf-nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;background:linear-gradient(to bottom,rgba(7,16,30,0.98) 0%,rgba(7,16,30,0.85) 100%);backdrop-filter:blur(12px);border-bottom:1px solid var(--bdr);gap:1.5rem}
@@ -446,14 +446,14 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 /* Badges */
 .nfc-badges{position:absolute;top:.4rem;left:.4rem;display:flex;gap:.25rem;z-index:5;flex-wrap:wrap;max-width:65%}
 .nfc-badge{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;font-weight:800;line-height:1;border-radius:2px}
-.nfb-new{background:#e50914;color:#fff}
+.nfb-new{background:#c8922a;color:#fff}
 .nfb-feat{background:var(--gold);color:#040c18}
 .nfb-bounty{background:#d4920c;color:#040c18}
 .nfb-mine{background:rgba(29,158,117,.9);color:#fff}
 
 /* Progress bar */
 .nfc-prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08)}
-.nfc-prog-fill{height:100%;background:#e50914;width:0;transition:width .4s}
+.nfc-prog-fill{height:100%;background:#c8922a;width:0;transition:width .4s}
 
 /* Hover info — no complex panel, simplified */
 .nfc-hover{display:none} /* removed — all info now on card */
@@ -494,7 +494,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 }
 .nf-expand-inner {
   background: #0a101d;
-  border: 1px solid rgba(200, 146, 42, 0.35);
+  border: 1px solid rgba(200,146,42, 0.35);
   border-radius: 16px;
   width: 95%;
   max-width: 1100px;
@@ -579,7 +579,7 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border:1px solid rgba(200,146,42,.45);
   border-radius:16px;
-  box-shadow:0 30px 80px rgba(0,0,0,.85), 0 0 30px rgba(200, 146, 42, 0.15);
+  box-shadow:0 30px 80px rgba(0,0,0,.85), 0 0 30px rgba(200,146,42, 0.15);
   padding:1.8rem 2rem;
   z-index:10001;
   animation:apFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1110,6 +1110,33 @@ textarea{min-height:70px;resize:vertical;line-height:1.6}
 .cluster-input::placeholder{color:var(--t4)}
 .cluster-psi-cost{display:flex;align-items:center;gap:.5rem;font-size:12px;color:var(--t4);margin-bottom:.8rem;padding:8px 10px;background:rgba(46,158,79,.06);border-radius:6px;border:1px solid rgba(46,158,79,.15)}
 .cluster-psi-val{font-size:16px;font-weight:700;color:#2e9e4f}
+
+/* ══ PREMIUM INTERACTIVE HOVER POLISH ══ */
+.qc, .cluster-card, .yw-card, .stat, .activity-item, .type-opt, .psi-pack, .pay-method, #certsList > div, .card {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+.qc:hover, .cluster-card:hover, .yw-card:hover, .stat:hover, .activity-item:hover, .type-opt:hover, .psi-pack:hover, .pay-method:hover, #certsList > div:hover {
+  transform: scale(1.03) translateY(-2px) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7) !important;
+  border-color: var(--gold) !important;
+}
+.nbtn-gold, .btn.gold {
+  background: var(--gold) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 14px rgba(200, 146, 42, 0.3) !important;
+}
+.nbtn-gold:hover, .btn.gold:hover {
+  background: var(--gb) !important;
+  box-shadow: 0 6px 20px rgba(200, 146, 42, 0.5) !important;
+}
+.brand-mark, .nav-brand {
+  color: var(--gold) !important;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f3f !important;
+}
+
 </style>
 
 <!-- SQL: Run in Supabase SQL Editor to add language support:
@@ -1783,15 +1810,15 @@ const BADGE_SHAPES={
     1:{c:'#888780',shape:'circle'},
     2:{c:'#378ADD',shape:'rrect'},
     3:{c:'#1D9E75',shape:'shield'},
-    4:{c:'#C8922A',shape:'diamond'},
-    5:{c:'#F0C040',shape:'hex'},
+    4:{c:'#c8922a',shape:'diamond'},
+    5:{c:'#f0c040',shape:'hex'},
   },
   answerer:{
     1:{c:'#888780',shape:'circle'},
     2:{c:'#F0997B',shape:'rrect'},
     3:{c:'#D85A30',shape:'shield'},
     4:{c:'#7F77DD',shape:'diamond'},
-    5:{c:'#F0C040',shape:'hex'},
+    5:{c:'#f0c040',shape:'hex'},
   }
 };
 
@@ -2962,7 +2989,7 @@ function buildNfHero(q){
         ${score!=null?`<span style="color:var(--gb);font-weight:700">Ψ ${score}</span>`:''}
         <span>${q.answer_count||0} answers</span>
         <span>${q.views||0} views</span>
-        ${days<3?'<span style="color:#e50914;font-weight:700">New</span>':''}
+        ${days<3?'<span style="color:#c8922a;font-weight:700">New</span>':''}
         ${q.bounty_pts>0?`<span style="color:var(--am);font-weight:700">+${q.bounty_pts} Ψ bounty</span>`:''}
       </div>
       <div class="nf-hero-btns">
@@ -3101,7 +3128,7 @@ function buildNfRankCard(q, rank){
   const days  = Math.floor((Date.now()-new Date(q.created_at||Date.now()))/(864e5));
   const badgeTxt = days<=2 ? 'Recently added' : q.bounty_pts>0 ? `+${q.bounty_pts} Ψ` : '';
   const badgeHtml = badgeTxt
-    ? `<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(229,9,20,.9);color:#fff;font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 6px;text-align:center">${badgeTxt}</div>` : '';
+    ? `<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(200,146,42,.9);color:#fff;font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 6px;text-align:center">${badgeTxt}</div>` : '';
 
   return `<div class="nfc-rank" data-qid="${q.id}" onclick="nfOpen('${q.id}','info')">
     <div class="nfc-rank-num">${rank}</div>
@@ -4021,6 +4048,9 @@ function handleDrop(e){
 }
 function handleFileSelect(e){const f=e.target.files[0];if(f)setUploadFile(f);}
 function setUploadFile(f){
+  if(f.size > 50 * 1024 * 1024) {
+    showToast('Warning: This video is larger than 50MB. Large uploads may fail or time out. Recommended size is under 20MB.','am');
+  }
   uploadFile=f;
   const url=URL.createObjectURL(f);
   const pv=document.getElementById('uploadPreview');
