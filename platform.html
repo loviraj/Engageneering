@@ -2737,54 +2737,20 @@ function setAnsType(qid,type){
 // THUMBNAIL & AVATAR HELPERS
 // ════════════════════════════════════════════════════════════════
 
-// ── UNSPLASH DYNAMIC SEARCH ──────────────────────────────────────
-const UNSPLASH_KEY = window.ENG_CONFIG?.UNSPLASH_ACCESS_KEY || '';
-const _unsplashCache = {};
-const _unsplashPending = {};
-
-const TOPIC_SEARCH = {
-  'Programming':'coding programming laptop','Mathematics':'mathematics equations chalkboard',
-  'Science':'science laboratory research','Physics':'physics space universe',
-  'History':'history ancient architecture','Philosophy':'philosophy books thinking',
-  'Finance':'finance money stock market','Economics':'economics business analytics',
-  'Biology':'biology nature cells','Chemistry':'chemistry lab experiment',
-  'Psychology':'psychology brain mind','Politics':'politics government democracy',
-  'Literature':'literature books library','Language':'language writing calligraphy',
-  'Medicine':'medicine healthcare doctor','Engineering':'engineering blueprint factory',
-  'Technology':'technology digital innovation','Active Learning':'classroom students learning',
-  'General':'knowledge education university','default':'education learning abstract'
+// ── TOPIC THUMBNAILS (LoremFlickr — keyword-based, free, no API key) ──
+const TOPIC_KEYWORDS = {
+  'Programming':'coding,programming,laptop','Mathematics':'mathematics,equations,chalkboard',
+  'Science':'science,laboratory,research','Physics':'physics,space,universe',
+  'History':'history,ancient,architecture','Philosophy':'philosophy,books,thinking',
+  'Finance':'finance,stock,market','Economics':'economics,business,analytics',
+  'Biology':'biology,nature,microscope','Chemistry':'chemistry,lab,experiment',
+  'Psychology':'psychology,brain,mind','Politics':'politics,government,democracy',
+  'Literature':'literature,books,library','Language':'language,writing,letters',
+  'Medicine':'medicine,healthcare,doctor','Engineering':'engineering,factory,blueprint',
+  'Technology':'technology,digital,computer','Active Learning':'classroom,students,learning',
+  'Teaching':'teaching,classroom,education','Self-Improvement':'motivation,growth,success',
+  'General':'knowledge,education,university','default':'education,learning,school'
 };
-
-async function fetchUnsplashTopic(keyword){
-  const searchTerm = TOPIC_SEARCH[keyword] || keyword;
-  if(_unsplashCache[keyword]) return _unsplashCache[keyword];
-  if(_unsplashPending[keyword]) return _unsplashPending[keyword];
-  if(!UNSPLASH_KEY){ _unsplashCache[keyword]=[]; return []; }
-  const p = fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchTerm)}&per_page=8&orientation=landscape`,{
-    headers:{'Authorization':'Client-ID '+UNSPLASH_KEY}
-  }).then(r=>{
-    if(!r.ok) throw new Error('Unsplash '+r.status);
-    return r.json();
-  }).then(data=>{
-    const urls=(data.results||[]).map(r=>r.urls?.regular||r.urls?.small||'');
-    _unsplashCache[keyword]=urls;
-    delete _unsplashPending[keyword];
-    return urls;
-  }).catch(e=>{
-    console.warn('Unsplash fetch failed for',keyword,e);
-    _unsplashCache[keyword]=[];
-    delete _unsplashPending[keyword];
-    return [];
-  });
-  _unsplashPending[keyword]=p;
-  return p;
-}
-
-async function prewarmUnsplash(tags){
-  const topics = [...new Set((tags||[]).map(t=>_topicKey([t])))];
-  if(!topics.length) topics.push('default');
-  await Promise.all(topics.map(t=>fetchUnsplashTopic(t)));
-}
 
 // Topic → dark gradient for avatar + SVG fallback
 const TOPIC_GRAD = {
@@ -2801,7 +2767,7 @@ const TOPIC_GRAD = {
 
 function _topicKey(tags){
   const t=(tags||['General'])[0]||'General';
-  return Object.keys(TOPIC_SEARCH).find(k=>
+  return Object.keys(TOPIC_KEYWORDS).find(k=>
     t.toLowerCase().includes(k.toLowerCase())||
     k.toLowerCase().includes(t.toLowerCase())
   )||'default';
@@ -2814,16 +2780,12 @@ function _strHash(s){
   return Math.abs(h);
 }
 
-// Return an Unsplash URL from cache, or SVG fallback if not loaded yet
+// Return a picsum URL seeded by topic+question — deterministic, reliable, CDN-cached
 function getTopicThumb(tags, qid, w=400, h=225){
-  const key   = _topicKey(tags);
-  const urls  = _unsplashCache[key];
-  if(urls && urls.length){
-    const idx = _strHash(qid||'x') % urls.length;
-    const url = urls[idx];
-    if(url) return url + (url.includes('?')?'&':'?') + `w=${w}&h=${h}&fit=crop&auto=format&q=80`;
-  }
-  return svgFallback(tags, w, h);
+  const key  = _topicKey(tags);
+  const kw   = (TOPIC_KEYWORDS[key]||'education').split(',')[0];
+  const seed = kw + '-' + (_strHash(qid||'x') % 50);
+  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
 }
 
 // Inline SVG gradient fallback — always renders, zero network
@@ -2873,12 +2835,8 @@ function resolveThumb(url, tags, qid, w, h){
 
 // Pre-warm all thumbnails in a question array (parallel, 400×225)
 // Returns a Promise that resolves when all are done.
-async function prewarmThumbs(qs){
-  if(!qs||!qs.length) return;
-  // Pre-fetch Unsplash images for all topics in this feed
-  const allTags = [...new Set(qs.flatMap(q=>(q.tags||['General'])))];
-  await prewarmUnsplash(allTags);
-  // Then resolve video thumbnails
+function prewarmThumbs(qs){
+  if(!qs||!qs.length) return Promise.resolve();
   const jobs = qs.filter(q=>q.video_thumbnail).map(q=>
     resolveThumb(q.video_thumbnail, q.tags, q.id, 400, 225)
   );
