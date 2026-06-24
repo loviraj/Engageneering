@@ -2763,7 +2763,7 @@ const TOPIC_THEME = {
   'default':          {g1:'#07101e',g2:'#0f1e36',g3:'#0b1628',accent:'#c8922a',icon:'<polygon points="32,14 38,22 46,24 40,30 42,38 32,34 22,38 24,30 18,24 26,22" stroke="currentColor" stroke-width="1.5" fill="none"/>'},
 };
 
-const TOPIC_GRAD = TOPIC_THEME;
+const TOPIC_GRAD = Object.fromEntries(Object.entries(TOPIC_THEME).map(([k,v])=>[k,[v.g1,v.g2]]));
 
 function _topicKey(tags){
   const t=(tags||['General'])[0]||'General';
