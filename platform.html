@@ -2276,7 +2276,9 @@ function setTopic(t,btn){
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('on'));
   if(btn)btn.classList.add('on');
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-  document.getElementById('tab-all').classList.add('on');
+  const tabAll=document.getElementById('tab-all');
+  if(tabAll) tabAll.classList.add('on');
+  document.getElementById('navBrowseDropdown')?.classList.remove('open');
   loadFeed();
 }
 function setFormat(f,btn){
